@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "net.alexandra.atlas.atlas_combat.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+      "EntityAttributesMixin"
+    ],
+	"client": [
+      "TitleScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
