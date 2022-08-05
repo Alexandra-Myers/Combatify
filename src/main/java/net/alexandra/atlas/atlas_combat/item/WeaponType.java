@@ -37,13 +37,14 @@ public enum WeaponType {
     }
 
     public float getDamage(Tier var1) {
+		float var2 = var1.getAttackDamageBonus() - 1;
         switch (this) {
             case SWORD:
-                return var1.getAttackDamageBonus() + 2.0F;
+                return var2 + 2.0F;
             case AXE:
-                return var1.getAttackDamageBonus() + 3.0F;
+                return var2 + 3.0F;
             case PICKAXE:
-                return var1.getAttackDamageBonus() + 1.0F;
+                return var2 + 1.0F;
             case HOE:
                 if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
                     if (var1 == Tiers.NETHERITE) {
@@ -55,7 +56,7 @@ public enum WeaponType {
 
                 return 1.0F;
             case SHOVEL:
-                return var1.getAttackDamageBonus();
+                return var2;
             case TRIDENT:
                 return 5.0F;
             default:

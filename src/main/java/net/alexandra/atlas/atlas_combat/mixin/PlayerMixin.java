@@ -65,6 +65,7 @@ public abstract class PlayerMixin {
 
 	/**
 	 * @author zOnlyKroks
+	 * @reason change attacks
 	 */
 	@Overwrite() //var1
 	public void attack(Entity target) {

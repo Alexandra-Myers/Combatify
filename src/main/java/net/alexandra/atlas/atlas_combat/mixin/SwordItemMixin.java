@@ -29,10 +29,6 @@ public class SwordItemMixin extends TieredItem {
 		WeaponType.SWORD.addCombatAttributes(this.getTier(), var3);
 		newDefaultModifiers = var3.build();
 	}
-	@Inject(method = "<init>(Lnet/minecraft/world/item/Tier;IFLnet/minecraft/world/item/Item$Properties;)V", at = @At("HEAD"), cancellable = true)
-	private static void injected(CallbackInfo ci) {
-		ci.cancel();
-	}
 
 	/**
 	 * @author
