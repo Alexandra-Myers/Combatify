@@ -44,8 +44,6 @@ import java.util.UUID;
 @Mixin(Player.class)
 public abstract class PlayerMixin {
 	@Unique
-	protected int attackStrengthStartValue;
-	@Unique
 	protected boolean missedAttackRecovery;
 
 	private static final UUID MAGIC_ATTACK_DAMAGE_UUID = UUID.fromString("13C4E5B5-0F72-4359-AB1C-625F9DF5AA2B");
@@ -63,7 +61,7 @@ public abstract class PlayerMixin {
 	public static AttributeSupplier.Builder createAttributes() {
 		return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0)
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
-				.add(NewAttributes.NEW_ATTACK_SPEED)
+				.add(NewAttributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)
 				.add(NewAttributes.ATTACK_REACH);
 	}
@@ -110,11 +108,7 @@ public abstract class PlayerMixin {
 
 				boolean var8 = var5 && ((Player) (Object)this).fallDistance > 0.0F && !((Player) (Object)this).isOnGround();
 				if (var8) {
-					if (this.getAttackStrengthScale(1.0F) > 1.95F) {
-						attackDamage *= 1.5F;
-					} else {
-						attackDamage *= 1.5F;
-					}
+					attackDamage *= 1.5F;
 				}
 
 				boolean var9 = !var8 && !var6 && this.checkSweepAttack();
@@ -211,23 +205,32 @@ public abstract class PlayerMixin {
 					}
 				}
 			}
-			this.resetAttackStrengthTicker(true);
+			this.resetAttackStrengthTicker();
 		}
 	}
 
-	public void resetAttackStrengthTicker(boolean var1) {
-		this.missedAttackRecovery = !var1;
-		int var2 = this.getAttackDelay() * 2;
-		if (var2 > ((Player) (Object)this).attackStrengthTicker) {
-			this.attackStrengthStartValue = var2;
-			((Player) (Object)this).attackStrengthTicker = this.attackStrengthStartValue;
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Overwrite
+	public void resetAttackStrengthTicker() {
+		if(missedAttackRecovery){
+			((Player) (Object)this).attackStrengthTicker = 10;
+		}else {
+			((Player) (Object)this).attackStrengthTicker = 0;
 		}
 	}
 
-	public int getAttackDelay() {
-		float var1 = (float)((Player) (Object)this).getAttribute(NewAttributes.NEW_ATTACK_SPEED).getValue() - 1.5F;
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Overwrite
+	public float getCurrentItemAttackStrengthDelay() {
+		float var1 = (float)((Player) (Object)this).getAttribute(NewAttributes.ATTACK_SPEED).getValue() - 1.5F;
 		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
-		return (int)(1.0F / var1 * 20.0F + 0.5F);
+		return (1.0F / var1 * 20.0F + 0.5F);
 	}
 
 	public float getCurrentAttackReach(float var1) {
@@ -240,15 +243,32 @@ public abstract class PlayerMixin {
 		return (float) (((Player)(Object)this).getAttribute(NewAttributes.ATTACK_REACH).getValue() + var2);
 	}
 
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Overwrite
 	public float getAttackStrengthScale(float var1) {
-		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp(2.0F * (1.0F - (((Player) (Object)this).attackStrengthTicker - var1) / this.attackStrengthStartValue), 0.0F, 2.0F);
+		int defaultTicker;
+		if(missedAttackRecovery){
+			defaultTicker = 10;
+		}else {
+			defaultTicker = 0;
+		}
+		return defaultTicker == 0 ? 2.0F : Mth.clamp(2.0F * (1.0F - (((Player) (Object)this).attackStrengthTicker - var1) / defaultTicker), 0.0F, 2.0F);
 	}
 
 	public boolean isAttackAvailable(float var1) {
+		int defaultTicker;
+		if(missedAttackRecovery){
+			defaultTicker = 10;
+		}else {
+			defaultTicker = 0;
+		}
 		if (!(this.getAttackStrengthScale(var1) < 1.0F)) {
 			return true;
 		} else {
-			return this.missedAttackRecovery && this.attackStrengthStartValue - (((Player) (Object)this).attackStrengthTicker - var1) > 4.0F;
+			return this.missedAttackRecovery && defaultTicker - (((Player) (Object)this).attackStrengthTicker - var1) > 4.0F;
 		}
 	}
 
