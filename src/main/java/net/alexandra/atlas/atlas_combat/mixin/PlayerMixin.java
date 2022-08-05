@@ -1,6 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.player.ExtraPlayerAttributes;
+import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -50,7 +50,7 @@ public abstract class PlayerMixin {
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		((Player) (Object)this).getAttribute(ExtraPlayerAttributes.ATTACK_REACH).setBaseValue(2.5);
+		((Player) (Object)this).getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(2.5);
 		((Player) (Object)this).getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
 	}
 
@@ -60,7 +60,7 @@ public abstract class PlayerMixin {
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
 				.add(Attributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)
-				.add(ExtraPlayerAttributes.ATTACK_REACH);
+				.add(NewAttributes.ATTACK_REACH);
 	}
 
 	/**
@@ -232,7 +232,7 @@ public abstract class PlayerMixin {
 			var2 = 1.0F;
 		}
 
-		return (float) (((Player)(Object)this).getAttribute(ExtraPlayerAttributes.ATTACK_REACH).getValue() + var2);
+		return (float) (((Player)(Object)this).getAttribute(NewAttributes.ATTACK_REACH).getValue() + var2);
 	}
 
 	public float getAttackStrengthScale(float var1) {
