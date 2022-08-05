@@ -6,6 +6,9 @@ plugins {
 archivesBaseName = project.archives_base_name
 version = project.version
 group = project.maven_group
+loom {
+	accessWidenerPath = file("src/main/resources/atlas_combat.accesswidener")
+}
 
 repositories {
 	// Add repositories to retrieve artifacts from in here.

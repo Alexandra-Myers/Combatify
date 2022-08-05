@@ -9,7 +9,7 @@ import net.minecraft.world.item.Tiers;
 
 import java.util.UUID;
 
-enum WeaponType {
+public enum WeaponType {
     SWORD,
     AXE,
     PICKAXE,
@@ -17,9 +17,9 @@ enum WeaponType {
     SHOVEL,
     TRIDENT;
 
-    protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-    protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
-    protected static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
+    public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+    public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+    public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
 
     private WeaponType() {
     }
@@ -29,9 +29,9 @@ enum WeaponType {
         float var4 = this.getDamage(var1);
         float var5 = this.getReach(var1);
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)var4, AttributeModifier.Operation.ADDITION));
-        var2.put(Attributes.getAttribute("generic.attack_speed"), new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var3, AttributeModifier.Operation.ADDITION));
+        var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F) {
-            var2.put(Attributes.getAttribute("generic.attack_reach"), new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", (double)var5, AttributeModifier.Operation.ADDITION));
+            var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", (double)var5, AttributeModifier.Operation.ADDITION));
         }
 
     }
@@ -101,8 +101,8 @@ enum WeaponType {
             case AXE:
             case PICKAXE:
             case SHOVEL:
-                return 0.0F;
             case HOE:
+				return 2.0F;
             case TRIDENT:
                 return 1.0F;
             default:

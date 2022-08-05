@@ -1,0 +1,3 @@
+accessWidener v2 named
+mutable field net/minecraft/world/item/SwordItem defaultModifiers Lcom/google/common/collect/Multimap;
+mutable field net/minecraft/world/item/SwordItem attackDamage F

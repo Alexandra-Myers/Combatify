@@ -17,7 +17,7 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "AtlasCombat"
+			"init": "net.alexandra.atlas.atlas_combat.AtlasCombat"
 		},
 		"depends": [
 			{
@@ -35,6 +35,7 @@
 		]
 	},
 	"mixin": "atlas_combat.mixins.json",
+	"accessWidener" : "atlas_combat.accesswidener",
 	"custom": {
 		"loom:injected_interfaces": {
 			"net/minecraft/class_5134": ["net/alexandra/atlas/atlas_combat/item/IAttribute"]
