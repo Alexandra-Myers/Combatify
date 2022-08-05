@@ -37,15 +37,14 @@ public enum WeaponType {
     }
 
     public float getDamage(Tier var1) {
-		float var2;
-		if (var1.getAttackDamageBonus() != 0) {
-			var2 = var1.getAttackDamageBonus() - 1;
-		}else {
-			var2 = var1.getAttackDamageBonus();
-		}
+		float var2 = var1.getAttackDamageBonus();
         switch (this) {
             case SWORD:
-                return var2 + 2.0F;
+				if(var1 != Tiers.WOOD || var1 != Tiers.GOLD) {
+                	return var2 + 1.0F;
+				}else {
+					return var2 + 2.0F;
+				}
             case AXE:
                 return var2 + 3.0F;
             case PICKAXE:
