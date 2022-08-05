@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
@@ -9,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
@@ -19,16 +21,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
@@ -42,6 +38,8 @@ public abstract class ItemStackMixin {
 	public abstract boolean is(Item item);
 	@Shadow
 	protected abstract int getHideFlags();
+	@Shadow
+	public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot);
 	@Shadow
 	private static boolean shouldShowInTooltip(int flags, ItemStack.TooltipPart tooltipSection){
 		return false;
@@ -61,8 +59,6 @@ public abstract class ItemStackMixin {
 	@Shadow
 	@Final
 	private static Style LORE_STYLE;
-	@Shadow
-	public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot);
 	@Shadow
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
@@ -138,30 +134,27 @@ public abstract class ItemStackMixin {
 		if (shouldShowInTooltip(i, ItemStack.TooltipPart.MODIFIERS)) {
 			for(EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
 				Multimap<Attribute, AttributeModifier> multimap = this.getAttributeModifiers(equipmentSlot);
-				if(multimap != null) {
+				if (multimap != null) {
 					if (!multimap.isEmpty()) {
 						list.add(CommonComponents.EMPTY);
 						list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 
-						for(Map.Entry<Attribute, AttributeModifier> entry : multimap.entries()) {
-							AttributeModifier attributeModifier = (AttributeModifier)entry.getValue();
-							Iterator var11 = multimap.entries().iterator();
-							Map.Entry var12 = (Map.Entry)var11.next();
-							AttributeModifier var13 = (AttributeModifier)var12.getValue();
-							double d = var13.getAmount();
+						for (Map.Entry<Attribute, AttributeModifier> entry : multimap.entries()) {
+							AttributeModifier attributeModifier = (AttributeModifier) entry.getValue();
+							double d = attributeModifier.getAmount();
 							boolean bl = false;
 							if (player != null) {
-								if (var13.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID) {
+								if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID) {
 									d += player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
-									d += (double)EnchantmentHelper.getDamageBonus((ItemStack)(Object)this, ((LivingEntity)null).getMobType());
+									d += (double) EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, ((LivingEntity) null).getMobType());
 									bl = true;
-								} else if (var13.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
+								} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
 									d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
 									bl = true;
-								} else if (var13.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
+								} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
 									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue();
 									bl = true;
-								} else if (((Attribute)var12.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+								} else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
 									d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
 								}
 							}
@@ -170,7 +163,7 @@ public abstract class ItemStackMixin {
 							if (attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE
 									|| attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
 								e = d * 100.0;
-							} else if (((Attribute)entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+							} else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
 								e = d * 10.0;
 							} else {
 								e = d;
@@ -183,7 +176,7 @@ public abstract class ItemStackMixin {
 														Component.translatable(
 																"attribute.modifier.equals." + attributeModifier.getOperation().toValue(),
 																ATTRIBUTE_MODIFIER_FORMAT.format(e),
-																Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
+																Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
 														)
 												)
 												.withStyle(ChatFormatting.DARK_GREEN)
@@ -193,7 +186,7 @@ public abstract class ItemStackMixin {
 										Component.translatable(
 														"attribute.modifier.plus." + attributeModifier.getOperation().toValue(),
 														ATTRIBUTE_MODIFIER_FORMAT.format(e),
-														Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
+														Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
 												)
 												.withStyle(ChatFormatting.BLUE)
 								);
@@ -203,7 +196,7 @@ public abstract class ItemStackMixin {
 										Component.translatable(
 														"attribute.modifier.take." + attributeModifier.getOperation().toValue(),
 														ATTRIBUTE_MODIFIER_FORMAT.format(e),
-														Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
+														Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
 												)
 												.withStyle(ChatFormatting.RED)
 								);
@@ -258,3 +251,4 @@ public abstract class ItemStackMixin {
 		return list;
 	}
 }
+
