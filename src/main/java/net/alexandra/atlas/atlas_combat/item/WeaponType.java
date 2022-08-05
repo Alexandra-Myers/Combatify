@@ -21,17 +21,17 @@ public enum WeaponType {
     public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
     public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
 
-    private WeaponType() {
+    WeaponType() {
     }
 
     public void addCombatAttributes(Tier var1, ImmutableMultimap.Builder<Attribute, AttributeModifier> var2) {
         float var3 = this.getSpeed(var1);
         float var4 = this.getDamage(var1);
-        float var5 = this.getReach(var1);
-        var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)var4, AttributeModifier.Operation.ADDITION));
-        var2.put(NewAttributes.NEW_ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var3, AttributeModifier.Operation.ADDITION));
+        float var5 = this.getReach();
+        var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
+        var2.put(NewAttributes.NEW_ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F) {
-            var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", (double)var5, AttributeModifier.Operation.ADDITION));
+            var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
 
     }
@@ -99,7 +99,7 @@ public enum WeaponType {
         }
     }
 
-    public float getReach(Tier var1) {
+    public float getReach() {
         switch (this) {
             case SWORD:
                 return 0.5F;
