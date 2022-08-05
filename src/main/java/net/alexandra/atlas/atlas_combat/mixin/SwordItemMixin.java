@@ -25,7 +25,7 @@ public class SwordItemMixin extends TieredItem {
 
 	public SwordItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		WeaponType.SWORD.addCombatAttributes(this.getTier(), var3);
 		newDefaultModifiers = var3.build();
 	}
@@ -44,7 +44,7 @@ public class SwordItemMixin extends TieredItem {
 	 * @reason
 	 */
 	@Overwrite
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-		return var1 == EquipmentSlot.MAINHAND ? this.newDefaultModifiers : super.getDefaultAttributeModifiers(var1);
+	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+		return slot == EquipmentSlot.MAINHAND ? this.newDefaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
 }

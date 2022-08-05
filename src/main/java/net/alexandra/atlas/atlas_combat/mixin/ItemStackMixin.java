@@ -138,74 +138,76 @@ public abstract class ItemStackMixin {
 		if (shouldShowInTooltip(i, ItemStack.TooltipPart.MODIFIERS)) {
 			for(EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
 				Multimap<Attribute, AttributeModifier> multimap = this.getAttributeModifiers(equipmentSlot);
-				if (!multimap.isEmpty()) {
-					list.add(CommonComponents.EMPTY);
-					list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
+				if(multimap != null) {
+					if (!multimap.isEmpty()) {
+						list.add(CommonComponents.EMPTY);
+						list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 
-					for(Map.Entry<Attribute, AttributeModifier> entry : multimap.entries()) {
-						AttributeModifier attributeModifier = (AttributeModifier)entry.getValue();
-						Iterator var11 = multimap.entries().iterator();
-						Map.Entry var12 = (Map.Entry)var11.next();
-						AttributeModifier var13 = (AttributeModifier)var12.getValue();
-						double d = var13.getAmount();
-						boolean bl = false;
-						if (player != null) {
-							if (var13.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID) {
-								d += player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
-								d += (double)EnchantmentHelper.getDamageBonus((ItemStack)(Object)this, ((LivingEntity)null).getMobType());
-								bl = true;
-							} else if (var13.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
-								d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
-								bl = true;
-							} else if (var13.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-								d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue();
-								bl = true;
-							} else if (((Attribute)var12.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
-								d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
+						for(Map.Entry<Attribute, AttributeModifier> entry : multimap.entries()) {
+							AttributeModifier attributeModifier = (AttributeModifier)entry.getValue();
+							Iterator var11 = multimap.entries().iterator();
+							Map.Entry var12 = (Map.Entry)var11.next();
+							AttributeModifier var13 = (AttributeModifier)var12.getValue();
+							double d = var13.getAmount();
+							boolean bl = false;
+							if (player != null) {
+								if (var13.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID) {
+									d += player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
+									d += (double)EnchantmentHelper.getDamageBonus((ItemStack)(Object)this, ((LivingEntity)null).getMobType());
+									bl = true;
+								} else if (var13.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
+									d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
+									bl = true;
+								} else if (var13.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
+									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue();
+									bl = true;
+								} else if (((Attribute)var12.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+									d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
+								}
 							}
-						}
 
-						double e;
-						if (attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE
-								|| attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
-							e = d * 100.0;
-						} else if (((Attribute)entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
-							e = d * 10.0;
-						} else {
-							e = d;
-						}
+							double e;
+							if (attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE
+									|| attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+								e = d * 100.0;
+							} else if (((Attribute)entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+								e = d * 10.0;
+							} else {
+								e = d;
+							}
 
-						if (bl) {
-							list.add(
-									Component.literal(" ")
-											.append(
-													Component.translatable(
-															"attribute.modifier.equals." + attributeModifier.getOperation().toValue(),
-															ATTRIBUTE_MODIFIER_FORMAT.format(e),
-															Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
-													)
-											)
-											.withStyle(ChatFormatting.DARK_GREEN)
-							);
-						} else if (d > 0.0) {
-							list.add(
-									Component.translatable(
-													"attribute.modifier.plus." + attributeModifier.getOperation().toValue(),
-													ATTRIBUTE_MODIFIER_FORMAT.format(e),
-													Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
-											)
-											.withStyle(ChatFormatting.BLUE)
-							);
-						} else if (d < 0.0) {
-							e *= -1.0;
-							list.add(
-									Component.translatable(
-													"attribute.modifier.take." + attributeModifier.getOperation().toValue(),
-													ATTRIBUTE_MODIFIER_FORMAT.format(e),
-													Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
-											)
-											.withStyle(ChatFormatting.RED)
-							);
+							if (bl) {
+								list.add(
+										Component.literal(" ")
+												.append(
+														Component.translatable(
+																"attribute.modifier.equals." + attributeModifier.getOperation().toValue(),
+																ATTRIBUTE_MODIFIER_FORMAT.format(e),
+																Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
+														)
+												)
+												.withStyle(ChatFormatting.DARK_GREEN)
+								);
+							} else if (d > 0.0) {
+								list.add(
+										Component.translatable(
+														"attribute.modifier.plus." + attributeModifier.getOperation().toValue(),
+														ATTRIBUTE_MODIFIER_FORMAT.format(e),
+														Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
+												)
+												.withStyle(ChatFormatting.BLUE)
+								);
+							} else if (d < 0.0) {
+								e *= -1.0;
+								list.add(
+										Component.translatable(
+														"attribute.modifier.take." + attributeModifier.getOperation().toValue(),
+														ATTRIBUTE_MODIFIER_FORMAT.format(e),
+														Component.translatable(((Attribute)entry.getKey()).getDescriptionId())
+												)
+												.withStyle(ChatFormatting.RED)
+								);
+							}
 						}
 					}
 				}
