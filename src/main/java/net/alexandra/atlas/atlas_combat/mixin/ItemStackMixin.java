@@ -24,6 +24,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,21 @@ public abstract class ItemStackMixin {
 	@Shadow
 	@Final
 	private static Style LORE_STYLE;
+	@Shadow
+	public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot);
+	@Shadow
+	@Final
+	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
+	@Shadow
+	private static Collection<Component> expandBlockState(String tag) {
+		return null;
+	}
+	@Shadow
+	public abstract int getMaxDamage();
+	@Shadow
+	public abstract boolean isDamaged();
+	@Shadow
+	public abstract int getDamageValue();
 	/**
 	 * @author
 	 * @reason
