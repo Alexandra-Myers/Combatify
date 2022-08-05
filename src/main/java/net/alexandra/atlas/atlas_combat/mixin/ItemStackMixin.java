@@ -146,7 +146,7 @@ public abstract class ItemStackMixin {
 							if (player != null) {
 								if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID) {
 									d += player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
-									d += (double) EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, ((LivingEntity) null).getMobType());
+									d += EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, player.getMobType());
 									bl = true;
 								} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
 									d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;

@@ -56,11 +56,14 @@ public abstract class PlayerMixin {
 		((Player) (Object)this).getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
 	}
 
-	@Redirect(method = "createAttributes", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;createLivingAttributes()Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;"))
-	private static AttributeSupplier.Builder redirectCreateAttributes() {
+	/**
+	 * @author zOnlyKroks
+	 */
+	@Overwrite()
+	public static AttributeSupplier.Builder createAttributes() {
 		return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0)
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
-				.add(Attributes.ATTACK_SPEED)
+				.add(NewAttributes.NEW_ATTACK_SPEED)
 				.add(Attributes.LUCK)
 				.add(NewAttributes.ATTACK_REACH);
 	}
@@ -222,7 +225,7 @@ public abstract class PlayerMixin {
 	}
 
 	public int getAttackDelay() {
-		float var1 = (float)((Player) (Object)this).getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F;
+		float var1 = (float)((Player) (Object)this).getAttribute(NewAttributes.NEW_ATTACK_SPEED).getValue() - 1.5F;
 		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
 		return (int)(1.0F / var1 * 20.0F + 0.5F);
 	}
