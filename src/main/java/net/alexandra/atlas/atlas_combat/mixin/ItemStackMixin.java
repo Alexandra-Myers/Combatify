@@ -169,7 +169,7 @@ public abstract class ItemStackMixin {
 								e = d;
 							}
 
-							if (bl) {
+							if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || bl) {
 								list.add(
 										Component.literal(" ")
 												.append(
