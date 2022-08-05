@@ -39,12 +39,13 @@ public class SwordItemMixin extends TieredItem {
 		return WeaponType.SWORD.getDamage(this.getTier());
 	}
 
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-		return var1 == EquipmentSlot.MAINHAND ? this.newDefaultModifiers : super.getDefaultAttributeModifiers(var1);
-	}
+//	/**
+//	 * @author
+//	 * @reason
+//	 */
+//	@Overwrite
+//	@Override
+//	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+//		return var1 == EquipmentSlot.MAINHAND ? this.newDefaultModifiers : super.getDefaultAttributeModifiers(var1);
+//	}
 }

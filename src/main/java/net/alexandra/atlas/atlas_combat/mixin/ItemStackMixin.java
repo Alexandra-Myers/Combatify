@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
@@ -9,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
@@ -19,16 +21,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
@@ -42,6 +38,8 @@ public abstract class ItemStackMixin {
 	public abstract boolean is(Item item);
 	@Shadow
 	protected abstract int getHideFlags();
+	@Shadow
+	public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot);
 	@Shadow
 	private static boolean shouldShowInTooltip(int flags, ItemStack.TooltipPart tooltipSection){
 		return false;
@@ -61,8 +59,6 @@ public abstract class ItemStackMixin {
 	@Shadow
 	@Final
 	private static Style LORE_STYLE;
-	@Shadow
-	public abstract Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot);
 	@Shadow
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
@@ -255,3 +251,4 @@ public abstract class ItemStackMixin {
 		return list;
 	}
 }
+
