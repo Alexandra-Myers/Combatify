@@ -40,5 +40,6 @@
 		"loom:injected_interfaces": {
 			"net/minecraft/class_5134": ["net/alexandra/atlas/atlas_combat/item/IAttribute"]
 		}
-	}
+	},
+	"accessWidener" : "atlas_combat.accesswidener"
 }

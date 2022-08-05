@@ -34,6 +34,10 @@ dependencies {
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 }
 
+loom {
+	accessWidenerPath = file("src/main/resources/atlas_combat.accesswidener")
+}
+
 processResources {
 	inputs.property "version", version
 
