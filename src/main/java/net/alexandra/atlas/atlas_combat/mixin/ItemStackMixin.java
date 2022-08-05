@@ -41,9 +41,9 @@ public abstract class ItemStackMixin {
 	@Shadow
 	public abstract boolean is(Item item);
 	@Shadow
-	public abstract int getHideFlags();
+	protected abstract int getHideFlags();
 	@Shadow
-	public static boolean shouldShowInTooltip(int flags, ItemStack.TooltipPart tooltipSection){
+	private static boolean shouldShowInTooltip(int flags, ItemStack.TooltipPart tooltipSection){
 		return false;
 	}
 	@Shadow
