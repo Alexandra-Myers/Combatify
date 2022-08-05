@@ -34,10 +34,5 @@
 			}
 		]
 	},
-	"mixin": "atlas_combat.mixins.json",
-	"custom": {
-		"loom:injected_interfaces": {
-			"net/minecraft/class_5134": ["net/alexandra/atlas/atlas_combat/item/IAttribute"]
-		}
-	}
+	"mixin": "atlas_combat.mixins.json"
 }
