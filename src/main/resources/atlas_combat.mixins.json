@@ -10,7 +10,8 @@
     "ServerGamePacketMixin",
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
-    "ServerPlayerGameModeMixin"
+    "ServerPlayerGameModeMixin",
+    "TridentItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

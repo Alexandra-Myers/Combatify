@@ -1,3 +1,4 @@
 accessWidener	v1	named
 mutable field net/minecraft/world/item/SwordItem defaultModifiers Lcom/google/common/collect/Multimap;
+mutable field net/minecraft/world/item/DiggerItem defaultModifiers Lcom/google/common/collect/Multimap;
 accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
