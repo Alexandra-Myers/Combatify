@@ -73,7 +73,7 @@ public abstract class PlayerMixin {
 	 * @author zOnlyKroks
 	 * @reason change attacks
 	 */
-	@Overwrite() //var1
+	@Overwrite()
 	public void attack(Entity target) {
 		if (target.isAttackable() && isAttackAvailable(1.0F)) {
 			if (!target.skipAttackInteraction(((Player) (Object)this))) {
@@ -116,7 +116,7 @@ public abstract class PlayerMixin {
 
 					f += g;
 					boolean bl4 = false;
-					double d = (double)(((Player) (Object)this).walkDist - ((Player) (Object)this).walkDistO);
+					double d = (((Player) (Object)this).walkDist - ((Player) (Object)this).walkDistO);
 					if (bl && !bl3 && !bl2 && ((Player) (Object) this).isOnGround() && d < (double)((Player) (Object)this).getSpeed()) {
 						ItemStack itemStack = ((Player) (Object)this).getItemInHand(InteractionHand.MAIN_HAND);
 						if (itemStack.getItem() instanceof SwordItem && checkSweepAttack()) {
