@@ -154,9 +154,6 @@ public abstract class ItemStackMixin {
 								} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
 									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue();
 									bl = true;
-								} else if (attributeModifier.getId() == WeaponType.BASE_REACH_UUID) {
-									d += player.getAttribute(NewAttributes.BASE_REACH).getBaseValue();
-									bl = true;
 								} else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
 									d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
 								}

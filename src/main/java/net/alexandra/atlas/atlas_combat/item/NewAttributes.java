@@ -12,5 +12,4 @@ public class NewAttributes extends Attributes{
 	}
 
 	public static final Attribute ATTACK_REACH = register("generic.attack_reach", (new RangedAttribute("attribute.name.generic.attack_reach", 2.5, 0.0, 10.0)).setSyncable(true));
-	public static final Attribute BASE_REACH = register("generic.base_reach", (new RangedAttribute("attribute.name.generic.base_reach", 6.0, 0.0, 10.0)).setSyncable(true));
 }

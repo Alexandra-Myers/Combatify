@@ -26,7 +26,7 @@ public class ServerGamePacketMixin {
 			method = "handleUseItemOn",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	private double getActualReachDistance() {
-		return Mth.square(((ServerGamePacketListenerImpl) (Object)this).player.getAttribute(NewAttributes.BASE_REACH).getValue());
+		return Mth.square(6.0);
 	}
 	@Inject(method = "handleInteract",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ServerboundInteractPacket;getTarget(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/Entity;"), cancellable = true)
@@ -41,6 +41,6 @@ public class ServerGamePacketMixin {
 			method = "handleUseItemOn",
 			require = 1, allow = 1, constant = @Constant(doubleValue = 64.0))
 	private double getActualReachDistance(final double reachDistance) {
-		return Mth.square(((ServerGamePacketListenerImpl) (Object)this).player.getAttribute(NewAttributes.BASE_REACH).getValue());
+		return Mth.square(6.0);
 	}
 }

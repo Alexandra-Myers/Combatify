@@ -24,7 +24,7 @@ public enum WeaponType {
     public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
     public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
-	public static final UUID BASE_REACH_UUID = UUID.fromString("c85331f2-9983-470d-8453-cd888c434dea");
+	public static final UUID BASE_BLOCK_REACH_UUID = UUID.fromString("c85331f2-9983-470d-8453-cd888c434dea");
 
     WeaponType() {
     }
@@ -33,15 +33,11 @@ public enum WeaponType {
         float var3 = this.getSpeed(var1);
         float var4 = this.getDamage(var1);
         float var5 = this.getReach();
-		float var6 = this.getBaseReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
         var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-		if (var6 != 0.0F) {
-			var2.put(NewAttributes.BASE_REACH, new AttributeModifier(BASE_REACH_UUID, "Weapon modifier", var6, AttributeModifier.Operation.ADDITION));
-		}
 
 
     }
@@ -94,7 +90,9 @@ public enum WeaponType {
             case SWORD:
                 return 0.5F;
             case AXE:
+				return -0.5F;
             case SHOVEL:
+				return 0.0F;
             case TRIDENT:
                 return -0.5F;
             case PICKAXE:
@@ -110,7 +108,7 @@ public enum WeaponType {
                     return 1.0F;
                 } else {
                     if (var1 == Tiers.NETHERITE) {
-                        return 1.0F;
+                        return 2.0F;
                     }
 
                     return 0.0F;
@@ -124,9 +122,12 @@ public enum WeaponType {
         switch (this) {
             case SWORD:
                 return 0.5F;
-            case AXE:
-            case PICKAXE:
-            case SHOVEL:
+			case AXE:
+				return 0.0F;
+			case PICKAXE:
+				return 0.0F;
+			case SHOVEL:
+				return 0.0F;
             case HOE:
 				return 2.0F;
             case TRIDENT:
@@ -135,18 +136,4 @@ public enum WeaponType {
                 return 0.0F;
         }
     }
-	public float getBaseReach() {
-		switch (this) {
-			case SWORD:
-				return 0.0F;
-			case AXE:
-			case PICKAXE:
-			case SHOVEL:
-			case HOE:
-			case TRIDENT:
-				return 0.0F;
-			default:
-				return 2.0F;
-		}
-	}
 }

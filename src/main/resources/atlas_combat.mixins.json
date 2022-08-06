@@ -11,7 +11,9 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ServerPlayerGameModeMixin",
-    "TridentItemMixin"
+    "TridentItemMixin",
+    "AxeItemMixin",
+    "DiggerItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

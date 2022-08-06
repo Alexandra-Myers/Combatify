@@ -14,6 +14,6 @@ public class ServerPlayerGameModeMixin {
 	@Redirect(method = "handleBlockBreakAction",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualReachDistance() {
-		return Mth.square(((ServerGamePacketListenerImpl) (Object)this).player.getAttribute(NewAttributes.BASE_REACH).getValue());
+		return Mth.square(6.0);
 	}
 }
