@@ -34,5 +34,5 @@ public class CleavingEnchantment extends Enchantment {
 	}
 
 	@Override
-	public boolean canEnchant(ItemStack stack) {return stack.getItem() instanceof AxeItem || super.canEnchant(stack);}
+	public boolean canEnchant(ItemStack stack) {return stack.getItem() instanceof AxeItem;}
 }
