@@ -1,9 +1,13 @@
 package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 
@@ -39,25 +43,29 @@ public enum WeaponType {
 			var2.put(NewAttributes.BASE_REACH, new AttributeModifier(BASE_REACH_UUID, "Weapon modifier", var6, AttributeModifier.Operation.ADDITION));
 		}
 
+
     }
+	public static boolean isWithinAttackRange(final Player player, final Entity entity) {
+		return player.distanceToSqr(entity) <= Mth.square(player.getAttribute(NewAttributes.ATTACK_REACH).getValue());
+	}
 
     public float getDamage(Tier var1) {
 		float var2 = var1.getAttackDamageBonus();
         switch (this) {
             case SWORD:
-				if(var1 != Tiers.WOOD || var1 != Tiers.GOLD) {
+				if(var1 != Tiers.WOOD && var1 != Tiers.GOLD) {
                 	return var2 - 1 + 2.0F;
 				}else {
 					return var2 + 2.0F;
 				}
             case AXE:
-				if(var1 != Tiers.WOOD || var1 != Tiers.GOLD) {
+				if(var1 != Tiers.WOOD && var1 != Tiers.GOLD) {
 					return var2 - 1 + 3.0F;
 				}else {
 					return var2 + 3.0F;
 				}
             case PICKAXE:
-				if(var1 != Tiers.WOOD || var1 != Tiers.GOLD) {
+				if(var1 != Tiers.WOOD && var1 != Tiers.GOLD) {
 					return var2 - 1 + 1.0F;
 				}else {
 					return var2 + 1.0F;

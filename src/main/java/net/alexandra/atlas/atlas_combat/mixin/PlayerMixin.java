@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
+import net.alexandra.atlas.atlas_combat.player.IPlayer;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -29,10 +30,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -43,12 +41,16 @@ import java.util.List;
 import java.util.UUID;
 
 @Mixin(Player.class)
+@Implements(@Interface(iface = IPlayer.class, prefix = "ident$"))
 public abstract class PlayerMixin {
-	@Shadow
-	public abstract InteractionResult interactOn(Entity entity, InteractionHand hand);
+	@Unique
+	protected int attackStrengthStartValue;
 
 	@Unique
 	public boolean missedAttackRecovery;
+	@Unique
+	@Final
+	public float baseValue = 0.5F;
 
 	private static final UUID MAGIC_ATTACK_DAMAGE_UUID = UUID.fromString("13C4E5B5-0F72-4359-AB1C-625F9DF5AA2B");
 	@Unique
@@ -74,10 +76,10 @@ public abstract class PlayerMixin {
 				.add(NewAttributes.ATTACK_REACH);
 	}
 
-	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
-	public void tickInject(Player instance, int value) {
-		--instance.attackStrengthTicker;
-	}
+//	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
+//	public void tickInject(Player instance, int value) {
+//		--instance.attackStrengthTicker;
+//	}
 
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameIgnoreDurability(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectDurability(ItemStack left, ItemStack right) {
@@ -90,7 +92,11 @@ public abstract class PlayerMixin {
 	 */
 	@Overwrite()
 	public void attack(Entity target) {
-		if (target.isAttackable() && isAttackAvailable(1.0F)) {
+		if(target == null) {
+			ident$attackAir();
+			return;
+		}
+		if (target.isAttackable() && isAttackAvailable(baseValue)) {
 			if (!target.skipAttackInteraction(player)) {
 				float attackDamage = (float)player.getAttributeValue(Attributes.ATTACK_DAMAGE);
 				float attackDamageBonus;
@@ -99,12 +105,11 @@ public abstract class PlayerMixin {
 				} else {
 					attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), MobType.UNDEFINED);
 				}
-				float currentAttackReach = this.getCurrentAttackReach(1.0F);
+				float currentAttackReach = this.getCurrentAttackReach(baseValue);
 
-				float attackStrengthScale = this.getAttackStrengthScale(1.0F);
+				float attackStrengthScale = player.getAttackStrengthScale(baseValue);
 				attackDamage *= 0.2F + attackStrengthScale * attackStrengthScale * 0.8F;
 				attackDamageBonus *= attackStrengthScale;
-				this.player.resetAttackStrengthTicker();
 				if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
 					boolean bl = attackStrengthScale > 0.9F;
 					boolean bl2 = false;
@@ -259,6 +264,35 @@ public abstract class PlayerMixin {
 				}
 
 			}
+
+			this.resetAttackStrengthTicker(true);
+		}
+	}
+
+	@Unique
+	public void ident$attackAir() {
+		if (this.isAttackAvailable(baseValue)) {
+			player.swing(InteractionHand.MAIN_HAND);
+			float var1 = (float)player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+			if (var1 > 0.0F && this.checkSweepAttack()) {
+				float var2 = this.getCurrentAttackReach(baseValue);
+				double var3 = 2.0;
+				double var5 = (double)(-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
+				double var7 = (double)Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
+				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
+				betterSweepAttack(var9, var2, var1, (Entity)null);
+			}
+
+			this.resetAttackStrengthTicker(false);
+		}
+	}
+	@Unique
+	public void resetAttackStrengthTicker(boolean var1) {
+		this.missedAttackRecovery = !var1;
+		int var2 = (int) player.getCurrentItemAttackStrengthDelay() * 2;
+		if (var2 > player.attackStrengthTicker) {
+			this.attackStrengthStartValue = var2;
+			player.attackStrengthTicker = this.attackStrengthStartValue;
 		}
 	}
 
@@ -266,67 +300,39 @@ public abstract class PlayerMixin {
 	 * @author
 	 * @reason
 	 */
-	@Overwrite
-	public void resetAttackStrengthTicker() {
-		if(missedAttackRecovery){
-			player.attackStrengthTicker = 10;
-		}else {
-			player.attackStrengthTicker = 0;
-		}
-	}
-
+//	@Overwrite
+//	public float getCurrentItemAttackStrengthDelay() {
+//		return (float)(1.0 / (player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5F) * 20.0 + 0.5F);
+//	}
 	/**
 	 * @author
 	 * @reason
 	 */
-	@Overwrite
-	public float getCurrentItemAttackStrengthDelay() {
-		float var1 = (float)player.getAttribute(NewAttributes.ATTACK_SPEED).getValue() - 1.5F;
-		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
-		return (1.0F / var1 * 20.0F + 0.5F);
-	}
+//	@Overwrite
+//	public float getAttackStrengthScale(float baseTime) {
+//		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp(2.0F * (1.0F - ((float)player.attackStrengthTicker + baseTime) / (float)this.attackStrengthStartValue), 0.0F, 2.0F);
+//	}
 
-	public float getCurrentAttackReach(float var1) {
+	public float getCurrentAttackReach(float baseValue) {
 		float var2 = 0.0F;
-		float var3 = this.getAttackStrengthScale(var1);
+		float var3 = player.getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1.0F;
 		}
 
-		return (float) (player.getAttribute(NewAttributes.ATTACK_REACH).getValue() + var2);
+		return (float)player.getAttributeValue(NewAttributes.ATTACK_REACH) + var2;
 	}
 
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public float getAttackStrengthScale(float var1) {
-		int defaultTicker;
-		if(missedAttackRecovery){
-			defaultTicker = 10;
-		}else {
-			defaultTicker = 0;
-		}
-		return defaultTicker == 0 ? 2.0F : Mth.clamp(2.0F * (1.0F - (player.attackStrengthTicker - var1) / defaultTicker), 0.0F, 2.0F);
-	}
-
-	public boolean isAttackAvailable(float var1) {
-		int defaultTicker;
-		if(missedAttackRecovery){
-			defaultTicker = 10;
-		}else {
-			defaultTicker = 0;
-		}
-		if (!(this.getAttackStrengthScale(var1) < 1.0F)) {
+	public boolean isAttackAvailable(float baseTime) {
+		if (!(player.getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return this.missedAttackRecovery && defaultTicker - (player.attackStrengthTicker - var1) > 4.0F;
+			return this.missedAttackRecovery && 0 - (player.attackStrengthTicker + baseTime) >= 0.0F;
 		}
 	}
 
 	protected boolean checkSweepAttack() {
-		return this.getAttackStrengthScale(1.0F) > 1.95F && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
+		return player.getAttackStrengthScale(baseValue) > 1.95F && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
 	}
 
 	public void betterSweepAttack(AABB var1, float var2, float var3, Entity var4) {
