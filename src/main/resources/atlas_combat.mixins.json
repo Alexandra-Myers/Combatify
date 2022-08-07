@@ -5,15 +5,17 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AttributesMixin",
+    "AxeItemMixin",
+    "DiggerItemMixin",
     "ItemStackMixin",
+    "LivingEntityMixin",
+    "LocalPlayerMixin",
     "PlayerMixin",
     "ServerGamePacketMixin",
+    "ServerPlayerGameModeMixin",
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
-    "ServerPlayerGameModeMixin",
-    "TridentItemMixin",
-    "AxeItemMixin",
-    "DiggerItemMixin"
+    "TridentItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

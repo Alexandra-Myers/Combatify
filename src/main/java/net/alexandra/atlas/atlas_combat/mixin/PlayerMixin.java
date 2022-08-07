@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.extensions.PlayerShieldExtensions;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.player.IPlayer;
 import net.minecraft.core.particles.ParticleTypes;
@@ -8,16 +9,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -31,13 +30,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -47,10 +45,17 @@ import java.util.UUID;
 
 @Mixin(Player.class)
 @Implements(@Interface(iface = IPlayer.class, prefix = "ident$"))
-public abstract class PlayerMixin {
+public abstract class PlayerMixin extends LivingEntity implements PlayerShieldExtensions {
+	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
+		super(entityType, level);
+	}
+
 	@Shadow
 	@Nullable
 	public abstract ItemEntity drop(ItemStack itemStack, boolean b);
+
+	@Shadow
+	protected abstract void doAutoAttackOnTouch(LivingEntity target);
 
 	@Unique
 	protected int attackStrengthStartValue;
@@ -60,6 +65,9 @@ public abstract class PlayerMixin {
 	@Unique
 	@Final
 	public float baseValue = 0.5F;
+
+	@Unique
+	public boolean enableShieldOnCrouch = true;
 
 	private static final UUID MAGIC_ATTACK_DAMAGE_UUID = UUID.fromString("13C4E5B5-0F72-4359-AB1C-625F9DF5AA2B");
 	@Unique
@@ -105,6 +113,27 @@ public abstract class PlayerMixin {
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameIgnoreDurability(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectDurability(ItemStack left, ItemStack right) {
 		return true;
+	}
+
+	/**
+	 * @author zOnlyKroks
+	 */
+	@Overwrite()
+	public void blockUsingShield(LivingEntity attacker) {
+		super.blockUsingShield(attacker);
+	}
+
+	@Override
+	public boolean customShieldInteractions(float damage) {
+		player.getCooldowns().addCooldown(Items.SHIELD, (int)(damage * 20.0F));
+		player.stopUsingItem();
+		player.level.broadcastEntityEvent(this, (byte)30);
+		return true;
+	}
+
+	@Override
+	public boolean hasEnabledShieldOnCrouch() {
+		return this.enableShieldOnCrouch;
 	}
 
 	/**
