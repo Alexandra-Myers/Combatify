@@ -11,7 +11,7 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 public class CleavingEnchantment extends Enchantment {
 
 	public CleavingEnchantment() {
-		super(Rarity.RARE, ClassTinkerers.getEnum(EnchantmentCategory.class, "AXE"), new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+		super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
 	}
 
 	@Override

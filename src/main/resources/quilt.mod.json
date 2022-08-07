@@ -17,8 +17,7 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "net.alexandra.atlas.atlas_combat.AtlasCombat",
-			"mm:early_risers": "net.alexandra.atlas.atlas_combat.AtlasEarlyRiser"
+			"init": "net.alexandra.atlas.atlas_combat.AtlasCombat"
 		},
 		"depends": [
 			{
