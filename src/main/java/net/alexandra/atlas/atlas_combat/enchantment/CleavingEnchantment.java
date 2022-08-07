@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.enchantment;
 
+import com.chocohead.mm.api.ClassTinkerers;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.item.AxeItem;
@@ -10,7 +11,7 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
 public class CleavingEnchantment extends Enchantment {
 
 	public CleavingEnchantment() {
-		super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+		super(Rarity.RARE, ClassTinkerers.getEnum(EnchantmentCategory.class, "AXE"), new EquipmentSlot[]{EquipmentSlot.MAINHAND});
 	}
 
 	@Override

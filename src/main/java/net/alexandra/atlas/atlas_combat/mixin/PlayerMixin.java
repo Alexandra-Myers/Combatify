@@ -323,7 +323,7 @@ public abstract class PlayerMixin {
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		return (float)(1.0 / (player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5F) * 20.0 + 0.25F);
+		return (float)(1.0 / (player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5F) * 20.0 + 0.5F);
 	}
 	/**
 	 * @author
