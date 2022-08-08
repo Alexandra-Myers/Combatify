@@ -94,6 +94,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void redirectAttackStrengthTicker(Player instance, int value) {
 		--instance.attackStrengthTicker;
 	}
+	@Inject(method = "tick", at = @At(value = "HEAD"))
+	public void injectAttackStrengthTicker(CallbackInfo ci) {
+		isUsingItem();
+	}
 
 	@Inject(method = "die", at = @At(value = "HEAD"))
 	public void dieInject(CallbackInfo ci) {
@@ -103,7 +107,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			specialHoe.enchant(Enchantments.UNBREAKING, 5);
 			specialHoe.setHoverName(Component.literal("Alexandra's Hoe"));
 			drop(specialHoe, false);
-		}else if(dead == UUID.fromString("b30c7223-3b1d-4099-ba1c-f4a45ba6e303")){
+		}else if(dead == UUID.fromString("1623d4b1-b21c-41d3-93c2-eee2845b8497")){
 			ItemStack specialBread = new ItemStack(Items.BREAD, 5);
 			specialBread.setHoverName(Component.literal("Finn's Bread"));
 			drop(specialBread, false);
@@ -140,11 +144,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 * @author zOnlyKroks
 	 * @reason change attacks
 	 */
-	@Overwrite()
-	public void attack(Entity target) {
+	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
+	public void attack(Entity target, CallbackInfo ci) {
 		if(target == null) {
 			ident$attackAir();
-			return;
+			ci.cancel();
 		}
 		if (target.isAttackable() && isAttackAvailable(baseValue)) {
 			if (!target.skipAttackInteraction(player)) {
@@ -317,6 +321,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 			this.resetAttackStrengthTicker(true);
 		}
+		ci.cancel();
 	}
 
 	@Unique

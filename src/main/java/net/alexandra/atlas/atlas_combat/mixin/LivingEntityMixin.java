@@ -20,14 +20,61 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin implements LivingEntityExtensions {
+public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
+
+	public LivingEntityMixin(EntityType<?> entityType, Level level) {
+		super(entityType, level);
+	}
+
+	@Shadow
+	protected abstract boolean checkTotemDeathProtection(DamageSource source);
+
+	@Shadow
+	@Nullable
+	protected abstract SoundEvent getDeathSound();
+
+	@Shadow
+	protected abstract float getSoundVolume();
+
+	@Shadow
+	protected abstract void playHurtSound(DamageSource source);
+
+	@Shadow
+	@Nullable
+	private DamageSource lastDamageSource;
+
+	@Shadow
+	private long lastDamageStamp;
+
+	@Shadow
+	protected abstract void hurtCurrentlyUsedShield(float amount);
+
+	@Shadow
+	protected abstract void blockUsingShield(LivingEntity attacker);
+
+	@Shadow
+	@Nullable
+	protected Player lastHurtByPlayer;
+
+	@Shadow
+	protected int lastHurtByPlayerTime;
+
+	@Shadow
+	protected float lastHurt;
+
+	@Shadow
+	protected abstract void actuallyHurt(DamageSource source, float amount);
 
 	/**
 	 * @author zOnlyKroks
@@ -74,13 +121,13 @@ public class LivingEntityMixin implements LivingEntityExtensions {
 				if (!source.isProjectile() && !source.isExplosion()) {
 					var6 = source.getDirectEntity();
 					if (var6 instanceof LivingEntity livingEntity) {
-						thisLivingEntity.blockUsingShield(livingEntity);
+						blockUsingShield(livingEntity);
 					}
 				} else {
 					var5 = amount;
 				}
 
-				thisLivingEntity.hurtCurrentlyUsedShield(var5);
+				hurtCurrentlyUsedShield(var5);
 				amount -= var5;
 				var4 = true;
 			}
@@ -98,18 +145,18 @@ public class LivingEntityMixin implements LivingEntityExtensions {
 
 			boolean var8 = true;
 			if (thisLivingEntity.invulnerableTime > 0) {
-				if (amount <= thisLivingEntity.lastHurt) {
+				if (amount <= lastHurt) {
 					cir.setReturnValue(false);
 					cir.cancel();
 				}
 
-				thisLivingEntity.actuallyHurt(source, amount - thisLivingEntity.lastHurt);
-				thisLivingEntity.lastHurt = amount;
+				actuallyHurt(source, amount - lastHurt);
+				lastHurt = amount;
 				var8 = false;
 			} else {
-				thisLivingEntity.lastHurt = amount;
+				lastHurt = amount;
 				thisLivingEntity.invulnerableTime = var7;
-				thisLivingEntity.actuallyHurt(source, amount);
+				actuallyHurt(source, amount);
 				thisLivingEntity.hurtDuration = 10;
 				thisLivingEntity.hurtTime = thisLivingEntity.hurtDuration;
 			}
@@ -124,17 +171,17 @@ public class LivingEntityMixin implements LivingEntityExtensions {
 				}
 
 				if (var6 instanceof Player player) {
-					thisLivingEntity.lastHurtByPlayerTime = 100;
-					thisLivingEntity.lastHurtByPlayer = player;
+					lastHurtByPlayerTime = 100;
+					lastHurtByPlayer = player;
 				} else if (var6 instanceof Wolf wolf) {
 					Wolf var9 = wolf;
 					if (var9.isTame()) {
-						thisLivingEntity.lastHurtByPlayerTime = 100;
+						lastHurtByPlayerTime = 100;
 						LivingEntity var10 = var9.getOwner();
 						if (var10 != null && var10.getType() == EntityType.PLAYER) {
-							thisLivingEntity.lastHurtByPlayer = (Player)var10;
+							lastHurtByPlayer = (Player)var10;
 						} else {
-							thisLivingEntity.lastHurtByPlayer = null;
+							lastHurtByPlayer = null;
 						}
 					}
 				}
@@ -161,7 +208,7 @@ public class LivingEntityMixin implements LivingEntityExtensions {
 				}
 
 				if (source != DamageSource.DROWN && (!var4 || amount > 0.0F)) {
-					thisLivingEntity.markHurt();
+					super.markHurt();
 				}
 
 				if (var6 != null) {
@@ -180,22 +227,22 @@ public class LivingEntityMixin implements LivingEntityExtensions {
 			}
 
 			if (thisLivingEntity.isDeadOrDying()) {
-				if (!thisLivingEntity.checkTotemDeathProtection(source)) {
-					SoundEvent var15 = thisLivingEntity.getDeathSound();
+				if (!checkTotemDeathProtection(source)) {
+					SoundEvent var15 = getDeathSound();
 					if (var8 && var15 != null) {
-						thisLivingEntity.playSound(var15, thisLivingEntity.getSoundVolume(), thisLivingEntity.getVoicePitch());
+						thisLivingEntity.playSound(var15, getSoundVolume(), thisLivingEntity.getVoicePitch());
 					}
 
 					thisLivingEntity.die(source);
 				}
 			} else if (var8) {
-				thisLivingEntity.playHurtSound(source);
+				playHurtSound(source);
 			}
 
 			boolean var16 = !var4 || amount > 0.0F;
 			if (var16) {
-				thisLivingEntity.lastDamageSource = source;
-				thisLivingEntity.lastDamageStamp = thisLivingEntity.level.getGameTime();
+				lastDamageSource = source;
+				lastDamageStamp = thisLivingEntity.level.getGameTime();
 			}
 
 			if (thisLivingEntity instanceof ServerPlayer serverPlayer) {
@@ -230,6 +277,16 @@ public class LivingEntityMixin implements LivingEntityExtensions {
 		}
 
 		return ItemStack.EMPTY;
+	}
+	@Inject(method = "isUsingItem", at = @At(value = "HEAD"), cancellable = true)
+	public void isHoldingShield(CallbackInfoReturnable<Boolean> cir) {
+		LivingEntity player = ((LivingEntity) (Object)this);
+		while(player.isCrouching()){
+			if(player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.SHIELD) || player.getItemInHand(InteractionHand.OFF_HAND).is(Items.SHIELD)) {
+				cir.setReturnValue(true);
+				cir.cancel();
+			}
+		}
 	}
 
 	@Override

@@ -24,3 +24,4 @@ accessible field net/minecraft/world/entity/LivingEntity lastDamageSource Lnet/m
 mutable field net/minecraft/world/entity/LivingEntity lastDamageSource Lnet/minecraft/world/damagesource/DamageSource;
 accessible field net/minecraft/world/entity/LivingEntity lastDamageStamp J
 mutable field net/minecraft/world/entity/LivingEntity lastDamageStamp J
+accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
