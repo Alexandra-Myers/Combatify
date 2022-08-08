@@ -3,12 +3,14 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -27,7 +30,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin {
+public abstract class ItemStackMixin implements IItemStack {
 	@Shadow
 	public abstract Component getHoverName();
 	@Shadow
@@ -249,6 +252,11 @@ public abstract class ItemStackMixin {
 		}
 
 		return list;
+	}
+	@Override
+	public int getEnchantmentLevel(Enchantment enchantment) {
+		Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments((ItemStack) (Object) this);
+		return map.get(enchantment);
 	}
 }
 

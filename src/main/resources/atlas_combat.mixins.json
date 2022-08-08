@@ -18,7 +18,8 @@
     "SnowballMixin",
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
-    "TridentItemMixin"
+    "TridentItemMixin",
+    "SecondItemStackMixin"
   ],
   "injectors": {
     "defaultRequire": 1

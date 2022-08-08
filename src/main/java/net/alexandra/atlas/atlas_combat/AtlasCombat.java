@@ -13,11 +13,13 @@ import org.slf4j.LoggerFactory;
 public class AtlasCombat implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Atlas Combat");
 
-	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = new CleavingEnchantment();
+	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = register();
+	public static CleavingEnchantment register() {
+		return Registry.register(Registry.ENCHANTMENT, new ResourceLocation("atlas_combat","cleaving"),new CleavingEnchantment());
+	}
 
 	@Override
 	public void onInitialize(ModContainer mod) {
-		Registry.register(Registry.ENCHANTMENT, new ResourceLocation("atlas_combat","cleaving"),CLEAVING_ENCHANTMENT);
 
 		((ItemExtensions) Items.SNOWBALL).setStackSize(64);
 		((ItemExtensions) Items.EGG).setStackSize(16);

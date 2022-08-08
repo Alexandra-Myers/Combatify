@@ -9,6 +9,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 public class CleavingEnchantment extends Enchantment {
+	public int level;
 
 	public CleavingEnchantment() {
 		super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
@@ -31,6 +32,7 @@ public class CleavingEnchantment extends Enchantment {
 
 	@Override
 	public float getDamageBonus(int level, MobType group) {
+		this.level = level;
 		return (float)1 + level;
 	}
 

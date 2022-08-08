@@ -278,16 +278,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 		return ItemStack.EMPTY;
 	}
-	@Inject(method = "isUsingItem", at = @At(value = "HEAD"), cancellable = true)
-	public void isHoldingShield(CallbackInfoReturnable<Boolean> cir) {
-		LivingEntity player = ((LivingEntity) (Object)this);
-		while(player.isCrouching()){
-			if(player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.SHIELD) || player.getItemInHand(InteractionHand.OFF_HAND).is(Items.SHIELD)) {
-				cir.setReturnValue(true);
-				cir.cancel();
-			}
-		}
-	}
 
 	@Override
 	public boolean isItemOnCooldown(ItemStack var1) {

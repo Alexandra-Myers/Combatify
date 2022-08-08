@@ -1,5 +1,9 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
+import net.alexandra.atlas.atlas_combat.extensions.IAxeItem;
+import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
 import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
@@ -26,10 +30,7 @@ import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -94,10 +95,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void redirectAttackStrengthTicker(Player instance, int value) {
 		--instance.attackStrengthTicker;
 	}
-	@Inject(method = "tick", at = @At(value = "HEAD"))
-	public void injectAttackStrengthTicker(CallbackInfo ci) {
-		isUsingItem();
-	}
 
 	@Inject(method = "die", at = @At(value = "HEAD"))
 	public void dieInject(CallbackInfo ci) {
@@ -125,6 +122,44 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Overwrite()
 	public void blockUsingShield(LivingEntity attacker) {
 		super.blockUsingShield(attacker);
+		if(hasEnabledShieldOnCrouch()) {
+			while (player.isCrouching()) {
+				if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.SHIELD)) {
+					player.startUsingItem(InteractionHand.MAIN_HAND);
+				} else if (player.getItemInHand(InteractionHand.OFF_HAND).is(Items.SHIELD)) {
+					player.startUsingItem(InteractionHand.OFF_HAND);
+				}
+			}
+		}
+		Item mainHandItem = attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+		Item offHandItem = attacker.getItemInHand(InteractionHand.OFF_HAND).getItem();
+		ItemStack mainHandItemStack = attacker.getItemInHand(InteractionHand.MAIN_HAND);
+		ItemStack offHandItemStack = attacker.getItemInHand(InteractionHand.OFF_HAND);
+		if (attacker.canDisableShield()) {
+			player.disableShield(true);
+		}else if(mainHandItem instanceof AxeItem) {
+			disableShield(true, (AxeItem) mainHandItem, mainHandItemStack);
+		}else if(offHandItem instanceof AxeItem) {
+			disableShield(true, (AxeItem) offHandItem, offHandItemStack);
+		}
+	}
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Unique
+	public void disableShield(boolean sprinting, AxeItem axeItem, ItemStack stack) {
+		float f = 0.25F + (float)EnchantmentHelper.getBlockEfficiency(this) * 0.05F * ((IAxeItem) axeItem).getShieldCooldownMultiplier(((IItemStack) stack).getEnchantmentLevel(AtlasCombat.CLEAVING_ENCHANTMENT));
+		if (sprinting) {
+			f += 0.75F;
+		}
+
+		if (this.random.nextFloat() < f) {
+			player.getCooldowns().addCooldown(Items.SHIELD, 100);
+			this.stopUsingItem();
+			this.level.broadcastEntityEvent(this, (byte)30);
+		}
+
 	}
 
 	@Override
