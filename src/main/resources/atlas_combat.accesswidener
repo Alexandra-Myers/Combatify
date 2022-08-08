@@ -30,3 +30,4 @@ accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/net
 mutable field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
 accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptibleReturnOwner ()Z
 accessible class net/minecraft/world/effect/AttackDamageMobEffect
+accessible method net/minecraft/world/entity/LivingEntity updateUsingItem (Lnet/minecraft/world/item/ItemStack;)V

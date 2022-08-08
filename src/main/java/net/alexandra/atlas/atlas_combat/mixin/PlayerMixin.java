@@ -122,6 +122,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
+	@Inject(method = "tick", at = @At("HEAD"))
+	public void injectSneakShield(CallbackInfo ci) {
+		if(this.hasEnabledShieldOnCrouch() && player.isCrouching() && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem shieldItem) {
+			player.startUsingItem(InteractionHand.OFF_HAND);
+		}
+	}
+
 	/**
 	 * @author zOnlyKroks
 	 */
