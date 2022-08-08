@@ -1,8 +1,9 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.extensions.PlayerShieldExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
-import net.alexandra.atlas.atlas_combat.player.IPlayer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -44,8 +46,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Mixin(Player.class)
-@Implements(@Interface(iface = IPlayer.class, prefix = "ident$"))
-public abstract class PlayerMixin extends LivingEntity implements PlayerShieldExtensions {
+public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
@@ -69,7 +70,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerShieldEx
 	@Unique
 	public boolean enableShieldOnCrouch = true;
 
-	private static final UUID MAGIC_ATTACK_DAMAGE_UUID = UUID.fromString("13C4E5B5-0F72-4359-AB1C-625F9DF5AA2B");
 	@Unique
 	public final Player player = ((Player) (Object)this);
 
@@ -91,7 +91,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerShieldEx
 				.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
-	public void tickInject(Player instance, int value) {
+	public void redirectAttackStrengthTicker(Player instance, int value) {
 		--instance.attackStrengthTicker;
 	}
 
@@ -326,9 +326,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerShieldEx
 			float var1 = (float)player.getAttributeValue(Attributes.ATTACK_DAMAGE);
 			if (var1 > 0.0F && this.checkSweepAttack()) {
 				float var2 = this.getCurrentAttackReach(baseValue);
-				double var3 = 2.0;
-				double var5 = (double)(-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
-				double var7 = (double)Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
+				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
+				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
 				betterSweepAttack(var9, var2, var1, (Entity)null);
 			}
@@ -390,7 +389,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerShieldEx
 		List<LivingEntity> livingEntities = player.level.getEntitiesOfClass(LivingEntity.class, var1);
 		Iterator<LivingEntity> livingEntityIterator = livingEntities.iterator();
 
-		while(true) {
+		while (true) {
 			LivingEntity var8;
 			do {
 				do {
@@ -408,10 +407,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerShieldEx
 							}
 
 							var8 = livingEntityIterator.next();
-						} while(var8 == player);
-					} while(var8 == var4);
-				} while(player.isAlliedTo(var8));
-			} while(var8 instanceof ArmorStand armorStand && armorStand.isMarker());
+						} while (var8 == player);
+					} while (var8 == var4);
+				} while (player.isAlliedTo(var8));
+			} while (var8 instanceof ArmorStand armorStand && armorStand.isMarker());
 
 			float var9 = var2 + var8.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(var8) < (var9 * var9)) {
@@ -421,4 +420,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerShieldEx
 		}
 	}
 
+	@Override
+	public boolean isItemOnCooldown(ItemStack var1) {
+		return player.getCooldowns().isOnCooldown(var1.getItem());
+	}
 }
