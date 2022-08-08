@@ -25,3 +25,8 @@ mutable field net/minecraft/world/entity/LivingEntity lastDamageSource Lnet/mine
 accessible field net/minecraft/world/entity/LivingEntity lastDamageStamp J
 mutable field net/minecraft/world/entity/LivingEntity lastDamageStamp J
 accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
+accessible field net/minecraft/world/entity/projectile/ThrownTrident tridentItem Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
+mutable field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
+accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptibleReturnOwner ()Z
+accessible class net/minecraft/world/effect/AttackDamageMobEffect

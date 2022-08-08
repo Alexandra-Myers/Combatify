@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.mojang.datafixers.util.Either;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.IAxeItem;
@@ -8,6 +9,7 @@ import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -17,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
@@ -58,6 +61,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	protected abstract void doAutoAttackOnTouch(LivingEntity target);
+
+	@Shadow
+	public abstract Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos pos);
 
 	@Unique
 	protected int attackStrengthStartValue;
@@ -149,24 +155,23 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Unique
 	public void disableShield(boolean sprinting, AxeItem axeItem, ItemStack stack) {
-		float f = 0.25F + (float)EnchantmentHelper.getBlockEfficiency(this) * 0.05F * ((IAxeItem) axeItem).getShieldCooldownMultiplier(((IItemStack) stack).getEnchantmentLevel(AtlasCombat.CLEAVING_ENCHANTMENT));
+		float f = 0.25F + EnchantmentHelper.getBlockEfficiency(player) * 0.05F * ((IAxeItem) axeItem).getShieldCooldownMultiplier(((IItemStack)(Object)stack).getEnchantmentLevel(AtlasCombat.CLEAVING_ENCHANTMENT));
 		if (sprinting) {
 			f += 0.75F;
 		}
 
 		if (this.random.nextFloat() < f) {
 			player.getCooldowns().addCooldown(Items.SHIELD, 100);
-			this.stopUsingItem();
-			this.level.broadcastEntityEvent(this, (byte)30);
+			player.stopUsingItem();
+			player.level.broadcastEntityEvent(player, (byte)30);
 		}
-
 	}
 
 	@Override
 	public boolean customShieldInteractions(float damage) {
 		player.getCooldowns().addCooldown(Items.SHIELD, (int)(damage * 20.0F));
 		player.stopUsingItem();
-		player.level.broadcastEntityEvent(this, (byte)30);
+		player.level.broadcastEntityEvent(player, (byte)30);
 		return true;
 	}
 
@@ -369,7 +374,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
-				betterSweepAttack(var9, var2, var1, (Entity)null);
+				betterSweepAttack(var9, var2, var1, null);
 			}
 
 			this.resetAttackStrengthTicker(false);
@@ -438,7 +443,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 							if (!livingEntityIterator.hasNext()) {
 								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
 								if (player.level instanceof ServerLevel serverLevel) {
-									double var11 = (-Mth.sin(player.getYRot() * 0.017453292F));
+									double var11 = -Mth.sin(player.getYRot() * 0.017453292F);
 									double var12 = Mth.cos(player.getYRot() * 0.017453292F);
 									serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, player.getX() + var11, player.getY() + player.getBbHeight() * 0.5, player.getZ() + var12, 0, var11, 0.0, var12, 0.0);
 								}
