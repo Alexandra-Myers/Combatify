@@ -2,11 +2,18 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FoodData.class)
 public class FoodDataMixin {
+
+	@Shadow
+	private int foodLevel;
+
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 18))
 	public int changeConst(int constant) {
@@ -18,9 +25,9 @@ public class FoodDataMixin {
 		return 40;
 	}
 
-	@ModifyConstant(method = "tick", constant = @Constant(floatValue = 6.0F,ordinal = 2))
-	public float redirectExhaustion(float constant) {
-		return 3.0F;
+	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V",ordinal = 1))
+	public void modifyNaturalHealing(FoodData instance, float exhaustion) {
+		--foodLevel;
 	}
 
 }
