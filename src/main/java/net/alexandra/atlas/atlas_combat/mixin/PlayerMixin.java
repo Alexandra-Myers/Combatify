@@ -179,7 +179,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 
 		if (this.random.nextFloat() < f) {
-			player.getCooldowns().addCooldown(Items.SHIELD, 100);
+			player.getCooldowns().addCooldown(Items.SHIELD, (int)(f * 20.0F));
 			player.stopUsingItem();
 			player.level.broadcastEntityEvent(player, (byte)30);
 		}
