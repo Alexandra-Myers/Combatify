@@ -21,6 +21,8 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -124,8 +126,17 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if(this.hasEnabledShieldOnCrouch() && player.isCrouching() && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem shieldItem) {
-			player.startUsingItem(InteractionHand.OFF_HAND);
+		if(this.hasEnabledShieldOnCrouch() && player.isCrouching()) {
+			for(InteractionHand interactionHand : InteractionHand.values()) {
+				ItemStack itemStack = this.player.getItemInHand(interactionHand);
+				if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem) {
+					InteractionResult interactionResult3 = Minecraft.getInstance().gameMode.useItem(player,interactionHand);
+					if (interactionResult3 == InteractionResult.SUCCESS) {
+						Minecraft.getInstance().gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
+						return;
+					}
+				}
+			}
 		}
 	}
 
