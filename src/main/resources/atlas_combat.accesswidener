@@ -31,3 +31,4 @@ mutable field net/minecraft/world/entity/Entity entityData Lnet/minecraft/networ
 accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptibleReturnOwner ()Z
 accessible class net/minecraft/world/effect/AttackDamageMobEffect
 accessible method net/minecraft/world/entity/LivingEntity updateUsingItem (Lnet/minecraft/world/item/ItemStack;)V
+accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance calculateValue ()D

@@ -207,7 +207,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		if (target.isAttackable() && isAttackAvailable(baseValue)) {
 			if (!target.skipAttackInteraction(player)) {
-				float attackDamage = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).getValue();
+				float attackDamage = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).calculateValue();
 				float attackDamageBonus;
 				if (target instanceof LivingEntity livingEntity) {
 					attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
@@ -383,7 +383,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void ident$attackAir() {
 		if (this.isAttackAvailable(baseValue)) {
 			player.swing(InteractionHand.MAIN_HAND);
-			float var1 = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).getValue();
+			float var1 = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).calculateValue();
 			if (var1 > 0.0F && this.checkSweepAttack()) {
 				float var2 = this.getCurrentAttackReach(baseValue);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
@@ -411,7 +411,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		return (float)(1.0 / (player.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F) * 20.0);
+		return (float)(1.0 / (player.getAttribute(Attributes.ATTACK_SPEED).calculateValue() - 1.5F) * 20.0);
 	}
 	/**
 	 * @author
@@ -429,7 +429,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			var2 = 4.0F;
 		}
 
-		return (float)player.getAttribute(NewAttributes.ATTACK_REACH).getValue() + var2;
+		return (float)player.getAttribute(NewAttributes.ATTACK_REACH).calculateValue() + var2;
 	}
 
 	@Override
