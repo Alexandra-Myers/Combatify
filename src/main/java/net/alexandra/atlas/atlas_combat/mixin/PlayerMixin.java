@@ -220,8 +220,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				float currentAttackReach = this.getCurrentAttackReach(baseValue);
 
 				float attackStrengthScale = getAttackStrengthScale(baseValue);
-				attackDamage *= 0.2F + 1.5 * 1.5 * 0.8F;
-				attackDamageBonus *= 1.5;
+				attackDamage *= 0.2F + 1 * 1 * 0.8F;
+				attackDamageBonus *= 1;
 				if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
 					boolean bl = attackStrengthScale > 0.9F;
 					boolean bl2 = false;
