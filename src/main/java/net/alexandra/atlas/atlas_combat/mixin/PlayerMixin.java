@@ -41,6 +41,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -62,7 +63,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public abstract ItemEntity drop(ItemStack itemStack, boolean b);
 
 	@Shadow
-	protected abstract void doAutoAttackOnTouch(LivingEntity target);
+	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
 
 	@Shadow
 	public abstract Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos pos);
@@ -144,7 +145,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 * @author zOnlyKroks
 	 */
 	@Overwrite()
-	public void blockUsingShield(LivingEntity attacker) {
+	public void blockUsingShield(@NotNull LivingEntity attacker) {
 		super.blockUsingShield(attacker);
 		if(hasEnabledShieldOnCrouch()) {
 			while (player.isCrouching()) {
@@ -167,10 +168,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			disableShield(true, (AxeItem) offHandItem, offHandItemStack);
 		}
 	}
-	/**
-	 * @author
-	 * @reason
-	 */
 	@Unique
 	public void disableShield(boolean sprinting, AxeItem axeItem, ItemStack stack) {
 		float f = 0.25F + EnchantmentHelper.getBlockEfficiency(player) * 0.05F * ((IAxeItem) axeItem).getShieldCooldownMultiplier(((IItemStack)(Object)stack).getEnchantmentLevel(AtlasCombat.CLEAVING_ENCHANTMENT));
@@ -210,7 +207,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		if (target.isAttackable() && isAttackAvailable(baseValue)) {
 			if (!target.skipAttackInteraction(player)) {
-				float attackDamage = (float)player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+				float attackDamage = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
 				float attackDamageBonus;
 				if (target instanceof LivingEntity livingEntity) {
 					attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
@@ -386,7 +383,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void ident$attackAir() {
 		if (this.isAttackAvailable(baseValue)) {
 			player.swing(InteractionHand.MAIN_HAND);
-			float var1 = (float)player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+			float var1 = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
 			if (var1 > 0.0F && this.checkSweepAttack()) {
 				float var2 = this.getCurrentAttackReach(baseValue);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
@@ -414,7 +411,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		return (float)(1.0 / (player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5F) * 20.0);
+		return (float)(1.0 / (player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5F) * 20.0);
 	}
 	/**
 	 * @author
@@ -422,7 +419,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 1.0F : Mth.clamp((1.0F * (1.0F - ((float)player.attackStrengthTicker + baseTime) / (float)this.attackStrengthStartValue))/2.0F, 0.0F, 1.0F);
+		return this.attackStrengthStartValue == 0 ? 1.0F : Mth.clamp(((1.0F - ((float) player.attackStrengthTicker + baseTime) / (float) this.attackStrengthStartValue))/2.0F, 0.0F, 1.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
@@ -432,7 +429,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			var2 = 4.0F;
 		}
 
-		return (float)player.getAttributeValue(NewAttributes.ATTACK_REACH) + var2;
+		return (float)player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + var2;
 	}
 
 	@Override

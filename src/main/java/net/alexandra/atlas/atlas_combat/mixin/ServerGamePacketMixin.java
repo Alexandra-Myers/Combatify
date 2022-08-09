@@ -34,10 +34,10 @@ public class ServerGamePacketMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ServerboundInteractPacket;getTarget(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/Entity;"), cancellable = true)
 	public void inject(ServerboundInteractPacket packet, CallbackInfo ci) {
 		final Entity entity1 = packet.getTarget(player.getLevel());
-		if(entity1 == null) {
-			player.attack(entity1);
+		if(!((PlayerExtensions)player).isAttackAvailable(0.5F)) {
 			ci.cancel();
-		}else if(((PlayerExtensions)player).isAttackAvailable(0.5F)) {
+		}else if(entity1 == null) {
+			player.attack(entity1);
 			ci.cancel();
 		}
 	}
@@ -50,7 +50,7 @@ public class ServerGamePacketMixin {
 	@Inject(method = "handleUseItemOn",
 			at = @At(value = "HEAD"), cancellable = true)
 	public void inject(ServerboundUseItemOnPacket packet, CallbackInfo ci) {
-		if(((PlayerExtensions)player).isAttackAvailable(0.5F)) {
+		if(!((PlayerExtensions)player).isAttackAvailable(0.5F)) {
 			ci.cancel();
 		}
 	}
