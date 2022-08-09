@@ -436,7 +436,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) < 0.5F)) {
+		if (!(getAttackStrengthScale(baseTime) < 0.75F)) {
 			return true;
 		} else {
 			return this.missedAttackRecovery && 0 - (player.attackStrengthTicker + baseTime) >= 0.0F;
