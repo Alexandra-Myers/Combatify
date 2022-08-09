@@ -166,12 +166,10 @@ public abstract class ItemStackMixin implements IItemStack {
 							} else {
 								e = d;
 							}
-							if(e == 7.0 && attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
+							if(e == 8.0 && attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
 								e = 3.0;
-							}else if(e == 9.0 && attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
+							}else if(e == 12.0 && attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
 								e = 4.0;
-							}else if(e == 11.0 && attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-								e = 5.0;
 							}
 
 							if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || bl) {

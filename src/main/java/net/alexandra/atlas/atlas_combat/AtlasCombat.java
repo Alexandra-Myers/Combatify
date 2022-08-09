@@ -43,7 +43,7 @@ public class AtlasCombat implements ModInitializer {
 
 	@Override
 	public void onInitialize(ModContainer mod) {
-		((ItemExtensions) Items.SNOWBALL).setStackSize(65);
+		((ItemExtensions) Items.SNOWBALL).setStackSize(64);
 		((ItemExtensions) Items.EGG).setStackSize(16);
 
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
@@ -61,7 +61,7 @@ public class AtlasCombat implements ModInitializer {
 				ResourceKey.create(Registry.MOB_EFFECT.key(),new ResourceLocation("strength")),
 				new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 3.0)
 						.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9",
-								0.0, AttributeModifier.Operation.MULTIPLY_BASE),
+								0.0, AttributeModifier.Operation.MULTIPLY_TOTAL),
 				Lifecycle.stable());
 	}
 

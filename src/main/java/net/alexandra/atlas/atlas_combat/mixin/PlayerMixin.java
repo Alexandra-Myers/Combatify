@@ -84,7 +84,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(2.5);
+		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(6.0);
 		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
 	}
 
@@ -220,8 +220,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				float currentAttackReach = this.getCurrentAttackReach(baseValue);
 
 				float attackStrengthScale = getAttackStrengthScale(baseValue);
-				attackDamage *= 0.2F + attackStrengthScale * attackStrengthScale * 0.8F;
-				attackDamageBonus *= attackStrengthScale;
+				attackDamage *= 0.2F + 1.5 * 1.5 * 0.8F;
+				attackDamageBonus *= 1.5;
 				if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
 					boolean bl = attackStrengthScale > 0.9F;
 					boolean bl2 = false;
@@ -414,7 +414,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		return (float)(1.0 / (player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5F) * 20.0 + 0.5F);
+		return (float)(1.0 / (player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5F) * 20.0);
 	}
 	/**
 	 * @author

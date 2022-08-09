@@ -23,6 +23,8 @@ public class ItemMixin implements ItemExtensions {
 	public int getUseDuration(ItemStack stack) {
 		if (stack.getItem() instanceof BowlFoodItem) {
 			return 20;
+		}else if (stack.getItem().isEdible()) {
+			return ((Item) (Object)this).getFoodProperties().isFastFood() ? 16 : 32;
 		} else {
 			return 0;
 		}

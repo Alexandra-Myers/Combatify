@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,7 +20,7 @@ public class ServerGamePacketMixin {
 	@Redirect(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange() {
-		return Mth.square(((ServerGamePacketListenerImpl) (Object)this).player.getAttribute(NewAttributes.ATTACK_REACH).getValue());
+		return Mth.square(((PlayerExtensions)player).getCurrentAttackReach(0.5F));
 	}
 
 	@Redirect(
