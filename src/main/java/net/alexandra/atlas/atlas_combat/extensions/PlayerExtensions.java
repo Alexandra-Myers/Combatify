@@ -5,6 +5,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 
 public interface PlayerExtensions {
+	boolean isAttackAvailable(float baseTime);
 	float getCurrentAttackReach(float baseValue);
 
 	default boolean customShieldInteractions(float damage) {return false;}

@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
+import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -42,7 +43,7 @@ public enum WeaponType {
 
     }
 	public static boolean isWithinAttackRange(final Player player, final Entity entity) {
-		return player.distanceToSqr(entity) <= Mth.square(player.getAttribute(NewAttributes.ATTACK_REACH).getValue());
+		return player.distanceToSqr(entity) <= Mth.square(((PlayerExtensions) player).getCurrentAttackReach(0.5F));
 	}
 
     public float getDamage(Tier var1) {

@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.Mth;
@@ -27,7 +28,7 @@ public class ServerGamePacketMixin {
 			method = "handleUseItemOn",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	private double getActualReachDistance() {
-		return Mth.square(6.0);
+		return Mth.square(((PlayerExtensions)player).getCurrentAttackReach(0.5F));
 	}
 	@Inject(method = "handleInteract",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ServerboundInteractPacket;getTarget(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/Entity;"), cancellable = true)
@@ -36,12 +37,21 @@ public class ServerGamePacketMixin {
 		if(entity1 == null) {
 			player.attack(entity1);
 			ci.cancel();
+		}else if(((PlayerExtensions)player).isAttackAvailable(0.5F)) {
+			ci.cancel();
 		}
 	}
 	@ModifyConstant(
 			method = "handleUseItemOn",
 			require = 1, allow = 1, constant = @Constant(doubleValue = 64.0))
 	private double getActualReachDistance(final double reachDistance) {
-		return Mth.square(6.0);
+		return Mth.square(((PlayerExtensions)player).getCurrentAttackReach(0.5F));
+	}
+	@Inject(method = "handleUseItemOn",
+			at = @At(value = "HEAD"), cancellable = true)
+	public void inject(ServerboundUseItemOnPacket packet, CallbackInfo ci) {
+		if(((PlayerExtensions)player).isAttackAvailable(0.5F)) {
+			ci.cancel();
+		}
 	}
 }

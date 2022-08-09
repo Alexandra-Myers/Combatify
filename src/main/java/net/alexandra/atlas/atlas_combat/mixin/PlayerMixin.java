@@ -429,12 +429,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float var2 = 0.0F;
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 0.975F && !player.isCrouching()) {
-			var2 = 1.0F;
+			var2 = 4.0F;
 		}
 
 		return (float)player.getAttributeValue(NewAttributes.ATTACK_REACH) + var2;
 	}
 
+	@Override
 	public boolean isAttackAvailable(float baseTime) {
 		if (!(getAttackStrengthScale(baseTime) < 0.75F)) {
 			return true;
