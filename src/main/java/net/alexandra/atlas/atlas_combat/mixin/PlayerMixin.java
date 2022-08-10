@@ -1,13 +1,13 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Either;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
-import net.alexandra.atlas.atlas_combat.extensions.IAxeItem;
-import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
-import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
-import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
+import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,6 +29,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.EnderDragonPart;
@@ -79,13 +80,20 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Unique
 	public boolean enableShieldOnCrouch = true;
+	@Unique
+	public Multimap additionalModifiers;
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
+	@Unique
+	private static final UUID ADDITIONAL_ATTACK_REACH_UUID = UUID.fromString("c85331f2-9983-470d-8453-cd888c434dea");
+	@Unique
+	private static final UUID ADDITIONAL_BLOCK_REACH_UUID = UUID.fromString("e427a2fe-8145-483d-843b-d42a69df7742");
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(6.0);
+		player.getAttribute(NewAttributes.BLOCK_REACH).setBaseValue(0);
+		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(0);
 		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
 	}
 
@@ -98,10 +106,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
 				.add(NewAttributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)
+				.add(NewAttributes.BLOCK_REACH)
 				.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
+		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
 	}
 
@@ -207,7 +217,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		if (target.isAttackable() && isAttackAvailable(baseValue)) {
 			if (!target.skipAttackInteraction(player)) {
-				float attackDamage = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).calculateValue();
+				float attackDamage = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
 				float attackDamageBonus;
 				if (target instanceof LivingEntity livingEntity) {
 					attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
@@ -296,7 +306,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 										&& livingEntity != target
 										&& !player.isAlliedTo(livingEntity)
 										&& (!(livingEntity instanceof ArmorStand armorStand) || !armorStand.isMarker())
-										&& player.distanceToSqr(livingEntity) < 9.0) {
+										&& player.distanceToSqr(livingEntity) < getSquaredAttackRange(player, 6.25)) {
 									livingEntity.knockback(
 											0.4F, Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)), (-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0)))
 									);
@@ -383,7 +393,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void ident$attackAir() {
 		if (this.isAttackAvailable(baseValue)) {
 			player.swing(InteractionHand.MAIN_HAND);
-			float var1 = (float)player.getAttribute(Attributes.ATTACK_DAMAGE).calculateValue();
+			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
 			if (var1 > 0.0F && this.checkSweepAttack()) {
 				float var2 = this.getCurrentAttackReach(baseValue);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
@@ -411,7 +421,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		return (float)(1.0 / (player.getAttribute(Attributes.ATTACK_SPEED).calculateValue() - 1.5F) * 20.0);
+		return (float)(1.0 / (((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackSpeed(player) - 0.5F) * 20.0);
 	}
 	/**
 	 * @author
@@ -419,22 +429,18 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 1.0F : Mth.clamp(((1.0F - ((float) player.attackStrengthTicker + baseTime) / (float) this.attackStrengthStartValue))/2.0F, 0.0F, 1.0F);
+		return this.attackStrengthStartValue == 0 ? 1.0F : Mth.clamp(((1.0F - ((float) player.attackStrengthTicker + baseTime) / (float) this.attackStrengthStartValue))/5.0F, 0.0F, 1.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
-		float var2 = 0.0F;
-		float var3 = getAttackStrengthScale(baseValue);
-		if (var3 > 0.975F && !player.isCrouching()) {
-			var2 = 4.0F;
-		}
+		AtlasCombat.LOGGER.info("Attack Reach is " + ((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player));
 
-		return (float)player.getAttribute(NewAttributes.ATTACK_REACH).calculateValue() + var2;
+		return (float)((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player);
 	}
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) < 0.75F)) {
+		if (!(getAttackStrengthScale(baseTime) < 0.5F)) {
 			return true;
 		} else {
 			return this.missedAttackRecovery && 0 - (player.attackStrengthTicker + baseTime) >= 0.0F;
@@ -484,5 +490,43 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public boolean isItemOnCooldown(ItemStack var1) {
 		return player.getCooldowns().isOnCooldown(var1.getItem());
+	}
+	@Override
+	public Multimap getAdditionalModifiers() {
+		return additionalModifiers;
+	}
+
+	@Override
+	public double getAttackRange(LivingEntity entity, double baseAttackRange) {
+		float var3 = getAttackStrengthScale(0.5F);
+		if (var3 > 0.975F && !player.isCrouching()) {
+			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+		}
+		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;
+	}
+
+	@Override
+	public double getSquaredAttackRange(LivingEntity entity, double sqBaseAttackRange) {
+		final var attackRange = getReach(entity, Math.sqrt(sqBaseAttackRange));
+		return attackRange * attackRange;
+	}
+
+	@Override
+	public double getReach(LivingEntity entity, double baseAttackRange) {
+		float var3 = getAttackStrengthScale(0.5F);
+		if (var3 > 0.975F && !player.isCrouching()) {
+			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+		}
+		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;
+	}
+
+	@Override
+	public double getSquaredReach(LivingEntity entity, double sqBaseAttackRange) {
+		final var attackRange = getAttackRange(entity, Math.sqrt(sqBaseAttackRange));
+		return attackRange * attackRange;
 	}
 }

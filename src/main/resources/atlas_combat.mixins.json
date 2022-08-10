@@ -18,6 +18,7 @@
     "MilkBucketMixin",
     "MobEffectMixin",
     "PlayerMixin",
+    "ScreenHandlerMixin",
     "ServerGamePacketMixin",
     "ServerPlayerGameModeMixin",
     "SnowballItemMixin",
@@ -31,5 +32,7 @@
     "defaultRequire": 1
   },
   "client": [
+    "GameRendererMixin",
+    "MultiPlayerGameModeMixin"
   ]
 }

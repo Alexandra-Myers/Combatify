@@ -1,29 +1,29 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
-import net.alexandra.atlas.atlas_combat.item.NewAttributes;
+import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.function.Consumer;
 
-import static net.alexandra.atlas.atlas_combat.item.WeaponType.BASE_BLOCK_REACH_UUID;
+import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
 
 @Mixin(DiggerItem.class)
-public class DiggerItemMixin extends TieredItem implements Vanishable {
-	public DiggerItemMixin(Tier tier, Item.Properties properties) {
+public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions {
+	@Mutable
+	@Final
+	private WeaponType type;
+	public DiggerItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
 
@@ -31,18 +31,15 @@ public class DiggerItemMixin extends TieredItem implements Vanishable {
 	public ImmutableMultimap test(ImmutableMultimap.Builder instance) {
 		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
 		if((Object)this instanceof AxeItem) {
-			WeaponType.AXE.addCombatAttributes(this.getTier(), var3);
-			return var3.build();
+			type = AXE;
 		}else if((Object)this instanceof PickaxeItem) {
-			WeaponType.PICKAXE.addCombatAttributes(this.getTier(), var3);
-			return var3.build();
+			type = WeaponType.PICKAXE;
 		}else if((Object)this instanceof ShovelItem) {
-			WeaponType.SHOVEL.addCombatAttributes(this.getTier(), var3);
-			return var3.build();
-		}else if((Object)this instanceof HoeItem) {
-			WeaponType.HOE.addCombatAttributes(this.getTier(), var3);
-			return var3.build();
+			type = WeaponType.SHOVEL;
+		}else {
+			type = WeaponType.HOE;
 		}
+		type.addCombatAttributes(this.getTier(), var3);
 		return var3.build();
 	}
 	@Redirect(method = "hurtEnemy",
@@ -75,5 +72,28 @@ public class DiggerItemMixin extends TieredItem implements Vanishable {
 				}
 			}
 		}
+	}
+	@Override
+	public double getAttackReach(Player player) {
+		float var2 = 0.0F;
+		float var3 = player.getAttackStrengthScale(0.5F);
+		if (var3 > 0.975F && !player.isCrouching()) {
+			var2 = 1.0F;
+		}
+		return type.getReach() + 2.5 + var2;
+	}
+
+	@Override
+	public double getAttackSpeed(Player player) {
+		return type.getSpeed(this.getTier()) + 4.0;
+	}
+
+	@Override
+	public double getAttackDamage(Player player) {
+		return type.getDamage(this.getTier()) + 2.0;
+	}
+
+	@Override
+	public void setStackSize(int stackSize) {
 	}
 }

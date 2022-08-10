@@ -1,16 +1,20 @@
 package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
+import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -25,7 +29,7 @@ public enum WeaponType {
     public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
     public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
-	public static final UUID BASE_BLOCK_REACH_UUID = UUID.fromString("c85331f2-9983-470d-8453-cd888c434dea");
+	public static final UUID BASE_BLOCK_REACH_UUID = UUID.fromString("7f6fa63f-0fbd-4fa8-9acc-69c45c8f68ed");
 
     WeaponType() {
     }
@@ -34,16 +38,20 @@ public enum WeaponType {
         float var3 = this.getSpeed(var1);
         float var4 = this.getDamage(var1);
         float var5 = this.getReach();
+		float var6 = this.getBlockReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
         var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
+		if (var6 != 0.0F) {
+			var2.put(NewAttributes.BLOCK_REACH, new AttributeModifier(BASE_BLOCK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
+		}
 
 
     }
 	public static boolean isWithinAttackRange(final Player player, final Entity entity) {
-		return player.distanceToSqr(entity) <= Mth.square(((PlayerExtensions) player).getCurrentAttackReach(0.5F));
+		return player.distanceToSqr(entity) <= Mth.square(((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player));
 	}
 
     public float getDamage(Tier var1) {
@@ -91,14 +99,9 @@ public enum WeaponType {
             case SWORD:
                 return 0.5F;
             case AXE:
+			case TRIDENT:
 				return -0.5F;
-            case SHOVEL:
-				return 0.0F;
-            case TRIDENT:
-                return -0.5F;
-            case PICKAXE:
-                return 0.0F;
-            case HOE:
+			case HOE:
                 if (var1 == Tiers.WOOD) {
                     return -0.5F;
                 } else if (var1 == Tiers.IRON) {
@@ -122,19 +125,28 @@ public enum WeaponType {
     public float getReach() {
         switch (this) {
             case SWORD:
-                return 2.0F;
-			case AXE:
-				return 0.0F;
-			case PICKAXE:
-				return 0.0F;
-			case SHOVEL:
-				return 0.0F;
-            case HOE:
-				return 6.0F;
-            case TRIDENT:
-                return 6.0F;
-            default:
+                return 0.5F;
+			case HOE:
+			case TRIDENT:
+				return 1.0F;
+			default:
                 return 0.0F;
         }
     }
+
+	public float getBlockReach() {
+		switch (this) {
+			case SWORD:
+			case AXE:
+				return 1.5F;
+			case PICKAXE:
+			case SHOVEL:
+				return 1.0F;
+			case HOE:
+			case TRIDENT:
+				return 2.0F;
+			default:
+				return 0.0F;
+		}
+	}
 }
