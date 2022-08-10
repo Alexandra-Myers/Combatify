@@ -31,6 +31,7 @@ public interface PlayerExtensions {
 	double getAttackRange(final LivingEntity entity, final double baseAttackRange);
 
 	double getSquaredAttackRange(final LivingEntity entity, final double sqBaseAttackRange);
+	void attackAir();
 
 
 }

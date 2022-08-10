@@ -29,9 +29,6 @@ public class ServerGamePacketMixin {
 	@Redirect(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange() {
-		if(!((PlayerExtensions)player).isAttackAvailable(0.5F)) {
-			return -1;
-		}
 		return ((PlayerExtensions)player).getSquaredAttackRange(player, MAX_INTERACTION_DISTANCE);
 	}
 
@@ -46,7 +43,7 @@ public class ServerGamePacketMixin {
 	public void inject(ServerboundInteractPacket packet, CallbackInfo ci) {
 		final Entity entity1 = packet.getTarget(player.getLevel());
 		if(entity1 == null) {
-			player.attack(entity1);
+			((PlayerExtensions)player).attackAir();
 			ci.cancel();
 		}
 	}
