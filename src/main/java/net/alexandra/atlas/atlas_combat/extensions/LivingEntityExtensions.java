@@ -10,4 +10,6 @@ public interface LivingEntityExtensions {
 
 	boolean hasEnabledShieldOnCrouch();
 
+	void newKnockback(float var1, double var2, double var4);
+
 }
