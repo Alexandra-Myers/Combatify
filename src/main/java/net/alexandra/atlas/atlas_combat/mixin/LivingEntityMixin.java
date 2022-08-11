@@ -231,7 +231,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					}
 
 					thisLivingEntity.hurtDir = (float)(Mth.atan2(var11, var14) * 57.2957763671875 - (double)thisLivingEntity.getYRot());
-					thisLivingEntity.knockback(0.4F, var14, var11);
+					this.knockback(0.4F, var14, var11);
 				} else {
 					thisLivingEntity.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
 				}
