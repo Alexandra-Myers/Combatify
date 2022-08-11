@@ -42,7 +42,9 @@ public class ServerGamePacketMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ServerboundInteractPacket;getTarget(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/entity/Entity;"), cancellable = true)
 	public void inject(ServerboundInteractPacket packet, CallbackInfo ci) {
 		final Entity entity1 = packet.getTarget(player.getLevel());
-		if(entity1 == null) {
+		if(!(((PlayerExtensions)player).isAttackAvailable(1.0F))) {
+			ci.cancel();
+		}else if(entity1 == null) {
 			((PlayerExtensions)player).attackAir();
 			ci.cancel();
 		}

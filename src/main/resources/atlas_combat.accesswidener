@@ -32,3 +32,5 @@ accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptib
 accessible class net/minecraft/world/effect/AttackDamageMobEffect
 accessible method net/minecraft/world/entity/LivingEntity updateUsingItem (Lnet/minecraft/world/item/ItemStack;)V
 accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance calculateValue ()D
+accessible method net/minecraft/client/Minecraft startUseItem ()V
+accessible class net/minecraft/client/Options$FieldAccess

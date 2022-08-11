@@ -69,6 +69,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	public abstract Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos pos);
 
+	@Shadow
+	private ItemStack lastItemInMainHand;
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -76,7 +78,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean missedAttackRecovery;
 	@Unique
 	@Final
-	public float baseValue = 0.5F;
+	public float baseValue = 1.0F;
 
 	@Unique
 	public boolean enableShieldOnCrouch = true;
@@ -113,6 +115,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void redirectAttackStrengthTicker(Player instance, int value) {
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
 	}
 
 	@Inject(method = "die", at = @At(value = "HEAD"))
@@ -132,6 +136,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameIgnoreDurability(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectDurability(ItemStack left, ItemStack right) {
+		if(lastItemInMainHand == ItemStack.EMPTY) {
+			resetAttackStrengthTicker(false);
+		}
 		return true;
 	}
 
@@ -140,14 +147,18 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(this.hasEnabledShieldOnCrouch() && player.isCrouching()) {
 			for(InteractionHand interactionHand : InteractionHand.values()) {
 				ItemStack itemStack = this.player.getItemInHand(interactionHand);
-				if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem) {
-					InteractionResult interactionResult3 = Minecraft.getInstance().gameMode.useItem(player,interactionHand);
-					if (interactionResult3 == InteractionResult.SUCCESS) {
-						Minecraft.getInstance().gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
-						return;
-					}
+				if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && !player.isUsingItem()) {
+					Minecraft.getInstance().startUseItem();
 				}
 			}
+		}
+	}
+
+
+	@Inject(method="actuallyHurt", at=@At("HEAD"))
+	private void modifyPlayerInvulnerability(DamageSource damageSource, float f, CallbackInfo ci) {
+		if (!this.isInvulnerableTo(damageSource)) {
+			this.invulnerableTime = 5;
 		}
 	}
 
@@ -157,15 +168,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Overwrite()
 	public void blockUsingShield(@NotNull LivingEntity attacker) {
 		super.blockUsingShield(attacker);
-		if(hasEnabledShieldOnCrouch()) {
-			while (player.isCrouching()) {
-				if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.SHIELD)) {
-					player.startUsingItem(InteractionHand.MAIN_HAND);
-				} else if (player.getItemInHand(InteractionHand.OFF_HAND).is(Items.SHIELD)) {
-					player.startUsingItem(InteractionHand.OFF_HAND);
-				}
-			}
-		}
 		Item mainHandItem = attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 		Item offHandItem = attacker.getItemInHand(InteractionHand.OFF_HAND).getItem();
 		ItemStack mainHandItemStack = attacker.getItemInHand(InteractionHand.MAIN_HAND);
@@ -224,10 +226,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					float currentAttackReach = this.getCurrentAttackReach(baseValue);
 
 					float attackStrengthScale = getAttackStrengthScale(baseValue);
-					attackDamage *= 0.2F + 1 * 1 * 0.8F;
+					attackDamage *= 1;
 					attackDamageBonus *= 1;
 					if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
-						boolean bl = attackStrengthScale > 0.9F;
+						boolean bl = attackStrengthScale > 1.8F;
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
@@ -426,7 +428,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 1.0F : Mth.clamp(((1.0F - ((float) player.attackStrengthTicker + baseTime) / (float) this.attackStrengthStartValue))/5.0F, 0.0F, 1.0F);
+		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float) player.attackStrengthTicker + baseTime) / (float) this.attackStrengthStartValue)/5.0F, 0.0F, 2.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
@@ -437,7 +439,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) < 0.5F)) {
+		if (!(getAttackStrengthScale(baseTime) * 5 < 1.0F)) {
 			return true;
 		} else {
 			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 4.0F;
@@ -445,7 +447,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	protected boolean checkSweepAttack() {
-		return getAttackStrengthScale(baseValue) > 0.975F && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
+		return getAttackStrengthScale(baseValue) > 1.95F && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
 	}
 
 	public void betterSweepAttack(AABB var1, float var2, float var3, Entity var4) {
@@ -495,8 +497,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public double getAttackRange(LivingEntity entity, double baseAttackRange) {
-		float var3 = getAttackStrengthScale(0.5F);
-		if (var3 > 0.975F && !player.isCrouching()) {
+		float var3 = getAttackStrengthScale(baseValue);
+		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
 			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 		}
@@ -512,8 +514,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public double getReach(LivingEntity entity, double baseAttackRange) {
-		float var3 = getAttackStrengthScale(0.5F);
-		if (var3 > 0.975F && !player.isCrouching()) {
+		float var3 = getAttackStrengthScale(baseValue);
+		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
 			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 		}

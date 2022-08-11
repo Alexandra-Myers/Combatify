@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
+import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
@@ -17,10 +18,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -38,44 +42,51 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	@Shadow
-	protected abstract boolean checkTotemDeathProtection(DamageSource source);
+	public abstract boolean checkTotemDeathProtection(DamageSource source);
 
 	@Shadow
 	@Nullable
-	protected abstract SoundEvent getDeathSound();
+	public abstract SoundEvent getDeathSound();
 
 	@Shadow
-	protected abstract float getSoundVolume();
+	public abstract float getSoundVolume();
 
 	@Shadow
-	protected abstract void playHurtSound(DamageSource source);
-
-	@Shadow
-	@Nullable
-	private DamageSource lastDamageSource;
-
-	@Shadow
-	private long lastDamageStamp;
-
-	@Shadow
-	protected abstract void hurtCurrentlyUsedShield(float amount);
-
-	@Shadow
-	protected abstract void blockUsingShield(LivingEntity attacker);
+	public abstract void playHurtSound(DamageSource source);
 
 	@Shadow
 	@Nullable
-	protected Player lastHurtByPlayer;
+	public DamageSource lastDamageSource;
 
 	@Shadow
-	protected int lastHurtByPlayerTime;
+	public long lastDamageStamp;
 
 	@Shadow
-	protected float lastHurt;
+	public abstract void hurtCurrentlyUsedShield(float amount);
+
+	@Shadow
+	public abstract void blockUsingShield(LivingEntity attacker);
+
+	@Shadow
+	@Nullable
+	public Player lastHurtByPlayer;
+
+	@Shadow
+	public int lastHurtByPlayerTime;
+
+	@Shadow
+	public float lastHurt;
 
 	@Shadow
 	protected abstract void actuallyHurt(DamageSource source, float amount);
 
+	@Shadow
+	public abstract double getAttributeValue(Attribute attribute);
+
+	@Overwrite
+	public boolean isBlocking() {
+		return !this.getBlockingItem().isEmpty();
+	}
 	/**
 	 * @author zOnlyKroks
 	 */
@@ -258,6 +269,27 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 			cir.setReturnValue(var16);
 			cir.cancel();
+		}
+	}
+
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Overwrite
+	public void knockback(double var1, double var2, double var4) {
+		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack var8 = this.getBlockingItem();
+		if (!var8.isEmpty()) {
+			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		}
+
+		var1 = (float)((double)var1 * (1.0 - var6));
+		if (!(var1 <= 0.0F)) {
+			this.hasImpulse = true;
+			Vec3 var9 = this.getDeltaMovement();
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
 		}
 	}
 

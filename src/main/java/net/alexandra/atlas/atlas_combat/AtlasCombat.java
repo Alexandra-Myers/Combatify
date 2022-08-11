@@ -4,6 +4,7 @@ import com.mojang.serialization.Lifecycle;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.util.DummyAttackDamageMobEffect;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.core.Position;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
@@ -35,6 +36,7 @@ import java.util.OptionalInt;
 
 public class AtlasCombat implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Atlas Combat");
+	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 
 	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = register();
 	public static CleavingEnchantment register() {
@@ -61,7 +63,7 @@ public class AtlasCombat implements ModInitializer {
 				ResourceKey.create(Registry.MOB_EFFECT.key(),new ResourceLocation("strength")),
 				new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 3.0)
 						.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9",
-								0.0, AttributeModifier.Operation.MULTIPLY_TOTAL),
+								1.2, AttributeModifier.Operation.MULTIPLY_TOTAL),
 				Lifecycle.stable());
 	}
 

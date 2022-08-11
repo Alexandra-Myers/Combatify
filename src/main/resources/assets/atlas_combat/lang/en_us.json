@@ -1,3 +1,4 @@
 {
-  "enchantment.atlas_combat.cleaving" : "Cleaving"
+  "enchantment.atlas_combat.cleaving" : "Cleaving",
+  "options.autoAttack" : "Auto-Attack"
 }
