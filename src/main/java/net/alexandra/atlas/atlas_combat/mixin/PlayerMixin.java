@@ -44,6 +44,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -71,6 +72,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	private ItemStack lastItemInMainHand;
+	@Shadow
+	@Final
+	private static Logger LOGGER;
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -113,6 +117,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
@@ -225,16 +233,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					}
 					float currentAttackReach = this.getCurrentAttackReach(baseValue);
 
-					float attackStrengthScale = getAttackStrengthScale(baseValue);
+					float attackStrengthScale = this.getAttackStrengthScale(baseValue);
 					attackDamage *= 1;
 					attackDamageBonus *= 1;
 					if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
 						attackDamage += attackDamageBonus;
-						boolean bl = attackStrengthScale > 1.8F;
+						boolean bl = attackStrengthScale * 8 > 0.975;
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting() && bl) {
+						if (player.isSprinting()) {
 							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
 							++knockbackBonus;
 							bl2 = true;
@@ -388,6 +396,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Override
 	public void attackAir() {
+		LOGGER.info("attacked air");
 		if (this.isAttackAvailable(baseValue)) {
 			player.swing(InteractionHand.MAIN_HAND);
 			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
@@ -418,7 +427,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		return (float)(1.0 / (((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackSpeed(player) - 0.5F) * 20.0);
+		float var1 = (float)this.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F;
+		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
+		return (1.0F / var1 * 20.0F + 0.5F);
 	}
 	/**
 	 * @author
@@ -426,18 +437,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float) player.attackStrengthTicker + baseTime) / (float) this.attackStrengthStartValue)/5.0F, 0.0F, 2.0F);
+		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue)/8, 0.0F, 2.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
-		AtlasCombat.LOGGER.info("Attack Reach is " + ((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player));
-
 		return (float)((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player);
 	}
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) * 5 < 1.0F)) {
+		if (!(getAttackStrengthScale(baseTime) * 6 < 1.0F)) {
 			return true;
 		} else {
 			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 4.0F;

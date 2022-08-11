@@ -41,6 +41,7 @@
   },
   "client": [
     "GameRendererMixin",
+    "GuiMixin",
     "MultiPlayerGameModeMixin"
   ]
 }

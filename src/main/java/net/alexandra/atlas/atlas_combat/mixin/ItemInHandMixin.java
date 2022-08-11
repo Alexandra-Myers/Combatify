@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ItemInHandMixin {
 	@Redirect(method = "tick", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
 	public float modifyArmPos4(LocalPlayer instance, float v) {
-		return (float) instance.getAttackStrengthScale(v)/2;
+		return instance.getAttackStrengthScale(v) < 1.0F ? instance.getAttackStrengthScale(v) : 1.0F;
 	}
 }
