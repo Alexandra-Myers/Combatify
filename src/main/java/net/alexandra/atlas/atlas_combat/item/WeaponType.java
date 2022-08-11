@@ -112,7 +112,7 @@ public enum WeaponType {
                     return 1.0F;
                 } else {
                     if (var1 == Tiers.NETHERITE) {
-                        return 2.0F;
+                        return 1.0F;
                     }
 
                     return 0.0F;
