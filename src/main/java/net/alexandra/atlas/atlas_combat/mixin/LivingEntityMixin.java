@@ -231,7 +231,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					}
 
 					thisLivingEntity.hurtDir = (float)(Mth.atan2(var11, var14) * 57.2957763671875 - (double)thisLivingEntity.getYRot());
-					this.newKnockback(0.4F, var14, var11);
+					this.newKnockback(0.5F, var14, var11);
 				} else {
 					thisLivingEntity.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
 				}
@@ -288,8 +288,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (!(var1 <= 0.0F)) {
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4 + var9.y, ((double)var1 + var9.y) * 0.75), var9.z / 2.0 - var10.z);
 		}
 	}
 

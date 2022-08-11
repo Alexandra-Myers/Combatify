@@ -22,7 +22,7 @@ public class AttackDamageMobEffectMixin {
 	@Overwrite
 	public double getAttributeModifierValue(int amplifier, AttributeModifier modifier) {
 		if(((AttackDamageMobEffect)(Object)this).isBeneficial()) {
-			return (modifier.getAmount() * (amplifier + 1)) - amplifier;
+			return (modifier.getAmount() * (amplifier + 1));
 		}else {
 			return this.multiplier * (double)(amplifier + 1);
 		}

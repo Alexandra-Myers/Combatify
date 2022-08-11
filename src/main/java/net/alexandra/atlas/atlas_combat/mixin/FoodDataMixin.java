@@ -20,6 +20,11 @@ public class FoodDataMixin {
 		return 6;
 	}
 
+	@ModifyConstant(method = "tick", constant = @Constant(intValue = 20))
+	public int changeConst2(int constant) {
+		return 1000000;
+	}
+
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 80,ordinal = 0))
 	public int redirectTickTimer(int constant) {
 		return 40;

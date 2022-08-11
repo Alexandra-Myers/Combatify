@@ -238,7 +238,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					attackDamageBonus *= 1;
 					if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
 						attackDamage += attackDamageBonus;
-						boolean bl = attackStrengthScale * 8 > 0.975;
+						boolean bl = true;
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
@@ -263,10 +263,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						boolean bl4 = false;
 						double d = (player.walkDist - player.walkDistO);
 						if (bl && !isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
-							ItemStack itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
-							if (itemStack.getItem() instanceof SwordItem && checkSweepAttack()) {
-								bl4 = true;
-							}
+							bl4 = checkSweepAttack();
 						}
 
 						float j = 0.0F;
@@ -446,7 +443,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) * 6 < 1.0F)) {
+		if (!(getAttackStrengthScale(baseTime) * 6 < 1.0F) && !missedAttackRecovery) {
 			return true;
 		} else {
 			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 4.0F;

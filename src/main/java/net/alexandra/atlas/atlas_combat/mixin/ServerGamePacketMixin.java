@@ -41,7 +41,11 @@ public class ServerGamePacketMixin {
 	@Inject(method = "handleInteract",
 			at = @At(value = "HEAD"), cancellable = true)
 	public void inject(ServerboundInteractPacket packet, CallbackInfo ci) {
-		if(!(((PlayerExtensions)player).isAttackAvailable(0.0F))) {
+		final Entity entity1 = packet.getTarget(player.getLevel());
+		if(entity1 == null) {
+			((PlayerExtensions)player).attackAir();
+			ci.cancel();
+		}else if(!(((PlayerExtensions)player).isAttackAvailable(0.0F))) {
 			ci.cancel();
 		}
 	}
