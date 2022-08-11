@@ -277,9 +277,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						if (bl6) {
 							if (knockbackBonus > 0) {
 								if (target instanceof LivingEntity livingEntity) {
-									livingEntity
-											.knockback((
-															knockbackBonus * 0.5F),
+									((LivingEntityExtensions)livingEntity)
+											.newKnockback((knockbackBonus * 0.5F),
 													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
 													-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
 											);
@@ -305,7 +304,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 											&& !player.isAlliedTo(livingEntity)
 											&& (!(livingEntity instanceof ArmorStand armorStand) || !armorStand.isMarker())
 											&& player.distanceToSqr(livingEntity) < getSquaredAttackRange(player, 6.25)) {
-										livingEntity.knockback(
+										((LivingEntityExtensions)livingEntity).newKnockback(
 												0.4F, Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)), (-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0)))
 										);
 										livingEntity.hurt(DamageSource.playerAttack(player), l);
@@ -479,7 +478,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 			float var9 = var2 + var8.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(var8) < (var9 * var9)) {
-				var8.knockback(0.4F, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+				((LivingEntityExtensions)var8).newKnockback(0.4F, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
 				var8.hurt(DamageSource.playerAttack(player), sweepingDamageRatio);
 			}
 		}
