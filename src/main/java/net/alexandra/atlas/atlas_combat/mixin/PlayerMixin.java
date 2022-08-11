@@ -229,6 +229,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					attackDamage *= 1;
 					attackDamageBonus *= 1;
 					if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
+						attackDamage += attackDamageBonus;
 						boolean bl = attackStrengthScale > 1.8F;
 						boolean bl2 = false;
 						int knockbackBonus = 0;
@@ -251,7 +252,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 							attackDamage *= 1.5F;
 						}
 
-						attackDamage += attackDamageBonus;
 						boolean bl4 = false;
 						double d = (player.walkDist - player.walkDistO);
 						if (bl && !isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
