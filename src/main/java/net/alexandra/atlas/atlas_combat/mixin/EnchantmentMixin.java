@@ -24,7 +24,7 @@ public class EnchantmentMixin {
 				|| thisEnchantment instanceof KnockbackEnchantment
 				|| thisEnchantment instanceof FireAspectEnchantment
 				|| thisEnchantment instanceof SweepingEdgeEnchantment) {
-			cir.setReturnValue(stack.getItem() instanceof AxeItem || stack.getItem() instanceof SwordItem || stack.getItem() instanceof HoeItem);
+			cir.setReturnValue(stack.getItem() instanceof AxeItem || stack.getItem() instanceof SwordItem);
 			cir.cancel();
 		}
 	}

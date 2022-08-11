@@ -88,6 +88,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean enableShieldOnCrouch = true;
 	@Unique
 	public Multimap additionalModifiers;
+	@Unique
+	@Final
+	public Minecraft minecraft = Minecraft.getInstance();
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
@@ -152,11 +155,20 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if(this.hasEnabledShieldOnCrouch() && player.isCrouching()) {
-			for(InteractionHand interactionHand : InteractionHand.values()) {
-				ItemStack itemStack = this.player.getItemInHand(interactionHand);
-				if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && !player.isUsingItem()) {
-					Minecraft.getInstance().startUseItem();
+		if(player.isOnGround()) {
+			if (this.hasEnabledShieldOnCrouch() && player.isCrouching()) {
+				for (InteractionHand interactionHand : InteractionHand.values()) {
+					ItemStack itemStack = this.player.getItemInHand(interactionHand);
+					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && player.isCrouching()) {
+						shieldItem.use(player.level, player, interactionHand);
+					}
+				}
+			} else if ((this.hasEnabledShieldOnCrouch() && player.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
+				for (InteractionHand interactionHand : InteractionHand.values()) {
+					ItemStack itemStack = this.player.getItemInHand(interactionHand);
+					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem) {
+						minecraft.gameMode.releaseUsingItem(player);
+					}
 				}
 			}
 		}

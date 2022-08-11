@@ -31,6 +31,7 @@
     "ScreenHandlerMixin",
     "ServerGamePacketMixin",
     "ServerPlayerGameModeMixin",
+    "ShieldItemMixin",
     "SnowballItemMixin",
     "SnowballMixin",
     "SweepingEdgeEnchantmentMixin",
