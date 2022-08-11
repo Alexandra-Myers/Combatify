@@ -284,12 +284,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
 		}
 
-		var1 = (float)((double)var1 * (1.0 - var6));
+		var1 = (float)(var1 * (1.0 - var6));
 		if (!(var1 <= 0.0F)) {
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, var1 * 0.75) : Math.min(0.4, var9.y + var1 * 0.5), var9.z / 2.0 - var10.z);
 		}
 	}
 
