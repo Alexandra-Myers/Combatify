@@ -247,7 +247,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								&& !player.hasEffect(MobEffects.BLINDNESS)
 								&& !player.isPassenger()
 								&& target instanceof LivingEntity;
-						isCrit = isCrit && !player.isSprinting();
 						if (isCrit) {
 							attackDamage *= 1.5F;
 						}
