@@ -76,8 +76,8 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	@Override
 	public double getAttackReach(Player player) {
 		float var2 = 0.0F;
-		float var3 = player.getAttackStrengthScale(0.5F);
-		if (var3 > 0.975F && !player.isCrouching()) {
+		float var3 = player.getAttackStrengthScale(1.0F);
+		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1.0F;
 		}
 		return type.getReach() + 2.5 + var2;

@@ -50,11 +50,8 @@ public enum WeaponType {
 
 
     }
-	public static boolean isWithinAttackRange(final Player player, final Entity entity) {
-		return player.distanceToSqr(entity) <= Mth.square(((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player));
-	}
 
-    public float getDamage(Tier var1) {
+	public float getDamage(Tier var1) {
 		float var2 = var1.getAttackDamageBonus();
         switch (this) {
             case SWORD:

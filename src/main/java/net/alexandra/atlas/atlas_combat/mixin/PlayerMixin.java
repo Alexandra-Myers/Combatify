@@ -160,7 +160,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				for (InteractionHand interactionHand : InteractionHand.values()) {
 					ItemStack itemStack = this.player.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && player.isCrouching()) {
-						shieldItem.use(player.level, player, interactionHand);
+						((IMinecraft) minecraft).startUseItem(interactionHand);
 					}
 				}
 			} else if ((this.hasEnabledShieldOnCrouch() && player.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
@@ -188,30 +188,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Overwrite()
 	public void blockUsingShield(@NotNull LivingEntity attacker) {
 		super.blockUsingShield(attacker);
-		Item mainHandItem = attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-		Item offHandItem = attacker.getItemInHand(InteractionHand.OFF_HAND).getItem();
-		ItemStack mainHandItemStack = attacker.getItemInHand(InteractionHand.MAIN_HAND);
-		ItemStack offHandItemStack = attacker.getItemInHand(InteractionHand.OFF_HAND);
-		if (attacker.canDisableShield()) {
-			player.disableShield(true);
-		}else if(mainHandItem instanceof AxeItem) {
-			disableShield(true, (AxeItem) mainHandItem, mainHandItemStack);
-		}else if(offHandItem instanceof AxeItem) {
-			disableShield(true, (AxeItem) offHandItem, offHandItemStack);
-		}
-	}
-	@Unique
-	public void disableShield(boolean sprinting, AxeItem axeItem, ItemStack stack) {
-		float f = 0.25F + EnchantmentHelper.getBlockEfficiency(player) * 0.05F * ((IAxeItem) axeItem).getShieldCooldownMultiplier(((IItemStack)(Object)stack).getEnchantmentLevel(AtlasCombat.CLEAVING_ENCHANTMENT));
-		if (sprinting) {
-			f += 0.75F;
-		}
-
-		if (this.random.nextFloat() < f) {
-			player.getCooldowns().addCooldown(Items.SHIELD, (int)(f * 20.0F));
-			player.stopUsingItem();
-			player.level.broadcastEntityEvent(player, (byte)30);
-		}
 	}
 
 	@Override
@@ -516,10 +492,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
 		}
 		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 	}
 
 	@Override
@@ -533,15 +509,25 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
 		}
 		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 	}
 
 	@Override
 	public double getSquaredReach(LivingEntity entity, double sqBaseAttackRange) {
 		final var attackRange = getAttackRange(entity, Math.sqrt(sqBaseAttackRange));
 		return attackRange * attackRange;
+	}
+
+	@Override
+	public boolean getMissedAttackRecovery() {
+		return missedAttackRecovery;
+	}
+
+	@Override
+	public int getAttackStrengthStartValue() {
+		return attackStrengthStartValue;
 	}
 }

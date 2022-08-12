@@ -25,6 +25,8 @@ public interface PlayerExtensions {
 		return (int)(1.0F / var1 * 20.0F + 0.5F);
 	}
 	Multimap getAdditionalModifiers();
+	boolean getMissedAttackRecovery();
+	int getAttackStrengthStartValue();
 	double getReach(final LivingEntity entity, final double baseAttackRange);
 
 	double getSquaredReach(final LivingEntity entity, final double sqBaseAttackRange);
