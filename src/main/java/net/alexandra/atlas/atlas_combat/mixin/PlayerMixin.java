@@ -125,6 +125,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
 	}
 
 	@Inject(method = "die", at = @At(value = "HEAD"))

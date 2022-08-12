@@ -97,8 +97,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	private void injectDelay(CallbackInfoReturnable<Boolean> cir){
 		assert player != null;
 		for(InteractionHand hand : InteractionHand.values()) {
-			if (player.isUsingItem() && player.getItemInHand(hand).getItem() instanceof ShieldItem) {
-				((PlayerExtensions) player).customShieldInteractions(0.1F);
+			if (player.isUsingItem() || (((IOptions)options).shieldCrouch().get() && player.isCrouching()) && player.getItemInHand(hand).getItem() instanceof ShieldItem) {
+				((PlayerExtensions) player).customShieldInteractions(0.5F);
 			}
 		}
 		if((((PlayerExtensions)player).getMissedAttackRecovery())) {
