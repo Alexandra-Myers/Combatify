@@ -37,7 +37,8 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
-    "TridentItemMixin"
+    "TridentItemMixin",
+    "VideoSettingsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

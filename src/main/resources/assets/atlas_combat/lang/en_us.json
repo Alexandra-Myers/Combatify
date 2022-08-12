@@ -1,4 +1,7 @@
 {
   "enchantment.atlas_combat.cleaving" : "Cleaving",
-  "options.autoAttack" : "Auto-Attack"
+  "options.autoAttack" : "Auto-Attack",
+  "options.shieldCrouch" : "Use Shield on Crouch",
+  "options.lowShield" : "Lower Shield",
+  "options.lowShield.tooltip" : "While on, lowers the shield when shield-crouching for greater visibility"
 }

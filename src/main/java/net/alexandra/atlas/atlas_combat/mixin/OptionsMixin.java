@@ -24,10 +24,21 @@ public abstract class OptionsMixin implements IOptions {
 	@Inject(method = "processOptions", at = @At(value = "HEAD"))
 	public void injectOptions(Options.FieldAccess visitor, CallbackInfo ci) {
 		visitor.process("autoAttack", AtlasCombat.autoAttack);
+		visitor.process("shieldCrouch", AtlasCombat.shieldCrouch);
+		visitor.process("lowShield", AtlasCombat.lowShield);
 	}
 
 	@Override
 	public OptionInstance<Boolean> autoAttack() {
 		return AtlasCombat.autoAttack;
+	}
+	@Override
+	public OptionInstance<Boolean> shieldCrouch() {
+		return AtlasCombat.shieldCrouch;
+	}
+
+	@Override
+	public OptionInstance<Boolean> lowShield() {
+		return AtlasCombat.lowShield;
 	}
 }

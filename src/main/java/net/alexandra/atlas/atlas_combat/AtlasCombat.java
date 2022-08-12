@@ -9,6 +9,7 @@ import net.minecraft.core.Position;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.AttackDamageMobEffect;
@@ -36,7 +37,10 @@ import java.util.OptionalInt;
 
 public class AtlasCombat implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Atlas Combat");
+	private static final Component ACCESSIBILITY_TOOLTIP_LOW_SHIELD = Component.translatable("options.lowShield.tooltip");
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
+	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
+	public static final OptionInstance<Boolean> lowShield = OptionInstance.createBoolean("options.lowShield", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_LOW_SHIELD),false);
 
 	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = register();
 	public static CleavingEnchantment register() {

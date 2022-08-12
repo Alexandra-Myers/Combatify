@@ -75,8 +75,14 @@ public abstract class MinecraftMixin implements IMinecraft {
 			continueAttack(b);
 		}else {
 			if (b && ((IOptions) options).autoAttack().get()) {
-				if (player.getAttackStrengthScale(0.5F) > 0.7F) {
-					startAttack();
+				if((((PlayerExtensions)player).getMissedAttackRecovery())){
+					if ((float)(((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) > 88.0F) {
+						startAttack();
+					}
+				}else{
+					if ((float)(((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) > 56.0F) {
+						startAttack();
+					}
 				}
 			} else {
 				continueAttack(b);
@@ -86,6 +92,24 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@ModifyConstant(method = "startAttack", constant = @Constant(intValue = 10))
 	public int redirectMissPenalty(int constant) {
 		return 4;
+	}
+	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
+	private void injectDelay(CallbackInfoReturnable<Boolean> cir){
+		assert player != null;
+		for(InteractionHand hand : InteractionHand.values()) {
+			if (player.isUsingItem() && player.getItemInHand(hand).getItem() instanceof ShieldItem) {
+				((PlayerExtensions) player).customShieldInteractions(0.1F);
+			}
+		}
+		if((((PlayerExtensions)player).getMissedAttackRecovery())) {
+			if((float)(((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) < 80.0F){
+				cir.setReturnValue(false);
+				cir.cancel();
+			}
+		}else if ((((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) < 48.0F) {
+			cir.setReturnValue(false);
+			cir.cancel();
+		}
 	}
 	@Unique
 	@Override
@@ -97,57 +121,12 @@ public abstract class MinecraftMixin implements IMinecraft {
 					LOGGER.warn("Null returned as 'hitResult', this shouldn't happen!");
 				}
 					ItemStack itemStack = this.player.getItemInHand(interactionHand);
-					if (this.hitResult != null) {
-						switch(this.hitResult.getType()) {
-							case ENTITY:
-								EntityHitResult entityHitResult = (EntityHitResult)this.hitResult;
-								Entity entity = entityHitResult.getEntity();
-								if (!level.getWorldBorder().isWithinBounds(entity.blockPosition())) {
-									return;
-								}
-
-								InteractionResult interactionResult = this.gameMode.interactAt(this.player, entity, entityHitResult, interactionHand);
-								if (!interactionResult.consumesAction()) {
-									interactionResult = this.gameMode.interact(this.player, entity, interactionHand);
-								}
-
-								if (interactionResult.consumesAction()) {
-									if (interactionResult.shouldSwing()) {
-										this.player.swing(interactionHand);
-									}
-
-									return;
-								}
-								break;
-							case BLOCK:
-								BlockHitResult blockHitResult = (BlockHitResult)this.hitResult;
-								int i = itemStack.getCount();
-								InteractionResult interactionResult2 = this.gameMode.useItemOn(this.player, interactionHand, blockHitResult);
-								if (interactionResult2.consumesAction()) {
-									if (interactionResult2.shouldSwing()) {
-										this.player.swing(interactionHand);
-										if (!itemStack.isEmpty() && (itemStack.getCount() != i || this.gameMode.hasInfiniteItems())) {
-											this.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
-										}
-									}
-
-									return;
-								}
-
-								if (interactionResult2 == InteractionResult.FAIL) {
-									return;
-								}
-						}
-					}
-
 					if (!itemStack.isEmpty()) {
 						InteractionResult interactionResult3 = this.gameMode.useItem(this.player, interactionHand);
 						if (interactionResult3.consumesAction()) {
 							if (interactionResult3.shouldSwing()) {
 								this.player.swing(interactionHand);
 							}
-
-							this.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							return;
 						}
 					}

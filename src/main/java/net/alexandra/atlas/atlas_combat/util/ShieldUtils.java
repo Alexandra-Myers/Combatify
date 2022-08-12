@@ -1,6 +1,9 @@
 package net.alexandra.atlas.atlas_combat.util;
 
+import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
 
 public class ShieldUtils {
 

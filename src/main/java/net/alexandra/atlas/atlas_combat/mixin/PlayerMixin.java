@@ -83,14 +83,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Unique
 	@Final
 	public float baseValue = 1.0F;
-
-	@Unique
-	public boolean enableShieldOnCrouch = true;
-	@Unique
-	public Multimap additionalModifiers;
 	@Unique
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
+	@Unique
+	public Multimap additionalModifiers;
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
@@ -161,6 +158,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					ItemStack itemStack = this.player.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && player.isCrouching()) {
 						((IMinecraft) minecraft).startUseItem(interactionHand);
+						if(lowShieldEnabled()) {
+							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
+						}
 					}
 				}
 			} else if ((this.hasEnabledShieldOnCrouch() && player.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
@@ -200,7 +200,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
-		return this.enableShieldOnCrouch;
+		return ((IOptions)minecraft.options).shieldCrouch().get();
+	}
+	public boolean lowShieldEnabled() {
+		return ((IOptions)minecraft.options).lowShield().get();
 	}
 
 	/**
@@ -422,7 +425,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue)/8, 0.0F, 2.0F);
+		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue)/6, 0.0F, 2.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {

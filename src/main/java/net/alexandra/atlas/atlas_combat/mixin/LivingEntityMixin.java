@@ -22,6 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -29,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -78,10 +78,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public float lastHurt;
 
 	@Shadow
-	protected abstract void actuallyHurt(DamageSource source, float amount);
+	public abstract void actuallyHurt(DamageSource source, float amount);
 
 	@Shadow
 	public abstract double getAttributeValue(Attribute attribute);
+
+	@Shadow
+	protected abstract void hurtHelmet(DamageSource par1, float par2);
+
+	@Shadow
+	protected int noActionTime;
 
 	/**
 	 * @author
@@ -111,168 +117,168 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	 */
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		LivingEntity thisLivingEntity = ((LivingEntity) (Object)this);
-		if (thisLivingEntity.isInvulnerableTo(source) || thisLivingEntity.level.isClientSide || thisLivingEntity.isDeadOrDying() || (source.isFire() && thisLivingEntity.hasEffect(MobEffects.FIRE_RESISTANCE))) {
+		LivingEntity thisEntity = ((LivingEntity)(Object)this);
+		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();
-		}else {
-			if (thisLivingEntity.isSleeping() && !thisLivingEntity.level.isClientSide) {
-				thisLivingEntity.stopSleeping();
+		} else if (this.level.isClientSide) {
+			cir.setReturnValue(false);
+			cir.cancel();
+		} else if (thisEntity.isDeadOrDying()) {
+			cir.setReturnValue(false);
+			cir.cancel();
+		} else if (source.isFire() && thisEntity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+			cir.setReturnValue(false);
+			cir.cancel();
+		} else {
+			if (thisEntity.isSleeping() && !this.level.isClientSide) {
+				thisEntity.stopSleeping();
 			}
 
-			thisLivingEntity.setNoActionTime(0);
-			float var3 = amount;
-			if ((source == DamageSource.ANVIL || source == DamageSource.FALLING_BLOCK) && !thisLivingEntity.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-				thisLivingEntity.getItemBySlot(EquipmentSlot.HEAD).hurtAndBreak((int)(amount * 4.0F + thisLivingEntity.getRandom().nextFloat() * amount * 2.0F), thisLivingEntity, (var0) -> {
-					var0.broadcastBreakEvent(EquipmentSlot.HEAD);
-				});
-				amount *= 0.75F;
-			}
-
-			boolean var4 = false;
-			float var5 = 0.0F;
-			Entity var6;
-			if (amount > 0.0F && thisLivingEntity.isDamageSourceBlocked(source)) {
-				var5 = Math.min(ShieldUtils.getShieldBlockDamageValue(this.getBlockingItem()), amount);
-				if (!source.isProjectile() && !source.isExplosion()) {
-					var6 = source.getDirectEntity();
-					if (var6 instanceof LivingEntity livingEntity) {
-						blockUsingShield(livingEntity);
-					}
-				} else {
-					var5 = amount;
+			noActionTime = 0;
+			float f = amount;
+			boolean bl = false;
+			float g = 0.0F;
+			if (amount > 0.0F && this.isDamageSourceBlocked(source)) {
+				float blockStrength = ShieldUtils.getShieldBlockDamageValue(this.getBlockingItem());
+				if(source.isExplosion() || source.isProjectile()) {
+					hurtCurrentlyUsedShield(amount);
+					amount = 0.0F;
+					g = f;
+				}else if (blockStrength >= amount) {
+					hurtCurrentlyUsedShield(amount);
+					amount -= blockStrength;
+					g = f - amount;
+				} else if (blockStrength < amount) {
+					hurtCurrentlyUsedShield(blockStrength);
+					amount -= blockStrength;
+					g = f - blockStrength;
 				}
-
-				hurtCurrentlyUsedShield(var5);
-				amount -= var5;
-				var4 = true;
+				if (!source.isProjectile() && !source.isExplosion()) {
+					Entity entity = source.getDirectEntity();
+					if (entity instanceof LivingEntity) {
+						this.blockUsingShield((LivingEntity)entity);
+					}
+				}
+				bl = true;
 			}
 
-			thisLivingEntity.animationSpeed = 1.5F;
-			var6 = source.getEntity();
-			int var7 = 10;
-			if (var6 != null && var6 instanceof PlayerExtensions player) {
-				var7 = Math.min(player.getAttackDelay((Player)var6), var7);
-			}
-
-			if (source.isProjectile()) {
-				var7 = 0;
-			}
-
-			boolean var8 = true;
-			if (thisLivingEntity.invulnerableTime > 0) {
-				if (amount <= lastHurt) {
+			thisEntity.animationSpeed = 1.5F;
+			boolean bl2 = true;
+			if ((float)this.invulnerableTime > 10.0F) {
+				if (amount <= this.lastHurt) {
 					cir.setReturnValue(false);
 					cir.cancel();
 				}
 
-				actuallyHurt(source, amount - lastHurt);
-				lastHurt = amount;
-				var8 = false;
+				this.actuallyHurt(source, amount - this.lastHurt);
+				this.lastHurt = amount;
+				bl2 = false;
 			} else {
-				lastHurt = amount;
-				thisLivingEntity.invulnerableTime = var7;
-				actuallyHurt(source, amount);
-				thisLivingEntity.hurtDuration = 10;
-				thisLivingEntity.hurtTime = thisLivingEntity.hurtDuration;
+				this.lastHurt = amount;
+				this.invulnerableTime = 20;
+				this.actuallyHurt(source, amount);
+				thisEntity.hurtDuration = 10;
+				thisEntity.hurtTime = thisEntity.hurtDuration;
 			}
 
-			thisLivingEntity.hurtDir = 0.0F;
-			if (var6 != null) {
-				if (var6 instanceof LivingEntity livingEntity) {
-					thisLivingEntity.setLastHurtByMob(livingEntity);
-					if (thisLivingEntity.isUsingItem() && (thisLivingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || thisLivingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
-						thisLivingEntity.stopUsingItem();
-					}
-				}
-
-				if (var6 instanceof Player player) {
-					lastHurtByPlayerTime = 100;
-					lastHurtByPlayer = player;
-				} else if (var6 instanceof Wolf wolf) {
-					Wolf var9 = wolf;
-					if (var9.isTame()) {
-						lastHurtByPlayerTime = 100;
-						LivingEntity var10 = var9.getOwner();
-						if (var10 != null && var10.getType() == EntityType.PLAYER) {
-							lastHurtByPlayer = (Player)var10;
-						} else {
-							lastHurtByPlayer = null;
-						}
-					}
-				}
+			if (source.isDamageHelmet() && !thisEntity.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
+				hurtHelmet(source, amount);
+				amount *= 0.75F;
 			}
 
-			if (var8) {
-				if (var4) {
-					thisLivingEntity.level.broadcastEntityEvent(thisLivingEntity, (byte)29);
-				} else if (source instanceof EntityDamageSource entityDamageSource && entityDamageSource.isThorns()) {
-					thisLivingEntity.level.broadcastEntityEvent(thisLivingEntity, (byte)33);
-				} else {
-					byte var13;
-					if (source == DamageSource.DROWN) {
-						var13 = 36;
-					} else if (source.isFire()) {
-						var13 = 37;
-					} else if (source == DamageSource.SWEET_BERRY_BUSH) {
-						var13 = 44;
+			thisEntity.hurtDir = 0.0F;
+			Entity entity2 = source.getEntity();
+			if (entity2 != null) {
+				if (entity2 instanceof LivingEntity && !source.isNoAggro()) {
+					thisEntity.setLastHurtByMob((LivingEntity)entity2);
+				}
+
+				if (entity2 instanceof Player) {
+					this.lastHurtByPlayerTime = 100;
+					this.lastHurtByPlayer = (Player)entity2;
+				} else if (entity2 instanceof Wolf wolf && wolf.isTame()) {
+					this.lastHurtByPlayerTime = 100;
+					LivingEntity livingEntity = wolf.getOwner();
+					if (livingEntity != null && livingEntity.getType() == EntityType.PLAYER) {
+						this.lastHurtByPlayer = (Player)livingEntity;
 					} else {
-						var13 = 2;
+						this.lastHurtByPlayer = null;
 					}
-
-					thisLivingEntity.level.broadcastEntityEvent(thisLivingEntity, var13);
 				}
+			}
 
-				if (source != DamageSource.DROWN && (!var4 || amount > 0.0F)) {
-					super.markHurt();
-				}
-
-				if (var6 != null) {
-					double var14 = var6.getX() - thisLivingEntity.getX();
-
-					double var11;
-					for(var11 = var6.getZ() - thisLivingEntity.getZ(); var14 * var14 + var11 * var11 < 1.0E-4; var11 = (Math.random() - Math.random()) * 0.01) {
-						var14 = (Math.random() - Math.random()) * 0.01;
-					}
-
-					thisLivingEntity.hurtDir = (float)(Mth.atan2(var11, var14) * 57.2957763671875 - (double)thisLivingEntity.getYRot());
-					this.newKnockback(0.5F, var14, var11);
+			if (bl2) {
+				if (bl) {
+					this.level.broadcastEntityEvent(thisEntity, (byte)29);
+				} else if (source instanceof EntityDamageSource && ((EntityDamageSource)source).isThorns()) {
+					this.level.broadcastEntityEvent(thisEntity, (byte)33);
 				} else {
-					thisLivingEntity.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
-				}
-			}
-
-			if (thisLivingEntity.isDeadOrDying()) {
-				if (!checkTotemDeathProtection(source)) {
-					SoundEvent var15 = getDeathSound();
-					if (var8 && var15 != null) {
-						thisLivingEntity.playSound(var15, getSoundVolume(), thisLivingEntity.getVoicePitch());
+					byte b;
+					if (source == DamageSource.DROWN) {
+						b = 36;
+					} else if (source.isFire()) {
+						b = 37;
+					} else if (source == DamageSource.SWEET_BERRY_BUSH) {
+						b = 44;
+					} else if (source == DamageSource.FREEZE) {
+						b = 57;
+					} else {
+						b = 2;
 					}
 
-					thisLivingEntity.die(source);
+					this.level.broadcastEntityEvent(thisEntity, b);
 				}
-			} else if (var8) {
-				playHurtSound(source);
-			}
 
-			boolean var16 = !var4 || amount > 0.0F;
-			if (var16) {
-				lastDamageSource = source;
-				lastDamageStamp = thisLivingEntity.level.getGameTime();
-			}
+				if (source != DamageSource.DROWN && (!bl || amount > 0.0F)) {
+					this.markHurt();
+				}
 
-			if (thisLivingEntity instanceof ServerPlayer serverPlayer) {
-				CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(serverPlayer, source, var3, amount, var4);
-				if (var5 > 0.0F && var5 < 3.4028235E37F) {
-					serverPlayer.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var5 * 10.0F));
+				if (entity2 != null) {
+					double d = entity2.getX() - this.getX();
+
+					double e;
+					for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+						d = (Math.random() - Math.random()) * 0.01;
+					}
+
+					thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+					newKnockback(0.5F, d, e);
+				} else {
+					thisEntity.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
 				}
 			}
 
-			if (var6 instanceof ServerPlayer serverPlayer) {
-				CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(serverPlayer, thisLivingEntity, source, var3, amount, var4);
+			if (thisEntity.isDeadOrDying()) {
+				if (!this.checkTotemDeathProtection(source)) {
+					SoundEvent soundEvent = this.getDeathSound();
+					if (bl2 && soundEvent != null) {
+						this.playSound(soundEvent, this.getSoundVolume(), thisEntity.getVoicePitch());
+					}
+
+					thisEntity.die(source);
+				}
+			} else if (bl2) {
+				this.playHurtSound(source);
 			}
 
-			cir.setReturnValue(var16);
+			boolean bl3 = !bl || amount > 0.0F;
+			if (bl3) {
+				this.lastDamageSource = source;
+				this.lastDamageStamp = this.level.getGameTime();
+			}
+
+			if (((LivingEntity)(Object)this) instanceof ServerPlayer) {
+				CriteriaTriggers.ENTITY_HURT_PLAYER.trigger((ServerPlayer)thisEntity, source, f, amount, bl);
+				if (g > 0.0F && g < 3.4028235E37F) {
+					((ServerPlayer)thisEntity).awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(g * 10.0F));
+				}
+			}
+
+			if (entity2 instanceof ServerPlayer) {
+				CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)entity2, thisEntity, source, f, amount, bl);
+			}
+			cir.setReturnValue(bl3);
 			cir.cancel();
 		}
 	}
@@ -294,8 +300,40 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, ((double)var1 + var9.y) * 0.75), var9.z / 2.0 - var10.z);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4+var9.y, ((double)var1 + var9.y) * 0.75), var9.z / 2.0 - var10.z);
 		}
+	}
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Overwrite
+	public boolean isDamageSourceBlocked(DamageSource source) {
+		Entity entity = source.getDirectEntity();
+		boolean bl = false;
+		if (entity instanceof AbstractArrow) {
+			AbstractArrow arrow = (AbstractArrow)entity;
+			if (arrow.getPierceLevel() > 0) {
+				bl = true;
+			}
+		}
+
+		if (!source.isBypassArmor() && this.isBlocking() && !bl) {
+			Vec3 sourcePos = source.getSourcePosition();
+			if (sourcePos != null) {
+				Vec3 currentVector = this.getViewVector(1.0F);
+				if (currentVector.y > -0.99 && currentVector.y < 0.99) {
+					currentVector = (new Vec3(currentVector.x, 0.0, currentVector.z)).normalize();
+					Vec3 sourceVector = sourcePos.vectorTo(this.position());
+					sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
+					if (sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	@Override

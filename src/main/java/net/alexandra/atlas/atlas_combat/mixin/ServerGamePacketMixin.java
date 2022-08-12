@@ -45,10 +45,6 @@ public class ServerGamePacketMixin {
 		if(entity1 == null) {
 			((PlayerExtensions)player).attackAir();
 			ci.cancel();
-		}else if(player.getAttackStrengthScale(1.0F) * 8 < 0.4F && !((PlayerExtensions)player).getMissedAttackRecovery()) {
-			ci.cancel();
-		}else if(!(((PlayerExtensions)player).getMissedAttackRecovery() && (float)((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 1.0F) > 4.0F)) {
-			ci.cancel();
 		}
 	}
 	@ModifyConstant(
