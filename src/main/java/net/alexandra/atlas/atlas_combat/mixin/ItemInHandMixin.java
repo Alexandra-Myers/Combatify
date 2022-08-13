@@ -16,7 +16,7 @@ public class ItemInHandMixin {
 	public float modifyArmPos4(LocalPlayer instance, float v) {
 		return (instance.getAttackStrengthScale(v) / 2.0F);
 	}
-	@Inject(method = "applyItemArmAttackTransform", at = @At(value = "HEAD"))
+	@Inject(method = "applyItemArmAttackTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void changeArmAttack(PoseStack matrices, HumanoidArm arm, float swingProgress, CallbackInfo ci) {
 		int var4 = arm == HumanoidArm.RIGHT ? 1 : -1;
 		float var5 = Mth.sin(swingProgress * swingProgress * 3.1415927F);
