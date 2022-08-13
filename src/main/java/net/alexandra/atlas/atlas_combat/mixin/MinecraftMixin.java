@@ -76,11 +76,11 @@ public abstract class MinecraftMixin implements IMinecraft {
 		}else {
 			if (b && ((IOptions) options).autoAttack().get()) {
 				if((((PlayerExtensions)player).getMissedAttackRecovery())){
-					if ((float)(((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) > 88.0F) {
+					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.2F, true)) {
 						startAttack();
 					}
 				}else{
-					if ((float)(((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) > 56.0F) {
+					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.0F, true)) {
 						startAttack();
 					}
 				}
@@ -102,11 +102,11 @@ public abstract class MinecraftMixin implements IMinecraft {
 			}
 		}
 		if((((PlayerExtensions)player).getMissedAttackRecovery())) {
-			if((float)(((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) < 80.0F){
+			if(!(((PlayerExtensions) player).isAttackAvailable(1.0F, 1.2F))){
 				cir.setReturnValue(false);
 				cir.cancel();
 			}
-		}else if ((((PlayerExtensions)player).getAttackStrengthStartValue() - ((float)player.attackStrengthTicker - 0.5F)) < 48.0F) {
+		}else if (!(((PlayerExtensions) player).isAttackAvailable(1.0F))) {
 			cir.setReturnValue(false);
 			cir.cancel();
 		}

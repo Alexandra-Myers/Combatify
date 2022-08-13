@@ -11,6 +11,8 @@ import net.minecraft.world.entity.player.Player;
 
 public interface PlayerExtensions {
 	boolean isAttackAvailable(float baseTime);
+	boolean isAttackAvailable(float baseTime, float minValue);
+	boolean isAttackAvailable(float baseTime, float minValue, boolean isAutoAttack);
 	float getCurrentAttackReach(float baseValue);
 
 	default boolean customShieldInteractions(float damage) {return false;}

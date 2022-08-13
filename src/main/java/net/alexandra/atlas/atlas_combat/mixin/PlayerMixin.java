@@ -158,9 +158,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				for (InteractionHand interactionHand : InteractionHand.values()) {
 					ItemStack itemStack = this.player.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && player.isCrouching()) {
-						((IMinecraft) minecraft).startUseItem(interactionHand);
-						if(lowShieldEnabled()) {
-							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
+						if(!player.getCooldowns().isOnCooldown(shieldItem)) {
+							((IMinecraft) minecraft).startUseItem(interactionHand);
+							if (lowShieldEnabled()) {
+								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
+							}
 						}
 					}
 				}
@@ -435,11 +437,28 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) * 6 < 1.0F) && !missedAttackRecovery) {
+		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
-		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 4.0F;
 		}
+		return false;
+	}
+	@Override
+	public boolean isAttackAvailable(float baseTime, float minValue) {
+		if (!(getAttackStrengthScale(baseTime) < minValue)) {
+			return true;
+		}
+		return false;
+	}
+	@Override
+	public boolean isAttackAvailable(float baseTime, float minValue, boolean isAutoAttack) {
+		if (!(getAttackStrengthScale(baseTime) < minValue)) {
+			return true;
+		} else if (isAutoAttack){
+			if((getAttackStrengthScale(baseTime) < (minValue + 0.1F))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	protected boolean checkSweepAttack() {

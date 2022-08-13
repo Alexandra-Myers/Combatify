@@ -26,6 +26,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin extends GuiComponent {
@@ -56,8 +59,8 @@ public abstract class GuiMixin extends GuiComponent {
 	 * @author
 	 * @reason
 	 */
-	@Overwrite
-	private void renderCrosshair(PoseStack matrices) {
+	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"), cancellable = true)
+	private void renderCrosshair(PoseStack matrices, CallbackInfo ci) {
 		Options options = this.minecraft.options;
 		if (options.getCameraType().isFirstPerson()) {
 			if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
@@ -104,9 +107,10 @@ public abstract class GuiMixin extends GuiComponent {
 
 			}
 		}
+		ci.cancel();
 	}
-	@Overwrite
-	private void renderHotbar(float tickDelta, PoseStack matrices) {
+	@Inject(method = "renderHotbar", at = @At(value = "HEAD"), cancellable = true)
+	private void renderHotbar(float tickDelta, PoseStack matrices, CallbackInfo ci) {
 		Player player = getCameraPlayer();
 		if (player != null) {
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -168,5 +172,6 @@ public abstract class GuiMixin extends GuiComponent {
 
 			RenderSystem.disableBlend();
 		}
+		ci.cancel();
 	}
 }
