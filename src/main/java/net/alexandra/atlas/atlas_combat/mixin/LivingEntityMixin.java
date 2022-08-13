@@ -176,7 +176,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				bl2 = false;
 			} else {
 				this.lastHurt = amount;
-				this.invulnerableTime = 20;
+				this.invulnerableTime = 15;
 				this.actuallyHurt(source, amount);
 				thisEntity.hurtDuration = 10;
 				thisEntity.hurtTime = thisEntity.hurtDuration;
@@ -299,8 +299,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (!(var1 <= 0.0F)) {
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4+var9.y, ((double)var1 + var9.y) * 0.75), var9.z / 2.0 - var10.z);
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
 		}
 	}
 	/**
