@@ -76,6 +76,10 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${archivesBaseName}" }
 	}
+	into("META-INF/maven/$project.group/$project.name") {
+		from { generatePomFileForMavenJavaPublication }
+		rename ".*", "pom.xml"
+	}
 }
 
 // Configure the maven publication
