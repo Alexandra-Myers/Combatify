@@ -24,6 +24,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -174,6 +175,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.actuallyHurt(source, amount - this.lastHurt);
 				this.lastHurt = amount;
 				bl2 = false;
+			} else if(source.isFire()) {
+				this.lastHurt = amount;
+				this.invulnerableTime = 20;
+				this.actuallyHurt(source, amount);
+				thisEntity.hurtDuration = 10;
+				thisEntity.hurtTime = thisEntity.hurtDuration;
 			} else {
 				this.lastHurt = amount;
 				this.invulnerableTime = 15;

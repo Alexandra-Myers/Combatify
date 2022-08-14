@@ -11,6 +11,7 @@
     "BowItemMixin",
     "ControlsMixin",
     "DamageEnchantmentMixin",
+    "DamageSourceMixin",
     "DiggerItemMixin",
     "EggItemMixin",
     "EnchantmentHelperMixin",
