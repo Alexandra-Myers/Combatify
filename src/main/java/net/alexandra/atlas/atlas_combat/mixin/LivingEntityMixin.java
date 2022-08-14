@@ -140,6 +140,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			float f = amount;
 			boolean bl = false;
 			float g = 0.0F;
+			Entity entity = source.getDirectEntity();
 			if (amount > 0.0F && this.isDamageSourceBlocked(source)) {
 				float blockStrength = ShieldUtils.getShieldBlockDamageValue(this.getBlockingItem());
 				if(source.isExplosion() || source.isProjectile()) {
@@ -156,17 +157,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					g = f - blockStrength;
 				}
 				if (!source.isProjectile() && !source.isExplosion()) {
-					Entity entity = source.getDirectEntity();
 					if (entity instanceof LivingEntity) {
 						this.blockUsingShield((LivingEntity)entity);
 					}
 				}
 				bl = true;
 			}
+			int invulnerableTime = 10;
+			if (entity != null && entity instanceof Player) {
+				invulnerableTime = Math.min(((PlayerExtensions)((Player)entity)).getAttackDelay((Player)entity), invulnerableTime);
+			}
 
+			if (source.isProjectile()) {
+				invulnerableTime = 0;
+			}
 			thisEntity.animationSpeed = 1.5F;
 			boolean bl2 = true;
-			if ((float)this.invulnerableTime > 10.0F) {
+			if (this.invulnerableTime > 0) {
 				if (amount <= this.lastHurt) {
 					cir.setReturnValue(false);
 					cir.cancel();
@@ -177,13 +184,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				bl2 = false;
 			} else if(source.isFire()) {
 				this.lastHurt = amount;
-				this.invulnerableTime = 30;
+				this.invulnerableTime = invulnerableTime + 20;
 				this.actuallyHurt(source, amount);
 				thisEntity.hurtDuration = 10;
 				thisEntity.hurtTime = thisEntity.hurtDuration;
 			} else {
 				this.lastHurt = amount;
-				this.invulnerableTime = 15;
+				this.invulnerableTime = invulnerableTime;
 				this.actuallyHurt(source, amount);
 				thisEntity.hurtDuration = 10;
 				thisEntity.hurtTime = thisEntity.hurtDuration;
