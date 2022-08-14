@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.config;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.quiltmc.loader.api.QuiltLoader;
 
@@ -17,6 +18,9 @@ public class ConfigHelper {
 
 	public JsonElement itemsJsonElement;
 	public JsonElement generalJsonElement;
+
+	public JsonObject itemsJsonObject;
+	public JsonObject generalJsonObject;
 
 	public ConfigHelper() {
 		configFolderPath = QuiltLoader.getConfigDir().getFileName();
@@ -49,9 +53,28 @@ public class ConfigHelper {
 		try{
 			itemsJsonElement = JsonParser.parseReader(new FileReader(itemsFile));
 			generalJsonElement = JsonParser.parseReader(new FileReader(generalFile));
+
+			itemsJsonObject = itemsJsonElement.getAsJsonObject();
+			generalJsonObject = generalJsonElement.getAsJsonObject();
 		}catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public String getString(JsonObject element, String name) {
+		return element.get(name).getAsString();
+	}
+
+	public Boolean getBoolean(JsonObject element, String name) {
+		return element.get(name).getAsBoolean();
+	}
+
+	public Integer getInt(JsonObject element, String name) {
+		return element.get(name).getAsInt();
+	}
+
+	public Double getDouble(JsonObject element, String name) {
+		return element.get(name).getAsDouble();
 	}
 
 }

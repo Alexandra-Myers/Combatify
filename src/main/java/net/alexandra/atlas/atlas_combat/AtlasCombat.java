@@ -87,23 +87,11 @@ public class AtlasCombat implements ModInitializer {
 		List<Item> items = Registry.ITEM.stream().toList();
 
 		for(Item item : items) {
-			int newStackSize = helper.itemsJsonElement.getAsJsonObject().get(item.toString()).getAsInt();
+			int newStackSize = helper.getInt(helper.itemsJsonObject,item.toString());
 
 			if(item.maxStackSize == newStackSize) continue;
 
-			((ItemExtensions)item).setStackSize(helper.itemsJsonElement.getAsJsonObject().get(item.toString()).getAsInt());
-
-			Map<ItemStack,Integer> changedItems = new HashMap<>();
-			changedItems.put(item.getDefaultInstance(),newStackSize);
-
-			ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-				for(Map.Entry<ItemStack,Integer> entrySet : changedItems.entrySet()) {
-					FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-					buf.writeItem(entrySet.getKey());
-					buf.writeInt(entrySet.getValue());
-					ServerPlayNetworking.send(handler.player,networkingHandler.itemStackSizeNetworkChannel,buf);
-				}
-			});
+			((ItemExtensions)item).setStackSize(newStackSize);
 		}
 
 	}
