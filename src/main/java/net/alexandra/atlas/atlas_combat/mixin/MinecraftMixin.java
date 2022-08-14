@@ -1,11 +1,14 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -36,9 +39,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public Options options;
 
 	@Shadow
-	protected int missTime;
-
-	@Shadow
 	protected abstract boolean startAttack();
 
 	@Shadow
@@ -64,10 +64,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Shadow
 	@Nullable
 	public ClientLevel level;
-
-	@Shadow
-	@Final
-	public GameRenderer gameRenderer;
 
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
 	public void redirectContinueAttack(Minecraft instance, boolean b) {
