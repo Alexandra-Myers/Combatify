@@ -177,7 +177,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				bl2 = false;
 			} else if(source.isFire()) {
 				this.lastHurt = amount;
-				this.invulnerableTime = 20;
+				this.invulnerableTime = 30;
 				this.actuallyHurt(source, amount);
 				thisEntity.hurtDuration = 10;
 				thisEntity.hurtTime = thisEntity.hurtDuration;
