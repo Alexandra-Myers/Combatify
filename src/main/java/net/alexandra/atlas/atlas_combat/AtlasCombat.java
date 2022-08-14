@@ -5,10 +5,13 @@ import io.netty.buffer.Unpooled;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
+import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.alexandra.atlas.atlas_combat.util.DummyAttackDamageMobEffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.gui.screens.DisconnectedScreen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.core.Position;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
@@ -31,18 +34,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
-import org.quiltmc.qsl.lifecycle.api.client.event.ClientWorldTickEvents;
-import org.quiltmc.qsl.networking.api.PacketSender;
-import org.quiltmc.qsl.networking.api.S2CPlayChannelEvents;
+import org.quiltmc.qsl.lifecycle.api.client.event.ClientTickEvents;
+import org.quiltmc.qsl.networking.api.ServerPlayConnectionEvents;
 import org.quiltmc.qsl.networking.api.ServerPlayNetworking;
-import org.quiltmc.qsl.networking.api.client.ClientLoginNetworking;
+import org.quiltmc.qsl.networking.api.client.ClientPlayConnectionEvents;
 import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
-import org.quiltmc.qsl.networking.impl.NetworkingImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
 
 public class AtlasCombat implements ModInitializer {
@@ -59,12 +61,11 @@ public class AtlasCombat implements ModInitializer {
 		return Registry.register(Registry.ENCHANTMENT, new ResourceLocation("atlas_combat","cleaving"),new CleavingEnchantment());
 	}
 
-	public static int ticksElapsed = 0;
-	public static boolean receivedPacket = false;
-	public static boolean hasYetSend = false;
-
 	@Override
 	public void onInitialize(ModContainer mod) {
+
+		NetworkingHandler networkingHandler = new NetworkingHandler();
+
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
 			@Override
 			protected Projectile getProjectile(Level world, Position position, ItemStack stack) {
@@ -86,7 +87,24 @@ public class AtlasCombat implements ModInitializer {
 		List<Item> items = Registry.ITEM.stream().toList();
 
 		for(Item item : items) {
+			int newStackSize = helper.itemsJsonElement.getAsJsonObject().get(item.toString()).getAsInt();
+
+			if(item.maxStackSize == newStackSize) continue;
+
 			((ItemExtensions)item).setStackSize(helper.itemsJsonElement.getAsJsonObject().get(item.toString()).getAsInt());
+
+			Map<ItemStack,Integer> changedItems = new HashMap<>();
+			changedItems.put(item.getDefaultInstance(),newStackSize);
+
+			ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+				for(Map.Entry<ItemStack,Integer> entrySet : changedItems.entrySet()) {
+					FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+					buf.writeItem(entrySet.getKey());
+					buf.writeInt(entrySet.getValue());
+					ServerPlayNetworking.send(handler.player,networkingHandler.itemStackSizeNetworkChannel,buf);
+				}
+			});
 		}
+
 	}
 }
