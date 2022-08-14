@@ -22,9 +22,7 @@ public interface PlayerExtensions {
 	}
 
 	default int getAttackDelay(Player player) {
-		float var1 = (float)player.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F;
-		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
-		return (int)(1.0F / var1 * 20.0F + 0.5F);
+		return (int)(1.0F / (player.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F) * 20.0F + 0.5F);
 	}
 	Multimap getAdditionalModifiers();
 	boolean getMissedAttackRecovery();

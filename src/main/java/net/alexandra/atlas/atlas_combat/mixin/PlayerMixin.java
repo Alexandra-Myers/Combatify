@@ -174,14 +174,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-
-	@Inject(method="actuallyHurt", at=@At("HEAD"))
-	private void modifyPlayerInvulnerability(DamageSource damageSource, float f, CallbackInfo ci) {
-		if (!this.isInvulnerableTo(damageSource)) {
-			this.invulnerableTime = 5;
-		}
-	}
-
 	/**
 	 * @author zOnlyKroks
 	 */

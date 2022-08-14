@@ -8,9 +8,4 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(Entity.class)
 public class EntityMixin {
-	@ModifyConstant(
-		method = "getFireImmuneTicks", constant = @Constant(intValue = 1))
-	private int correctFireImmuneTicks(int constant) {
-		return 3;
-	}
 }
