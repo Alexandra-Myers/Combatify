@@ -94,7 +94,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 		assert player != null;
 		for(InteractionHand hand : InteractionHand.values()) {
 			if (player.isUsingItem() || (((IOptions)options).shieldCrouch().get() && player.isCrouching()) && player.getItemInHand(hand).getItem() instanceof ShieldItem) {
-				((PlayerExtensions) player).customShieldInteractions(0.5F);
+				((PlayerExtensions) player).customShieldInteractions(1.0F);
 			}
 		}
 		if((((PlayerExtensions)player).getMissedAttackRecovery())) {

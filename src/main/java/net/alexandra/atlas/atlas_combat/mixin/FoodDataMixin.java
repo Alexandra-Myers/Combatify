@@ -1,5 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,7 +34,10 @@ public class FoodDataMixin {
 
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V",ordinal = 1))
 	public void modifyNaturalHealing(FoodData instance, float exhaustion) {
-		--foodLevel;
+		int randomNumber = Mth.randomBetweenInclusive(RandomSource.create(), 1, 2);
+		if(randomNumber == 2) {
+			--foodLevel;
+		}
 	}
 
 }
