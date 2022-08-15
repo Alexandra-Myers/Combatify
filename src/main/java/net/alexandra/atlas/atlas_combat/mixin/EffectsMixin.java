@@ -30,8 +30,8 @@ public class EffectsMixin {
 	public static MobEffect DAMAGE_BOOST = registrySet(
 			5,
 			"strength",
-			new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 3.0)
-					.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.3, AttributeModifier.Operation.MULTIPLY_TOTAL));
+			new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 0.2)
+					.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
 	private static MobEffect registrySet(int RawId, String id, MobEffect effect) {
 		Holder<MobEffect> mobEffectHolder = ((WritableRegistry) Registry.MOB_EFFECT).registerOrOverride(OptionalInt.of(RawId), ResourceKey.create(Registry.ATTRIBUTE.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
 		return mobEffectHolder.value();
