@@ -142,27 +142,31 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			float g = 0.0F;
 			Entity entity;
 			if (amount > 0.0F && this.isDamageSourceBlocked(source)) {
-				float blockStrength = ShieldUtils.getShieldBlockDamageValue(this.getBlockingItem());
-				if(source.isExplosion() || source.isProjectile()) {
-					hurtCurrentlyUsedShield(amount);
-					amount = 0.0F;
-					g = f;
-				}else if (blockStrength >= amount) {
-					hurtCurrentlyUsedShield(amount);
-					amount -= blockStrength;
-					g = f - amount;
-				} else if (blockStrength < amount) {
-					hurtCurrentlyUsedShield(blockStrength);
-					amount -= blockStrength;
-					g = f - blockStrength;
-				}
-				if (!source.isProjectile() && !source.isExplosion()) {
-					entity = source.getDirectEntity();
-					if (entity instanceof LivingEntity) {
-						this.blockUsingShield((LivingEntity)entity);
+				for(InteractionHand hand : InteractionHand.values()) {
+					if(source.getEntity() instanceof Player player && player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem && !player.getCooldowns().isOnCooldown(shieldItem)) {
+						float blockStrength = ShieldUtils.getShieldBlockDamageValue(this.getBlockingItem());
+						if (source.isExplosion() || source.isProjectile()) {
+							hurtCurrentlyUsedShield(amount);
+							amount = 0.0F;
+							g = f;
+						} else if (blockStrength >= amount) {
+							hurtCurrentlyUsedShield(amount);
+							amount -= blockStrength;
+							g = f - amount;
+						} else if (blockStrength < amount) {
+							hurtCurrentlyUsedShield(blockStrength);
+							amount -= blockStrength;
+							g = f - blockStrength;
+						}
+						if (!source.isProjectile() && !source.isExplosion()) {
+							entity = source.getDirectEntity();
+							if (entity instanceof LivingEntity) {
+								this.blockUsingShield((LivingEntity) entity);
+							}
+						}
+						bl = true;
 					}
 				}
-				bl = true;
 			}
 			Entity entity2 = source.getEntity();
 			int invulnerableTime = 10;
