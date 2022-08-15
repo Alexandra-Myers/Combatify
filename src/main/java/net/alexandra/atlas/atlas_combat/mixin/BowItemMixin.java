@@ -1,49 +1,106 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.extensions.IBowItem;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(BowItem.class)
 public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowItem {
 	@Shadow
-	public static float getPowerForTime(int i) {
+	public static float getPowerForTime(int useTicks) {
 		return 0;
 	}
 
-	float stupidNecessaryVariable;
 
 	public BowItemMixin(Properties properties) {
 		super(properties);
 	}
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Inject(method = "releaseUsing", at = @At(value = "HEAD"), cancellable = true)
+	public void releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
+		if (user instanceof Player) {
+			Player player = (Player)user;
+			boolean bl = player.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) > 0;
+			ItemStack itemStack = player.getProjectile(stack);
+			if (!itemStack.isEmpty() || bl) {
+				if (itemStack.isEmpty()) {
+					itemStack = new ItemStack(Items.ARROW);
+				}
 
-	@ModifyConstant(method = "releaseUsing",constant = @Constant(floatValue = 1.0F))
-	public float modifyUncertaintyConstant(float value) {
-		return 0.25F * stupidNecessaryVariable;
-	}
-	@Inject(method = "releaseUsing", at = @At(value = "HEAD"))
-	public void injectNewVariable(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-		stupidNecessaryVariable = getFatigueForTime(this.getUseDuration(stack) - remainingUseTicks);
-	}
-	@Inject(method = "releaseUsing", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;shootFromRotation(Lnet/minecraft/world/entity/Entity;FFFFF)V"), locals = LocalCapture.CAPTURE_FAILSOFT)
-	public void injectNewCrit(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks, CallbackInfo ci, Player player, boolean bl, ItemStack itemStack, int i, float f, boolean bl2, ArrowItem arrowItem, AbstractArrow abstractArrow) {
-		if(getPowerForTime(this.getUseDuration(stack) - remainingUseTicks) == 1.0F && getFatigueForTime(this.getUseDuration(stack) - remainingUseTicks) <= 0.5F){
-			abstractArrow.setCritArrow(true);
+				int i = this.getUseDuration(stack) - remainingUseTicks;
+				float f = getPowerForTime(i);
+				if (!((double)f < 0.1)) {
+					float fatigue = getFatigueForTime(i);
+					boolean bl2 = bl && itemStack.is(Items.ARROW);
+					if (!world.isClientSide) {
+						ArrowItem arrowItem = (ArrowItem)(itemStack.getItem() instanceof ArrowItem ? itemStack.getItem() : Items.ARROW);
+						AbstractArrow abstractArrow = arrowItem.createArrow(world, itemStack, player);
+						abstractArrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, f * 3.0F, 0.25F * fatigue);
+						if (f == 1.0F && fatigue <= 0.5F) {
+							abstractArrow.setCritArrow(true);
+						}
+
+						int j = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);
+						if (j > 0) {
+							abstractArrow.setBaseDamage(abstractArrow.getBaseDamage() + (double)j * 0.5 + 0.5);
+						}
+
+						int k = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, stack);
+						if (k > 0) {
+							abstractArrow.setKnockback(k);
+						}
+
+						if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
+							abstractArrow.setSecondsOnFire(100);
+						}
+
+						stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(player.getUsedItemHand()));
+						if (bl2 || player.getAbilities().instabuild && (itemStack.is(Items.SPECTRAL_ARROW) || itemStack.is(Items.TIPPED_ARROW))) {
+							abstractArrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+						}
+
+						world.addFreshEntity(abstractArrow);
+					}
+
+					world.playSound(
+							null,
+							player.getX(),
+							player.getY(),
+							player.getZ(),
+							SoundEvents.ARROW_SHOOT,
+							SoundSource.PLAYERS,
+							1.0F,
+							1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + f * 0.5F
+					);
+					if (!bl2 && !player.getAbilities().instabuild) {
+						itemStack.shrink(1);
+						if (itemStack.isEmpty()) {
+							player.getInventory().removeItem(itemStack);
+						}
+					}
+
+					player.awardStat(Stats.ITEM_USED.get(this));
+				}
+			}
 		}
-	}
-	@Redirect(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;setCritArrow(Z)V"))
-	public void redirectCritArrow(AbstractArrow instance, boolean b) {
+		ci.cancel();
 	}
 
 	@Override
