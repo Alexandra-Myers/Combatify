@@ -1,16 +1,25 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(PotionItem.class)
 public class PotionItemMixin {
 
-    @Overwrite
+	@Unique
+	public final int useDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"potionUseDuration");
+
+
+	/**
+	 * @author zOnlyKroks
+	 */
+	@Overwrite
     public int getUseDuration(ItemStack stack)
     {
-        return 20;
+        return useDuration;
     }
 }
