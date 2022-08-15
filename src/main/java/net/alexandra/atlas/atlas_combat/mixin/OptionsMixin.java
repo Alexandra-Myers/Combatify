@@ -1,6 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.AtlasClient;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -23,22 +23,22 @@ public abstract class OptionsMixin implements IOptions {
 
 	@Inject(method = "processOptions", at = @At(value = "HEAD"))
 	public void injectOptions(Options.FieldAccess visitor, CallbackInfo ci) {
-		visitor.process("autoAttack", AtlasCombat.autoAttack);
-		visitor.process("shieldCrouch", AtlasCombat.shieldCrouch);
-		visitor.process("lowShield", AtlasCombat.lowShield);
+		visitor.process("autoAttack", AtlasClient.autoAttack);
+		visitor.process("shieldCrouch", AtlasClient.shieldCrouch);
+		visitor.process("lowShield", AtlasClient.lowShield);
 	}
 
 	@Override
 	public OptionInstance<Boolean> autoAttack() {
-		return AtlasCombat.autoAttack;
+		return AtlasClient.autoAttack;
 	}
 	@Override
 	public OptionInstance<Boolean> shieldCrouch() {
-		return AtlasCombat.shieldCrouch;
+		return AtlasClient.shieldCrouch;
 	}
 
 	@Override
 	public OptionInstance<Boolean> lowShield() {
-		return AtlasCombat.lowShield;
+		return AtlasClient.lowShield;
 	}
 }

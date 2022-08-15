@@ -8,6 +8,8 @@ import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -84,9 +86,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Final
 	public float baseValue = 1.0F;
 	@Unique
-	@Final
-	public Minecraft minecraft = Minecraft.getInstance();
-	@Unique
 	public Multimap additionalModifiers;
 
 	@Unique
@@ -148,32 +147,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "tick", at = @At("HEAD"))
-	public void injectSneakShield(CallbackInfo ci) {
-		if(player.isOnGround()) {
-			if (this.hasEnabledShieldOnCrouch() && player.isCrouching()) {
-				for (InteractionHand interactionHand : InteractionHand.values()) {
-					ItemStack itemStack = this.player.getItemInHand(interactionHand);
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && player.isCrouching()) {
-						if(!player.getCooldowns().isOnCooldown(shieldItem)) {
-							((IMinecraft) minecraft).startUseItem(interactionHand);
-							if (lowShieldEnabled()) {
-								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
-							}
-						}
-					}
-				}
-			} else if ((this.hasEnabledShieldOnCrouch() && player.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
-				for (InteractionHand interactionHand : InteractionHand.values()) {
-					ItemStack itemStack = this.player.getItemInHand(interactionHand);
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem) {
-						minecraft.gameMode.releaseUsingItem(player);
-					}
-				}
-			}
-		}
-	}
-
 	/**
 	 * @author zOnlyKroks
 	 */
@@ -192,10 +165,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
-		return ((IOptions)minecraft.options).shieldCrouch().get();
-	}
-	public boolean lowShieldEnabled() {
-		return ((IOptions)minecraft.options).lowShield().get();
+		return PlayerExtensions.super.hasEnabledShieldOnCrouch();
 	}
 
 	/**

@@ -4,7 +4,6 @@ import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
-import net.minecraft.client.OptionInstance;
 import net.minecraft.core.Position;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
@@ -30,10 +29,6 @@ public class AtlasCombat implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Atlas Combat");
 
 	public static ConfigHelper helper = new ConfigHelper();
-	private static final Component ACCESSIBILITY_TOOLTIP_LOW_SHIELD = Component.translatable("options.lowShield.tooltip");
-	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
-	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
-	public static final OptionInstance<Boolean> lowShield = OptionInstance.createBoolean("options.lowShield", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_LOW_SHIELD),false);
 
 	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = register();
 	public static CleavingEnchantment register() {
@@ -42,8 +37,6 @@ public class AtlasCombat implements ModInitializer {
 
 	@Override
 	public void onInitialize(ModContainer mod) {
-
-		NetworkingHandler networkingHandler = new NetworkingHandler();
 
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
 			@Override
@@ -55,16 +48,17 @@ public class AtlasCombat implements ModInitializer {
 				return trident;
 			}
 		});
+//
+//		List<Item> items = Registry.ITEM.stream().toList();
+//
+//		for(Item item : items) {
+//			int newStackSize = helper.getInt(helper.itemsJsonObject,item.toString());
+//
+//			if(item.maxStackSize == newStackSize) continue;
 
-		List<Item> items = Registry.ITEM.stream().toList();
-
-		for(Item item : items) {
-			int newStackSize = helper.getInt(helper.itemsJsonObject,item.toString());
-
-			if(item.maxStackSize == newStackSize) continue;
-
-			((ItemExtensions)item).setStackSize(newStackSize);
-		}
+		((ItemExtensions)Items.SNOWBALL).setStackSize(64);
+		((ItemExtensions)Items.EGG).setStackSize(16);
+//		}
 
 	}
 }
