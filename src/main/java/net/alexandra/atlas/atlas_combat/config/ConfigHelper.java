@@ -77,4 +77,8 @@ public class ConfigHelper {
 		return element.get(name).getAsDouble();
 	}
 
+	public Float getFloat(JsonObject element, String name) {
+		return element.get(name).getAsFloat();
+	}
+
 }

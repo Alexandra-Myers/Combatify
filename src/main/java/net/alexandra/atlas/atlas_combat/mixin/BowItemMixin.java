@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.IBowItem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -15,11 +16,15 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BowItem.class)
 public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowItem {
+
+	@Unique
+	public final float configUncertainty = AtlasCombat.helper.getFloat(AtlasCombat.helper.generalJsonObject,"bowUncertainty");
 	@Shadow
 	public static float getPowerForTime(int useTicks) {
 		return 0;
@@ -52,7 +57,7 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 					if (!world.isClientSide) {
 						ArrowItem arrowItem = (ArrowItem)(itemStack.getItem() instanceof ArrowItem ? itemStack.getItem() : Items.ARROW);
 						AbstractArrow abstractArrow = arrowItem.createArrow(world, itemStack, player);
-						abstractArrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, f * 3.0F, 0.25F * fatigue);
+						abstractArrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, f * 3.0F, configUncertainty * fatigue);
 						if (f == 1.0F && fatigue <= 0.5F) {
 							abstractArrow.setCritArrow(true);
 						}
