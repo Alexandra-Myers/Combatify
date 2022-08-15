@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.enchantment;
 
-import com.chocohead.mm.api.ClassTinkerers;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.item.AxeItem;

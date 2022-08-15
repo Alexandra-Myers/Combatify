@@ -23,10 +23,6 @@ dependencies {
 		officialMojangMappings()
 		// Uncomment if you want to use Mojang mappings as your primary mappings, falling back on QM for parameters and Javadocs
 	}
-	modImplementation("com.github.Chocohead:Fabric-ASM:v${project.fabric_asm_version}") {
-		exclude group: 'net.fabricmc'
-		exclude group: "net.fabricmc.fabric-api"
-	}
 	modImplementation libs.quilt.loader
 
 	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
