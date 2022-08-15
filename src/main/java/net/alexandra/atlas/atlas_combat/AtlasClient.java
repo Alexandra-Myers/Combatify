@@ -14,7 +14,5 @@ public class AtlasClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient(ModContainer mod) {
 
-		NetworkingHandler networkingHandler = new NetworkingHandler();
-
 	}
 }
