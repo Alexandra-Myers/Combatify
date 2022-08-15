@@ -37,6 +37,7 @@
     "SwordItemMixin",
     "ThrownTridentMixin",
     "TridentItemMixin"
+
   ],
   "injectors": {
     "defaultRequire": 1

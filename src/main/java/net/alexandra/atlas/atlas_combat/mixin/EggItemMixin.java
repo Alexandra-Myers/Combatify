@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EggItemMixin {
 
 	@Unique
-	public final int eggItemCooldown = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"eggItemCooldown");
+	public final int eggItemCooldown = 4/*AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"eggItemCooldown")*/;
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
