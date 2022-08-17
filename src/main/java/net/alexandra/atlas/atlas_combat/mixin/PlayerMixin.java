@@ -474,10 +474,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange ;
 		}
 		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;
 	}
 
 	@Override
@@ -491,10 +491,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 		}
 		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;
 	}
 
 	@Override

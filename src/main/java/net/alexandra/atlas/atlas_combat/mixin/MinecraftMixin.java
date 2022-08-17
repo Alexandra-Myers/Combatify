@@ -1,38 +1,25 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import io.netty.buffer.Unpooled;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
-import net.fabricmc.fabric.impl.screenhandler.client.ClientNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import org.quiltmc.qsl.block.extensions.api.QuiltBlockSettings;
-import org.quiltmc.qsl.networking.api.ServerPlayNetworking;
+import net.minecraft.world.phys.*;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,8 +29,6 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Optional;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements IMinecraft {
@@ -134,18 +119,18 @@ public abstract class MinecraftMixin implements IMinecraft {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
-			Entity entity = crosshairPickEntity;
-			assert entity != null;
-			if (bl && entity.distanceToSqr(player.getEyePosition()) < ((PlayerExtensions)player).getSquaredAttackRange(player, Mth.square(6.0))) {
-				hitResult = new EntityHitResult(entity);
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
+			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
+			if (entity != null && bl && entity.distanceToSqr(player.getEyePosition()) < ((PlayerExtensions)player).getSquaredAttackRange(player, Mth.square(6.0))) {
+				crosshairPickEntity = entity;
+				hitResult = rayTraceResult;
 				return hitResult.getType();
 			}else {
 				return type;
 			}
 
-		}else {
-			return type;
 		}
+		return type;
 	}
 	@Unique
 	@Override
@@ -168,5 +153,23 @@ public abstract class MinecraftMixin implements IMinecraft {
 					}
 				}
 		}
+	}
+	@Nullable
+	@Override
+	public EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
+		Vec3 from = player.getEyePosition(partialTicks);
+		Vec3 look = player.getViewVector(partialTicks);
+		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
+
+		return ProjectileUtil.getEntityHitResult(
+				player.level,
+				player,
+				from,
+				to,
+				new AABB(from, to),
+				EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
+				&& e.isPickable()
+				&& e instanceof LivingEntity)
+		);
 	}
 }

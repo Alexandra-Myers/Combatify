@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
+import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
@@ -88,6 +89,8 @@ public abstract class GuiMixin extends GuiComponent {
 					if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
 						float f = this.minecraft.player.getAttackStrengthScale(0.0F);
 						boolean bl = false;
+						EntityHitResult hitResult = ((IMinecraft)minecraft).rayTraceEntity(minecraft.player, 1.0F, ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 6.0));
+						minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 						if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= 1.0F) {
 							bl = (this.minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)this.minecraft.player).getCurrentAttackReach(0.0F);
 							bl &= this.minecraft.crosshairPickEntity.isAlive();
