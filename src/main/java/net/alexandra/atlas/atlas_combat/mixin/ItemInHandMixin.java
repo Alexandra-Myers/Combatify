@@ -16,15 +16,4 @@ public class ItemInHandMixin {
 	public float modifyArmPos4(LocalPlayer instance, float v) {
 		return (instance.getAttackStrengthScale(v) / 2.0F);
 	}
-	@Inject(method = "applyItemArmAttackTransform", at = @At(value = "HEAD"), cancellable = true)
-	public void changeArmAttack(PoseStack matrices, HumanoidArm arm, float swingProgress, CallbackInfo ci) {
-		int var4 = arm == HumanoidArm.RIGHT ? 1 : -1;
-		float var5 = Mth.sin(swingProgress * swingProgress * 3.1415927F);
-		matrices.mulPose(Vector3f.YP.rotationDegrees((float)var4 * (45.0F + var5 * -20.0F)));
-		float var6 = Mth.sin(Mth.sqrt(swingProgress) * 3.1415927F);
-		matrices.mulPose(Vector3f.ZP.rotationDegrees((float)var4 * var6 * -20.0F));
-		matrices.mulPose(Vector3f.XP.rotationDegrees(var6 * -80.0F));
-		matrices.mulPose(Vector3f.YP.rotationDegrees((float)var4 * -45.0F));
-		ci.cancel();
-	}
 }

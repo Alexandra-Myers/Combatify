@@ -11,7 +11,6 @@ loom {
 }
 
 repositories {
-	allprojects { repositories { maven { url 'https://jitpack.io' } } }
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -28,6 +27,8 @@ dependencies {
 	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
 	// Quilted Fabric API will automatically pull in the correct QSL version.
 	modImplementation libs.quilted.fabric.api
+	include 'com.github.rizecookey:CookeyMod:1.7.0+1.19.2'
+	modImplementation 'com.github.rizecookey:CookeyMod:1.7.0+1.19.2'
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 }
 
