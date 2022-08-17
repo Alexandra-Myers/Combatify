@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 public class HoneyBottleItemMixin {
 
 	@Unique
-	public final int maxUseDuration = 20/*AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"honeyBottleUseDuration")*/;
+	public final int maxUseDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"honeyBottleUseDuration");
 
 	/**
 	 * @author zOnlyKroks

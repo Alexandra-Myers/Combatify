@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowItem {
 
 	@Unique
-	public final float configUncertainty = 0.25F/*AtlasCombat.helper.getFloat(AtlasCombat.helper.generalJsonObject,"bowUncertainty")*/;
+	public final float configUncertainty = AtlasCombat.helper.getFloat(AtlasCombat.helper.generalJsonObject,"bowUncertainty");
 	@Shadow
 	public static float getPowerForTime(int useTicks) {
 		return 0;

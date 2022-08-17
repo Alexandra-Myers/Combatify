@@ -38,6 +38,8 @@ public class AtlasCombat implements ModInitializer {
 	@Override
 	public void onInitialize(ModContainer mod) {
 
+		NetworkingHandler networkingHandler = new NetworkingHandler();
+
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
 			@Override
 			protected Projectile getProjectile(Level world, Position position, ItemStack stack) {
@@ -48,17 +50,16 @@ public class AtlasCombat implements ModInitializer {
 				return trident;
 			}
 		});
-//
-//		List<Item> items = Registry.ITEM.stream().toList();
-//
-//		for(Item item : items) {
-//			int newStackSize = helper.getInt(helper.itemsJsonObject,item.toString());
-//
-//			if(item.maxStackSize == newStackSize) continue;
 
-		((ItemExtensions)Items.SNOWBALL).setStackSize(64);
-		((ItemExtensions)Items.EGG).setStackSize(16);
-//		}
+		List<Item> items = Registry.ITEM.stream().toList();
+
+		for(Item item : items) {
+			int newStackSize = helper.getInt(helper.itemsJsonObject,Registry.ITEM.getKey(item).getPath());
+
+			if(item.maxStackSize == newStackSize) continue;
+
+		((ItemExtensions)item).setStackSize(newStackSize);
+		}
 
 	}
 }

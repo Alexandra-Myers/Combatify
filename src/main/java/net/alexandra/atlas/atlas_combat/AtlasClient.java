@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat;
 
+import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.Component;
@@ -13,6 +14,8 @@ public class AtlasClient implements ClientModInitializer {
 	public static final OptionInstance<Boolean> lowShield = OptionInstance.createBoolean("options.lowShield", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_LOW_SHIELD),false);
 	@Override
 	public void onInitializeClient(ModContainer mod) {
+
+		ClientNetworkingHandler networkingHandler = new ClientNetworkingHandler();
 
 	}
 }

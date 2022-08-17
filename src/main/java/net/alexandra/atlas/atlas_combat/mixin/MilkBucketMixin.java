@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 public class MilkBucketMixin {
 
 	@Unique
-	public final int useDuration = 20/*AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"milkBucketUseDuration")*/;
+	public final int useDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"milkBucketUseDuration");
 
 	/**
 	 * @author zOnlyKroks

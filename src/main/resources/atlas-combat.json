@@ -2,7 +2,6 @@
   "maxWaitForPacketResponse" : 20,
   "bowUncertainty": 0.25,
   "eggItemCooldown": 4,
-  "immuneFireTicks": 3,
   "honeyBottleUseDuration" : 20,
   "milkBucketUseDuration" : 20,
   "instantHealthBonus" : 6,

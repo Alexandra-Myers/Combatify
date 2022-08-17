@@ -18,36 +18,11 @@ public class NetworkingHandler {
 
 	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
 
-	public int ticksTowait = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"maxWaitForPacketResponse");
-
-	public static boolean receivedAnswer = false;
-	public static int ticksElapsed = 0;
-
 	public NetworkingHandler() {
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> receivedAnswer = false);
-
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			FriendlyByteBuf packetBuf = new FriendlyByteBuf(Unpooled.buffer());
 			packetBuf.writeBoolean(true);
 			ServerPlayNetworking.send(handler.player, modDetectionNetworkChannel,packetBuf);
-		});
-
-		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
-			if(buf.getBoolean(0)) {
-				receivedAnswer = true;
-			}
-		});
-
-		ClientTickEvents.END.register(client -> {
-			if(Minecraft.getInstance().getConnection() != null && Minecraft.getInstance().player != null && !receivedAnswer) {
-				ticksElapsed++;
-
-				if(ticksElapsed >= ticksTowait && !receivedAnswer) {
-					Minecraft.getInstance().player.connection.getConnection().disconnect(Component.literal("Mod not present on server!"));
-					ticksElapsed = 0;
-					receivedAnswer = false;
-				}
-			}
 		});
 	}
 }
