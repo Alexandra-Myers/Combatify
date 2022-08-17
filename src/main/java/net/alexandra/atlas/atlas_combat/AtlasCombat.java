@@ -58,7 +58,7 @@ public class AtlasCombat implements ModInitializer {
 
 			if(item.maxStackSize == newStackSize) continue;
 
-		((ItemExtensions)item).setStackSize(newStackSize);
+			((ItemExtensions)item).setStackSize(newStackSize);
 		}
 
 	}
