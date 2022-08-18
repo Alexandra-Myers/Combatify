@@ -6,6 +6,6 @@
   "milkBucketUseDuration" : 20,
   "instantHealthBonus" : 6,
   "potionUseDuration" : 20,
-  "snowballUseDuration" : 20,
+  "snowballUseDuration" : 4,
   "snowballDamage": 0.5
 }
