@@ -125,6 +125,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
+		if(getAttackStrengthScale(baseValue) > 1.0F) {
+			--instance.attackStrengthTicker;
+		}
 	}
 
 	@Inject(method = "die", at = @At(value = "HEAD"))
@@ -184,7 +187,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					} else {
 						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), MobType.UNDEFINED);
 					}
-					float currentAttackReach = this.getCurrentAttackReach(baseValue);
+					float currentAttackReach = (float) this.getAttackRange(player, 2.5);
 
 					float attackStrengthScale = this.getAttackStrengthScale(baseValue);
 					attackDamage *= 1;
@@ -351,7 +354,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			player.swing(InteractionHand.MAIN_HAND);
 			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
 			if (var1 > 0.0F && this.checkSweepAttack()) {
-				float var2 = this.getCurrentAttackReach(baseValue);
+				float var2 = (float) this.getAttackRange(player, 2.5);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
@@ -474,7 +477,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange ;
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 		}
 		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
 		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) - 1 : baseAttackRange - 1;

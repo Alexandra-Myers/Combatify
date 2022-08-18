@@ -33,7 +33,8 @@ public class AccessibilityOptionsMixin {
 				options.darknessEffectScale(),
 				((IOptions)options).autoAttack(),
 				((IOptions)options).shieldCrouch(),
-				((IOptions)options).lowShield()
+				((IOptions)options).lowShield(),
+				((IOptions)options).attackIndicatorValue()
 		};
 		cir.setReturnValue(optionInstances);
 		cir.cancel();

@@ -4,7 +4,9 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
+import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
@@ -87,12 +89,13 @@ public abstract class GuiMixin extends GuiComponent {
 					int i = 15;
 					this.blit(matrices, (this.screenWidth - 15) / 2, (this.screenHeight - 15) / 2, 0, 0, 15, 15);
 					if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
+						float maxIndicator =  ((IOptions)options).attackIndicatorValue().get().floatValue();
 						float f = this.minecraft.player.getAttackStrengthScale(0.0F);
 						boolean bl = false;
-						EntityHitResult hitResult = ((IMinecraft)minecraft).rayTraceEntity(minecraft.player, 1.0F, ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 6.0));
+						EntityHitResult hitResult = ((IMinecraft)minecraft).rayTraceEntity(minecraft.player, 1.0F, ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5));
 						minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-						if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= 1.0F) {
-							bl = (this.minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)this.minecraft.player).getCurrentAttackReach(0.0F);
+						if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
+							bl = (this.minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
 							bl &= this.minecraft.crosshairPickEntity.isAlive();
 						}
 
@@ -100,8 +103,8 @@ public abstract class GuiMixin extends GuiComponent {
 						int k = this.screenWidth / 2 - 8;
 						if (bl) {
 							this.blit(matrices, k, j, 68, 94, 16, 16);
-						} else if (f < 1.0F) {
-							int l = (int)(f * 17.0F);
+						} else if (f < maxIndicator) {
+							int l = (int)((f/maxIndicator) * 17.0F);
 							this.blit(matrices, k, j, 36, 94, 16, 4);
 							this.blit(matrices, k, j, 52, 94, l, 4);
 						}

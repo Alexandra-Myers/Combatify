@@ -77,11 +77,11 @@ public abstract class MinecraftMixin implements IMinecraft {
 		}else {
 			if (b && ((IOptions) options).autoAttack().get()) {
 				if((((PlayerExtensions)player).getMissedAttackRecovery())){
-					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.2F, true)) {
+					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.8F)) {
 						startAttack();
 					}
 				}else{
-					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.0F, true)) {
+					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.2F)) {
 						startAttack();
 					}
 				}
@@ -103,7 +103,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			}
 		}
 		if((((PlayerExtensions)player).getMissedAttackRecovery())) {
-			if(!(((PlayerExtensions) player).isAttackAvailable(1.0F, 1.2F))){
+			if(!(((PlayerExtensions) player).isAttackAvailable(1.0F, 1.6F))){
 				cir.setReturnValue(false);
 				cir.cancel();
 			}
@@ -121,7 +121,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
-			if (entity != null && bl && entity.distanceToSqr(player.getEyePosition()) < ((PlayerExtensions)player).getSquaredAttackRange(player, Mth.square(6.0))) {
+			if (entity != null && bl) {
 				crosshairPickEntity = entity;
 				hitResult = rayTraceResult;
 				return hitResult.getType();
@@ -143,13 +143,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 					ItemStack itemStack = this.player.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty()) {
-						InteractionResult interactionResult3 = this.gameMode.useItem(this.player, interactionHand);
-						if (interactionResult3.consumesAction()) {
-							if (interactionResult3.shouldSwing()) {
-								this.player.swing(interactionHand);
-							}
-							return;
-						}
+						this.gameMode.useItem(this.player, interactionHand);
 					}
 				}
 		}
