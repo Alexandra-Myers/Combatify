@@ -143,8 +143,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			Entity entity;
 			if (amount > 0.0F && this.isDamageSourceBlocked(source)) {
 				for(InteractionHand hand : InteractionHand.values()) {
-					if(source.getEntity() instanceof Player player && player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem && !player.getCooldowns().isOnCooldown(shieldItem)) {
-						float blockStrength = ShieldUtils.getShieldBlockDamageValue(this.getBlockingItem());
+					if(thisEntity instanceof Player player && player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem && player.isUsingItem() && !player.getCooldowns().isOnCooldown(shieldItem)) {
+						float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
 						if (source.isExplosion() || source.isProjectile()) {
 							hurtCurrentlyUsedShield(amount);
 							amount = 0.0F;
