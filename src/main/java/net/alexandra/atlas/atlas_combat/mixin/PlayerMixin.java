@@ -170,7 +170,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
-		return PlayerExtensions.super.hasEnabledShieldOnCrouch();
+		return true;
 	}
 
 	/**
@@ -403,26 +403,29 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean isAttackAvailable(float baseTime) {
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
+		} else {
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 40.0F;
 		}
-		return false;
 	}
 	@Override
 	public boolean isAttackAvailable(float baseTime, float minValue) {
 		if (!(getAttackStrengthScale(baseTime) < minValue)) {
 			return true;
+		} else {
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 40.0F;
 		}
-		return false;
 	}
 	@Override
 	public boolean isAttackAvailable(float baseTime, float minValue, boolean isAutoAttack) {
-		if (!(getAttackStrengthScale(baseTime) < minValue)) {
+		if (!(getAttackStrengthScale(baseTime) < minValue) && !isAutoAttack) {
 			return true;
+		} else if (!(getAttackStrengthScale(baseTime) < minValue) && isAutoAttack) {
+			return getAttackStrengthScale(baseTime) > minValue + 12.0F;
 		} else if (isAutoAttack){
-			if((getAttackStrengthScale(baseTime) < (minValue + 0.1F))) {
-				return true;
-			}
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 50.0F;
+		} else {
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 40.0F;
 		}
-		return false;
 	}
 
 	protected boolean checkSweepAttack() {

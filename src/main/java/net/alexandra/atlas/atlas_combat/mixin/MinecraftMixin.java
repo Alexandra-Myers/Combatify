@@ -76,14 +76,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 			continueAttack(b);
 		}else {
 			if (b && ((IOptions) options).autoAttack().get()) {
-				if((((PlayerExtensions)player).getMissedAttackRecovery())){
-					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.8F)) {
-						startAttack();
-					}
-				}else{
-					if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.2F)) {
-						startAttack();
-					}
+				if (((PlayerExtensions) player).isAttackAvailable(1.0F, 1.0F, true)) {
+					startAttack();
 				}
 			} else {
 				continueAttack(b);
@@ -102,15 +96,14 @@ public abstract class MinecraftMixin implements IMinecraft {
 				((PlayerExtensions) player).customShieldInteractions(1.0F);
 			}
 		}
-		if((((PlayerExtensions)player).getMissedAttackRecovery())) {
-			if(!(((PlayerExtensions) player).isAttackAvailable(1.0F, 1.6F))){
-				cir.setReturnValue(false);
-				cir.cancel();
-			}
-		}else if (!(((PlayerExtensions) player).isAttackAvailable(1.0F))) {
+		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F))) {
 			cir.setReturnValue(false);
 			cir.cancel();
 		}
+	}
+	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
+	public final void redirectResetForMiss(LocalPlayer instance) {
+		((PlayerExtensions)instance).attackAir();
 	}
 	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getType()Lnet/minecraft/world/phys/HitResult$Type;"))
 	public final HitResult.Type redirectResult(HitResult instance) {

@@ -383,6 +383,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
-		return false;
+		return true;
 	}
 }

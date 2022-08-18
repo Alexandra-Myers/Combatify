@@ -38,15 +38,6 @@ public class ServerGamePacketMixin {
 	private double getActualReachDistance() {
 		return ((PlayerExtensions)player).getSquaredReach(player, MAX_INTERACTION_DISTANCE);
 	}
-	@Inject(method = "handleInteract",
-			at = @At(value = "HEAD"), cancellable = true)
-	public void inject(ServerboundInteractPacket packet, CallbackInfo ci) {
-		final Entity entity1 = packet.getTarget(player.getLevel());
-		if(entity1 == null) {
-			((PlayerExtensions)player).attackAir();
-			ci.cancel();
-		}
-	}
 	@ModifyConstant(
 			method = "handleUseItemOn",
 			require = 1, allow = 1, constant = @Constant(doubleValue = 64.0))
