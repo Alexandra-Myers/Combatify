@@ -74,8 +74,9 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 		ThrownTrident trident = ((ThrownTrident) (Object)this);
 		Entity entity = entityHitResult.getEntity();
 		float f = 7.0F;
+		EnchantmentHelper helper = new EnchantmentHelper();
 		if (entity instanceof LivingEntity livingEntity) {
-			f += IEnchantmentHelper.getDamageBonus(this.tridentItem, livingEntity);
+			f += ((IEnchantmentHelper)helper).getDamageBonus(this.tridentItem, livingEntity);
 		}
 
 		Entity entity2 = trident.getOwner();

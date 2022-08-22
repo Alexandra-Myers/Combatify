@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,6 +21,7 @@ import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
 
 @Mixin(DiggerItem.class)
 public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions {
+	public boolean allToolsAreWeapons = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"toolsAreWeapons");
 	@Mutable
 	@Final
 	private WeaponType type;
@@ -46,7 +48,18 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
 		if (!entity.level.isClientSide && (!(entity instanceof Player) || !((Player)entity).getAbilities().invulnerable)) {
-			if (instance.isDamageableItem()) {
+			if (instance.isDamageableItem() && allToolsAreWeapons) {
+				if (instance.hurt(1, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
+					breakCallback.accept(entity);
+					Item item = instance.getItem();
+					instance.shrink(1);
+					if (entity instanceof Player) {
+						((Player) entity).awardStat(Stats.ITEM_BROKEN.get(item));
+					}
+
+					instance.setDamageValue(0);
+				}
+			}else if(instance.isDamageableItem()) {
 				if((Object)this instanceof AxeItem || (Object) this instanceof HoeItem) {
 					if (instance.hurt(1, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
 						breakCallback.accept(entity);

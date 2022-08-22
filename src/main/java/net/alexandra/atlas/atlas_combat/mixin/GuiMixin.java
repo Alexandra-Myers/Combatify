@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
@@ -22,19 +23,21 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin extends GuiComponent {
+	@Unique
+	ResourceLocation SHIELD_INDICATOR_TEXTURE = new ResourceLocation("textures/gui/shield_indicator.png");
+	@Unique
+	ResourceLocation SHIELD_INDICATOR_TEXTURE_DISABLED = new ResourceLocation("textures/gui/shield_indicator_disabled.png");
 	@Shadow
 	@Final
 	private Minecraft minecraft;
@@ -109,6 +112,26 @@ public abstract class GuiMixin extends GuiComponent {
 							this.blit(matrices, k, j, 52, 94, l, 4);
 						}
 					}
+					if(((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR) {
+						for(InteractionHand hand : InteractionHand.values()) {
+							if (minecraft.player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem) {
+								int j = this.screenHeight / 2 - 7 + 28;
+								int k = this.screenWidth / 2 - 8;
+								if(!minecraft.player.getCooldowns().isOnCooldown(shieldItem)) {
+									RenderSystem.setShaderTexture(17, SHIELD_INDICATOR_TEXTURE);
+								}else {
+									RenderSystem.setShaderTexture(18, SHIELD_INDICATOR_TEXTURE_DISABLED);
+								}
+								int q = (int)(17.0F);
+								RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+								this.blit(matrices, k, j, 36, 94, 16, 4);
+								this.blit(matrices, k, j, 52, 94, 20, 4);
+							}
+						}
+					}
+
+					RenderSystem.disableBlend();
+
 				}
 
 			}
@@ -173,6 +196,28 @@ public abstract class GuiMixin extends GuiComponent {
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 					this.blit(matrices, p, o, 0, 94, 18, 18);
 					this.blit(matrices, p, o + 18 - q, 18, 112 - q, 18, q);
+				}
+			}
+			if(((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR) {
+				for(InteractionHand hand : InteractionHand.values()) {
+					if (minecraft.player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem) {
+						int o = this.screenHeight - 20;
+						int p = i + 91 + 6 + 20;
+						if (humanoidArm == HumanoidArm.RIGHT) {
+							p = i - 91 - 42;
+						}
+						if(!minecraft.player.getCooldowns().isOnCooldown(shieldItem)) {
+							if(minecraft.player.isUsingItem()) {
+								RenderSystem.setShaderTexture(15, SHIELD_INDICATOR_TEXTURE);
+							}
+						}else {
+							RenderSystem.setShaderTexture(16, SHIELD_INDICATOR_TEXTURE_DISABLED);
+						}
+						int q = 19;
+						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+						this.blit(matrices, p, o, 0, 94, 18, 18);
+						this.blit(matrices, p, o + 18 - q, 18, 112 - q, 18, q);
+					}
 				}
 			}
 

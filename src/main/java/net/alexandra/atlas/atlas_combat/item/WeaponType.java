@@ -121,6 +121,7 @@ public enum WeaponType {
 
     public float getReach() {
         switch (this) {
+			case PICKAXE:
             case SWORD:
                 return 0.5F;
 			case HOE:
@@ -133,10 +134,10 @@ public enum WeaponType {
 
 	public float getBlockReach() {
 		switch (this) {
+			case PICKAXE:
 			case SWORD:
 			case AXE:
 				return 1.5F;
-			case PICKAXE:
 			case SHOVEL:
 				return 1.0F;
 			case HOE:

@@ -1,15 +1,19 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
+import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.EntityDamageSource;
@@ -24,7 +28,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.ProtectionEnchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -90,6 +94,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	protected int noActionTime;
 
+	@Shadow
+	public float attackAnim;
+
+	@Shadow
+	public float oAttackAnim;
+
 	/**
 	 * @author
 	 * @reason
@@ -119,6 +129,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
+		boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"specialWeaponFunctions");
+		boolean axeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"axeFunction");
+		boolean pickaxeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"pickaxeFunction");
+		boolean shovelFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"shovelFunction");
+		boolean hoeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"hoeFunction");
+		boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"swordFunction");
+		boolean tridentFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"tridentFunction");
 		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();
@@ -254,7 +271,157 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					this.markHurt();
 				}
 
-				if (entity2 != null) {
+				if(specialWeaponFunctions && entity2 != null) {
+					if(entity2 instanceof LivingEntity livingEntity) {
+						if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for (e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
+							newKnockback(0.6F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity)), d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.6F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem && shovelFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e = entity2.getZ() - this.getZ();
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							sideKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround() && !livingEntity.isOnGround()) {
+							double d = 0;
+
+							double e = 0;
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							downwardsKnockback(2.0F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround()) {
+							double d = 0;
+
+							double e = 0;
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							downwardsKnockback(1.0F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							nonVerticalKnockback(1.0F, d, e, livingEntity);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem && hoeFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							invertedKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem && swordFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity) / 2), d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F, d, e);
+						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && tridentFunctions) {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							EnchantmentHelper helper = new EnchantmentHelper();
+							int level = (int)((IEnchantmentHelper)helper).getKnockbackDebuff(livingEntity.getItemInHand(InteractionHand.MAIN_HAND), thisEntity);
+							if(level > 0) {
+								newKnockback((float) (0.5F / Mth.absMax(1.0, level/2)), d, e);
+							}
+							newKnockback(0.5F, d, e);
+						}else {
+							double d = entity2.getX() - this.getX();
+
+							double e;
+							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+								d = (Math.random() - Math.random()) * 0.01;
+							}
+
+							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+							newKnockback(0.5F, d, e);
+						}
+					}
+				}else if (entity2 != null) {
 					double d = entity2.getX() - this.getX();
 
 					double e;
@@ -321,6 +488,67 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
 			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
+		}
+	}
+	public void sideKnockback(float var1, double var2, double var4) {
+		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack var8 = this.getBlockingItem();
+		if (!var8.isEmpty()) {
+			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		}
+
+		var1 = (float)((double)var1 * (1.0 - var6));
+		if (!(var1 <= 0.0F)) {
+			this.hasImpulse = true;
+			Vec3 var9 = this.getDeltaMovement();
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			this.setDeltaMovement(var9.z / 2.0 - var10.z, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.x / 2.0 - var10.x);
+		}
+	}
+	@Override
+	public void invertedKnockback(float var1, double var2, double var4) {
+		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack var8 = this.getBlockingItem();
+		if (!var8.isEmpty()) {
+			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		}
+
+		var1 = (float)((double)var1 * (1.0 - var6));
+		if (!(var1 <= 0.0F)) {
+			this.hasImpulse = true;
+			Vec3 var9 = this.getDeltaMovement();
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			this.setDeltaMovement(var9.x / 2.0 + var10.x / 2.0, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 + var10.z / 2.0);
+		}
+	}
+	public void nonVerticalKnockback(float var1, double var2, double var4, LivingEntity entity) {
+		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack var8 = this.getBlockingItem();
+		if (!var8.isEmpty()) {
+			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		}
+
+		var1 = (float)((double)var1 * (1.0 - var6));
+		if (!(var1 <= 0.0F)) {
+			this.hasImpulse = true;
+			Vec3 var9 = this.getDeltaMovement();
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, var9.y + Mth.abs((float) entity.getDeltaMovement().y) * 2, var9.z / 2.0 - var10.z);
+		}
+	}
+	public void downwardsKnockback(float var1, double var2, double var4) {
+		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack var8 = this.getBlockingItem();
+		if (!var8.isEmpty()) {
+			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		}
+
+		var1 = (float)((double)var1 * (1.0 - var6));
+		if (!(var1 <= 0.0F)) {
+			this.hasImpulse = true;
+			Vec3 var9 = this.getDeltaMovement();
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, -((double)var1 + var9.y), var9.z / 2.0 - var10.z);
 		}
 	}
 	/**

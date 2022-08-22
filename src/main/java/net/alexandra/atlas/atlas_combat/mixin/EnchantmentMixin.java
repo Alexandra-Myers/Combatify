@@ -1,9 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,6 +23,11 @@ public class EnchantmentMixin {
 				|| thisEnchantment instanceof FireAspectEnchantment
 				|| thisEnchantment instanceof SweepingEdgeEnchantment) {
 			cir.setReturnValue(stack.getItem() instanceof AxeItem || stack.getItem() instanceof SwordItem);
+			cir.cancel();
+		}
+		if((thisEnchantment instanceof KnockbackEnchantment
+				|| thisEnchantment instanceof SweepingEdgeEnchantment) && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"toolsAreWeapons")) {
+			cir.setReturnValue(stack.getItem() instanceof TieredItem);
 			cir.cancel();
 		}
 	}

@@ -240,11 +240,19 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						if (bl6) {
 							if (knockbackBonus > 0) {
 								if (target instanceof LivingEntity livingEntity) {
-									((LivingEntityExtensions)livingEntity)
-											.newKnockback((knockbackBonus * 0.5F),
-													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
-													-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
-											);
+									if(this.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
+										((LivingEntityExtensions)livingEntity)
+												.invertedKnockback((knockbackBonus * 0.5F),
+														Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
+														-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
+												);
+									}else {
+										((LivingEntityExtensions)livingEntity)
+												.newKnockback((knockbackBonus * 0.5F),
+														Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
+														-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
+												);
+									}
 								} else {
 									target.push(
 											(-Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F),

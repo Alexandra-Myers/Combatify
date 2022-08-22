@@ -6,7 +6,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 public interface IEnchantmentHelper {
-	static float getDamageBonus(ItemStack level, LivingEntity entity){
-		return entity == null || entity.getMobType() != MobType.WATER && !entity.isInWaterOrRain() ? 0.0F : (float)((IItemStack)(Object)level).getEnchantmentLevel(Enchantments.IMPALING) * 2.5F;
-	}
+	float getDamageBonus(ItemStack level, LivingEntity entity);
+	float getKnockbackDebuff(ItemStack level, LivingEntity entity);
 }

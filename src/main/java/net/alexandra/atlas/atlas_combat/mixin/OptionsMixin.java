@@ -2,12 +2,11 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.serialization.Codec;
 import net.alexandra.atlas.atlas_combat.AtlasClient;
-import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
+import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 @Mixin(Options.class)
@@ -42,7 +42,9 @@ public abstract class OptionsMixin implements IOptions {
 		visitor.process("autoAttack", AtlasClient.autoAttack);
 		visitor.process("shieldCrouch", AtlasClient.shieldCrouch);
 		visitor.process("lowShield", AtlasClient.lowShield);
+		visitor.process("rhythmicAttacks", AtlasClient.rhythmicAttacks);
 		visitor.process("attackIndicatorValue", attackIndicatorValue);
+		visitor.process("shieldIndicator", AtlasClient.shieldIndicator);
 	}
 
 	@Override
@@ -57,6 +59,14 @@ public abstract class OptionsMixin implements IOptions {
 	@Override
 	public OptionInstance<Boolean> lowShield() {
 		return AtlasClient.lowShield;
+	}
+	@Override
+	public OptionInstance<Boolean> rhythmicAttacks() {
+		return AtlasClient.rhythmicAttacks;
+	}
+	@Override
+	public OptionInstance<ShieldIndicatorStatus> shieldIndicator() {
+		return AtlasClient.shieldIndicator;
 	}
 	@Override
 	public OptionInstance<Double> attackIndicatorValue() {

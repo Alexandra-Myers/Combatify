@@ -35,7 +35,8 @@ public class VideoSettingsMixin {
 				options.fovEffectScale(),
 				options.showAutosaveIndicator(),
 				((IOptions)options).lowShield(),
-				((IOptions)options).attackIndicatorValue()
+				((IOptions)options).attackIndicatorValue(),
+				((IOptions)options).rhythmicAttacks()
 		};
 		cir.setReturnValue(optionInstances);
 		cir.cancel();
