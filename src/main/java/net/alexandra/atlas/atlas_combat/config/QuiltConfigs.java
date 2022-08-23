@@ -36,9 +36,9 @@ public class QuiltConfigs extends WrappedConfig {
 		@Comment("Defines if every tool only takes 1 durability when attacking, and can access Sweeping Edge and Knockback")
 		public final boolean toolsAreWeapons = false;
 		@Comment("Defines if weapons can use their special function")
-		public final boolean specialWeaponFunctions = true;
+		public final boolean specialWeaponFunctions = false;
 		@Comment("Defines if Knockback is based off of your momentum")
-		public final boolean momentumKnockback = true;
+		public final boolean momentumKnockback = false;
 		@Comment("Defines if axes can use their own knockback function")
 		public final boolean axeFunction = true;
 		@Comment("Defines if pickaxes can use their own knockback function")
