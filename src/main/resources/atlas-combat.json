@@ -15,5 +15,6 @@
   "shovelFunction": true,
   "hoeFunction": true,
   "swordFunction": true,
-  "tridentFunction": true
+  "tridentFunction": true,
+  "momentumKnockback": false
 }

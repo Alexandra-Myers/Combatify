@@ -200,7 +200,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting()) {
+						if (player.isSprinting() && !AtlasCombat.helper.general.momentumKnockback) {
 							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
 							++knockbackBonus;
 							bl2 = true;
@@ -240,19 +240,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						if (bl6) {
 							if (knockbackBonus > 0) {
 								if (target instanceof LivingEntity livingEntity) {
-									if(this.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
-										((LivingEntityExtensions)livingEntity)
-												.invertedKnockback((knockbackBonus * 0.5F),
-														Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
-														-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
-												);
-									}else {
-										((LivingEntityExtensions)livingEntity)
-												.newKnockback((knockbackBonus * 0.5F),
-														Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
-														-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
-												);
-									}
+									((LivingEntityExtensions)livingEntity).setEnemy(player);
+									((LivingEntityExtensions)livingEntity)
+											.newKnockback((knockbackBonus * 0.5F),
+													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
+													-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
+											);
 								} else {
 									target.push(
 											(-Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F),
@@ -262,7 +255,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								}
 
 								player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-								player.setSprinting(false);
+								if(!AtlasCombat.helper.general.momentumKnockback) {
+									player.setSprinting(false);
+								}
 							}
 
 							if (bl4) {

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 public class PotionItemMixin {
 
 	@Unique
-	public final int useDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"potionUseDuration");
+	public final int useDuration = AtlasCombat.helper.general.potionUseDuration;
 
 
 	/**

@@ -1,8 +1,12 @@
 package net.alexandra.atlas.atlas_combat;
 
 import com.mojang.serialization.Codec;
+import me.shedaniel.clothconfig2.api.ConfigBuilder;
+import me.shedaniel.clothconfig2.api.ConfigCategory;
+import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.Component;
 import org.quiltmc.loader.api.ModContainer;
@@ -28,7 +32,6 @@ public class AtlasClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient(ModContainer mod) {
-
 		ClientNetworkingHandler networkingHandler = new ClientNetworkingHandler();
 
 	}

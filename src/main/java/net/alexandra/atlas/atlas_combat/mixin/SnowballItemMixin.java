@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class SnowballItemMixin {
 
 	@Unique
-	public final int useDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject,"snowballUseDuration");
+	public final int useDuration = AtlasCombat.helper.general.snowballItemCooldown;
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {

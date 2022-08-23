@@ -8,12 +8,10 @@ import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.EntityDamageSource;
@@ -35,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -62,6 +61,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	@Nullable
 	public DamageSource lastDamageSource;
+	@Unique
+	boolean momentumBasedKnockback = AtlasCombat.helper.general.momentumKnockback;
 
 	@Shadow
 	public long lastDamageStamp;
@@ -75,6 +76,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	@Nullable
 	public Player lastHurtByPlayer;
+	@Unique
+	public Entity enemy;
 
 	@Shadow
 	public int lastHurtByPlayerTime;
@@ -122,6 +125,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 	}
+	@Override
+	public void setEnemy(Entity enemy) {
+		this.enemy = enemy;
+	}
 
 	/**
 	 * @author zOnlyKroks
@@ -129,13 +136,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
-		boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"specialWeaponFunctions");
-		boolean axeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"axeFunction");
-		boolean pickaxeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"pickaxeFunction");
-		boolean shovelFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"shovelFunction");
-		boolean hoeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"hoeFunction");
-		boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"swordFunction");
-		boolean tridentFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"tridentFunction");
+		boolean specialWeaponFunctions = AtlasCombat.helper.general.specialWeaponFunctions;
+		boolean axeFunctions = AtlasCombat.helper.general.axeFunction;
+		boolean pickaxeFunctions = AtlasCombat.helper.general.pickaxeFunction;
+		boolean shovelFunctions = AtlasCombat.helper.general.shovelFunction;
+		boolean hoeFunctions = AtlasCombat.helper.general.hoeFunction;
+		boolean swordFunctions = AtlasCombat.helper.general.swordFunction;
+		boolean tridentFunctions = AtlasCombat.helper.general.tridentFunction;
 		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();
@@ -186,6 +193,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				}
 			}
 			Entity entity2 = source.getEntity();
+			enemy = entity2;
 			int invulnerableTime = 10;
 			if (entity2 != null && entity2 instanceof Player) {
 				Player player = (Player)entity2;
@@ -363,7 +371,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							}
 
 							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							invertedKnockback(0.5F, d, e);
+							newKnockback(0.4F, d, e);
 						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
 							double d = entity2.getX() - this.getX();
 
@@ -476,6 +484,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	 */
 	@Override
 	public void newKnockback(float var1, double var2, double var4) {
+		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
+			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack var8 = this.getBlockingItem();
+			if (!var8.isEmpty()) {
+				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			}
+
+			var1 = (float)((double)var1 * (1.0 - var6));
+			if (!(var1 <= 0.0F)) {
+				this.hasImpulse = true;
+				Vec3 var9 = this.getDeltaMovement();
+				Vec3 entityMovement = entity.getDeltaMovement();
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 - (float) var10.z);
+				return;
+			}
+		}
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
@@ -491,6 +516,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 	public void sideKnockback(float var1, double var2, double var4) {
+		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
+			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack var8 = this.getBlockingItem();
+			if (!var8.isEmpty()) {
+				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			}
+
+			var1 = (float)((double)var1 * (1.0 - var6));
+			if (!(var1 <= 0.0F)) {
+				this.hasImpulse = true;
+				Vec3 var9 = this.getDeltaMovement();
+				Vec3 entityMovement = entity.getDeltaMovement();
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				this.setDeltaMovement(var9.z / 2.0 - (float) var10.z, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.x / 2.0 - (float) var10.x);
+				return;
+			}
+		}
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
@@ -507,6 +549,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Override
 	public void invertedKnockback(float var1, double var2, double var4) {
+		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
+			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack var8 = this.getBlockingItem();
+			if (!var8.isEmpty()) {
+				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			}
+
+			var1 = (float)((double)var1 * (1.0 - var6));
+			if (!(var1 <= 0.0F)) {
+				this.hasImpulse = true;
+				Vec3 var9 = this.getDeltaMovement();
+				Vec3 entityMovement = entity.getDeltaMovement();
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				this.setDeltaMovement(var9.x / 2.0 + ((float) var10.x / 2), this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 + ((float) var10.z / 2));
+				return;
+			}
+		}
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
@@ -522,6 +581,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 	public void nonVerticalKnockback(float var1, double var2, double var4, LivingEntity entity) {
+		if(momentumBasedKnockback) {
+			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack var8 = this.getBlockingItem();
+			if (!var8.isEmpty()) {
+				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			}
+
+			var1 = (float)((double)var1 * (1.0 - var6));
+			if (!(var1 <= 0.0F)) {
+				this.hasImpulse = true;
+				Vec3 var9 = this.getDeltaMovement();
+				Vec3 entityMovement = entity.getDeltaMovement();
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, var9.y + Mth.abs((float) var10.y) * 2, var9.z / 2.0 - (float) var10.z);
+				return;
+			}
+		}
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
@@ -537,6 +613,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 	public void downwardsKnockback(float var1, double var2, double var4) {
+		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
+			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack var8 = this.getBlockingItem();
+			if (!var8.isEmpty()) {
+				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			}
+
+			var1 = (float)((double)var1 * (1.0 - var6));
+			if (!(var1 <= 0.0F)) {
+				this.hasImpulse = true;
+				Vec3 var9 = this.getDeltaMovement();
+				Vec3 entityMovement = entity.getDeltaMovement();
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, -(var10.y + var1 + var9.y), var9.z / 2.0 - (float) var10.z);
+				return;
+			}
+		}
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {

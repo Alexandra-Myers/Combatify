@@ -21,7 +21,7 @@ import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
 
 @Mixin(DiggerItem.class)
 public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions {
-	public boolean allToolsAreWeapons = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"toolsAreWeapons");
+	public boolean allToolsAreWeapons = AtlasCombat.helper.general.toolsAreWeapons;
 	@Mutable
 	@Final
 	private WeaponType type;

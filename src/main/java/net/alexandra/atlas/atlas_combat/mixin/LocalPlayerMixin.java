@@ -92,126 +92,13 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	public float getAttackAnim(float tickDelta) {
 		LocalPlayer thisEntity = ((LocalPlayer)(Object)this);
 		if(((IOptions)Minecraft.getInstance().options).rhythmicAttacks().get()) {
-			boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"specialWeaponFunctions");
-			boolean axeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"axeFunction");
-			boolean pickaxeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"pickaxeFunction");
-			boolean shovelFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"shovelFunction");
-			boolean hoeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"hoeFunction");
-			boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"swordFunction");
-			boolean tridentFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject,"tridentFunction");
-			if(specialWeaponFunctions) {
-				if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-					int sweepingLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.SWEEPING_EDGE, thisEntity);
-					double sweeping = sweepingLevel > 0 ? sweepingLevel * 1.5 : 1.0;
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow(((var3 - 0.4F) / 0.6F), 2.0 * sweeping) : (float) ((var3/2) * sweeping);
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow(((var3 - 0.4F) / 0.6F), 2.0) : var3/2;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow(((var3 - 0.4F) / 0.6F), 2.0) : var3/2;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem && shovelFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 5.0) : var3*1.25F;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem && hoeFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 1.5) : var3/(2F+(2F/3F));
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem && swordFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-					int sweepingLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.SWEEPING_EDGE, thisEntity);
-					double sweeping = sweepingLevel > 0 ? sweepingLevel * 1.5 : 1.0;
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), sweeping) : (float) ((var3 / 4F) * sweeping);
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
-				}else if(minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && tridentFunctions) {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-					int sweepingLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.IMPALING, thisEntity);
-					double sweeping = sweepingLevel > 0 ? sweepingLevel * 1.20 : 1.0;
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), sweeping) : (float) ((var3 / 4F) * sweeping);
-				}else {
-					float var2 = attackAnim - oAttackAnim;
-					if (var2 < 0.0F) {
-						++var2;
-					}
-
-					float var3 = this.oAttackAnim + var2 * tickDelta;
-					return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
-				}
+			float var2 = attackAnim - oAttackAnim;
+			if (var2 < 0.0F) {
+				++var2;
 			}
+
+			float var3 = this.oAttackAnim + var2 * tickDelta;
+			return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
 		}
 		float f = this.attackAnim - this.oAttackAnim;
 		if (f < 0.0F) {
