@@ -39,6 +39,8 @@ public class QuiltConfigs extends WrappedConfig {
 		public final boolean specialWeaponFunctions = false;
 		@Comment("Defines if Knockback is based off of your momentum")
 		public final boolean momentumKnockback = false;
+		@Comment("Defines if block reach default length matches Bedrock")
+		public final boolean bedrockBlockReach = false;
 		@Comment("Defines if axes can use their own knockback function")
 		public final boolean axeFunction = true;
 		@Comment("Defines if pickaxes can use their own knockback function")
@@ -51,6 +53,8 @@ public class QuiltConfigs extends WrappedConfig {
 		public final boolean swordFunction = true;
 		@Comment("Defines if tridents can use their own knockback function")
 		public final boolean tridentFunction = true;
+		@Comment("Defines if block reach is a feature")
+		public final boolean blockReach = true;
 	}
 
 }

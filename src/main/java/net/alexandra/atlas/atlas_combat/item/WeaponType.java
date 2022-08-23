@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.UUID;
 
 public enum WeaponType {
@@ -44,7 +46,7 @@ public enum WeaponType {
         if (var5 != 0.0F) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-		if (var6 != 0.0F) {
+		if (var6 != 0.0F && (boolean) AtlasCombat.helper.getValue(Collections.singleton("blockReach")).value()) {
 			var2.put(NewAttributes.BLOCK_REACH, new AttributeModifier(BASE_BLOCK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
 		}
 
@@ -122,6 +124,10 @@ public enum WeaponType {
     public float getReach() {
         switch (this) {
 			case PICKAXE:
+				if((boolean) AtlasCombat.helper.getValue(Collections.singleton("pickaxeFunction")).value()) {
+					return 0.5F;
+				}
+				else return 0;
             case SWORD:
                 return 0.5F;
 			case HOE:

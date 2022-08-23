@@ -15,13 +15,14 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
 
 @Mixin(DiggerItem.class)
 public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions {
-	public boolean allToolsAreWeapons = AtlasCombat.helper.general.toolsAreWeapons;
+	public boolean allToolsAreWeapons = (boolean) AtlasCombat.helper.getValue(Collections.singleton("toolsAreWeapons")).value();
 	@Mutable
 	@Final
 	private WeaponType type;

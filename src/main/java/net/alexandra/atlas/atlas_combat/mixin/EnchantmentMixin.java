@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Collections;
+
 @Mixin(Enchantment.class)
 public class EnchantmentMixin {
 	@Unique
@@ -26,7 +28,7 @@ public class EnchantmentMixin {
 			cir.cancel();
 		}
 		if((thisEnchantment instanceof KnockbackEnchantment
-				|| thisEnchantment instanceof SweepingEdgeEnchantment) && AtlasCombat.helper.general.toolsAreWeapons) {
+				|| thisEnchantment instanceof SweepingEdgeEnchantment) && (boolean) AtlasCombat.helper.getValue(Collections.singleton("toolsAreWeapons")).value()) {
 			cir.setReturnValue(stack.getItem() instanceof TieredItem);
 			cir.cancel();
 		}

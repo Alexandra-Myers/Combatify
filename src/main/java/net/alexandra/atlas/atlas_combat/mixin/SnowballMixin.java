@@ -9,11 +9,13 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.util.Collections;
+
 @Mixin(Snowball.class)
 public class SnowballMixin {
 
 	@Unique
-	public final float snowballDamage = AtlasCombat.helper.general.snowballDamage;
+	public final float snowballDamage = (float) AtlasCombat.helper.getValue(Collections.singleton("snowballDamage")).value();
 
 
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))

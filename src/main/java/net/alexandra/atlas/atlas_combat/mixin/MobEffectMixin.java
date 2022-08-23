@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
+import java.util.Collections;
+
 @Mixin(MobEffect.class)
 public class MobEffectMixin {
 
 	@Unique
-	public final int instantHealthBonus = AtlasCombat.helper.general.instantHealthBonus;
+	public final int instantHealthBonus = (int) AtlasCombat.helper.getValue(Collections.singleton("instantHealthBonus")).value();
 
 	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
 	public int changeInstantHealth(int constant) {

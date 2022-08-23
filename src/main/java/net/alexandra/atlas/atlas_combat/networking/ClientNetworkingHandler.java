@@ -8,11 +8,13 @@ import org.quiltmc.qsl.lifecycle.api.client.event.ClientTickEvents;
 import org.quiltmc.qsl.networking.api.client.ClientPlayConnectionEvents;
 import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
+import java.util.Collections;
+
 public class ClientNetworkingHandler {
 
 	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
 
-	public int ticksTowait = AtlasCombat.helper.general.maxWaitForPacketResponse;
+	public int ticksTowait = (int) AtlasCombat.helper.getValue(Collections.singleton("maxWaitForPacketResponse")).value();
 
 	public static boolean receivedAnswer = false;
 	public static int ticksElapsed = 0;

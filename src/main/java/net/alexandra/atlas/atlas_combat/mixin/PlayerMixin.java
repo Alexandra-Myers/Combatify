@@ -52,6 +52,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -111,7 +112,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
 				.add(NewAttributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)
-				.add(NewAttributes.BLOCK_REACH)
+				.add(NewAttributes.BLOCK_REACH, !(boolean) AtlasCombat.helper.getValue(Collections.singleton("bedrockBlockReach")).value() ? 0.0F : 2.0)
 				.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
@@ -200,7 +201,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting() && !AtlasCombat.helper.general.momentumKnockback) {
+						if (player.isSprinting() && !(boolean) AtlasCombat.helper.getValue(Collections.singleton("momentumKnockback")).value()) {
 							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
 							++knockbackBonus;
 							bl2 = true;
@@ -255,7 +256,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								}
 
 								player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-								if(!AtlasCombat.helper.general.momentumKnockback) {
+								if(!(boolean) AtlasCombat.helper.getValue(Collections.singleton("momentumKnockback")).value()) {
 									player.setSprinting(false);
 								}
 							}

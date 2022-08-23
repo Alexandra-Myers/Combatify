@@ -38,6 +38,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Collections;
+
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
 
@@ -62,7 +64,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Nullable
 	public DamageSource lastDamageSource;
 	@Unique
-	boolean momentumBasedKnockback = AtlasCombat.helper.general.momentumKnockback;
+	boolean momentumBasedKnockback = (boolean) AtlasCombat.helper.getValue(Collections.singleton("momentumKnockback")).value();
 
 	@Shadow
 	public long lastDamageStamp;
@@ -136,13 +138,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
-		boolean specialWeaponFunctions = AtlasCombat.helper.general.specialWeaponFunctions;
-		boolean axeFunctions = AtlasCombat.helper.general.axeFunction;
-		boolean pickaxeFunctions = AtlasCombat.helper.general.pickaxeFunction;
-		boolean shovelFunctions = AtlasCombat.helper.general.shovelFunction;
-		boolean hoeFunctions = AtlasCombat.helper.general.hoeFunction;
-		boolean swordFunctions = AtlasCombat.helper.general.swordFunction;
-		boolean tridentFunctions = AtlasCombat.helper.general.tridentFunction;
+		boolean specialWeaponFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("specialWeaponFunctions")).value();
+		boolean axeFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("axeFunction")).value();
+		boolean pickaxeFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("pickaxeFunction")).value();
+		boolean shovelFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("shovelFunction")).value();
+		boolean hoeFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("hoeFunction")).value();
+		boolean swordFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("swordFunction")).value();
+		boolean tridentFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("tridentFunction")).value();
 		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();
