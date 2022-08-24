@@ -13,7 +13,7 @@ import java.util.Collections;
 public class MilkBucketMixin {
 
 	@Unique
-	public final int useDuration = (int) AtlasCombat.helper.getValue(Collections.singleton("milkBucketUseDuration")).value();
+	public final int useDuration =  AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "milkBucketUseDuration");
 
 	/**
 	 * @author zOnlyKroks

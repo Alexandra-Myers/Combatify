@@ -13,7 +13,7 @@ import java.util.Collections;
 public class PotionItemMixin {
 
 	@Unique
-	public final int useDuration = (int) AtlasCombat.helper.getValue(Collections.singleton("potionUseDuration")).value();
+	public final int useDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "potionUseDuration");
 
 
 	/**

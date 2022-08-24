@@ -28,7 +28,7 @@ public class EnchantmentMixin {
 			cir.cancel();
 		}
 		if((thisEnchantment instanceof KnockbackEnchantment
-				|| thisEnchantment instanceof SweepingEdgeEnchantment) && (boolean) AtlasCombat.helper.getValue(Collections.singleton("toolsAreWeapons")).value()) {
+				|| thisEnchantment instanceof SweepingEdgeEnchantment) && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "toolsAreWeapons")) {
 			cir.setReturnValue(stack.getItem() instanceof TieredItem);
 			cir.cancel();
 		}

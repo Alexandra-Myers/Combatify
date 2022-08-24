@@ -19,7 +19,7 @@ import java.util.Collections;
 public class SnowballItemMixin {
 
 	@Unique
-	public final int useDuration = (int) AtlasCombat.helper.getValue(Collections.singleton("snowballItemCooldown")).value();
+	public final int useDuration =  AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "snowballItemCooldown");
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {

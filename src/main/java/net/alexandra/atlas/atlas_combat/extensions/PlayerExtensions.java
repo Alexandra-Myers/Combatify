@@ -13,6 +13,9 @@ public interface PlayerExtensions {
 	boolean isAttackAvailable(float baseTime);
 	boolean isAttackAvailable(float baseTime, float minValue);
 	boolean isAttackAvailable(float baseTime, float minValue, boolean isAutoAttack);
+
+	void resetAttackStrengthTicker(boolean var1);
+
 	float getCurrentAttackReach(float baseValue);
 
 	default boolean customShieldInteractions(float damage) {return false;}

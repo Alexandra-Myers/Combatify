@@ -46,7 +46,7 @@ public enum WeaponType {
         if (var5 != 0.0F) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-		if (var6 != 0.0F && (boolean) AtlasCombat.helper.getValue(Collections.singleton("blockReach")).value()) {
+		if (var6 != 0.0F && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "blockReach")) {
 			var2.put(NewAttributes.BLOCK_REACH, new AttributeModifier(BASE_BLOCK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
 		}
 
@@ -124,7 +124,7 @@ public enum WeaponType {
     public float getReach() {
         switch (this) {
 			case PICKAXE:
-				if((boolean) AtlasCombat.helper.getValue(Collections.singleton("pickaxeFunction")).value()) {
+				if(AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "pickaxeFunction")) {
 					return 0.5F;
 				}
 				else return 0;

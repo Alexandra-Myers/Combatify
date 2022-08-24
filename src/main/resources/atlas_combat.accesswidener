@@ -36,3 +36,8 @@ accessible method net/minecraft/client/Minecraft startUseItem ()V
 accessible class net/minecraft/client/Options$FieldAccess
 accessible field net/minecraft/client/multiplayer/MultiPlayerGameMode connection Lnet/minecraft/client/multiplayer/ClientPacketListener;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour hasCollision Z
+accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket
+accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket$InteractionAction
+accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket$Action
+accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket$ActionType
+accessible method net/minecraft/network/protocol/game/ServerboundInteractPacket <init> (IZLnet/minecraft/network/protocol/game/ServerboundInteractPacket$Action;)V

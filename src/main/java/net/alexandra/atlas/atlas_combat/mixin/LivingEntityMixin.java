@@ -64,7 +64,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Nullable
 	public DamageSource lastDamageSource;
 	@Unique
-	boolean momentumBasedKnockback = (boolean) AtlasCombat.helper.getValue(Collections.singleton("momentumKnockback")).value();
+	boolean momentumBasedKnockback = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "momentumKnockback");
 
 	@Shadow
 	public long lastDamageStamp;
@@ -138,13 +138,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
-		boolean specialWeaponFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("specialWeaponFunctions")).value();
-		boolean axeFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("axeFunction")).value();
-		boolean pickaxeFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("pickaxeFunction")).value();
-		boolean shovelFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("shovelFunction")).value();
-		boolean hoeFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("hoeFunction")).value();
-		boolean swordFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("swordFunction")).value();
-		boolean tridentFunctions = (boolean) AtlasCombat.helper.getValue(Collections.singleton("tridentFunction")).value();
+		boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions");
+		boolean axeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "axeFunction");
+		boolean pickaxeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "pickaxeFunction");
+		boolean shovelFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "shovelFunction");
+		boolean hoeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "hoeFunction");
+		boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction");
+		boolean tridentFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "tridentFunction");
 		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();
@@ -373,7 +373,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							}
 
 							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.4F, d, e);
+							newKnockback(0.5F, d, e);
 						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
 							double d = entity2.getX() - this.getX();
 
@@ -498,7 +498,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.hasImpulse = true;
 				Vec3 var9 = this.getDeltaMovement();
 				Vec3 entityMovement = entity.getDeltaMovement();
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				var2 = var2 > 5 ? 2 : var2;
+				var4 = var4 > 5 ? 2 : var4;
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 - (float) var10.z);
 				return;
 			}
@@ -530,7 +532,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.hasImpulse = true;
 				Vec3 var9 = this.getDeltaMovement();
 				Vec3 entityMovement = entity.getDeltaMovement();
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				var2 = var2 > 5 ? 2 : var2;
+				var4 = var4 > 5 ? 2 : var4;
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.z / 2.0 - (float) var10.z, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.x / 2.0 - (float) var10.x);
 				return;
 			}
@@ -563,7 +567,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.hasImpulse = true;
 				Vec3 var9 = this.getDeltaMovement();
 				Vec3 entityMovement = entity.getDeltaMovement();
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				var2 = var2 > 5 ? 2 : var2;
+				var4 = var4 > 5 ? 2 : var4;
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 + ((float) var10.x / 2), this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 + ((float) var10.z / 2));
 				return;
 			}
@@ -595,7 +601,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.hasImpulse = true;
 				Vec3 var9 = this.getDeltaMovement();
 				Vec3 entityMovement = entity.getDeltaMovement();
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				var2 = var2 > 5 ? 2 : var2;
+				var4 = var4 > 5 ? 2 : var4;
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, var9.y + Mth.abs((float) var10.y) * 2, var9.z / 2.0 - (float) var10.z);
 				return;
 			}
@@ -627,7 +635,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.hasImpulse = true;
 				Vec3 var9 = this.getDeltaMovement();
 				Vec3 entityMovement = entity.getDeltaMovement();
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1);
+				var2 = var2 > 5 ? 2 : var2;
+				var4 = var4 > 5 ? 2 : var4;
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, -(var10.y + var1 + var9.y), var9.z / 2.0 - (float) var10.z);
 				return;
 			}

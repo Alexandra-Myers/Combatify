@@ -13,7 +13,7 @@ import java.util.Collections;
 public class HoneyBottleItemMixin {
 
 	@Unique
-	public final int maxUseDuration = (int) AtlasCombat.helper.getValue(Collections.singleton("honeyBottleUseDuration")).value();
+	public final int maxUseDuration =  AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "honeyBottleUseDuration");
 
 	/**
 	 * @author zOnlyKroks

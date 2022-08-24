@@ -19,7 +19,7 @@ import java.util.Collections;
 public class EggItemMixin {
 
 	@Unique
-	public final int eggItemCooldown = (int) AtlasCombat.helper.getValue(Collections.singleton("eggItemCooldown")).value();
+	public final int eggItemCooldown = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "eggItemCooldown");
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {

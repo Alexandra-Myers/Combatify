@@ -13,7 +13,7 @@ import java.util.Collections;
 public class MobEffectMixin {
 
 	@Unique
-	public final int instantHealthBonus = (int) AtlasCombat.helper.getValue(Collections.singleton("instantHealthBonus")).value();
+	public final int instantHealthBonus =  AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "instantHealthBonus");
 
 	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
 	public int changeInstantHealth(int constant) {

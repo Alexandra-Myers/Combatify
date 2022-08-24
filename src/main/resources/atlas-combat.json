@@ -1,20 +1,23 @@
 {
+  "version": "1.0.2",
   "maxWaitForPacketResponse" : 20,
-  "bowUncertainty": 0.25,
-  "eggItemCooldown": 4,
+  "potionUseDuration" : 20,
   "honeyBottleUseDuration" : 20,
   "milkBucketUseDuration" : 20,
   "instantHealthBonus" : 6,
-  "potionUseDuration" : 20,
-  "snowballUseDuration" : 4,
+  "eggItemCooldown": 4,
+  "snowballItemCooldown" : 4,
   "snowballDamage": 0.5,
+  "bowUncertainty": 0.25,
   "toolsAreWeapons": false,
   "specialWeaponFunctions": false,
+  "momentumKnockback": false,
+  "bedrockBlockReach": false,
   "axeFunction": true,
   "pickaxeFunction": true,
   "shovelFunction": true,
   "hoeFunction": true,
   "swordFunction": true,
   "tridentFunction": true,
-  "momentumKnockback": false
+  "blockReach": true
 }

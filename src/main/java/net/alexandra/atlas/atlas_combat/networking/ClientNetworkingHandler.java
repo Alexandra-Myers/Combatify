@@ -14,7 +14,7 @@ public class ClientNetworkingHandler {
 
 	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
 
-	public int ticksTowait = (int) AtlasCombat.helper.getValue(Collections.singleton("maxWaitForPacketResponse")).value();
+	public int ticksTowait = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "maxWaitForPacketResponse");
 
 	public static boolean receivedAnswer = false;
 	public static int ticksElapsed = 0;

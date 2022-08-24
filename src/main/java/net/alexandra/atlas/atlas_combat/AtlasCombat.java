@@ -28,13 +28,13 @@ import java.util.List;
 
 public class AtlasCombat implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Atlas Combat");
-	public static final QuiltConfigs helper = QuiltConfig.create(
+	public static final QuiltConfigs QUILT_CONFIGS = QuiltConfig.create(
 			"atlas_combat",   // The family id, this should usually just be your mod ID
 			"config",           // The id for this particular config, since your mod might have multiple
 			QuiltConfigs.class      // The config class you created earlier
 	);
 
-	public static ConfigHelper CONFIG = new ConfigHelper();
+	public static ConfigHelper helper = new ConfigHelper();
 
 	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = register();
 	public static CleavingEnchantment register() {
@@ -60,7 +60,7 @@ public class AtlasCombat implements ModInitializer {
 		List<Item> items = Registry.ITEM.stream().toList();
 
 		for(Item item : items) {
-				int newStackSize = CONFIG.getInt(CONFIG.itemsJsonObject,Registry.ITEM.getKey(item).getPath());
+				int newStackSize = helper.getInt(helper.itemsJsonObject,Registry.ITEM.getKey(item).getPath());
 
 			if(item.maxStackSize == newStackSize) continue;
 
