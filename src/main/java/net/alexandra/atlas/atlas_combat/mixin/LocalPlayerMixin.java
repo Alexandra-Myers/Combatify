@@ -27,6 +27,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,6 +36,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions {
+	@Shadow
+	public abstract void startUsingItem(InteractionHand interactionHand);
+
 	@Unique
 	@Final
 	@Environment(EnvType.CLIENT)
@@ -54,12 +58,24 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							}
 						}
+					}else if(!itemStack.isEmpty() && itemStack.getItem() instanceof SwordItem swordItem && thisPlayer.isCrouching() && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
+						if(interactionHand != InteractionHand.MAIN_HAND) {
+							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && !(this.thisPlayer.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShieldItem)) {
+								((IMinecraft) minecraft).startUseItem(interactionHand);
+								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
+							}
+						}else {
+							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && !(this.thisPlayer.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem)) {
+								((IMinecraft) minecraft).startUseItem(interactionHand);
+								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
+							}
+						}
 					}
 				}
 			} else if ((this.hasEnabledShieldOnCrouch() && thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
 				for (InteractionHand interactionHand : InteractionHand.values()) {
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem) {
+					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof ShieldItem || itemStack.getItem() instanceof SwordItem)) {
 						minecraft.gameMode.releaseUsingItem(thisPlayer);
 					}
 				}
@@ -78,7 +94,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
 	private void isShieldCrouching(Input instance, boolean b, float v) {
 		for(InteractionHand hand : InteractionHand.values()) {
-			if (thisPlayer.isUsingItem() && thisPlayer.getItemInHand(hand).getItem() instanceof ShieldItem) {
+			if (thisPlayer.isUsingItem() && thisPlayer.getItemInHand(hand).getItem() instanceof ShieldItem || thisPlayer.getItemInHand(hand).getItem() instanceof SwordItem) {
 				if(v < 1.0F) {
 					v = 1.0F;
 				}

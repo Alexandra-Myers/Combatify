@@ -5,7 +5,7 @@
   "options.lowShield" : "Lower Shield",
   "options.lowShield.tooltip" : "While on, lowers the shield when shield-crouching for greater visibility",
   "options.attackIndicatorValue" : "Attack Indicator Max Value",
-  "options.attackIndicatorValue.tooltip" : "Adjust this slider to change the value at which the Attack Indicator will charge to on screen. By default this is 1.0, which is the minimum youc an attack at.",
+  "options.attackIndicatorValue.tooltip" : "Adjust this slider to change the value at which the Attack Indicator will charge to on screen. By default this is 1.0, which is the minimum you can attack at.",
   "options.attackIndicatorValue.default" : "Default",
   "options.double_value": "%s: %s",
   "options.rhythmicAttack" : "Rhythmic Attacks",

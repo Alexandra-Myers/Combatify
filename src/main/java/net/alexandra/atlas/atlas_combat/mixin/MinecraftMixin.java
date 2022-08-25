@@ -21,8 +21,10 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.*;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
@@ -87,12 +89,34 @@ public abstract class MinecraftMixin implements IMinecraft {
 			this.retainAttack = false;
 		}
 	}
+	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 10))
+	public void injectAttack(CallbackInfo ci) {
+		while(options.keyAttack.consumeClick()) {
+			this.startAttack();
+		}
+	}
 	/**
 	 * @author
 	 * @reason
 	 */
 	@Overwrite
 	private boolean startAttack() {
+		Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+		Item offhandItem = player.getItemInHand(InteractionHand.OFF_HAND).getItem();
+		boolean handHasShieldItem = item instanceof ShieldItem;
+		boolean handHasBlockingItem = item instanceof SwordItem;
+		boolean offhandHasShieldItem = offhandItem instanceof ShieldItem;
+		boolean offhandHasBlockingItem = offhandItem instanceof SwordItem;
+		if (player.isUsingItem() && handHasShieldItem || handHasBlockingItem) {
+			if(offhandHasShieldItem || offhandHasBlockingItem) {
+				player.getCooldowns().addCooldown(offhandItem, 20);
+				player.stopUsingItem();
+				player.level.broadcastEntityEvent(player, (byte)30);
+			}
+			player.getCooldowns().addCooldown(item, 20);
+			player.stopUsingItem();
+			player.level.broadcastEntityEvent(player, (byte)30);
+		}
 		if(missTime < 0) {
 			return false;
 		}else if (this.hitResult == null) {

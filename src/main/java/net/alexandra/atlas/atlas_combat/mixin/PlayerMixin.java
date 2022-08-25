@@ -13,16 +13,14 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.EnderDragonPart;
@@ -68,6 +66,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	@Final
 	private static Logger LOGGER;
+
+	@Shadow
+	public abstract void awardStat(Stat<?> stat);
+
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -107,6 +109,20 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
+		if(player.getUseItem().getItem() instanceof SwordItem swordItem) {
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+			((ISwordItem)swordItem).addStrengthTimer();
+		}
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
@@ -135,6 +151,36 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			ItemStack specialBread = new ItemStack(Items.BREAD, 5);
 			specialBread.setHoverName(Component.literal("Finn's Bread"));
 			drop(specialBread, false);
+		}
+	}
+
+	/**
+	 * @author
+	 * @reason
+	 */
+	@Overwrite
+	public void hurtCurrentlyUsedShield(float amount) {
+		if (this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem) {
+			if (!this.level.isClientSide) {
+				awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
+			}
+
+			if (amount >= 3.0F) {
+				int i = 1 + Mth.floor(amount);
+				InteractionHand interactionHand = this.getUsedItemHand();
+				this.useItem.hurtAndBreak(i, this, player -> player.broadcastBreakEvent(interactionHand));
+				if (this.useItem.isEmpty()) {
+					if (interactionHand == InteractionHand.MAIN_HAND) {
+						this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+					} else {
+						this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+					}
+
+					this.useItem = ItemStack.EMPTY;
+					this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level.random.nextFloat() * 0.4F);
+				}
+			}
+
 		}
 	}
 
@@ -507,5 +553,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public int getAttackStrengthStartValue() {
 		return attackStrengthStartValue;
+	}
+	@Override
+	public void setAttackStrengthTicker(int value) {
+		this.attackStrengthStartValue = value;
+		player.attackStrengthTicker = this.attackStrengthStartValue;
 	}
 }

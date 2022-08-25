@@ -39,4 +39,7 @@ public interface PlayerExtensions {
 	void attackAir();
 
 
+	void setAttackStrengthTicker(float value);
+
+	void setAttackStrengthTicker(int value);
 }

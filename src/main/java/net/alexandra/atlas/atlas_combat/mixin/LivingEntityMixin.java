@@ -2,10 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
-import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
-import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
-import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
-import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
@@ -191,6 +188,62 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							}
 						}
 						bl = true;
+					}else if(thisEntity instanceof Player player && player.getItemInHand(hand).getItem() instanceof SwordItem shieldItem && player.isUsingItem() && !player.getCooldowns().isOnCooldown(shieldItem)) {
+						if(hand != InteractionHand.OFF_HAND) {
+							if(!(player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem)) {
+								float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
+								float explosionStrength = Math.max((10 + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), 10);
+								float actualStrength = Math.max((blockStrength + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), blockStrength);
+								if (source.isExplosion() || source.isProjectile()) {
+									hurtCurrentlyUsedShield(explosionStrength);
+									amount -= explosionStrength;
+									g = f - amount;
+								} else if (blockStrength >= amount) {
+									hurtCurrentlyUsedShield(amount);
+									amount -= blockStrength;
+									g = f - amount;
+								} else if (blockStrength < amount) {
+									hurtCurrentlyUsedShield(actualStrength);
+									amount -= actualStrength;
+									g = f - actualStrength;
+								}
+								if (!source.isProjectile() && !source.isExplosion()) {
+									entity = source.getDirectEntity();
+									if (entity instanceof LivingEntity) {
+										this.blockUsingShield((LivingEntity) entity);
+									}
+								}
+								((PlayerExtensions)player).setAttackStrengthTicker(((ISwordItem)shieldItem).getStrengthTimer() - 2);
+								bl = true;
+							}
+						}else {
+							if(!(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShieldItem)) {
+								float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
+								float explosionStrength = Math.max((10 + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), 10);
+								float actualStrength = Math.max((blockStrength + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), blockStrength);
+								if (source.isExplosion() || source.isProjectile()) {
+									hurtCurrentlyUsedShield(explosionStrength);
+									amount -= explosionStrength;
+									g = f - amount;
+								} else if (blockStrength >= amount) {
+									hurtCurrentlyUsedShield(amount);
+									amount -= blockStrength;
+									g = f - amount;
+								} else if (blockStrength < amount) {
+									hurtCurrentlyUsedShield(actualStrength);
+									amount -= actualStrength;
+									g = f - actualStrength;
+								}
+								if (!source.isProjectile() && !source.isExplosion()) {
+									entity = source.getDirectEntity();
+									if (entity instanceof LivingEntity) {
+										this.blockUsingShield((LivingEntity) entity);
+									}
+								}
+								((PlayerExtensions)player).setAttackStrengthTicker(((ISwordItem)shieldItem).getStrengthTimer() - 2);
+								bl = true;
+							}
+						}
 					}
 				}
 			}
@@ -353,7 +406,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							}
 
 							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							nonVerticalKnockback(1.0F, d, e, livingEntity);
+							nonVerticalKnockback(0.7F, d, e, livingEntity);
 						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem) {
 							double d = entity2.getX() - this.getX();
 
@@ -500,7 +553,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				Vec3 entityMovement = entity.getDeltaMovement();
 				var2 = var2 > 5 ? 2 : var2;
 				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 - (float) var10.z);
 				return;
 			}
@@ -534,8 +587,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				Vec3 entityMovement = entity.getDeltaMovement();
 				var2 = var2 > 5 ? 2 : var2;
 				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.z / 2.0 - (float) var10.z, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.x / 2.0 - (float) var10.x);
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
+				this.setDeltaMovement(var9.x / 2.0 - var10.x - (var10.z / 2), this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 - var10.z - (var10.x / 2));
 				return;
 			}
 		}
@@ -550,7 +603,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.z / 2.0 - var10.z, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.x / 2.0 - var10.x);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x - (var10.z / 2), this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z - (var10.x / 2));
 		}
 	}
 	@Override
@@ -569,7 +622,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				Vec3 entityMovement = entity.getDeltaMovement();
 				var2 = var2 > 5 ? 2 : var2;
 				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 + ((float) var10.x / 2), this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 + ((float) var10.z / 2));
 				return;
 			}
@@ -603,8 +656,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				Vec3 entityMovement = entity.getDeltaMovement();
 				var2 = var2 > 5 ? 2 : var2;
 				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, var9.y + Mth.abs((float) var10.y) * 2, var9.z / 2.0 - (float) var10.z);
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
+				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, var9.y + (var1 / 2) + Mth.abs((float) var10.y), var9.z / 2.0 - (float) var10.z);
 				return;
 			}
 		}
@@ -619,7 +672,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, var9.y + Mth.abs((float) entity.getDeltaMovement().y) * 2, var9.z / 2.0 - var10.z);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, var9.y + (var1 / 2) + Mth.abs((float) entity.getDeltaMovement().y), var9.z / 2.0 - var10.z);
 		}
 	}
 	public void downwardsKnockback(float var1, double var2, double var4) {
@@ -637,7 +690,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				Vec3 entityMovement = entity.getDeltaMovement();
 				var2 = var2 > 5 ? 2 : var2;
 				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x) + var2, entityMovement.y, Mth.square(entityMovement.z) + var4)).normalize().scale((double)var1 + 0.25);
+				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
 				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, -(var10.y + var1 + var9.y), var9.z / 2.0 - (float) var10.z);
 				return;
 			}

@@ -1,33 +1,47 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
+import net.alexandra.atlas.atlas_combat.extensions.ISwordItem;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 @Mixin(SwordItem.class)
-public class SwordItemMixin extends TieredItem implements ItemExtensions {
+public class SwordItemMixin extends TieredItem implements ItemExtensions, IShieldItem, ISwordItem {
+	public int strengthTimer = 0;
 
 	public SwordItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
 
+	@Override
+	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+		if(AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
+			float f = getShieldBlockDamageValue(stack);
+			float g = getShieldKnockbackResistanceValue(stack);
+			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f), Component.translatable("attribute.name.generic.shield_strength")})).withStyle(ChatFormatting.DARK_GREEN));
+			if (g > 0.0F) {
+				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) (g * 10.0F)), Component.translatable("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
+			}
+		}
+		super.appendHoverText(stack, world, tooltip, context);
+	}
 	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"))
 	public ImmutableMultimap test(ImmutableMultimap.Builder instance) {
 		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
@@ -40,6 +54,34 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions {
 	@Overwrite
 	public float getDamage() {
 		return WeaponType.SWORD.getDamage(this.getTier());
+	}
+
+	@Override
+	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+		if(AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
+			strengthTimer = 0;
+			ItemStack itemStack = user.getItemInHand(hand);
+			if (InteractionHand.MAIN_HAND != hand) {
+				if (!(user.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShieldItem)) {
+					user.startUsingItem(hand);
+				} else {
+					user.startUsingItem(InteractionHand.MAIN_HAND);
+				}
+			} else {
+				if (!(user.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem)) {
+					user.startUsingItem(hand);
+				} else {
+					user.startUsingItem(InteractionHand.OFF_HAND);
+				}
+			}
+			return InteractionResultHolder.consume(itemStack);
+		}
+		return super.use(world,user,hand);
+	}
+
+	@Override
+	public UseAnim getUseAnimation(ItemStack stack) {
+		return UseAnim.BLOCK;
 	}
 
 	@Override
@@ -64,5 +106,33 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions {
 
 	@Override
 	public void setStackSize(int stackSize) {
+	}
+
+	@Override
+	public int getUseDuration(ItemStack stack) {
+		return 72000;
+	}
+	@Override
+	public float getShieldKnockbackResistanceValue(ItemStack itemStack) {
+		return getTier() == Tiers.NETHERITE || getTier().getLevel() == 4 ? 0.5F : 0.0F;
+	}
+
+	@Override
+	public float getShieldBlockDamageValue(ItemStack itemStack) {
+		float var2 = getTier().getAttackDamageBonus();
+		return var2 > 0.0F ? 1.5F + (var2 - 1.0F) : 1.5F + var2;
+	}
+	@Override
+	public void addStrengthTimer() {
+		++strengthTimer;
+	}
+	@Override
+	public void subStrengthTimer() {
+		--strengthTimer;
+	}
+
+	@Override
+	public int getStrengthTimer() {
+		return strengthTimer;
 	}
 }
