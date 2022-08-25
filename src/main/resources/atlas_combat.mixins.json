@@ -30,6 +30,7 @@
     "ScreenHandlerMixin",
     "ServerGamePacketMixin",
     "ServerPlayerGameModeMixin",
+    "ServerPlayerMixin",
     "ShieldItemMixin",
     "SnowballItemMixin",
     "SnowballMixin",

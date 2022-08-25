@@ -2,10 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.math.Vector3f;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
-import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
-import net.alexandra.atlas.atlas_combat.extensions.IOptions;
-import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.ClientRecipeBook;
@@ -35,10 +32,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LocalPlayer.class)
-public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions {
+public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
 	@Shadow
 	public abstract void startUsingItem(InteractionHand interactionHand);
 
+	@Shadow
+	private boolean startedUsingItem;
 	@Unique
 	@Final
 	@Environment(EnvType.CLIENT)
@@ -54,19 +53,24 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && thisPlayer.isCrouching()) {
 						if(!thisPlayer.getCooldowns().isOnCooldown(shieldItem)) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
+							startedUsingItem = true;
 							if (lowShieldEnabled()) {
 								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							}
 						}
 					}else if(!itemStack.isEmpty() && itemStack.getItem() instanceof SwordItem swordItem && thisPlayer.isCrouching() && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
 						if(interactionHand != InteractionHand.MAIN_HAND) {
-							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && !(this.thisPlayer.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShieldItem)) {
+							ItemStack otherStack = this.thisPlayer.getItemInHand(InteractionHand.MAIN_HAND);
+							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && otherStack.isEmpty()) {
 								((IMinecraft) minecraft).startUseItem(interactionHand);
+								startedUsingItem = true;
 								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							}
 						}else {
-							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && !(this.thisPlayer.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem)) {
+							ItemStack otherStack = this.thisPlayer.getItemInHand(InteractionHand.OFF_HAND);
+							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && otherStack.isEmpty()) {
 								((IMinecraft) minecraft).startUseItem(interactionHand);
+								startedUsingItem = true;
 								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							}
 						}
@@ -77,6 +81,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof ShieldItem || itemStack.getItem() instanceof SwordItem)) {
 						minecraft.gameMode.releaseUsingItem(thisPlayer);
+						startedUsingItem = false;
 					}
 				}
 			}
@@ -94,7 +99,10 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
 	private void isShieldCrouching(Input instance, boolean b, float v) {
 		for(InteractionHand hand : InteractionHand.values()) {
-			if (thisPlayer.isUsingItem() && thisPlayer.getItemInHand(hand).getItem() instanceof ShieldItem || thisPlayer.getItemInHand(hand).getItem() instanceof SwordItem) {
+			Item item = thisPlayer.getItemInHand(hand).getItem();
+			if(thisPlayer.getCooldowns().isOnCooldown(item)) {
+				instance.tick(false, v);
+			} else if (thisPlayer.isUsingItem() && item instanceof ShieldItem || item instanceof SwordItem && !thisPlayer.getCooldowns().isOnCooldown(item)) {
 				if(v < 1.0F) {
 					v = 1.0F;
 				}

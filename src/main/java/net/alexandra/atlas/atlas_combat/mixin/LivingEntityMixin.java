@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.EntityDamageSource;
@@ -35,8 +36,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Collections;
-
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
 
@@ -62,6 +61,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public DamageSource lastDamageSource;
 	@Unique
 	boolean momentumBasedKnockback = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "momentumKnockback");
+	@Unique
+	boolean isParry = false;
 
 	@Shadow
 	public long lastDamageStamp;
@@ -193,15 +194,24 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 						bl = true;
 					}else if(thisEntity instanceof Player player && player.getItemInHand(hand).getItem() instanceof SwordItem shieldItem && player.isUsingItem() && !player.getCooldowns().isOnCooldown(shieldItem)) {
 						if(hand != InteractionHand.OFF_HAND) {
-							if(!(player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem)) {
+							if(player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
+								((PlayerExtensions) player).setAttackStrengthTicker(((ISwordItem) shieldItem).getStrengthTimer());
+								isParry = true;
 								float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
-								float explosionStrength = Math.max((10 + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), 10);
-								float actualStrength = Math.max((blockStrength + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), blockStrength);
-								if (source.isExplosion() || source.isProjectile()) {
+								float explosionStrength = Math.max((10 + (-(((ISwordItem) shieldItem).getStrengthTimer() - 60F) / 20F)), 10);
+								float actualStrength = Math.max((blockStrength + (-((((ISwordItem) shieldItem).getStrengthTimer()) - 60F) / 20F)), blockStrength);
+								if (source.isExplosion()) {
 									hurtCurrentlyUsedShield(explosionStrength);
 									amount -= explosionStrength;
 									g = f - amount;
-								} else if (blockStrength >= amount) {
+								} else if(source.isProjectile()) {
+									double random = Mth.randomBetween(RandomSource.create(), 1, 2);
+									if (random >= 1.25) {
+										hurtCurrentlyUsedShield(actualStrength);
+										amount -= actualStrength;
+										g = f - amount;
+									}
+								}else if (blockStrength >= amount) {
 									hurtCurrentlyUsedShield(amount);
 									amount -= blockStrength;
 									g = f - amount;
@@ -216,19 +226,29 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 										this.blockUsingShield((LivingEntity) entity);
 									}
 								}
-								((PlayerExtensions)player).setAttackStrengthTicker(((ISwordItem)shieldItem).getStrengthTimer() - 2);
+								((PlayerExtensions) player).setAttackStrengthTicker(((ISwordItem) shieldItem).getStrengthTimer());
+								isParry = true;
 								bl = true;
 							}
 						}else {
-							if(!(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShieldItem)) {
+							if(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
+								((PlayerExtensions) player).setAttackStrengthTicker(((ISwordItem) shieldItem).getStrengthTimer());
+								isParry = true;
 								float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
-								float explosionStrength = Math.max((10 + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), 10);
-								float actualStrength = Math.max((blockStrength + (-(((ISwordItem)shieldItem).getStrengthTimer() - 20) / 4)), blockStrength);
-								if (source.isExplosion() || source.isProjectile()) {
+								float explosionStrength = Math.max((10 + (-(((ISwordItem) shieldItem).getStrengthTimer() - 60F) / 20F)), 10);
+								float actualStrength = Math.max((blockStrength + (-((((ISwordItem) shieldItem).getStrengthTimer()) - 60F) / 20F)), blockStrength);
+								if (source.isExplosion()) {
 									hurtCurrentlyUsedShield(explosionStrength);
 									amount -= explosionStrength;
 									g = f - amount;
-								} else if (blockStrength >= amount) {
+								} else if(source.isProjectile()) {
+									double random = Mth.randomBetween(RandomSource.create(), 1, 2);
+									if (random >= 1.25) {
+										hurtCurrentlyUsedShield(actualStrength);
+										amount -= actualStrength;
+										g = f - amount;
+									}
+								}else if (blockStrength >= amount) {
 									hurtCurrentlyUsedShield(amount);
 									amount -= blockStrength;
 									g = f - amount;
@@ -243,7 +263,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 										this.blockUsingShield((LivingEntity) entity);
 									}
 								}
-								((PlayerExtensions)player).setAttackStrengthTicker(((ISwordItem)shieldItem).getStrengthTimer() - 2);
 								bl = true;
 							}
 						}
@@ -253,8 +272,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			Entity entity2 = source.getEntity();
 			enemy = entity2;
 			int invulnerableTime = 10;
-			if (entity2 != null && entity2 instanceof Player) {
-				Player player = (Player)entity2;
+			if (entity2 != null && entity2 instanceof Player player) {
 				invulnerableTime = Math.min(((PlayerExtensions)player).getAttackDelay(player), invulnerableTime);
 			}
 
@@ -773,5 +791,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
 		return true;
+	}
+	@Override
+	public boolean getIsParry() {
+		return isParry;
 	}
 }

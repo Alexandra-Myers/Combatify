@@ -111,17 +111,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void redirectAttackStrengthTicker(Player instance, int value) {
 		if(player.getUseItem().getItem() instanceof SwordItem swordItem) {
 			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
-			((ISwordItem)swordItem).addStrengthTimer();
 		}
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;

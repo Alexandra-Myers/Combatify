@@ -1,8 +1,9 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
-import net.alexandra.atlas.atlas_combat.extensions.IPlayerGameMode;
+import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -13,9 +14,7 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
@@ -64,6 +63,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public ClientLevel level;
 
 	@Shadow
+	protected abstract boolean startAttack();
+
+	@Shadow
 	public abstract @org.jetbrains.annotations.Nullable Entity getCameraEntity();
 
 	@Shadow
@@ -85,6 +87,13 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public Screen screen;
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
+		if(player != null) {
+			boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction");
+			boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions");
+			if (((PlayerExtensions) player).isAttackAvailable(-20.0F) && swordFunctions && specialWeaponFunctions && ((LivingEntityExtensions) player).getIsParry()) {
+				startAttack();
+			}
+		}
 		if (screen != null) {
 			this.retainAttack = false;
 		}
@@ -95,12 +104,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 			this.startAttack();
 		}
 	}
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	private boolean startAttack() {
+	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
+	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 		Item offhandItem = player.getItemInHand(InteractionHand.OFF_HAND).getItem();
 		boolean handHasShieldItem = item instanceof ShieldItem;
@@ -116,28 +121,37 @@ public abstract class MinecraftMixin implements IMinecraft {
 			player.getCooldowns().addCooldown(item, 20);
 			player.stopUsingItem();
 			player.level.broadcastEntityEvent(player, (byte)30);
+		}else if(player.isUsingItem() && offhandHasShieldItem || offhandHasBlockingItem) {
+			player.getCooldowns().addCooldown(offhandItem, 20);
+			player.stopUsingItem();
+			player.level.broadcastEntityEvent(player, (byte)30);
 		}
 		if(missTime < 0) {
-			return false;
+			cir.setReturnValue(false);
+			cir.cancel();
 		}else if (this.hitResult == null) {
 			LOGGER.error("Null returned as 'hitResult', this shouldn't happen!");
 			if (this.gameMode.hasMissTime()) {
 				this.missTime = 10;
 			}
 
-			return false;
+			cir.setReturnValue(false);
+			cir.cancel();
 		}else if (this.player.isHandsBusy()) {
-			return false;
+			cir.setReturnValue(false);
+			cir.cancel();
 		} else {
 			if (!((PlayerExtensions)this.player).isAttackAvailable(0.0F) && redirectResult(this.hitResult) != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
-					return false;
+					cir.setReturnValue(false);
+					cir.cancel();
 				}
 
 				if (var1 < 1.0F) {
 					this.retainAttack = true;
-					return true;
+					cir.setReturnValue(false);
+					cir.cancel();
 				}
 			}
 
@@ -169,10 +183,12 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 
 				this.player.swing(InteractionHand.MAIN_HAND);
-				return bl;
+				cir.setReturnValue(bl);
+				cir.cancel();
 			}
 		}
-		return false;
+		cir.setReturnValue(false);
+		cir.cancel();
 	}
 	public final HitResult.Type redirectResult(HitResult instance) {
 		HitResult.Type type = instance.getType();
@@ -250,11 +266,15 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 
 				this.retainAttack = false;
-			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-1.0F)) {
+			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-10.0F) && ((IOptions)options).autoAttack().get()) {
 				this.startAttack();
 			} else {
 				this.gameMode.stopDestroyBlock();
 			}
 		}
+	}
+	@Override
+	public void getStartAttack() {
+		startAttack();
 	}
 }

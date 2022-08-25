@@ -62,19 +62,34 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
 			if (InteractionHand.MAIN_HAND != hand) {
-				if (!(user.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShieldItem)) {
+				if (user.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
 					user.startUsingItem(hand);
+					return InteractionResultHolder.consume(itemStack);
 				} else {
-					user.startUsingItem(InteractionHand.MAIN_HAND);
+					if(!(user.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem)) {
+						user.stopUsingItem();
+						user.getItemInHand(InteractionHand.MAIN_HAND).getItem().use(world, user, InteractionHand.MAIN_HAND);
+						user.startUsingItem(InteractionHand.MAIN_HAND);
+						return InteractionResultHolder.fail(itemStack);
+					}
+					user.stopUsingItem();
+					return InteractionResultHolder.fail(itemStack);
 				}
 			} else {
-				if (!(user.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof ShieldItem)) {
+				if(user.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
 					user.startUsingItem(hand);
+					return InteractionResultHolder.consume(itemStack);
 				} else {
-					user.startUsingItem(InteractionHand.OFF_HAND);
+					if(!(user.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof SwordItem)) {
+						user.stopUsingItem();
+						user.getItemInHand(InteractionHand.OFF_HAND).getItem().use(world, user, InteractionHand.OFF_HAND);
+						user.startUsingItem(InteractionHand.OFF_HAND);
+						return InteractionResultHolder.fail(itemStack);
+					}
+					user.stopUsingItem();
+					return InteractionResultHolder.fail(itemStack);
 				}
 			}
-			return InteractionResultHolder.consume(itemStack);
 		}
 		return super.use(world,user,hand);
 	}
@@ -114,7 +129,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	}
 	@Override
 	public float getShieldKnockbackResistanceValue(ItemStack itemStack) {
-		return getTier() == Tiers.NETHERITE || getTier().getLevel() == 4 ? 0.5F : 0.0F;
+		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.1F : 0.0F;
 	}
 
 	@Override

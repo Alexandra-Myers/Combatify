@@ -7,4 +7,6 @@ import net.minecraft.world.phys.EntityHitResult;
 public interface IMinecraft {
 	void startUseItem(InteractionHand hand);
 	EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance);
+
+    void getStartAttack();
 }
