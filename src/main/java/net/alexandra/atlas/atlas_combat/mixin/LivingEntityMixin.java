@@ -117,6 +117,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Overwrite()
 	public void blockedByShield(LivingEntity target) {
 		newKnockback(0.5F, target.getX() - ((LivingEntity)(Object)this).getX(), target.getZ() - ((LivingEntity)(Object)this).getZ());
+		if(((LivingEntityExtensions)target).getBlockingItem().getItem() instanceof SwordItem) {
+			return;
+		}
 		if (((LivingEntity)(Object)this).getMainHandItem().getItem() instanceof AxeItem) {
 			float damage = 1.6F + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * 0.5F;
 			if(target instanceof PlayerExtensions player) {
