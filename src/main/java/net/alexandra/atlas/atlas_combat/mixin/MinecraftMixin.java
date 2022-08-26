@@ -14,10 +14,19 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.world.entity.animal.AbstractFish;
+import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.frog.Frog;
+import net.minecraft.world.entity.monster.Guardian;
+import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
@@ -32,6 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements IMinecraft {
@@ -75,6 +85,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Shadow
 	protected int missTime;
 
+	@Unique
+	Entity lastPickedEntity = null;
+
 	@Shadow
 	@Final
 	public ParticleEngine particleEngine;
@@ -87,12 +100,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public Screen screen;
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
-		if(player != null) {
-			boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction");
-			boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions");
-			if (((PlayerExtensions) player).isAttackAvailable(-20.0F) && swordFunctions && specialWeaponFunctions && ((LivingEntityExtensions) player).getIsParry()) {
-				startAttack();
-			}
+		if(crosshairPickEntity != null && hitResult != null && (this.hitResult).distanceTo(this.crosshairPickEntity) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
+			lastPickedEntity = crosshairPickEntity;
 		}
 		if (screen != null) {
 			this.retainAttack = false;
@@ -163,7 +172,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 						if (player.distanceTo(((EntityHitResult)hitResult).getEntity()) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
 							this.gameMode.attack(this.player, ((EntityHitResult) this.hitResult).getEntity());
 						} else {
-//							((IPlayerGameMode) this.gameMode).swingInAir(this.player);
 							((PlayerExtensions)player).attackAir();
 						}
 						break;
@@ -178,8 +186,40 @@ public abstract class MinecraftMixin implements IMinecraft {
 							break;
 						}
 					case MISS:
-//						((IPlayerGameMode) this.gameMode).swingInAir(this.player);
-						((PlayerExtensions)player).attackAir();
+						UUID playerUUID = player.getUUID();
+						MinecraftServer server = player.getServer();
+						boolean serverMeetsRequirements = server != null && server.isDedicatedServer();
+						int playerLatency = serverMeetsRequirements ? server.getPlayerList().getPlayer(playerUUID).latency : 0;
+						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5), playerLatency);
+						if(result != null && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "refinedCoyoteTime")) {
+							if(!(result.getEntity() instanceof Player) || playerLatency > 100) {
+								boolean bl3 = result.getEntity() == lastPickedEntity;
+								if(bl3) {
+									if (result.getEntity() instanceof Guardian
+											|| result.getEntity() instanceof Cat
+											|| result.getEntity() instanceof Vex
+											|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
+											|| result.getEntity() instanceof Fox
+											|| result.getEntity() instanceof Frog
+											|| result.getEntity() instanceof Bee
+											|| result.getEntity() instanceof Bat
+											|| result.getEntity() instanceof AbstractFish
+											|| playerLatency > 200) {
+										this.gameMode.attack(this.player, result.getEntity());
+									} else if (playerLatency > 100) {
+										result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5), playerLatency);
+										this.gameMode.attack(this.player, result.getEntity());
+									} else {
+										result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
+										this.gameMode.attack(this.player, result.getEntity());
+									}
+								}
+							} else {
+								((PlayerExtensions) player).attackAir();
+							}
+						}else {
+							((PlayerExtensions) player).attackAir();
+						}
 				}
 
 				this.player.swing(InteractionHand.MAIN_HAND);
@@ -242,6 +282,124 @@ public abstract class MinecraftMixin implements IMinecraft {
 				&& e.isPickable()
 				&& e instanceof LivingEntity)
 		);
+	}
+	@Nullable
+	@Override
+	public EntityHitResult findEntity(Player player, float partialTicks, double blockReachDistance) {
+		Vec3 from = player.getEyePosition(partialTicks);
+		Vec3 look = player.getViewVector(partialTicks);
+		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
+
+		for (double i = -1.0; i <= 1.0; i += 0.1) {
+			for (double j = -1.0; j <= 1.0; j += 0.1) {
+				for (double k = -1.0; k <= 1.0; k += 0.1) {
+					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
+							player.level,
+							player,
+							from,
+							to,
+							new AABB(from, to.add(i, j, k)),
+							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
+									&& e.isPickable()
+									&& e instanceof LivingEntity)
+					);
+					if(entityHitResult != null) {
+						return entityHitResult;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	@Nullable
+	@Override
+	public EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance) {
+		Vec3 from = player.getEyePosition(partialTicks);
+		Vec3 look = player.getViewVector(partialTicks);
+		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
+
+		for (double i = -0.5; i <= 0.5; i += 0.1) {
+			for (double j = -0.5; j <= 0.5; j += 0.1) {
+				for (double k = -0.5; k <= 0.5; k += 0.1) {
+					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
+							player.level,
+							player,
+							from,
+							to,
+							new AABB(from, to.add(i, j, k)),
+							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
+									&& e.isPickable()
+									&& e instanceof LivingEntity)
+					);
+					if(entityHitResult != null) {
+						return entityHitResult;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	@Nullable
+	@Override
+	public EntityHitResult findEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier) {
+		if(strengthMultiplier <= 50) {
+			strengthMultiplier = 50;
+		}
+		Vec3 from = player.getEyePosition(partialTicks);
+		Vec3 look = player.getViewVector(partialTicks);
+		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
+
+		for (double i = -1.0; i <= 1.0; i += 0.1) {
+			for (double j = -1.0; j <= 1.0; j += 0.1) {
+				for (double k = -1.0; k <= 1.0; k += 0.1) {
+					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
+							player.level,
+							player,
+							from,
+							to,
+							new AABB(from, to.add(i * (strengthMultiplier / 50), j * (strengthMultiplier / 50), k * (strengthMultiplier / 50))),
+							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
+									&& e.isPickable()
+									&& e instanceof LivingEntity)
+					);
+					if(entityHitResult != null) {
+						return entityHitResult;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	@Nullable
+	@Override
+	public EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier) {
+		if(strengthMultiplier <= 50) {
+			strengthMultiplier = 50;
+		}
+		Vec3 from = player.getEyePosition(partialTicks);
+		Vec3 look = player.getViewVector(partialTicks);
+		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
+
+		for (double i = -0.5; i <= 0.5; i += 0.1) {
+			for (double j = -0.5; j <= 0.5; j += 0.1) {
+				for (double k = -0.5; k <= 0.5; k += 0.1) {
+					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
+							player.level,
+							player,
+							from,
+							to,
+							new AABB(from, to.add(i * (strengthMultiplier / 50), j * (strengthMultiplier / 50), k * (strengthMultiplier / 50))),
+							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
+									&& e.isPickable()
+									&& e instanceof LivingEntity)
+					);
+					if(entityHitResult != null) {
+						return entityHitResult;
+					}
+				}
+			}
+		}
+		return null;
 	}
 	/**
 	 * @author

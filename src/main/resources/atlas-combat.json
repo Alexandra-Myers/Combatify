@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "maxWaitForPacketResponse" : 20,
   "potionUseDuration" : 20,
   "honeyBottleUseDuration" : 20,
@@ -13,6 +13,7 @@
   "specialWeaponFunctions": false,
   "momentumKnockback": false,
   "bedrockBlockReach": false,
+  "refinedCoyoteTime": false,
   "axeFunction": true,
   "pickaxeFunction": true,
   "shovelFunction": true,

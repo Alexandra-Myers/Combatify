@@ -61,7 +61,7 @@ public class ConfigHelper {
 
 			generalJsonObject = generalJsonElement.getAsJsonObject();
 			itemsJsonObject = itemsJsonElement.getAsJsonObject();
-			if(!Objects.equals(getString(generalJsonObject, "version"), "1.0.2")) {
+			if(!Objects.equals(getString(generalJsonObject, "version"), "1.0.3")) {
 				try{
 					generalFile.createNewFile();
 					InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("atlas-combat.json");
@@ -77,7 +77,7 @@ public class ConfigHelper {
 					e.printStackTrace();
 				}
 			}
-			if(!Objects.equals(getString(itemsJsonObject, "version"), "1.0.2")) {
+			if(!Objects.equals(getString(itemsJsonObject, "version"), "1.0.3")) {
 				try{
 					itemsFile.createNewFile();
 					InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("atlas-combat-items.json");

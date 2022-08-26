@@ -203,14 +203,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 								if (source.isExplosion()) {
 									hurtCurrentlyUsedShield(explosionStrength);
 									amount -= explosionStrength;
-									g = f - amount;
+									g = f - explosionStrength;
 								} else if(source.isProjectile()) {
-									double random = Mth.randomBetween(RandomSource.create(), 1, 2);
-									if (random >= 1.25) {
-										hurtCurrentlyUsedShield(actualStrength);
-										amount -= actualStrength;
-										g = f - amount;
-									}
+									g = f;
 								}else if (blockStrength >= amount) {
 									hurtCurrentlyUsedShield(amount);
 									amount -= blockStrength;
@@ -226,8 +221,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 										this.blockUsingShield((LivingEntity) entity);
 									}
 								}
-								((PlayerExtensions) player).setAttackStrengthTicker(((ISwordItem) shieldItem).getStrengthTimer());
-								isParry = true;
 								bl = true;
 							}
 						}else {
@@ -240,14 +233,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 								if (source.isExplosion()) {
 									hurtCurrentlyUsedShield(explosionStrength);
 									amount -= explosionStrength;
-									g = f - amount;
+									g = f - explosionStrength;
 								} else if(source.isProjectile()) {
-									double random = Mth.randomBetween(RandomSource.create(), 1, 2);
-									if (random >= 1.25) {
-										hurtCurrentlyUsedShield(actualStrength);
-										amount -= actualStrength;
-										g = f - amount;
-									}
+									g = f;
 								}else if (blockStrength >= amount) {
 									hurtCurrentlyUsedShield(amount);
 									amount -= blockStrength;
