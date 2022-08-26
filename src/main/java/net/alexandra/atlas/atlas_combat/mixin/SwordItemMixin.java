@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.extensions.ISwordItem;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
@@ -32,7 +33,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-		if(AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
+		if(ConfigHelper.specialWeaponFunctions && ConfigHelper.swordFunction) {
 			float f = getShieldBlockDamageValue(stack);
 			float g = getShieldKnockbackResistanceValue(stack);
 			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f), Component.translatable("attribute.name.generic.shield_strength")})).withStyle(ChatFormatting.DARK_GREEN));
@@ -58,7 +59,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-		if(AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
+		if(ConfigHelper.specialWeaponFunctions && ConfigHelper.swordFunction) {
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
 			if (InteractionHand.MAIN_HAND != hand) {

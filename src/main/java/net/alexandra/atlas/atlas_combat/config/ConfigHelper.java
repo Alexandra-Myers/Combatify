@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import eu.midnightdust.lib.config.MidnightConfig;
 import org.quiltmc.loader.api.QuiltLoader;
 
 import java.io.File;
@@ -11,9 +12,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 
-public class ConfigHelper {
+public class ConfigHelper extends MidnightConfig {
+	@Entry public static boolean toolsAreWeapons = false;
+	@Entry public static boolean specialWeaponFunctions = false;
+	@Entry public static boolean momentumKnockback = false;
+	@Entry public static boolean bedrockBlockReach = false;
+	@Entry public static boolean refinedCoyoteTime = false;
+	@Entry public static boolean axeFunction = true;
+	@Entry public static boolean pickaxeFunction = true;
+	@Entry public static boolean shovelFunction = true;
+	@Entry public static boolean hoeFunction = true;
+	@Entry public static boolean swordFunction = true;
+	@Entry public static boolean tridentFunction = true;
+	@Entry public static boolean blockReach = true;
+	@Entry(min=10,max=1000) public static int maxWaitForPacketResponse = 20;
+	@Entry(min=1,max=1000) public static int potionUseDuration = 20;
+	@Entry(min=1,max=1000) public static int honeyBottleUseDuration = 20;
+	@Entry(min=1,max=1000) public static int milkBucketUseDuration = 20;
+	@Entry(min=1,max=1000) public static int instantHealthBonus = 6;
+	@Entry(min=1,max=1000) public static int eggItemCooldown = 4;
+	@Entry(min=1,max=1000) public static int snowballItemCooldown = 4;
+	@Entry(min=0.1,max=40) public static float snowballDamage = 0.5F;
+	@Entry(min=0.1,max=4) public static float bowUncertainty = 0.25F;
 
 	public Path configFolderPath;
 
@@ -32,18 +55,7 @@ public class ConfigHelper {
 	public ConfigHelper() {
 		configFolderPath = QuiltLoader.getConfigDir().getFileName();
 
-		generalFile = new File(configFolderPath.toAbsolutePath() + "/atlas-combat-general.json");
 		itemsFile = new File(configFolderPath.toAbsolutePath() + "/atlas-combat-items.json");
-		if(!generalFile.exists()) {
-			try{
-				generalFile.createNewFile();
-				InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("atlas-combat.json");
-				Files.write(generalFile.toPath(),inputStream.readAllBytes());
-				inputStream.close();
-			}catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		if(!itemsFile.exists()) {
 			try{
 				itemsFile.createNewFile();
@@ -56,27 +68,9 @@ public class ConfigHelper {
 		}
 
 		try{
-			generalJsonElement = JsonParser.parseReader(new FileReader(generalFile));
 			itemsJsonElement = JsonParser.parseReader(new FileReader(itemsFile));
 
-			generalJsonObject = generalJsonElement.getAsJsonObject();
 			itemsJsonObject = itemsJsonElement.getAsJsonObject();
-			if(!Objects.equals(getString(generalJsonObject, "version"), "1.0.3")) {
-				try{
-					generalFile.createNewFile();
-					InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("atlas-combat.json");
-					Files.write(generalFile.toPath(),inputStream.readAllBytes());
-					inputStream.close();
-				}catch (IOException e) {
-					e.printStackTrace();
-				}
-				try {
-					generalJsonElement = JsonParser.parseReader(new FileReader(generalFile));
-					generalJsonObject = generalJsonElement.getAsJsonObject();
-				}catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 			if(!Objects.equals(getString(itemsJsonObject, "version"), "1.0.3")) {
 				try{
 					itemsFile.createNewFile();

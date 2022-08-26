@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Snowball;
@@ -15,7 +16,7 @@ import java.util.Collections;
 public class SnowballMixin {
 
 	@Unique
-	public final float snowballDamage = AtlasCombat.helper.getFloat(AtlasCombat.helper.generalJsonObject, "snowballDamage");
+	public final float snowballDamage = ConfigHelper.snowballDamage;
 
 
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))

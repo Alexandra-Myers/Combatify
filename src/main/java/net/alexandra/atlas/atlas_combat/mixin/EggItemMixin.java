@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +20,7 @@ import java.util.Collections;
 public class EggItemMixin {
 
 	@Unique
-	public final int eggItemCooldown = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "eggItemCooldown");
+	public final int eggItemCooldown = ConfigHelper.eggItemCooldown;
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {

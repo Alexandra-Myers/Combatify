@@ -1,10 +1,12 @@
 package net.alexandra.atlas.atlas_combat;
 
+import eu.midnightdust.lib.config.MidnightConfig;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.config.QuiltConfigs;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
+import net.alexandra.atlas.atlas_combat.util.NeuralNetwork;
 import net.minecraft.core.Position;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
@@ -35,6 +37,7 @@ public class AtlasCombat implements ModInitializer {
 	);
 
 	public static ConfigHelper helper = new ConfigHelper();
+	NeuralNetwork nn_custom_lr_with_multithreading = new NeuralNetwork(2, 10, 1, 0.01, true);
 
 	public static final CleavingEnchantment CLEAVING_ENCHANTMENT = register();
 	public static CleavingEnchantment register() {
@@ -43,6 +46,7 @@ public class AtlasCombat implements ModInitializer {
 
 	@Override
 	public void onInitialize(ModContainer mod) {
+		MidnightConfig.init("atlas_combat", ConfigHelper.class);
 
 		NetworkingHandler networkingHandler = new NetworkingHandler();
 

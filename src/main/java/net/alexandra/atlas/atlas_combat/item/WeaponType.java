@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -46,7 +47,7 @@ public enum WeaponType {
         if (var5 != 0.0F) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-		if (var6 != 0.0F && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "blockReach")) {
+		if (var6 != 0.0F && ConfigHelper.blockReach) {
 			var2.put(NewAttributes.BLOCK_REACH, new AttributeModifier(BASE_BLOCK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
 		}
 
@@ -124,7 +125,7 @@ public enum WeaponType {
     public float getReach() {
         switch (this) {
 			case PICKAXE:
-				if(AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "pickaxeFunction")) {
+				if(ConfigHelper.pickaxeFunction) {
 					return 0.5F;
 				}
 				else return 0;

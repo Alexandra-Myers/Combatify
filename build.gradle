@@ -28,8 +28,14 @@ dependencies {
 
 	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
 	// Quilted Fabric API will automatically pull in the correct QSL version.
+	modApi ("me.shedaniel.cloth:cloth-config-fabric:8.0.75") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
 	modImplementation libs.quilted.fabric.api
 	include 'com.github.rizecookey:CookeyMod:1.7.0+1.19.2'
+	modImplementation 'com.github.rizecookey:CookeyMod:1.7.0+1.19.2'
+	include 'com.github.TeamMidnightDust:MidnightLib:v0.6.0'
+	modImplementation 'com.github.TeamMidnightDust:MidnightLib:v0.6.0'
 	modApi "com.terraformersmc:modmenu:4.0.6"
 	include "com.terraformersmc:modmenu:4.0.6"
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one

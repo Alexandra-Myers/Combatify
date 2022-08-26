@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +14,7 @@ import java.util.Collections;
 public class PotionItemMixin {
 
 	@Unique
-	public final int useDuration = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "potionUseDuration");
+	public final int useDuration = ConfigHelper.potionUseDuration;
 
 
 	/**

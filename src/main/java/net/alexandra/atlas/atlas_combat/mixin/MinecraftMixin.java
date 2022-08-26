@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
@@ -20,10 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ambient.Bat;
-import net.minecraft.world.entity.animal.AbstractFish;
-import net.minecraft.world.entity.animal.Bee;
-import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.*;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.Vex;
@@ -191,26 +189,32 @@ public abstract class MinecraftMixin implements IMinecraft {
 						boolean serverMeetsRequirements = server != null && server.isDedicatedServer();
 						int playerLatency = serverMeetsRequirements ? server.getPlayerList().getPlayer(playerUUID).latency : 0;
 						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5), playerLatency);
-						if(result != null && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "refinedCoyoteTime")) {
-							if(!(result.getEntity() instanceof Player) || playerLatency > 100) {
-								boolean bl3 = result.getEntity() == lastPickedEntity;
-								if(bl3) {
-									if (result.getEntity() instanceof Guardian
-											|| result.getEntity() instanceof Cat
-											|| result.getEntity() instanceof Vex
-											|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
-											|| result.getEntity() instanceof Fox
-											|| result.getEntity() instanceof Frog
-											|| result.getEntity() instanceof Bee
-											|| result.getEntity() instanceof Bat
-											|| result.getEntity() instanceof AbstractFish
-											|| playerLatency > 200) {
+						if(result != null && ConfigHelper.refinedCoyoteTime) {
+							if(!(result.getEntity() instanceof Player) || playerLatency > 50) {
+								if (result.getEntity() instanceof Guardian
+										|| result.getEntity() instanceof Cat
+										|| result.getEntity() instanceof Vex
+										|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
+										|| result.getEntity() instanceof Fox
+										|| result.getEntity() instanceof Frog
+										|| result.getEntity() instanceof Bee
+										|| result.getEntity() instanceof Bat
+										|| result.getEntity() instanceof AbstractFish
+										|| result.getEntity() instanceof Rabbit) {
+									result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
+									if(result != null) {
 										this.gameMode.attack(this.player, result.getEntity());
-									} else if (playerLatency > 100) {
-										result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5), playerLatency);
+									}
+								} else if(playerLatency > 200) {
+									this.gameMode.attack(this.player, result.getEntity());
+								} else if (playerLatency > 100) {
+									result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5), playerLatency);
+									if(result != null) {
 										this.gameMode.attack(this.player, result.getEntity());
-									} else {
-										result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
+									}
+								} else {
+									result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
+									if(result != null) {
 										this.gameMode.attack(this.player, result.getEntity());
 									}
 								}
@@ -304,7 +308,20 @@ public abstract class MinecraftMixin implements IMinecraft {
 									&& e instanceof LivingEntity)
 					);
 					if(entityHitResult != null) {
-						return entityHitResult;
+						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
+						if(bl3
+								|| entityHitResult.getEntity() instanceof Guardian
+								|| entityHitResult.getEntity() instanceof Cat
+								|| entityHitResult.getEntity() instanceof Vex
+								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
+								|| entityHitResult.getEntity() instanceof Fox
+								|| entityHitResult.getEntity() instanceof Frog
+								|| entityHitResult.getEntity() instanceof Bee
+								|| entityHitResult.getEntity() instanceof Bat
+								|| entityHitResult.getEntity() instanceof AbstractFish
+								|| entityHitResult.getEntity() instanceof Rabbit) {
+							return entityHitResult;
+						}
 					}
 				}
 			}
@@ -332,7 +349,20 @@ public abstract class MinecraftMixin implements IMinecraft {
 									&& e instanceof LivingEntity)
 					);
 					if(entityHitResult != null) {
-						return entityHitResult;
+						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
+						if(bl3
+								|| entityHitResult.getEntity() instanceof Guardian
+								|| entityHitResult.getEntity() instanceof Cat
+								|| entityHitResult.getEntity() instanceof Vex
+								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
+								|| entityHitResult.getEntity() instanceof Fox
+								|| entityHitResult.getEntity() instanceof Frog
+								|| entityHitResult.getEntity() instanceof Bee
+								|| entityHitResult.getEntity() instanceof Bat
+								|| entityHitResult.getEntity() instanceof AbstractFish
+								|| entityHitResult.getEntity() instanceof Rabbit) {
+							return entityHitResult;
+						}
 					}
 				}
 			}
@@ -357,13 +387,26 @@ public abstract class MinecraftMixin implements IMinecraft {
 							player,
 							from,
 							to,
-							new AABB(from, to.add(i * (strengthMultiplier / 50), j * (strengthMultiplier / 50), k * (strengthMultiplier / 50))),
+							new AABB(from, to.add(i * (strengthMultiplier / 100), j * (strengthMultiplier / 100), k * (strengthMultiplier / 100))),
 							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
 									&& e.isPickable()
 									&& e instanceof LivingEntity)
 					);
 					if(entityHitResult != null) {
-						return entityHitResult;
+						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
+						if(bl3
+								|| entityHitResult.getEntity() instanceof Guardian
+								|| entityHitResult.getEntity() instanceof Cat
+								|| entityHitResult.getEntity() instanceof Vex
+								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
+								|| entityHitResult.getEntity() instanceof Fox
+								|| entityHitResult.getEntity() instanceof Frog
+								|| entityHitResult.getEntity() instanceof Bee
+								|| entityHitResult.getEntity() instanceof Bat
+								|| entityHitResult.getEntity() instanceof AbstractFish
+								|| entityHitResult.getEntity() instanceof Rabbit) {
+							return entityHitResult;
+						}
 					}
 				}
 			}
@@ -388,13 +431,26 @@ public abstract class MinecraftMixin implements IMinecraft {
 							player,
 							from,
 							to,
-							new AABB(from, to.add(i * (strengthMultiplier / 50), j * (strengthMultiplier / 50), k * (strengthMultiplier / 50))),
+							new AABB(from, to.add(i * (strengthMultiplier / 100), j * (strengthMultiplier / 100), k * (strengthMultiplier / 100))),
 							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
 									&& e.isPickable()
 									&& e instanceof LivingEntity)
 					);
 					if(entityHitResult != null) {
-						return entityHitResult;
+						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
+						if(bl3
+								|| entityHitResult.getEntity() instanceof Guardian
+								|| entityHitResult.getEntity() instanceof Cat
+								|| entityHitResult.getEntity() instanceof Vex
+								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
+								|| entityHitResult.getEntity() instanceof Fox
+								|| entityHitResult.getEntity() instanceof Frog
+								|| entityHitResult.getEntity() instanceof Bee
+								|| entityHitResult.getEntity() instanceof Bat
+								|| entityHitResult.getEntity() instanceof AbstractFish
+								|| entityHitResult.getEntity() instanceof Rabbit) {
+							return entityHitResult;
+						}
 					}
 				}
 			}

@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.minecraft.world.item.HoneyBottleItem;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +14,7 @@ import java.util.Collections;
 public class HoneyBottleItemMixin {
 
 	@Unique
-	public final int maxUseDuration =  AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "honeyBottleUseDuration");
+	public final int maxUseDuration = ConfigHelper.honeyBottleUseDuration;
 
 	/**
 	 * @author zOnlyKroks

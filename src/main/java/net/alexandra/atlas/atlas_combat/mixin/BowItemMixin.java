@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IBowItem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -27,7 +28,7 @@ import java.util.Collections;
 public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowItem {
 
 	@Unique
-	public final float configUncertainty = AtlasCombat.helper.getFloat(AtlasCombat.helper.generalJsonObject, "bowUncertainty");
+	public final float configUncertainty = ConfigHelper.bowUncertainty;
 	@Shadow
 	public static float getPowerForTime(int useTicks) {
 		return 0;

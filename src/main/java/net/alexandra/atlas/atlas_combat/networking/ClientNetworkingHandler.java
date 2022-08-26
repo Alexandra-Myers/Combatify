@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.networking;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,7 @@ public class ClientNetworkingHandler {
 
 	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
 
-	public int ticksTowait = AtlasCombat.helper.getInt(AtlasCombat.helper.generalJsonObject, "maxWaitForPacketResponse");
+	public int ticksTowait = ConfigHelper.maxWaitForPacketResponse;
 
 	public static boolean receivedAnswer = false;
 	public static int ticksElapsed = 0;

@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.math.Vector3f;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -58,7 +59,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							}
 						}
-					}else if(!itemStack.isEmpty() && itemStack.getItem() instanceof SwordItem swordItem && thisPlayer.isCrouching() && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions") && AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction")) {
+					}else if(!itemStack.isEmpty() && itemStack.getItem() instanceof SwordItem swordItem && thisPlayer.isCrouching() && ConfigHelper.specialWeaponFunctions && ConfigHelper.swordFunction) {
 						if(interactionHand != InteractionHand.MAIN_HAND) {
 							ItemStack otherStack = this.thisPlayer.getItemInHand(InteractionHand.MAIN_HAND);
 							if (!thisPlayer.getCooldowns().isOnCooldown(swordItem) && otherStack.isEmpty()) {

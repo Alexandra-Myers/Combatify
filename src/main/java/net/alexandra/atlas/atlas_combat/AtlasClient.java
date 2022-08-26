@@ -1,6 +1,9 @@
 package net.alexandra.atlas.atlas_combat;
 
 import com.mojang.serialization.Codec;
+import com.terraformersmc.modmenu.api.ConfigScreenFactory;
+import com.terraformersmc.modmenu.api.ModMenuApi;
+import eu.midnightdust.lib.config.MidnightConfig;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
 import net.minecraft.client.Minecraft;
@@ -11,7 +14,7 @@ import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
 
 import java.util.Arrays;
 
-public class AtlasClient implements ClientModInitializer {
+public class AtlasClient implements ClientModInitializer, ModMenuApi {
 	private static final Component ACCESSIBILITY_TOOLTIP_LOW_SHIELD = Component.translatable("options.lowShield.tooltip");
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
@@ -31,5 +34,9 @@ public class AtlasClient implements ClientModInitializer {
 	public void onInitializeClient(ModContainer mod) {
 		ClientNetworkingHandler networkingHandler = new ClientNetworkingHandler();
 
+	}
+	@Override
+	public ConfigScreenFactory<?> getModConfigScreenFactory() {
+		return parent -> MidnightConfig.getScreen(parent, "atlas_combat");
 	}
 }

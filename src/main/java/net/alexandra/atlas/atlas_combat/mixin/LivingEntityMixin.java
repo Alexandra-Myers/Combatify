@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
@@ -60,7 +61,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Nullable
 	public DamageSource lastDamageSource;
 	@Unique
-	boolean momentumBasedKnockback = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "momentumKnockback");
+	boolean momentumBasedKnockback = ConfigHelper.momentumKnockback;
 	@Unique
 	boolean isParry = false;
 
@@ -139,13 +140,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
-		boolean specialWeaponFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "specialWeaponFunctions");
-		boolean axeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "axeFunction");
-		boolean pickaxeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "pickaxeFunction");
-		boolean shovelFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "shovelFunction");
-		boolean hoeFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "hoeFunction");
-		boolean swordFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "swordFunction");
-		boolean tridentFunctions = AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "tridentFunction");
+		boolean specialWeaponFunctions = ConfigHelper.specialWeaponFunctions;
+		boolean axeFunctions = ConfigHelper.axeFunction;
+		boolean pickaxeFunctions = ConfigHelper.pickaxeFunction;
+		boolean shovelFunctions = ConfigHelper.shovelFunction;
+		boolean hoeFunctions = ConfigHelper.hoeFunction;
+		boolean swordFunctions = ConfigHelper.swordFunction;
+		boolean tridentFunctions = ConfigHelper.tridentFunction;
 		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();

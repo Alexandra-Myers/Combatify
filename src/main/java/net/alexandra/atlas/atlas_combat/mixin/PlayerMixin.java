@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Either;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.core.BlockPos;
@@ -104,7 +105,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
 				.add(NewAttributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)
-				.add(NewAttributes.BLOCK_REACH, !AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "bedrockBlockReach") ? 0.0F : 2.0)
+				.add(NewAttributes.BLOCK_REACH, !ConfigHelper.bedrockBlockReach ? 0.0 : 2.0)
 				.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
@@ -226,7 +227,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting() && !AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "momentumKnockback")) {
+						if (player.isSprinting() && !ConfigHelper.momentumKnockback) {
 							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
 							++knockbackBonus;
 							bl2 = true;
@@ -281,7 +282,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								}
 
 								player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-								if(!AtlasCombat.helper.getBoolean(AtlasCombat.helper.generalJsonObject, "momentumKnockback")) {
+								if(!ConfigHelper.momentumKnockback) {
 									player.setSprinting(false);
 								}
 							}
