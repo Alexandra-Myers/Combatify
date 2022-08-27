@@ -108,41 +108,18 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 10))
 	public void injectAttack(CallbackInfo ci) {
 		while(options.keyAttack.consumeClick()) {
-			this.startAttack();
+			if(((LivingEntityExtensions)player).getBlockingItem().getItem() instanceof ShieldItem) {
+				this.startAttack();
+			}
 		}
 	}
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
-		Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-		Item offhandItem = player.getItemInHand(InteractionHand.OFF_HAND).getItem();
+		Item item = ((LivingEntityExtensions)player).getBlockingItem().getItem();
 		boolean handHasShieldItem = item instanceof ShieldItem;
-		boolean handHasBlockingItem = item instanceof SwordItem;
-		boolean offhandHasShieldItem = offhandItem instanceof ShieldItem;
-		boolean offhandHasBlockingItem = offhandItem instanceof SwordItem;
 		if (player.isUsingItem() && handHasShieldItem) {
-			if(offhandHasShieldItem) {
-				player.getCooldowns().addCooldown(offhandItem, 20);
-				player.stopUsingItem();
-				player.level.broadcastEntityEvent(player, (byte)30);
-			}
 			player.getCooldowns().addCooldown(item, 20);
-			player.stopUsingItem();
-			player.level.broadcastEntityEvent(player, (byte)30);
-		}else if(player.isUsingItem() && offhandHasShieldItem) {
-			player.getCooldowns().addCooldown(offhandItem, 20);
-			player.stopUsingItem();
-			player.level.broadcastEntityEvent(player, (byte)30);
-		}else if(player.isUsingItem() && handHasBlockingItem) {
-			if(offhandHasBlockingItem) {
-				player.getCooldowns().addCooldown(offhandItem, 4);
-				player.stopUsingItem();
-				player.level.broadcastEntityEvent(player, (byte)30);
-			}
-			player.getCooldowns().addCooldown(item, 4);
-			player.stopUsingItem();
-			player.level.broadcastEntityEvent(player, (byte)30);
-		}else if(player.isUsingItem() && offhandHasBlockingItem) {
-			player.getCooldowns().addCooldown(offhandItem, 4);
+			player.releaseUsingItem();
 			player.stopUsingItem();
 			player.level.broadcastEntityEvent(player, (byte)30);
 		}

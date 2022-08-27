@@ -73,6 +73,14 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	public float modifyArmPos4(LocalPlayer instance, float v) {
 		return (instance.getAttackStrengthScale(v) / 2.0F);
 	}
+	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
+	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
+		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof SwordItem) {
+			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
+			matrices.translate((double)((float)i * 0.56F), (double)(-0.52F + 0.0 * -0.6F), -0.72F);
+			ci.cancel();
+		}
+	}
 	@Override
 	public void applyItemBlockTransform2(PoseStack poseStack, HumanoidArm humanoidArm) {
 		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;

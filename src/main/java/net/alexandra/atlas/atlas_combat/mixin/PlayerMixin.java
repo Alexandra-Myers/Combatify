@@ -199,6 +199,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public boolean customShieldInteractions(float damage) {
 		player.getCooldowns().addCooldown(Items.SHIELD, (int)(damage * 20.0F));
+		player.releaseUsingItem();
 		player.stopUsingItem();
 		player.level.broadcastEntityEvent(player, (byte)30);
 		return true;
