@@ -197,13 +197,15 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					}else if(thisEntity instanceof Player player && this.getBlockingItem().getItem() instanceof SwordItem shieldItem && player.isUsingItem()) {
 						if(hand != InteractionHand.OFF_HAND) {
 							if(player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-								isParryTicker = 0;
-								isParry = true;
+								if(-(((ISwordItem) shieldItem).getStrengthTimer() - 60) / 60F < 0) {
+									isParryTicker = 0;
+									isParry = true;
+								}
 								float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-								float actualStrength = (0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 60F)) * 0.125F));
+								float actualStrength = Math.max(0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F), 0.125F);
 								if (source.isExplosion()) {
-									hurtCurrentlyUsedShield(10 * actualStrength);
-									amount -= 10 * actualStrength;
+									hurtCurrentlyUsedShield(20 * actualStrength);
+									amount -= 20 * actualStrength;
 									g = f - amount;
 								} else if(source.isProjectile()) {
 									amount -= 0.0F;
@@ -222,10 +224,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							}
 						}else {
 							if(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-								isParryTicker = 0;
-								isParry = true;
+								if(-(((ISwordItem) shieldItem).getStrengthTimer() - 60) / 60F < 0) {
+									isParryTicker = 0;
+									isParry = true;
+								}
 								float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-								float actualStrength = (0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F));
+								float actualStrength = Math.max(0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F), 0.125F);
 								if (source.isExplosion()) {
 									hurtCurrentlyUsedShield(20 * actualStrength);
 									amount -= 20 * actualStrength;
