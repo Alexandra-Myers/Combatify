@@ -9,7 +9,7 @@ public class ShieldUtils {
 	public static float getShieldBlockDamageValue(ItemStack blockingItem) {
 		if(blockingItem.getItem() instanceof SwordItem swordItem) {
 			Tier var2 = swordItem.getTier();
-			float strengthIncrease = var2 == Tiers.NETHERITE || var2.getLevel() >= 4 ? 1.0F : 0.0F;
+			float strengthIncrease = var2 == Tiers.NETHERITE || var2.getLevel() >= 4 ? 1.0F : var2.getAttackDamageBonus() <= 1.0F ? -1F : 0.0F;
 			return strengthIncrease;
 		}
 		return blockingItem.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;

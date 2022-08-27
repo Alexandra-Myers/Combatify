@@ -152,10 +152,7 @@ public abstract class ItemStackMixin implements IItemStack {
 								} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
 									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + 2.5;
 									bl = true;
-								} else if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID) {
-									d += player.getAttribute(NewAttributes.BLOCK_REACH).getBaseValue() + 6.0;
-									bl = true;
-								}  else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+								} else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
 									d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
 								}
 							}
