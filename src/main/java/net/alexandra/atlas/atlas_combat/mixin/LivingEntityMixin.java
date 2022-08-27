@@ -173,7 +173,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (amount > 0.0F && this.isDamageSourceBlocked(source)) {
 				for(InteractionHand hand : InteractionHand.values()) {
 					if(thisEntity instanceof Player player && this.getBlockingItem().getItem() instanceof ShieldItem shieldItem && player.isUsingItem() && !player.getCooldowns().isOnCooldown(shieldItem)) {
-						float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
+						float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
 						if (source.isExplosion() || source.isProjectile()) {
 							hurtCurrentlyUsedShield(amount);
 							amount = 0.0F;
@@ -199,8 +199,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							if(player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
 								isParryTicker = 0;
 								isParry = true;
-								float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
-								float actualStrength = (0.5F + ((blockStrength + -((((ISwordItem) shieldItem).getStrengthTimer()) - 120F) / 60F) * 0.125F));
+								float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
+								float actualStrength = (0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 60F)) * 0.125F));
 								if (source.isExplosion()) {
 									hurtCurrentlyUsedShield(10 * actualStrength);
 									amount -= 10 * actualStrength;
@@ -224,11 +224,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							if(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
 								isParryTicker = 0;
 								isParry = true;
-								float blockStrength = ShieldUtils.getShieldBlockDamageValue(player.getItemInHand(hand));
-								float actualStrength = (0.5F + ((blockStrength + -((((ISwordItem) shieldItem).getStrengthTimer()) - 60F) / 60F) * 0.125F));
+								float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
+								float actualStrength = (0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F));
 								if (source.isExplosion()) {
-									hurtCurrentlyUsedShield(10 * actualStrength);
-									amount -= 10 * actualStrength;
+									hurtCurrentlyUsedShield(20 * actualStrength);
+									amount -= 20 * actualStrength;
 									g = f - amount;
 								} else if(source.isProjectile()) {
 									amount -= 0.0F;

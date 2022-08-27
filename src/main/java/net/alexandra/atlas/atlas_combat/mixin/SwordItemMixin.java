@@ -136,8 +136,8 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack itemStack) {
-		float var2 = getTier().getAttackDamageBonus();
-		float strengthIncrease = var2 > 1.0F ? -3.0F + (var2 - 1.0F) : -2.0F;
+		Tier var2 = getTier();
+		float strengthIncrease = var2 == Tiers.NETHERITE || var2.getLevel() >= 4 ? 1.0F : 0.0F;
 		return 0.5F + (strengthIncrease * 0.125F);
 	}
 	@Override
