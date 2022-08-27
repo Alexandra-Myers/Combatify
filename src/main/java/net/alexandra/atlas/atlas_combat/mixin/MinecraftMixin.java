@@ -119,8 +119,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 		boolean handHasBlockingItem = item instanceof SwordItem;
 		boolean offhandHasShieldItem = offhandItem instanceof ShieldItem;
 		boolean offhandHasBlockingItem = offhandItem instanceof SwordItem;
-		if (player.isUsingItem() && handHasShieldItem || handHasBlockingItem) {
-			if(offhandHasShieldItem || offhandHasBlockingItem) {
+		if (player.isUsingItem() && handHasShieldItem) {
+			if(offhandHasShieldItem) {
 				player.getCooldowns().addCooldown(offhandItem, 20);
 				player.stopUsingItem();
 				player.level.broadcastEntityEvent(player, (byte)30);
@@ -128,8 +128,21 @@ public abstract class MinecraftMixin implements IMinecraft {
 			player.getCooldowns().addCooldown(item, 20);
 			player.stopUsingItem();
 			player.level.broadcastEntityEvent(player, (byte)30);
-		}else if(player.isUsingItem() && offhandHasShieldItem || offhandHasBlockingItem) {
+		}else if(player.isUsingItem() && offhandHasShieldItem) {
 			player.getCooldowns().addCooldown(offhandItem, 20);
+			player.stopUsingItem();
+			player.level.broadcastEntityEvent(player, (byte)30);
+		}else if(player.isUsingItem() && handHasBlockingItem) {
+			if(offhandHasBlockingItem) {
+				player.getCooldowns().addCooldown(offhandItem, 4);
+				player.stopUsingItem();
+				player.level.broadcastEntityEvent(player, (byte)30);
+			}
+			player.getCooldowns().addCooldown(item, 4);
+			player.stopUsingItem();
+			player.level.broadcastEntityEvent(player, (byte)30);
+		}else if(player.isUsingItem() && offhandHasBlockingItem) {
+			player.getCooldowns().addCooldown(offhandItem, 4);
 			player.stopUsingItem();
 			player.level.broadcastEntityEvent(player, (byte)30);
 		}

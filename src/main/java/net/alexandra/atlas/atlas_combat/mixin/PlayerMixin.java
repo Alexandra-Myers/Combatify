@@ -28,6 +28,7 @@ import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -70,6 +71,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	public abstract void awardStat(Stat<?> stat);
+
+	@Shadow
+	public abstract boolean isModelPartShown(PlayerModelPart playerModelPart);
 
 	@Unique
 	protected int attackStrengthStartValue;
@@ -126,6 +130,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(getAttackStrengthScale(baseValue) > 1.0F) {
 			--instance.attackStrengthTicker;
 			--instance.attackStrengthTicker;
+		}
+		setIsParryTicker(getIsParryTicker() + 1);
+		if(getIsParryTicker() >= 40) {
+			setIsParry(false);
+			setIsParryTicker(0);
 		}
 	}
 
@@ -233,16 +242,20 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 							bl2 = true;
 						}
 
-						boolean isCrit = bl
+						boolean isCrit = (bl
 								&& player.fallDistance > 0.0F
 								&& !player.isOnGround()
 								&& !player.onClimbable()
 								&& !player.isInWater()
 								&& !player.hasEffect(MobEffects.BLINDNESS)
 								&& !player.isPassenger()
-								&& target instanceof LivingEntity;
+								&& target instanceof LivingEntity)
+								|| getIsParry();
 						if (isCrit) {
-							attackDamage *= 1.5F;
+							attackDamage *= getIsParry() ? 1.125F : 1.5;
+						}
+						if (getIsParry()) {
+							setIsParry(false);
 						}
 
 						boolean bl4 = false;
@@ -545,7 +558,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return attackStrengthStartValue;
 	}
 	@Override
-	public void setAttackStrengthTicker(int value) {
+	public void setAttackStrengthTicker2(int value) {
 		this.attackStrengthStartValue = value;
 		player.attackStrengthTicker = this.attackStrengthStartValue;
 	}

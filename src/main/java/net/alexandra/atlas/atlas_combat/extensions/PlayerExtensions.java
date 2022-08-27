@@ -38,8 +38,5 @@ public interface PlayerExtensions {
 	double getSquaredAttackRange(final LivingEntity entity, final double sqBaseAttackRange);
 	void attackAir();
 
-
-	void setAttackStrengthTicker(float value);
-
-	void setAttackStrengthTicker(int value);
+	void setAttackStrengthTicker2(int value);
 }

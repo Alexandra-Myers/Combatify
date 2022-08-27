@@ -99,6 +99,7 @@ public enum WeaponType {
             case SWORD:
                 return 0.5F;
             case AXE:
+			case SHOVEL:
 			case TRIDENT:
 				return -0.5F;
 			case HOE:

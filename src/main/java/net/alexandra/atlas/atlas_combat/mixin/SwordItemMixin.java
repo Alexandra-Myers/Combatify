@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -36,7 +37,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		if(ConfigHelper.specialWeaponFunctions && ConfigHelper.swordFunction) {
 			float f = getShieldBlockDamageValue(stack);
 			float g = getShieldKnockbackResistanceValue(stack);
-			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f), Component.translatable("attribute.name.generic.shield_strength")})).withStyle(ChatFormatting.DARK_GREEN));
+			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength")})).withStyle(ChatFormatting.DARK_GREEN));
 			if (g > 0.0F) {
 				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) (g * 10.0F)), Component.translatable("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
 			}
@@ -136,7 +137,8 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public float getShieldBlockDamageValue(ItemStack itemStack) {
 		float var2 = getTier().getAttackDamageBonus();
-		return var2 > 0.0F ? 1.5F + (var2 - 1.0F) : 1.5F + var2;
+		float strengthIncrease = var2 > 1.0F ? -3.0F + (var2 - 1.0F) : -2.0F;
+		return 0.5F + (strengthIncrease * 0.125F);
 	}
 	@Override
 	public void addStrengthTimer() {

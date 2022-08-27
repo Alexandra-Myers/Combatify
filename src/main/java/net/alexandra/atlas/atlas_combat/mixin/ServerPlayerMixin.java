@@ -27,7 +27,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	}
 
 	@Override
-	public void setAttackStrengthTicker(int value) {
-		super.setAttackStrengthTicker(value);
+	public void setAttackStrengthTicker2(int value) {
+		super.setAttackStrengthTicker2(value);
 	}
 }
