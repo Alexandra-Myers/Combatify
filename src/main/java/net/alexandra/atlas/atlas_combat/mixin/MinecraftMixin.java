@@ -109,9 +109,18 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void injectAttack(CallbackInfo ci) {
 		while(options.keyAttack.consumeClick()) {
 			if(((LivingEntityExtensions)player).getBlockingItem().getItem() instanceof ShieldItem) {
-				this.startAttack();
+				if(((PlayerExtensions)this.player).isAttackAvailable(0.0F) || hitResult != null && redirectResult(this.hitResult) == HitResult.Type.BLOCK) {
+					startAttack();
+				}
 			}
 		}
+	}
+	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
+	public boolean redirectAttack(Minecraft instance) {
+		if(((PlayerExtensions)this.player).isAttackAvailable(0.0F) || hitResult != null && redirectResult(this.hitResult) == HitResult.Type.BLOCK) {
+			startAttack();
+		}
+		return false;
 	}
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {

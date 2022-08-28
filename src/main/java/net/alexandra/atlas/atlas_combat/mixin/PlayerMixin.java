@@ -526,9 +526,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 2 : baseAttackRange + 2;
+			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
 		}
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
 	}
 
 	@Override
