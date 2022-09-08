@@ -401,7 +401,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 
 			thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-			newKnockback(0.5F - (EnchantmentHelper.getEnchantmentLevel(AtlasCombat.STABBING_ENCHANTMENT, livingEntity) * 0.05F), d, e);
+			newKnockback(0.5F - (EnchantmentHelper.getEnchantmentLevel(AtlasCombat.STABBING_ENCHANTMENT, livingEntity) * 0.1F), d, e);
 		} else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
 			double d = livingEntity.getX() - this.getX();
 
