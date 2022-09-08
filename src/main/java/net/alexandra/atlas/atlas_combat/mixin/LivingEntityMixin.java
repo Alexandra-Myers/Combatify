@@ -709,7 +709,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				var2 = var2 > 5 ? 2 : var2;
 				var4 = var4 > 5 ? 2 : var4;
 				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, -(var10.y + var1 + var9.y), var9.z / 2.0 - (float) var10.z);
+				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, -(Mth.abs((float) (var10.y + var1 + var9.y))), var9.z / 2.0 - (float) var10.z);
 				return;
 			}
 		}
@@ -724,7 +724,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, -((double)var1 + var9.y), var9.z / 2.0 - var10.z);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, -(Mth.abs((float) (var1 + var9.y))), var9.z / 2.0 - var10.z);
 		}
 	}
 	/**
