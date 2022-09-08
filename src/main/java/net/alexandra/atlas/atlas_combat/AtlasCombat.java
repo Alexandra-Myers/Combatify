@@ -45,6 +45,7 @@ public class AtlasCombat implements ModInitializer {
 	NeuralNetwork nn_custom_lr_with_multithreading = new NeuralNetwork(2, 10, 1, 0.01, true);
 
 	public static final Enchantment CLEAVING_ENCHANTMENT = register("cleaving", new CleavingEnchantment());
+	public static final Enchantment STABBING_ENCHANTMENT = register("stabbing", new StabbingEnchantment());
 	public static Enchantment register(String name, Enchantment enchantment) {
 		return Registry.register(Registry.ENCHANTMENT, new ResourceLocation("atlas_combat", name),enchantment);
 	}
