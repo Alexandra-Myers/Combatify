@@ -1,8 +1,10 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
+import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
@@ -142,12 +144,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
 		boolean specialWeaponFunctions = ConfigHelper.specialWeaponFunctions;
-		boolean axeFunctions = ConfigHelper.axeFunction;
-		boolean pickaxeFunctions = ConfigHelper.pickaxeFunction;
-		boolean shovelFunctions = ConfigHelper.shovelFunction;
-		boolean hoeFunctions = ConfigHelper.hoeFunction;
-		boolean swordFunctions = ConfigHelper.swordFunction;
-		boolean tridentFunctions = ConfigHelper.tridentFunction;
 		if (this.isInvulnerableTo(source)) {
 			cir.setReturnValue(false);
 			cir.cancel();
@@ -337,153 +333,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 				if(specialWeaponFunctions && entity2 != null) {
 					if(entity2 instanceof LivingEntity livingEntity) {
-						if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for (e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-							newKnockback(0.6F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity)), d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.6F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem && shovelFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e = entity2.getZ() - this.getZ();
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							sideKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround() && !livingEntity.isOnGround()) {
-							double d = 0;
-
-							double e = 0;
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							downwardsKnockback(2.0F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround()) {
-							double d = 0;
-
-							double e = 0;
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							downwardsKnockback(1.0F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							nonVerticalKnockback(0.7F, d, e, livingEntity);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem && hoeFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem && swordFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity) / 2), d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && tridentFunctions) {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							EnchantmentHelper helper = new EnchantmentHelper();
-							int level = (int)((IEnchantmentHelper)helper).getKnockbackDebuff(livingEntity.getItemInHand(InteractionHand.MAIN_HAND), thisEntity);
-							if(level > 0) {
-								newKnockback((float) (0.5F / Mth.absMax(1.0, level/2)), d, e);
-							}
-							newKnockback(0.5F, d, e);
-						}else {
-							double d = entity2.getX() - this.getX();
-
-							double e;
-							for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-								d = (Math.random() - Math.random()) * 0.01;
-							}
-
-							thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-							newKnockback(0.5F, d, e);
-						}
+						getKnockback(livingEntity, thisEntity);
 					}
 				}else if (entity2 != null) {
 					double d = entity2.getX() - this.getX();
@@ -531,6 +381,173 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 			cir.setReturnValue(bl3);
 			cir.cancel();
+		}
+	}
+
+	@Override
+	public void getKnockback(LivingEntity livingEntity, LivingEntity thisEntity) {
+		boolean axeFunctions = ConfigHelper.axeFunction;
+		boolean pickaxeFunctions = ConfigHelper.pickaxeFunction;
+		boolean shovelFunctions = ConfigHelper.shovelFunction;
+		boolean hoeFunctions = ConfigHelper.hoeFunction;
+		boolean swordFunctions = ConfigHelper.swordFunction;
+		boolean tridentFunctions = ConfigHelper.tridentFunction;
+		if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof KnifeItem) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for (e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
+			newKnockback(0.5F - (EnchantmentHelper.getEnchantmentLevel(AtlasCombat.STABBING_ENCHANTMENT, livingEntity) * 0.05F), d, e);
+		} else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for (e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
+			newKnockback(0.6F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity)), d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.6F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem && shovelFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e = livingEntity.getZ() - this.getZ();
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			sideKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround() && !livingEntity.isOnGround()) {
+			double d = 0;
+
+			double e = 0;
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			downwardsKnockback(2.0F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround()) {
+			double d = 0;
+
+			double e = 0;
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			downwardsKnockback(1.0F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			nonVerticalKnockback(0.7F, d, e, livingEntity);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem && hoeFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem && swordFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity) / 2), d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
+		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && tridentFunctions) {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			EnchantmentHelper helper = new EnchantmentHelper();
+			int level = (int)((IEnchantmentHelper)helper).getKnockbackDebuff(livingEntity.getItemInHand(InteractionHand.MAIN_HAND), thisEntity);
+			if(level > 0) {
+				newKnockback((float) (0.5F / Mth.absMax(1.0, level/2)), d, e);
+			}
+			newKnockback(0.5F, d, e);
+		}else {
+			double d = livingEntity.getX() - this.getX();
+
+			double e;
+			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+				d = (Math.random() - Math.random()) * 0.01;
+			}
+
+			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
+			newKnockback(0.5F, d, e);
 		}
 	}
 

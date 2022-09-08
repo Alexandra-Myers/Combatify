@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,7 +37,10 @@ public interface PlayerExtensions {
 	double getAttackRange(final LivingEntity entity, final double baseAttackRange);
 
 	double getSquaredAttackRange(final LivingEntity entity, final double sqBaseAttackRange);
-	void attackAir();
+
+    void newAttack(Entity target);
+
+    void attackAir();
 
 	void setAttackStrengthTicker2(int value);
 }

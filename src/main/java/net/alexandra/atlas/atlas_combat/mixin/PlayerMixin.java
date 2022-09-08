@@ -2,9 +2,9 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Either;
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
+import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -24,6 +24,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -216,10 +217,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
+		newAttack(target);
+		ci.cancel();
+	}
+	@Override
+	public void newAttack(Entity target) {
 		if (target.isAttackable()) {
 			if (!target.skipAttackInteraction(player)) {
 				if(isAttackAvailable(baseValue)) {
-					float attackDamage = (float) ((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
+					float attackDamage = (float) ((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player) + (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof KnifeItem && target instanceof Animal ? 1.0F : 0.0F);
 					float attackDamageBonus;
 					if (target instanceof LivingEntity livingEntity) {
 						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
@@ -232,6 +238,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					attackDamage *= 1;
 					attackDamageBonus *= 1;
 					if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
+						if(target instanceof LivingEntity livingEntity) {
+							((LivingEntityExtensions)livingEntity).setEnemy(player);
+						}
 						attackDamage += attackDamageBonus;
 						boolean bl = true;
 						boolean bl2 = false;
@@ -281,7 +290,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						if (bl6) {
 							if (knockbackBonus > 0) {
 								if (target instanceof LivingEntity livingEntity) {
-									((LivingEntityExtensions)livingEntity).setEnemy(player);
 									((LivingEntityExtensions)livingEntity)
 											.newKnockback((knockbackBonus * 0.5F),
 													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
@@ -391,7 +399,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 			}
 		}
-		ci.cancel();
 	}
 	@Override
 	public void attackAir() {

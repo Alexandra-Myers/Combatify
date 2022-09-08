@@ -36,7 +36,7 @@ public abstract class ItemMixin implements ItemExtensions {
 	}
 	@Override
 	public double getAttackDamage(Player player) {
-		return 1.0;
+		return 2.0;
 	}
 	@Override
 	public void setStackSize(int stackSize) {
