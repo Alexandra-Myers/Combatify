@@ -291,7 +291,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting() && !ConfigHelper.momentumKnockback) {
+						if (player.isSprinting()) {
 							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
 							++knockbackBonus;
 							bl2 = true;
@@ -349,9 +349,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								}
 
 								player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-								if(!ConfigHelper.momentumKnockback) {
-									player.setSprinting(false);
-								}
+								player.setSprinting(false);
 							}
 
 							if (bl4) {

@@ -1,7 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.extensions.ISwordItem;
@@ -15,10 +14,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -27,6 +26,8 @@ import java.util.List;
 @Mixin(SwordItem.class)
 public class SwordItemMixin extends TieredItem implements ItemExtensions, IShieldItem, ISwordItem {
 	public int strengthTimer = 0;
+	@Unique
+	boolean isExtras = false;
 
 	public SwordItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -34,7 +35,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-		if(ConfigHelper.specialWeaponFunctions && ConfigHelper.swordFunction) {
+		if(isExtras) {
 			float f = getShieldBlockDamageValue(stack);
 			float g = getShieldKnockbackResistanceValue(stack);
 			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength")})).withStyle(ChatFormatting.DARK_GREEN));
@@ -60,7 +61,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-		if(ConfigHelper.specialWeaponFunctions && ConfigHelper.swordFunction) {
+		if(isExtras) {
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
 			if (InteractionHand.MAIN_HAND != hand) {
@@ -165,5 +166,9 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public int getStrengthTimer() {
 		return strengthTimer;
+	}
+	@Override
+	public void setExtras(boolean extras) {
+		this.isExtras = extras;
 	}
 }

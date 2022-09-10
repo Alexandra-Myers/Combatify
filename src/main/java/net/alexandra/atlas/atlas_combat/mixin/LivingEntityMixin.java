@@ -67,8 +67,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Nullable
 	public DamageSource lastDamageSource;
 	@Unique
-	boolean momentumBasedKnockback = ConfigHelper.momentumKnockback;
-	@Unique
 	boolean isParry = false;
 
 	@Shadow
@@ -225,7 +223,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Override
 	public boolean doHurt(DamageSource source, float amount) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
-		boolean specialWeaponFunctions = ConfigHelper.specialWeaponFunctions;
 		if (this.isInvulnerableTo(source)) {
 			return false;
 		} else if (this.level.isClientSide) {
@@ -408,11 +405,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					this.markHurt();
 				}
 
-				if(specialWeaponFunctions && entity2 != null) {
-					if(entity2 instanceof LivingEntity livingEntity) {
-						getKnockback(livingEntity, thisEntity);
-					}
-				}else if (entity2 != null) {
+				if (entity2 != null) {
 					double d = entity2.getX() - this.getX();
 
 					double e;
@@ -460,198 +453,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 
-	@Override
-	public void getKnockback(LivingEntity livingEntity, LivingEntity thisEntity) {
-		boolean axeFunctions = ConfigHelper.axeFunction;
-		boolean pickaxeFunctions = ConfigHelper.pickaxeFunction;
-		boolean shovelFunctions = ConfigHelper.shovelFunction;
-		boolean hoeFunctions = ConfigHelper.hoeFunction;
-		boolean swordFunctions = ConfigHelper.swordFunction;
-		boolean tridentFunctions = ConfigHelper.tridentFunction;
-		if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof KnifeItem) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for (e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-			newKnockback(0.5F - (EnchantmentHelper.getEnchantmentLevel(Enchantments.SHARPNESS, livingEntity) * 0.025F), d, e);
-		} else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for (e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-			newKnockback(0.6F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity)), d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.6F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem && shovelFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e = livingEntity.getZ() - this.getZ();
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			sideKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ShovelItem) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround() && !livingEntity.isOnGround()) {
-			double d = 0;
-
-			double e = 0;
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			downwardsKnockback(2.0F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions && !thisEntity.isOnGround()) {
-			double d = 0;
-
-			double e = 0;
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			downwardsKnockback(1.0F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem && pickaxeFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			nonVerticalKnockback(0.7F, d, e, livingEntity);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem && hoeFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof HoeItem) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem && swordFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F + (EnchantmentHelper.getSweepingDamageRatio(livingEntity) / 2), d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && tridentFunctions) {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			EnchantmentHelper helper = new EnchantmentHelper();
-			int level = (int)((IEnchantmentHelper)helper).getKnockbackDebuff(livingEntity.getItemInHand(InteractionHand.MAIN_HAND), thisEntity);
-			if(level > 0) {
-				newKnockback((float) (0.5F / Mth.absMax(1.0, level/2)), d, e);
-			}
-			newKnockback(0.5F, d, e);
-		}else {
-			double d = livingEntity.getX() - this.getX();
-
-			double e;
-			for(e = livingEntity.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-				d = (Math.random() - Math.random()) * 0.01;
-			}
-
-			thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-			newKnockback(0.5F, d, e);
-		}
-	}
-
 	/**
 	 * @author
 	 * @reason
 	 */
 	@Override
 	public void newKnockback(float var1, double var2, double var4) {
-		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
-			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack var8 = this.getBlockingItem();
-			if (!var8.isEmpty()) {
-				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-			}
-
-			var1 = (float)((double)var1 * (1.0 - var6));
-			if (!(var1 <= 0.0F)) {
-				this.hasImpulse = true;
-				Vec3 var9 = this.getDeltaMovement();
-				Vec3 entityMovement = entity.getDeltaMovement();
-				var2 = var2 > 5 ? 2 : var2;
-				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 - (float) var10.z);
-				return;
-			}
-		}
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
@@ -664,143 +471,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
 			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
-		}
-	}
-	public void sideKnockback(float var1, double var2, double var4) {
-		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
-			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack var8 = this.getBlockingItem();
-			if (!var8.isEmpty()) {
-				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-			}
-
-			var1 = (float)((double)var1 * (1.0 - var6));
-			if (!(var1 <= 0.0F)) {
-				this.hasImpulse = true;
-				Vec3 var9 = this.getDeltaMovement();
-				Vec3 entityMovement = entity.getDeltaMovement();
-				var2 = var2 > 5 ? 2 : var2;
-				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 - var10.x - (var10.z / 2), this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 - var10.z - (var10.x / 2));
-				return;
-			}
-		}
-		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack var8 = this.getBlockingItem();
-		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-		}
-
-		var1 = (float)((double)var1 * (1.0 - var6));
-		if (!(var1 <= 0.0F)) {
-			this.hasImpulse = true;
-			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x - (var10.z / 2), this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z - (var10.x / 2));
-		}
-	}
-	@Override
-	public void invertedKnockback(float var1, double var2, double var4) {
-		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
-			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack var8 = this.getBlockingItem();
-			if (!var8.isEmpty()) {
-				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-			}
-
-			var1 = (float)((double)var1 * (1.0 - var6));
-			if (!(var1 <= 0.0F)) {
-				this.hasImpulse = true;
-				Vec3 var9 = this.getDeltaMovement();
-				Vec3 entityMovement = entity.getDeltaMovement();
-				var2 = var2 > 5 ? 2 : var2;
-				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 + ((float) var10.x / 2), this.onGround ? Math.min(0.4, (double)Mth.abs((float) var10.y + var1) * 0.75) : Math.min(0.4, var9.y + (double)Mth.abs((float) var10.y + var1) * 0.5), var9.z / 2.0 + ((float) var10.z / 2));
-				return;
-			}
-		}
-		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack var8 = this.getBlockingItem();
-		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-		}
-
-		var1 = (float)((double)var1 * (1.0 - var6));
-		if (!(var1 <= 0.0F)) {
-			this.hasImpulse = true;
-			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 + var10.x / 2.0, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 + var10.z / 2.0);
-		}
-	}
-	public void nonVerticalKnockback(float var1, double var2, double var4, LivingEntity entity) {
-		if(momentumBasedKnockback) {
-			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack var8 = this.getBlockingItem();
-			if (!var8.isEmpty()) {
-				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-			}
-
-			var1 = (float)((double)var1 * (1.0 - var6));
-			if (!(var1 <= 0.0F)) {
-				this.hasImpulse = true;
-				Vec3 var9 = this.getDeltaMovement();
-				Vec3 entityMovement = entity.getDeltaMovement();
-				var2 = var2 > 5 ? 2 : var2;
-				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, var9.y + (var1 / 2) + Mth.abs((float) var10.y), var9.z / 2.0 - (float) var10.z);
-				return;
-			}
-		}
-		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack var8 = this.getBlockingItem();
-		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-		}
-
-		var1 = (float)((double)var1 * (1.0 - var6));
-		if (!(var1 <= 0.0F)) {
-			this.hasImpulse = true;
-			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, var9.y + (var1 / 2) + Mth.abs((float) entity.getDeltaMovement().y), var9.z / 2.0 - var10.z);
-		}
-	}
-	public void downwardsKnockback(float var1, double var2, double var4) {
-		if(momentumBasedKnockback && enemy instanceof LivingEntity entity) {
-			double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack var8 = this.getBlockingItem();
-			if (!var8.isEmpty()) {
-				var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-			}
-
-			var1 = (float)((double)var1 * (1.0 - var6));
-			if (!(var1 <= 0.0F)) {
-				this.hasImpulse = true;
-				Vec3 var9 = this.getDeltaMovement();
-				Vec3 entityMovement = entity.getDeltaMovement();
-				var2 = var2 > 5 ? 2 : var2;
-				var4 = var4 > 5 ? 2 : var4;
-				Vec3 var10 = (new Vec3(Mth.square(entityMovement.x * 2) + var2, entityMovement.y, Mth.square(entityMovement.z * 2) + var4)).normalize().scale((double)var1 + 0.25);
-				this.setDeltaMovement(var9.x / 2.0 - (float) var10.x, -(Mth.abs((float) (var10.y + var1 + var9.y))), var9.z / 2.0 - (float) var10.z);
-				return;
-			}
-		}
-		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack var8 = this.getBlockingItem();
-		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
-		}
-
-		var1 = (float)((double)var1 * (1.0 - var6));
-		if (!(var1 <= 0.0F)) {
-			this.hasImpulse = true;
-			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, -(Mth.abs((float) (var1 + var9.y))), var9.z / 2.0 - var10.z);
 		}
 	}
 	/**

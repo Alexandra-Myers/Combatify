@@ -139,7 +139,6 @@ public enum WeaponType {
     public float getReach() {
 		return switch (this) {
 			case KNIFE -> -0.5F;
-			case PICKAXE -> ConfigHelper.pickaxeFunction ? 0.5F : 0;
 			case SWORD -> 0.5F;
 			case LONGSWORD, HOE, TRIDENT -> 1.0F;
 			default -> 0.0F;
