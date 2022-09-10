@@ -33,8 +33,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@Shadow
 	private ItemStack mainHandItem;
-	@Unique
-	boolean isExtras = false;
 
 	@Shadow
 	protected abstract void applyItemArmAttackTransform(PoseStack matrices, HumanoidArm arm, float swingProgress);
@@ -53,7 +51,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			cancellable = true
 	)
 	public void onRenderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
-		if (isExtras) {
+		if (ConfigHelper.swordBlocking) {
 			if (abstractClientPlayer.getUsedItemHand() == interactionHand && !((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().isEmpty() && ((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().getItem() instanceof SwordItem) {
 				poseStack.pushPose();
 				HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
@@ -91,9 +89,5 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		poseStack.mulPose(Vector3f.XP.rotationDegrees(-102.25F));
 		poseStack.mulPose(Vector3f.YP.rotationDegrees(reverse * 13.365F));
 		poseStack.mulPose(Vector3f.ZP.rotationDegrees(reverse * 78.05F));
-	}
-	@Override
-	public void setExtras(boolean extras) {
-		this.isExtras = extras;
 	}
 }

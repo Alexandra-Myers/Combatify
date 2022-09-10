@@ -6,6 +6,4 @@ public interface ISwordItem {
 	void subStrengthTimer();
 
 	int getStrengthTimer();
-
-    void setExtras(boolean extras);
 }

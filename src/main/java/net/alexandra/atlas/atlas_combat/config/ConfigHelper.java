@@ -19,6 +19,7 @@ public class ConfigHelper extends MidnightConfig {
 	@Entry public static boolean toolsAreWeapons = false;
 	@Entry public static boolean bedrockBlockReach = false;
 	@Entry public static boolean refinedCoyoteTime = false;
+	@Entry public static boolean swordBlocking = false;
 	@Entry public static boolean blockReach = true;
 	@Entry(min=10,max=1000) public static int maxWaitForPacketResponse = 20;
 	@Entry(min=1,max=1000) public static int potionUseDuration = 20;

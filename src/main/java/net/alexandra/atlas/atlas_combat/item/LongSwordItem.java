@@ -110,7 +110,7 @@ public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanisha
 
 	@Override
 	public double getPiercingLevel() {
-		return tier == Tiers.NETHERITE || tier.getLevel() >= 4 ? 0.5 : 0.25 + (0.125 * (tier.getLevel() - 1));
+		return tier == Tiers.NETHERITE || tier.getLevel() >= 4 ? 0.2 : tier == Tiers.GOLD || tier == Tiers.WOOD || tier == Tiers.STONE || tier.getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (tier.getLevel() - 1));
 	}
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {

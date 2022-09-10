@@ -172,6 +172,9 @@ public abstract class GuiMixin extends GuiComponent {
 			RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 			n = this.screenHeight - 20;
 			o = i + 91 + 6;
+			if (humanoidArm == HumanoidArm.RIGHT) {
+				o = i - 91 - 22;
+			}
 			boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
 			if (var7 && itemStack.getItem() == Items.SHIELD && this.minecraft.player.getCooldowns().isOnCooldown(itemStack.getItem())) {
 				this.blit(matrices, o, n, 18, 112, 18, 18);
@@ -181,9 +184,6 @@ public abstract class GuiMixin extends GuiComponent {
 				float maxIndicator =  ((IOptions)minecraft.options).attackIndicatorValue().get().floatValue();
 				float f = this.minecraft.player.getAttackStrengthScale(0.0F);
 				if (f > maxIndicator - 0.7F && f < maxIndicator) {
-					if (humanoidArm == HumanoidArm.RIGHT) {
-						o = i - 91 - 22;
-					}
 
 					int var16 = (int) ((f - (maxIndicator - 0.7F)) / 0.70000005F * 19.0F);
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

@@ -5,6 +5,4 @@ import net.minecraft.world.entity.HumanoidArm;
 
 public interface IItemInHandRenderer {
     void applyItemBlockTransform2(PoseStack poseStack, HumanoidArm humanoidArm);
-
-	void setExtras(boolean extras);
 }
