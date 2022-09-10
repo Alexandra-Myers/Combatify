@@ -4,9 +4,7 @@ import eu.midnightdust.lib.config.MidnightConfig;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.config.QuiltConfigs;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
-import net.alexandra.atlas.atlas_combat.enchantment.StabbingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
-import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.alexandra.atlas.atlas_combat.util.NeuralNetwork;
 import net.minecraft.core.Position;
@@ -21,12 +19,9 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-import org.checkerframework.checker.signature.qual.Identifier;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.config.QuiltConfig;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
-import org.quiltmc.qsl.item.setting.api.QuiltItemSettings;
-import org.quiltmc.qsl.recipe.api.RecipeManagerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +40,6 @@ public class AtlasCombat implements ModInitializer {
 	NeuralNetwork nn_custom_lr_with_multithreading = new NeuralNetwork(2, 10, 1, 0.01, true);
 
 	public static final Enchantment CLEAVING_ENCHANTMENT = register("cleaving", new CleavingEnchantment());
-	public static final Enchantment STABBING_ENCHANTMENT = register("stabbing", new StabbingEnchantment());
 	public static Enchantment register(String name, Enchantment enchantment) {
 		return Registry.register(Registry.ENCHANTMENT, new ResourceLocation("atlas_combat", name),enchantment);
 	}

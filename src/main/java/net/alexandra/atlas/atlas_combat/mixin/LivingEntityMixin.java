@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
@@ -12,8 +11,12 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.CombatRules;
+import net.minecraft.world.damagesource.CombatTracker;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.EntityDamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -26,7 +29,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,6 +40,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
@@ -106,6 +112,43 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public float oAttackAnim;
 
+	@Shadow
+	public abstract boolean doHurtTarget(Entity target);
+
+	@Shadow
+	protected abstract float getDamageAfterArmorAbsorb(DamageSource damageSource, float v);
+
+	@Shadow
+	protected abstract float getDamageAfterMagicAbsorb(DamageSource damageSource, float v);
+
+	@Shadow
+	public abstract float getAbsorptionAmount();
+
+	@Shadow
+	public abstract void setAbsorptionAmount(float v);
+
+	@Shadow
+	public abstract CombatTracker getCombatTracker();
+
+	@Shadow
+	public abstract void setHealth(float v);
+
+	@Shadow
+	public abstract float getHealth();
+
+	@Shadow
+	protected abstract void hurtArmor(DamageSource damageSource, float v);
+
+	@Shadow
+	public abstract int getArmorValue();
+
+	@Shadow
+	public abstract boolean hasEffect(MobEffect mobEffect);
+
+	@Shadow
+	@javax.annotation.Nullable
+	public abstract MobEffectInstance getEffect(MobEffect mobEffect);
+
 	/**
 	 * @author
 	 * @reason
@@ -132,6 +175,40 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 	}
+	@Inject(method = "actuallyHurt", at = @At(value = "HEAD"), cancellable = true)
+	public void addPiercing(DamageSource source, float amount, CallbackInfo ci) {
+		if (!this.isInvulnerableTo(source)) {
+			if(source.getEntity() instanceof Player player) {
+				Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+				if(item instanceof PiercingItem piercingItem) {
+					double d = piercingItem.getPiercingLevel();
+					amount = getNewDamageAfterArmorAbsorb(source, amount, d);
+					amount = getNewDamageAfterMagicAbsorb(source, amount, d);
+				}else {
+					amount = getDamageAfterArmorAbsorb(source, amount);
+					amount = getDamageAfterMagicAbsorb(source, amount);
+				}
+			}else {
+				amount = getDamageAfterArmorAbsorb(source, amount);
+				amount = getDamageAfterMagicAbsorb(source, amount);
+			}
+			float var8 = Math.max(amount - getAbsorptionAmount(), 0.0F);
+			setAbsorptionAmount(this.getAbsorptionAmount() - (amount - var8));
+			float g = amount - var8;
+			if (g > 0.0F && g < 3.4028235E37F && source.getEntity() instanceof ServerPlayer) {
+				((ServerPlayer)source.getEntity()).awardStat(Stats.DAMAGE_DEALT_ABSORBED, Math.round(g * 10.0F));
+			}
+
+			if (var8 != 0.0F) {
+				float h = getHealth();
+				setHealth(h - var8);
+				getCombatTracker().recordDamage(source, h, var8);
+				this.setAbsorptionAmount(this.getAbsorptionAmount() - var8);
+				this.gameEvent(GameEvent.ENTITY_DAMAGE);
+			}
+		}
+		ci.cancel();
+	}
 	@Override
 	public void setEnemy(Entity enemy) {
 		this.enemy = enemy;
@@ -142,20 +219,21 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	 */
 	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
 	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(doHurt(source, amount));
+		cir.cancel();
+	}
+	@Override
+	public boolean doHurt(DamageSource source, float amount) {
 		LivingEntity thisEntity = ((LivingEntity)(Object)this);
 		boolean specialWeaponFunctions = ConfigHelper.specialWeaponFunctions;
 		if (this.isInvulnerableTo(source)) {
-			cir.setReturnValue(false);
-			cir.cancel();
+			return false;
 		} else if (this.level.isClientSide) {
-			cir.setReturnValue(false);
-			cir.cancel();
+			return false;
 		} else if (thisEntity.isDeadOrDying()) {
-			cir.setReturnValue(false);
-			cir.cancel();
+			return false;
 		} else if (source.isFire() && thisEntity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-			cir.setReturnValue(false);
-			cir.cancel();
+			return false;
 		} else {
 			if (thisEntity.isSleeping() && !this.level.isClientSide) {
 				thisEntity.stopSleeping();
@@ -259,8 +337,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			boolean bl2 = true;
 			if (this.invulnerableTime > 0) {
 				if (amount <= this.lastHurt) {
-					cir.setReturnValue(false);
-					cir.cancel();
+					return false;
 				}
 
 				this.actuallyHurt(source, amount - this.lastHurt);
@@ -379,8 +456,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (entity2 instanceof ServerPlayer) {
 				CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)entity2, thisEntity, source, f, amount, bl);
 			}
-			cir.setReturnValue(bl3);
-			cir.cancel();
+			return bl3;
 		}
 	}
 
@@ -401,7 +477,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 
 			thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-			newKnockback(0.5F - (EnchantmentHelper.getEnchantmentLevel(AtlasCombat.STABBING_ENCHANTMENT, livingEntity) * 0.1F), d, e);
+			newKnockback(0.5F - (EnchantmentHelper.getEnchantmentLevel(Enchantments.SHARPNESS, livingEntity) * 0.025F), d, e);
 		} else if(livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof AxeItem && axeFunctions && swordFunctions) {
 			double d = livingEntity.getX() - this.getX();
 
@@ -768,7 +844,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (var2.getUseAnimation(thisLivingEntity.getUseItem()) == UseAnim.BLOCK) {
 				return thisLivingEntity.getUseItem();
 			}
-		} else if ((thisLivingEntity.isOnGround() && thisLivingEntity.isCrouching() || thisLivingEntity.isPassenger()) && this.hasEnabledShieldOnCrouch()) {
+		} else if ((thisLivingEntity.isOnGround() && thisLivingEntity.isCrouching() && this.hasEnabledShieldOnCrouch() || thisLivingEntity.isPassenger()) && this.hasEnabledShieldOnCrouch()) {
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = thisLivingEntity.getItemInHand(hand);
 				if (!var1.isEmpty() && var1.getItem().getUseAnimation(var1) == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof SwordItem)) {
@@ -804,5 +880,52 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Override
 	public void setIsParryTicker(int isParryTicker) {
 		this.isParryTicker = isParryTicker;
+	}
+	@Override
+	public float getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel) {
+		if (!source.isBypassArmor()) {
+			hurtArmor(source, amount);
+			double armourStrength = getArmorValue();
+			double toughness = this.getAttributeValue(Attributes.ARMOR_TOUGHNESS);
+			amount = CombatRules.getDamageAfterAbsorb(amount, (float)(armourStrength - (armourStrength * piercingLevel)), (float)(toughness - (toughness * piercingLevel)));
+		}
+
+		return amount;
+	}
+
+	@Override
+	public float getNewDamageAfterMagicAbsorb(DamageSource source, float amount, double piercingLevel) {
+		if (source.isBypassMagic()) {
+			return amount;
+		} else {
+			if (hasEffect(MobEffects.DAMAGE_RESISTANCE) && source != DamageSource.OUT_OF_WORLD) {
+				int i = (getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
+				int j = 25 - i;
+				float f = amount * (float)(j - (j * piercingLevel));
+				float g = amount;
+				amount = Math.max(f / 25.0F, 0.0F);
+				float h = g - amount;
+				if (h > 0.0F && h < 3.4028235E37F) {
+					if (((LivingEntity)(Object)this) instanceof ServerPlayer serverPlayer) {
+						serverPlayer.awardStat(Stats.DAMAGE_RESISTED, Math.round(h * 10.0F));
+					} else if (source.getEntity() instanceof ServerPlayer) {
+						((ServerPlayer)source.getEntity()).awardStat(Stats.DAMAGE_DEALT_RESISTED, Math.round(h * 10.0F));
+					}
+				}
+			}
+
+			if (amount <= 0.0F) {
+				return 0.0F;
+			} else if (source.isBypassEnchantments()) {
+				return amount;
+			} else {
+				int i = EnchantmentHelper.getDamageProtection(this.getArmorSlots(), source);
+				if (i > 0) {
+					amount = CombatRules.getDamageAfterMagicAbsorb(amount, (float)(i - (i * piercingLevel)));
+				}
+
+				return amount;
+			}
+		}
 	}
 }

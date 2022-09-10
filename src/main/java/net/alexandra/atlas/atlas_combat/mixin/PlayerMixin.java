@@ -11,6 +11,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -34,6 +35,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +78,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	public abstract boolean isModelPartShown(PlayerModelPart playerModelPart);
 
+	@Shadow
+	public abstract void causeFoodExhaustion(float v);
+
+	@Shadow
+	public abstract void awardStat(ResourceLocation resourceLocation, int i);
+
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -94,6 +102,43 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Unique
 	private static final UUID ADDITIONAL_BLOCK_REACH_UUID = UUID.fromString("e427a2fe-8145-483d-843b-d42a69df7742");
 
+	@Inject(method = "actuallyHurt", at = @At(value = "HEAD"), cancellable = true)
+	public void addPiercing(DamageSource source, float amount, CallbackInfo ci) {
+		if (!this.isInvulnerableTo(source)) {
+			if(source.getEntity() instanceof Player player) {
+				Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+				if(item instanceof PiercingItem piercingItem) {
+					double d = piercingItem.getPiercingLevel();
+					amount = getNewDamageAfterArmorAbsorb(source, amount, d);
+					amount = getNewDamageAfterMagicAbsorb(source, amount, d);
+				}else {
+					amount = getDamageAfterArmorAbsorb(source, amount);
+					amount = getDamageAfterMagicAbsorb(source, amount);
+				}
+			}else {
+				amount = getDamageAfterArmorAbsorb(source, amount);
+				amount = getDamageAfterMagicAbsorb(source, amount);
+			}
+			float var8 = Math.max(amount - this.getAbsorptionAmount(), 0.0F);
+			this.setAbsorptionAmount(this.getAbsorptionAmount() - (amount - var8));
+			float g = amount - var8;
+			if (g > 0.0F && g < 3.4028235E37F) {
+				awardStat(Stats.DAMAGE_ABSORBED, Math.round(g * 10.0F));
+			}
+
+			if (var8 != 0.0F) {
+				causeFoodExhaustion(source.getFoodExhaustion());
+				float h = this.getHealth();
+				this.setHealth(this.getHealth() - var8);
+				this.getCombatTracker().recordDamage(source, h, var8);
+				if (var8 < 3.4028235E37F) {
+					this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var8 * 10.0F));
+				}
+
+			}
+		}
+		ci.cancel();
+	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
 		player.getAttribute(NewAttributes.BLOCK_REACH).setBaseValue(0);

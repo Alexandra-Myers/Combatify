@@ -25,10 +25,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(ThrownTrident.class)
-public abstract class ThrownTridentMixin extends AbstractArrow {
+public abstract class ThrownTridentMixin extends AbstractArrow implements net.alexandra.atlas.atlas_combat.extensions.IThrownTrident {
 
 	@Shadow
 	@Final
@@ -46,9 +45,13 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void injectVoidReturnLogic(CallbackInfo ci) {
+		voidReturnLogic();
+	}
+	@Override
+	public void voidReturnLogic() {
 		ThrownTrident trident = ((ThrownTrident) (Object)this);
 		int j = trident.entityData.get(ID_LOYALTY);
-		if(trident.getY() <= -65) {
+		if(trident.getY() <= -65 && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
 			}else {
@@ -70,7 +73,10 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 		}
 	}
 	@Inject(method = "onHitEntity", at = @At(value = "HEAD"))
-	public void injectVoidReturnLogic(EntityHitResult entityHitResult, CallbackInfo ci) {
+	public void setDealtDamage(EntityHitResult entityHitResult, CallbackInfo ci) {
+		dealtDamage(entityHitResult);
+	}
+	public void dealtDamage(EntityHitResult entityHitResult) {
 		ThrownTrident trident = ((ThrownTrident) (Object)this);
 		Entity entity = entityHitResult.getEntity();
 		float f = 7.0F;

@@ -1,7 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
@@ -16,7 +15,6 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.util.Collections;
 import java.util.function.Consumer;
 
 import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
@@ -49,6 +47,9 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	@Redirect(method = "hurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
+		decreaseDurability(instance, amount, entity, breakCallback);
+	}
+	public <T extends LivingEntity> void decreaseDurability(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
 		if (!entity.level.isClientSide && (!(entity instanceof Player) || !((Player)entity).getAbilities().invulnerable)) {
 			if (instance.isDamageableItem() && allToolsAreWeapons) {
 				if (instance.hurt(1, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
@@ -110,5 +111,6 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 
 	@Override
 	public void setStackSize(int stackSize) {
+		this.maxStackSize = stackSize;
 	}
 }

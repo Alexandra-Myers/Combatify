@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.item.KnifeItem;
+import net.alexandra.atlas.atlas_combat.item.LongSwordItem;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.*;
 import org.spongepowered.asm.mixin.Final;
@@ -29,9 +30,18 @@ public class EnchantmentMixin {
 			cir.setReturnValue(stack.getItem() instanceof AxeItem || stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem);
 			cir.cancel();
 		}
+		if(thisEnchantment instanceof LootBonusEnchantment
+				|| thisEnchantment instanceof FireAspectEnchantment) {
+			cir.setReturnValue(stack.getItem() instanceof TieredItem);
+			cir.cancel();
+		}
 		if((thisEnchantment instanceof KnockbackEnchantment
 				|| thisEnchantment instanceof SweepingEdgeEnchantment) && ConfigHelper.toolsAreWeapons) {
 			cir.setReturnValue(stack.getItem() instanceof TieredItem);
+			cir.cancel();
+		}
+		if(thisEnchantment instanceof DamageEnchantment) {
+			cir.setReturnValue(stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem);
 			cir.cancel();
 		}
 	}

@@ -34,10 +34,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin extends GuiComponent {
-	@Unique
-	ResourceLocation SHIELD_INDICATOR_TEXTURE = new ResourceLocation("textures/gui/shield_indicator.png");
-	@Unique
-	ResourceLocation SHIELD_INDICATOR_TEXTURE_DISABLED = new ResourceLocation("textures/gui/shield_indicator_disabled.png");
 	@Shadow
 	@Final
 	private Minecraft minecraft;
@@ -91,7 +87,16 @@ public abstract class GuiMixin extends GuiComponent {
 					);
 					int i = 15;
 					this.blit(matrices, (this.screenWidth - 15) / 2, (this.screenHeight - 15) / 2, 0, 0, 15, 15);
-					if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
+
+					int j = this.screenHeight / 2 - 7 + 16;
+					int k = this.screenWidth / 2 - 8;
+					ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
+					boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
+					if (var7 && offHandStack.getItem() == Items.SHIELD && this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem())) {
+						this.blit(matrices, k, j, 52, 112, 16, 16);
+					} else if (var7 && this.minecraft.player.isBlocking()) {
+						this.blit(matrices, k, j, 36, 112, 16, 16);
+					}else if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
 						float maxIndicator =  ((IOptions)options).attackIndicatorValue().get().floatValue();
 						float f = this.minecraft.player.getAttackStrengthScale(0.0F);
 						boolean bl = false;
@@ -101,32 +106,12 @@ public abstract class GuiMixin extends GuiComponent {
 							bl = (this.minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
 							bl &= this.minecraft.crosshairPickEntity.isAlive();
 						}
-
-						int j = this.screenHeight / 2 - 7 + 16;
-						int k = this.screenWidth / 2 - 8;
 						if (bl) {
 							this.blit(matrices, k, j, 68, 94, 16, 16);
-						} else if (f < maxIndicator) {
-							int l = (int)((f/maxIndicator) * 17.0F);
+						} else if (f > maxIndicator - 0.7 && f < maxIndicator) {
+							int l = (int)((f - (maxIndicator - 0.7F)) / 0.70000005F * 17.0F);
 							this.blit(matrices, k, j, 36, 94, 16, 4);
 							this.blit(matrices, k, j, 52, 94, l, 4);
-						}
-					}
-					if(((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR) {
-						for(InteractionHand hand : InteractionHand.values()) {
-							if (minecraft.player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem) {
-								int j = this.screenHeight / 2 - 7 + 28;
-								int k = this.screenWidth / 2 - 8;
-								if(!minecraft.player.getCooldowns().isOnCooldown(shieldItem)) {
-									RenderSystem.setShaderTexture(17, SHIELD_INDICATOR_TEXTURE);
-								}else {
-									RenderSystem.setShaderTexture(18, SHIELD_INDICATOR_TEXTURE_DISABLED);
-								}
-								int q = (int)(17.0F);
-								RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-								this.blit(matrices, k, j, 36, 94, 16, 4);
-								this.blit(matrices, k, j, 52, 94, 20, 4);
-							}
 						}
 					}
 
@@ -167,14 +152,16 @@ public abstract class GuiMixin extends GuiComponent {
 			RenderSystem.defaultBlendFunc();
 			int m = 1;
 
-			for(int n = 0; n < 9; ++n) {
-				int o = i - 90 + n * 20 + 2;
+			int n;
+			int o;
+			for(n = 0; n < 9; ++n) {
+				o = i - 90 + n * 20 + 2;
 				int p = this.screenHeight - 16 - 3;
 				renderSlot(o, p, tickDelta, player, player.getInventory().items.get(n), m++);
 			}
 
 			if (!itemStack.isEmpty()) {
-				int n = this.screenHeight - 16 - 3;
+				n = this.screenHeight - 16 - 3;
 				if (humanoidArm == HumanoidArm.LEFT) {
 					this.renderSlot(i - 91 - 26, n, tickDelta, player, itemStack, m++);
 				} else {
@@ -182,45 +169,28 @@ public abstract class GuiMixin extends GuiComponent {
 				}
 			}
 
-			if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
-				int o = this.screenHeight - 20;
+			RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
+			n = this.screenHeight - 20;
+			o = i + 91 + 6;
+			boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
+			if (var7 && itemStack.getItem() == Items.SHIELD && this.minecraft.player.getCooldowns().isOnCooldown(itemStack.getItem())) {
+				this.blit(matrices, o, n, 18, 112, 18, 18);
+			} else if (var7 && this.minecraft.player.isBlocking()) {
+				this.blit(matrices, o, n, 0, 112, 18, 18);
+			} else if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
+				float maxIndicator =  ((IOptions)minecraft.options).attackIndicatorValue().get().floatValue();
 				float f = this.minecraft.player.getAttackStrengthScale(0.0F);
-				if (f > 1.3F && f < 2.0F) {
-					int p = i + 91 + 6;
+				if (f > maxIndicator - 0.7F && f < maxIndicator) {
 					if (humanoidArm == HumanoidArm.RIGHT) {
-						p = i - 91 - 22;
+						o = i - 91 - 22;
 					}
 
-					RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
-					int q = (int)((f / 2) * 19.0F);
+					int var16 = (int) ((f - (maxIndicator - 0.7F)) / 0.70000005F * 19.0F);
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-					this.blit(matrices, p, o, 0, 94, 18, 18);
-					this.blit(matrices, p, o + 18 - q, 18, 112 - q, 18, q);
+					this.blit(matrices, o, n, 0, 94, 18, 18);
+					this.blit(matrices, o, n + 18 - var16, 18, 112 - var16, 18, var16);
 				}
 			}
-			if(((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR) {
-				for(InteractionHand hand : InteractionHand.values()) {
-					if (minecraft.player.getItemInHand(hand).getItem() instanceof ShieldItem shieldItem) {
-						int o = this.screenHeight - 20;
-						int p = i + 91 + 6 + 20;
-						if (humanoidArm == HumanoidArm.RIGHT) {
-							p = i - 91 - 42;
-						}
-						if(!minecraft.player.getCooldowns().isOnCooldown(shieldItem)) {
-							if(minecraft.player.isUsingItem()) {
-								RenderSystem.setShaderTexture(15, SHIELD_INDICATOR_TEXTURE);
-							}
-						}else {
-							RenderSystem.setShaderTexture(16, SHIELD_INDICATOR_TEXTURE_DISABLED);
-						}
-						int q = 19;
-						RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-						this.blit(matrices, p, o, 0, 94, 18, 18);
-						this.blit(matrices, p, o + 18 - q, 18, 112 - q, 18, q);
-					}
-				}
-			}
-
 			RenderSystem.disableBlend();
 		}
 		ci.cancel();

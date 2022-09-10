@@ -25,7 +25,7 @@ public class AtlasClient implements ClientModInitializer, ModMenuApi {
 			OptionInstance.noTooltip(),
 			OptionInstance.forOptionEnum(),
 			new OptionInstance.Enum<>(Arrays.asList(ShieldIndicatorStatus.values()), Codec.INT.xmap(ShieldIndicatorStatus::byId, ShieldIndicatorStatus::getId)),
-			ShieldIndicatorStatus.OFF,
+			ShieldIndicatorStatus.CROSSHAIR,
 			value -> {
 			}
 	);

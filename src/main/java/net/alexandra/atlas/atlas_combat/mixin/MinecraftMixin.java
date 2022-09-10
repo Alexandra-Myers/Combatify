@@ -105,16 +105,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 			this.retainAttack = false;
 		}
 	}
-	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 10))
-	public void injectAttack(CallbackInfo ci) {
-		while(options.keyAttack.consumeClick()) {
-			if(((LivingEntityExtensions)player).getBlockingItem().getItem() instanceof ShieldItem) {
-				if(((PlayerExtensions)this.player).isAttackAvailable(0.0F) || hitResult != null && redirectResult(this.hitResult) == HitResult.Type.BLOCK) {
-					startAttack();
-				}
-			}
-		}
-	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance) {
 		if(((PlayerExtensions)this.player).isAttackAvailable(0.0F) || hitResult != null && redirectResult(this.hitResult) == HitResult.Type.BLOCK) {
@@ -126,7 +116,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		Item item = ((LivingEntityExtensions)player).getBlockingItem().getItem();
 		boolean handHasShieldItem = item instanceof ShieldItem;
-		if (player.isUsingItem() && handHasShieldItem) {
+		if (handHasShieldItem) {
 			player.getCooldowns().addCooldown(item, 20);
 			player.releaseUsingItem();
 			player.stopUsingItem();

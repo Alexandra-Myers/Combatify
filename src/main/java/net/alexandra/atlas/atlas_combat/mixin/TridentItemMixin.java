@@ -49,5 +49,6 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 
 	@Override
 	public void setStackSize(int stackSize) {
+		this.maxStackSize = stackSize;
 	}
 }

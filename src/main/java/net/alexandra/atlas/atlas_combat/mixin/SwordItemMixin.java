@@ -64,30 +64,42 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
 			if (InteractionHand.MAIN_HAND != hand) {
-				if (user.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-					user.startUsingItem(hand);
-					return InteractionResultHolder.consume(itemStack);
-				} else {
-					if(!(user.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof SwordItem)) {
+				ItemStack oppositeStack = user.getItemInHand(InteractionHand.MAIN_HAND);
+				if(!user.getCooldowns().isOnCooldown(oppositeStack.getItem())) {
+					if(oppositeStack.isEmpty() || !(oppositeStack.getItem() instanceof ShieldItem)) {
+						user.startUsingItem(hand);
+						return InteractionResultHolder.consume(itemStack);
+					} else {
+						if(!(oppositeStack.getItem() instanceof SwordItem)) {
+							user.stopUsingItem();
+							oppositeStack.getItem().use(world, user, InteractionHand.MAIN_HAND);
+							user.startUsingItem(InteractionHand.MAIN_HAND);
+							return InteractionResultHolder.fail(itemStack);
+						}
 						user.stopUsingItem();
-						user.getItemInHand(InteractionHand.MAIN_HAND).getItem().use(world, user, InteractionHand.MAIN_HAND);
-						user.startUsingItem(InteractionHand.MAIN_HAND);
 						return InteractionResultHolder.fail(itemStack);
 					}
+				}else {
 					user.stopUsingItem();
 					return InteractionResultHolder.fail(itemStack);
 				}
 			} else {
-				if(user.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-					user.startUsingItem(hand);
-					return InteractionResultHolder.consume(itemStack);
-				} else {
-					if(!(user.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof SwordItem)) {
+				ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
+				if(!user.getCooldowns().isOnCooldown(oppositeStack.getItem())) {
+					if(oppositeStack.isEmpty() || !(oppositeStack.getItem() instanceof ShieldItem)) {
+						user.startUsingItem(hand);
+						return InteractionResultHolder.consume(itemStack);
+					} else {
+						if(!(oppositeStack.getItem() instanceof SwordItem)) {
+							user.stopUsingItem();
+							oppositeStack.getItem().use(world, user, InteractionHand.OFF_HAND);
+							user.startUsingItem(InteractionHand.OFF_HAND);
+							return InteractionResultHolder.fail(itemStack);
+						}
 						user.stopUsingItem();
-						user.getItemInHand(InteractionHand.OFF_HAND).getItem().use(world, user, InteractionHand.OFF_HAND);
-						user.startUsingItem(InteractionHand.OFF_HAND);
 						return InteractionResultHolder.fail(itemStack);
 					}
+				}else {
 					user.stopUsingItem();
 					return InteractionResultHolder.fail(itemStack);
 				}
@@ -123,6 +135,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public void setStackSize(int stackSize) {
+		this.maxStackSize = stackSize;
 	}
 
 	@Override

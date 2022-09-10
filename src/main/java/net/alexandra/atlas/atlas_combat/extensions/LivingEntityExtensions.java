@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.extensions;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +17,9 @@ public interface LivingEntityExtensions {
 
     void setEnemy(Entity enemy);
 
-	void getKnockback(LivingEntity livingEntity, LivingEntity thisEntity);
+    boolean doHurt(DamageSource source, float amount);
+
+    void getKnockback(LivingEntity livingEntity, LivingEntity thisEntity);
 
 	void newKnockback(float var1, double var2, double var4);
 
@@ -27,4 +30,8 @@ public interface LivingEntityExtensions {
 	int getIsParryTicker();
 
 	void setIsParryTicker(int isParryTicker);
+
+    float getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel);
+
+	float getNewDamageAfterMagicAbsorb(DamageSource source, float amount, double piercingLevel);
 }

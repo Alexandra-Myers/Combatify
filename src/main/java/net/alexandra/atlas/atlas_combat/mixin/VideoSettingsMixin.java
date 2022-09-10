@@ -24,6 +24,7 @@ public class VideoSettingsMixin {
 				options.bobView(),
 				options.guiScale(),
 				options.attackIndicator(),
+				((IOptions)options).shieldIndicator(),
 				options.gamma(),
 				options.cloudStatus(),
 				options.fullscreen(),

@@ -23,6 +23,7 @@ import java.util.UUID;
 
 public enum WeaponType {
     SWORD,
+	LONGSWORD,
     AXE,
     PICKAXE,
     HOE,
@@ -57,26 +58,33 @@ public enum WeaponType {
 
 	public float getDamage(Tier var1) {
 		float var2 = var1.getAttackDamageBonus();
+		boolean bl = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
         switch (this) {
 			case KNIFE:
 			case PICKAXE:
-				if(var1 != Tiers.WOOD && var1 != Tiers.GOLD) {
-					return var2 - 1 + 1.0F;
+				if(bl) {
+					return var2;
 				}else {
 					return var2 + 1.0F;
 				}
             case SWORD:
-				if(var1 != Tiers.WOOD && var1 != Tiers.GOLD) {
-                	return var2 - 1 + 2.0F;
+				if(bl) {
+                	return var2 + 1.0F;
 				}else {
 					return var2 + 2.0F;
 				}
             case AXE:
-				if(var1 != Tiers.WOOD && var1 != Tiers.GOLD) {
-					return var2 - 1 + 3.0F;
+				if(bl) {
+					return var2 + 2.0F;
 				}else {
 					return var2 + 3.0F;
 				}
+			case LONGSWORD:
+				if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
+					return var1 == Tiers.NETHERITE ? 2.0F : 2.0F + var2 - 4;
+				}
+
+				return 1.0F;
 			case HOE:
                 if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
                     if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
@@ -100,9 +108,10 @@ public enum WeaponType {
         switch (this) {
 			case KNIFE:
 				return 1.0F;
-            case SWORD:
-                return 0.5F;
-            case AXE:
+			case LONGSWORD:
+			case SWORD:
+				return 0.5F;
+			case AXE:
 			case SHOVEL:
 			case TRIDENT:
 				return -0.5F;
@@ -128,37 +137,21 @@ public enum WeaponType {
     }
 
     public float getReach() {
-        switch (this) {
-			case KNIFE:
-				return -0.5F;
-			case PICKAXE:
-				if(ConfigHelper.pickaxeFunction) {
-					return 0.5F;
-				}
-				else return 0;
-            case SWORD:
-                return 0.5F;
-			case HOE:
-			case TRIDENT:
-				return 1.0F;
-			default:
-                return 0.0F;
-        }
+		return switch (this) {
+			case KNIFE -> -0.5F;
+			case PICKAXE -> ConfigHelper.pickaxeFunction ? 0.5F : 0;
+			case SWORD -> 0.5F;
+			case LONGSWORD, HOE, TRIDENT -> 1.0F;
+			default -> 0.0F;
+		};
     }
 
 	public float getBlockReach() {
-		switch (this) {
-			case PICKAXE:
-			case SWORD:
-			case AXE:
-				return 1.5F;
-			case SHOVEL:
-				return 1.0F;
-			case HOE:
-			case TRIDENT:
-				return 2.0F;
-			default:
-				return 0.0F;
-		}
+		return switch (this) {
+			case PICKAXE, SWORD, AXE -> 1.5F;
+			case SHOVEL -> 1.0F;
+			case LONGSWORD, HOE, TRIDENT -> 2.0F;
+			default -> 0.0F;
+		};
 	}
 }

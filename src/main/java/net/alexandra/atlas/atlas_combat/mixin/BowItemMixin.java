@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IBowItem;
 import net.minecraft.sounds.SoundEvents;
@@ -13,16 +12,11 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import org.quiltmc.config.api.values.TrackedValue;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.Collections;
 
 @Mixin(BowItem.class)
 public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowItem {
@@ -38,14 +32,14 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 	public BowItemMixin(Properties properties) {
 		super(properties);
 	}
-	/**
-	 * @author
-	 * @reason
-	 */
 	@Inject(method = "releaseUsing", at = @At(value = "HEAD"), cancellable = true)
 	public void releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-		if (user instanceof Player) {
-			Player player = (Player)user;
+		stopUsing(stack, world, user, remainingUseTicks);
+		ci.cancel();
+	}
+	@Override
+	public void stopUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks) {
+		if (user instanceof Player player) {
 			boolean bl = player.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) > 0;
 			ItemStack itemStack = player.getProjectile(stack);
 			if (!itemStack.isEmpty() || bl) {
@@ -109,7 +103,6 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 				}
 			}
 		}
-		ci.cancel();
 	}
 
 	@Override
