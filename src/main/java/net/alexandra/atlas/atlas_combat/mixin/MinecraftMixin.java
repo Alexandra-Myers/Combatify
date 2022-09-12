@@ -173,13 +173,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 							break;
 						}
 					case MISS:
-						UUID playerUUID = player.getUUID();
-						MinecraftServer server = player.getServer();
-						boolean serverMeetsRequirements = server != null && server.isDedicatedServer();
-						int playerLatency = serverMeetsRequirements ? server.getPlayerList().getPlayer(playerUUID).latency : 0;
-						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5), playerLatency);
+						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
 						if(result != null && ConfigHelper.refinedCoyoteTime) {
-							if(!(result.getEntity() instanceof Player) || playerLatency > 50) {
+							if(!(result.getEntity() instanceof Player)) {
 								if (result.getEntity() instanceof Guardian
 										|| result.getEntity() instanceof Cat
 										|| result.getEntity() instanceof Vex
@@ -191,13 +187,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 										|| result.getEntity() instanceof AbstractFish
 										|| result.getEntity() instanceof Rabbit) {
 									result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-									if(result != null) {
-										this.gameMode.attack(this.player, result.getEntity());
-									}
-								} else if(playerLatency > 200) {
-									this.gameMode.attack(this.player, result.getEntity());
-								} else if (playerLatency > 100) {
-									result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5), playerLatency);
 									if(result != null) {
 										this.gameMode.attack(this.player, result.getEntity());
 									}
