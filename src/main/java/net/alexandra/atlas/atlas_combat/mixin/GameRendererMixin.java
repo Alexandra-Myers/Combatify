@@ -30,16 +30,16 @@ abstract class GameRendererMixin implements ResourceManagerReloadListener/*, Aut
     @ModifyConstant(method = "pick(F)V", constant = @Constant(doubleValue = 3.0))
     private double getActualAttackRange0(final double attackRange) {
         if (this.minecraft.player != null) {
-            return ((PlayerExtensions)minecraft.player).getAttackRange(this.minecraft.player, attackRange);
+            return ((PlayerExtensions)minecraft.player).getAttackRange(this.minecraft.player, 2.5);
         }
-        return attackRange;
+        return 2.5;
     }
 
     @ModifyConstant(method = "pick(F)V", constant = @Constant(doubleValue = 9.0))
     private double getActualAttackRange1(final double attackRange) {
         if (this.minecraft.player != null) {
-            return ((PlayerExtensions)minecraft.player).getSquaredAttackRange(this.minecraft.player, attackRange);
+            return ((PlayerExtensions)minecraft.player).getSquaredAttackRange(this.minecraft.player, 6.25);
         }
-        return attackRange;
+        return 6.25;
     }
 }

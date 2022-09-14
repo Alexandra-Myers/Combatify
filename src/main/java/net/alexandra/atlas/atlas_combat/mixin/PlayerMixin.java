@@ -573,17 +573,18 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public double getAttackRange(LivingEntity entity, double baseAttackRange) {
-		@org.jetbrains.annotations.Nullable final var attackRange = entity.getAttribute(NewAttributes.ATTACK_REACH);
+		@org.jetbrains.annotations.Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
+		int var2 = 0;
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
-			return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) + 1 : baseAttackRange + 1;
+			var2 = 1;
 		}
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + var2) : baseAttackRange + var2;
 	}
 
 	@Override
 	public double getSquaredAttackRange(LivingEntity entity, double sqBaseAttackRange) {
-		final var attackRange = getReach(entity, Math.sqrt(sqBaseAttackRange));
+		final var attackRange = getAttackRange(entity, Math.sqrt(sqBaseAttackRange));
 		return attackRange * attackRange;
 	}
 
@@ -595,7 +596,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public double getSquaredReach(LivingEntity entity, double sqBaseAttackRange) {
-		final var attackRange = getAttackRange(entity, Math.sqrt(sqBaseAttackRange));
+		final var attackRange = getReach(entity, Math.sqrt(sqBaseAttackRange));
 		return attackRange * attackRange;
 	}
 

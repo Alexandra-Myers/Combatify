@@ -16,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 import net.rizecookey.cookeymod.CookeyMod;
 import net.rizecookey.cookeymod.config.category.AnimationsCategory;
+import net.rizecookey.cookeymod.config.category.HudRenderingCategory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,6 +34,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@Shadow
 	private ItemStack mainHandItem;
+	HudRenderingCategory hudRenderingCategory = (HudRenderingCategory)CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class);
 
 	@Shadow
 	protected abstract void applyItemArmAttackTransform(PoseStack matrices, HumanoidArm arm, float swingProgress);
@@ -70,9 +72,14 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			}
 		}
 	}
-	@Redirect(method = "tick", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
-	public float modifyArmPos4(LocalPlayer instance, float v) {
-		return (instance.getAttackStrengthScale(v) / 2.0F);
+	@ModifyVariable(method = "tick", slice = @Slice(
+			from = @At(value = "JUMP", ordinal = 3)
+	), at = @At(value = "FIELD", ordinal = 0))
+	public float modifyArmHeight(float f) {
+		f *= 0.5;
+		f = f * f * f * 0.25F + 0.75F;
+		double offset = (Double)this.hudRenderingCategory.attackCooldownHandOffset.get();
+		return (float)((double)f * (1.0 - offset) + offset);
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
