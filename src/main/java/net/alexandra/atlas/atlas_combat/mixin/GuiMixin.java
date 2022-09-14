@@ -183,7 +183,16 @@ public abstract class GuiMixin extends GuiComponent {
 			} else if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
 				float maxIndicator =  ((IOptions)minecraft.options).attackIndicatorValue().get().floatValue();
 				float f = this.minecraft.player.getAttackStrengthScale(0.0F);
-				if (f > maxIndicator - 0.7F && f < maxIndicator) {
+				boolean bl = false;
+				EntityHitResult hitResult = ((IMinecraft)minecraft).rayTraceEntity(minecraft.player, 1.0F, ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5));
+				minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
+				if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
+					bl = (minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
+					bl &= this.minecraft.crosshairPickEntity.isAlive();
+				}
+				if (bl) {
+					this.blit(matrices, o, n, 0, 130, 18, 18);
+				} else if (f > maxIndicator - 0.7F && f < maxIndicator) {
 
 					int var16 = (int) ((f - (maxIndicator - 0.7F)) / 0.70000005F * 19.0F);
 					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
