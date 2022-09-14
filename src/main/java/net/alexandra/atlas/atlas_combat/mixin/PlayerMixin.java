@@ -272,7 +272,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				if(isAttackAvailable(baseValue)) {
 					float attackDamage = (float) ((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player) + (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof KnifeItem && target instanceof Animal ? 1.0F : 0.0F);
 					float attackDamageBonus;
-					if (target instanceof LivingEntity livingEntity) {
+					if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && target instanceof LivingEntity livingEntity) {
+						EnchantmentHelper helper = new EnchantmentHelper();
+						attackDamageBonus = ((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity);
+					} else if (target instanceof LivingEntity livingEntity) {
 						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
 					} else {
 						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), MobType.UNDEFINED);

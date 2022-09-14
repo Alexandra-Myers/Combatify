@@ -72,14 +72,15 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements net.al
 			}
 		}
 	}
-	@Inject(method = "onHitEntity", at = @At(value = "HEAD"))
+	@Inject(method = "onHitEntity", at = @At(value = "HEAD"), cancellable = true)
 	public void setDealtDamage(EntityHitResult entityHitResult, CallbackInfo ci) {
 		dealtDamage(entityHitResult);
+		ci.cancel();
 	}
 	public void dealtDamage(EntityHitResult entityHitResult) {
 		ThrownTrident trident = ((ThrownTrident) (Object)this);
 		Entity entity = entityHitResult.getEntity();
-		float f = 7.0F;
+		float f = 8.0F;
 		EnchantmentHelper helper = new EnchantmentHelper();
 		if (entity instanceof LivingEntity livingEntity) {
 			f += ((IEnchantmentHelper)helper).getDamageBonus(this.tridentItem, livingEntity);

@@ -21,9 +21,9 @@ public abstract class EnchantmentHelperMixin implements IEnchantmentHelper {
 	@Override
 	public float getDamageBonus(ItemStack level, LivingEntity entity){
 		if(entity.getMobType() == MobType.WATER || entity.isInWaterOrRain()) {
-			getDamageBonus(level, MobType.WATER);
+			return getDamageBonus(level, MobType.WATER);
 		}
-		return getDamageBonus(level, MobType.UNDEFINED);
+		return getDamageBonus(level, entity.getMobType());
 	}
 
 	@Override
