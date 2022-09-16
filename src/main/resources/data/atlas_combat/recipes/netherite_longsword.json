@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smithing",
+  "addition": {
+    "item": "minecraft:netherite_ingot"
+  },
+  "base": {
+    "item": "atlas_combat:diamond_longsword"
+  },
+  "result": {
+    "item": "atlas_combat:netherite_longsword"
+  }
+}

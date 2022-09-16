@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " X",
+    " X",
+    " #"
+  ],
+  "key": {
+    "#": {
+      "item": "atlas_combat:diamond_knife"
+    },
+    "X": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "atlas_combat:diamond_longsword"
+  }
+}
