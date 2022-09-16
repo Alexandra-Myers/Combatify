@@ -326,7 +326,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (entity2 != null && entity2 instanceof Player player) {
 				invulnerableTime = Math.min(((PlayerExtensions)player).getAttackDelay(player), invulnerableTime);
 			}
-			if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible()) {
+			if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic()) {
 				thisEntity.stopUsingItem();
 			}
 

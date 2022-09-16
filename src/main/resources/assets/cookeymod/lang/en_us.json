@@ -1,0 +1,6 @@
+{
+  "options.cookeymod.misc.force100PercentRecharge": "Force 100% recharge",
+  "options.cookeymod.misc.force100PercentRecharge.tooltip.0": "Forces you to always recharge 100% of the weapon",
+  "options.cookeymod.misc.force100PercentRecharge.tooltip.1": "cooldown after missing. This might be helpful for",
+  "options.cookeymod.misc.force100PercentRecharge.tooltip.2": "improving your aim and timing in the Combat Tests."
+}

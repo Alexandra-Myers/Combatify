@@ -18,7 +18,8 @@
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
 			"init": "net.alexandra.atlas.atlas_combat.AtlasCombat",
-			"client_init": "net.alexandra.atlas.atlas_combat.AtlasClient"
+			"client_init": "net.alexandra.atlas.atlas_combat.AtlasClient",
+			"mm:early_risers": "net.alexandra.atlas.atlas_combat.EarlyRiser"
 		},
 		"depends": [
 			{

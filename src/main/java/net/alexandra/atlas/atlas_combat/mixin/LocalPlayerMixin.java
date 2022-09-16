@@ -22,6 +22,8 @@ import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.rizecookey.cookeymod.CookeyMod;
+import net.rizecookey.cookeymod.config.category.MiscCategory;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -69,7 +71,15 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			}
 		}
 	}
-
+	@Override
+	public boolean isAttackAvailable(float baseTime) {
+		MiscCategory miscCategory = CookeyMod.getInstance().getConfig().getCategory(MiscCategory.class);
+		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
+			return true;
+		} else {
+			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 20.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
+		}
+	}
     public LocalPlayerMixin(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2) {
         super(clientLevel, clientPacketListener.getLocalGameProfile(), (ProfilePublicKey)minecraft.getProfileKeyPairManager().profilePublicKey().orElse(null));
     }

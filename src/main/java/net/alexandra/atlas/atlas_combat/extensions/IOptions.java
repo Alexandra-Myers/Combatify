@@ -12,6 +12,8 @@ public interface IOptions {
 	OptionInstance<Boolean> lowShield();
 	OptionInstance<Boolean> rhythmicAttacks();
 
+    OptionInstance<Boolean> protIndicator();
+
     OptionInstance<ShieldIndicatorStatus> shieldIndicator();
 
     OptionInstance<Double> attackIndicatorValue();

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.7",
   "brown_glazed_terracotta": 64,
   "black_carpet": 64,
   "cyan_stained_glass": 64,
@@ -598,7 +598,7 @@
   "waxed_cut_copper_slab": 64,
   "witch_spawn_egg": 64,
   "dead_tube_coral": 64,
-  "potion": 64,
+  "potion": 16,
   "golden_axe": 1,
   "dead_horn_coral_block": 64,
   "nether_brick": 64,

@@ -20,6 +20,7 @@ public class AtlasClient implements ClientModInitializer, ModMenuApi {
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
 	public static final OptionInstance<Boolean> lowShield = OptionInstance.createBoolean("options.lowShield", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_LOW_SHIELD),false);
 	public static final OptionInstance<Boolean> rhythmicAttacks = OptionInstance.createBoolean("options.rhythmicAttack",true);
+	public static final OptionInstance<Boolean> protectionIndicator = OptionInstance.createBoolean("options.protIndicator",false);
 	public static final OptionInstance<ShieldIndicatorStatus> shieldIndicator = new OptionInstance<>(
 			"options.shieldIndicator",
 			OptionInstance.noTooltip(),

@@ -21,6 +21,7 @@
   "options.attackIndicatorValue.default" : "Default",
   "options.double_value": "%s: %s",
   "options.rhythmicAttack" : "Rhythmic Attacks",
+  "options.protIndicator" : "Protection Enchantment Level Indicator",
   "options.shieldIndicator" : "Shield Indicator",
   "atlas_combat.midnightconfig.title": "Atlas Combat",
   "atlas_combat.midnightconfig.toolsAreWeapons": "All Tools Are Weapons",

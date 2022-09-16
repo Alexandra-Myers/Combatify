@@ -6,9 +6,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
+import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
+import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -17,13 +19,21 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -56,6 +66,37 @@ public abstract class GuiMixin extends GuiComponent {
 	@Shadow
 	@Final
 	private static ResourceLocation WIDGETS_LOCATION;
+
+	@Shadow
+	private long healthBlinkTime;
+
+	@Shadow
+	private int tickCount;
+
+	@Shadow
+	@Final
+	private RandomSource random;
+
+	@Shadow
+	private int lastHealth;
+
+	@Shadow
+	private long lastHealthTime;
+
+	@Shadow
+	private int displayHealth;
+
+	@Shadow
+	protected abstract void renderHearts(PoseStack matrices, Player player, int x, int y, int lines, int regeneratingHeartIndex, float maxHealth, int lastHealth, int health, int absorption, boolean blinking);
+
+	@Shadow
+	protected abstract LivingEntity getPlayerVehicleWithHealth();
+
+	@Shadow
+	protected abstract int getVehicleMaxHearts(LivingEntity entity);
+
+	@Shadow
+	protected abstract int getVisibleVehicleHeartRows(int heartCount);
 
 	/**
 	 * @author
@@ -201,6 +242,137 @@ public abstract class GuiMixin extends GuiComponent {
 				}
 			}
 			RenderSystem.disableBlend();
+		}
+		ci.cancel();
+	}
+	@Inject(method = "renderPlayerHealth", at = @At(value = "HEAD"), cancellable = true)
+	private void renderPlayerHealth(PoseStack matrices, CallbackInfo ci) {
+		Gui gui = (Gui)(Object)this;
+		Player player = this.getCameraPlayer();
+		if (player != null) {
+			int i = Mth.ceil(player.getHealth());
+			boolean bl = healthBlinkTime > (long)tickCount && (healthBlinkTime - (long)tickCount) / 3L % 2L == 1L;
+			long l = Util.getMillis();
+			if (i < lastHealth && player.invulnerableTime > 0) {
+				lastHealthTime = l;
+				healthBlinkTime = (long)(tickCount + 20);
+			} else if (i > lastHealth && player.invulnerableTime > 0) {
+				lastHealthTime = l;
+				healthBlinkTime = (long)(tickCount + 10);
+			}
+
+			if (l - lastHealthTime > 1000L) {
+				lastHealth = i;
+				displayHealth = i;
+				lastHealthTime = l;
+			}
+
+			lastHealth = i;
+			int j = displayHealth;
+			random.setSeed((long)(tickCount * 312871));
+			FoodData foodData = player.getFoodData();
+			int k = foodData.getFoodLevel();
+			int m = this.screenWidth / 2 - 91;
+			int n = this.screenWidth / 2 + 91;
+			int o = this.screenHeight - 39;
+			float f = Math.max((float)player.getAttributeValue(Attributes.MAX_HEALTH), (float)Math.max(j, i));
+			int p = Mth.ceil(player.getAbsorptionAmount());
+			int q = Mth.ceil((f + (float)p) / 2.0F / 10.0F);
+			int r = Math.max(10 - (q - 2), 3);
+			int s = o - (q - 1) * r - 10;
+			int t = o - 10;
+			int u = player.getArmorValue();
+			int v = -1;
+			if (player.hasEffect(MobEffects.REGENERATION)) {
+				v = tickCount % Mth.ceil(f + 5.0F);
+			}
+			EnchantmentHelper helper = new EnchantmentHelper();
+			int prot = ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.ALL_DAMAGE_PROTECTION, player);
+			prot += ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.FIRE_PROTECTION, player);
+			prot += ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.BLAST_PROTECTION, player);
+			prot += ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.PROJECTILE_PROTECTION, player);
+			prot += ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.FALL_PROTECTION, player);
+
+			this.minecraft.getProfiler().push("armor");
+
+			for(int w = 0; w < 10; ++w) {
+				if (u > 0) {
+					int x = m + w * 8;
+					if (w * 2 + 1 < u) {
+						this.blit(matrices, x, s, 34, 9, 9, 9);
+					}
+
+					if (w * 2 + 1 == u) {
+						this.blit(matrices, x, s, 25, 9, 9, 9);
+					}
+
+					if (w * 2 + 1 > u) {
+						this.blit(matrices, x, s, 16, 9, 9, 9);
+					}
+
+					if (w * 2 + 1 < prot && ((IOptions)minecraft.options).protIndicator().get()) {
+						this.blit(matrices, x, s, 43, 18, 9, 9);
+					}
+
+					if (w * 2 + 1 == prot && ((IOptions)minecraft.options).protIndicator().get()) {
+						this.blit(matrices, x, s, 34, 18, 9, 9);
+					}
+				}
+			}
+
+			this.minecraft.getProfiler().popPush("health");
+			renderHearts(matrices, player, m, o, r, v, f, i, j, p, bl);
+			LivingEntity livingEntity = getPlayerVehicleWithHealth();
+			int x = getVehicleMaxHearts(livingEntity);
+			if (x == 0) {
+				this.minecraft.getProfiler().popPush("food");
+
+				for(int y = 0; y < 10; ++y) {
+					int z = o;
+					int aa = 16;
+					int ab = 0;
+					if (player.hasEffect(MobEffects.HUNGER)) {
+						aa += 36;
+						ab = 13;
+					}
+
+					if (player.getFoodData().getSaturationLevel() <= 0.0F && tickCount % (k * 3 + 1) == 0) {
+						z = o + (random.nextInt(3) - 1);
+					}
+
+					int ac = n - y * 8 - 9;
+					this.blit(matrices, ac, z, 16 + ab * 9, 27, 9, 9);
+					if (y * 2 + 1 < k) {
+						this.blit(matrices, ac, z, aa + 36, 27, 9, 9);
+					}
+
+					if (y * 2 + 1 == k) {
+						this.blit(matrices, ac, z, aa + 45, 27, 9, 9);
+					}
+				}
+
+				t -= 10;
+			}
+
+			this.minecraft.getProfiler().popPush("air");
+			int y = player.getMaxAirSupply();
+			int z = Math.min(player.getAirSupply(), y);
+			if (player.isEyeInFluid(FluidTags.WATER) || z < y) {
+				int aa = getVisibleVehicleHeartRows(x) - 1;
+				t -= aa * 10;
+				int ab = Mth.ceil((double)(z - 2) * 10.0 / (double)y);
+				int ac = Mth.ceil((double)z * 10.0 / (double)y) - ab;
+
+				for(int ad = 0; ad < ab + ac; ++ad) {
+					if (ad < ab) {
+						this.blit(matrices, n - ad * 8 - 9, t, 16, 18, 9, 9);
+					} else {
+						this.blit(matrices, n - ad * 8 - 9, t, 25, 18, 9, 9);
+					}
+				}
+			}
+
+			this.minecraft.getProfiler().pop();
 		}
 		ci.cancel();
 	}

@@ -37,7 +37,8 @@ public class VideoSettingsMixin {
 				options.showAutosaveIndicator(),
 				((IOptions)options).lowShield(),
 				((IOptions)options).attackIndicatorValue(),
-				((IOptions)options).rhythmicAttacks()
+				((IOptions)options).rhythmicAttacks(),
+				((IOptions)options).protIndicator()
 		};
 		cir.setReturnValue(optionInstances);
 		cir.cancel();

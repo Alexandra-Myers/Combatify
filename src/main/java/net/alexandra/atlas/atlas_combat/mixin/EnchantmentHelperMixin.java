@@ -1,15 +1,15 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
-import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+
+import static net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel;
 
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin implements IEnchantmentHelper {
@@ -29,5 +29,21 @@ public abstract class EnchantmentHelperMixin implements IEnchantmentHelper {
 	@Override
 	public float getKnockbackDebuff(ItemStack level, LivingEntity entity){
 		return (getDamageBonus(level, MobType.WATER)/2.5F);
+	}
+	@Override
+	public int getFullEnchantmentLevel(Enchantment enchantment, LivingEntity entity) {
+		Iterable<ItemStack> iterable = enchantment.getSlotItems(entity).values();
+		if (iterable == null) {
+			return 0;
+		} else {
+			int i = 0;
+
+			for(ItemStack itemStack : iterable) {
+				int j = getItemEnchantmentLevel(enchantment, itemStack);
+				i += j;
+			}
+
+			return i;
+		}
 	}
 }

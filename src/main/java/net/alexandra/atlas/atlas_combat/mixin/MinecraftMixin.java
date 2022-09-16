@@ -1,11 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
-import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
-import net.alexandra.atlas.atlas_combat.extensions.IOptions;
-import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
-import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
@@ -15,7 +11,6 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -30,7 +25,6 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.phys.*;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
@@ -39,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements IMinecraft {
@@ -105,6 +98,13 @@ public abstract class MinecraftMixin implements IMinecraft {
 			this.retainAttack = false;
 		}
 	}
+	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
+	public boolean redirectAttack(Minecraft instance) {
+		if(instance.player != null && ((PlayerExtensions)instance.player).isAttackAvailable(1.0F)) {
+			return startAttack();
+		}
+		return false;
+	}
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		Item item = ((LivingEntityExtensions)player).getBlockingItem().getItem();
@@ -152,7 +152,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 						if (player.distanceTo(((EntityHitResult)hitResult).getEntity()) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
 							this.gameMode.attack(this.player, ((EntityHitResult) this.hitResult).getEntity());
 						} else {
-							((PlayerExtensions)player).attackAir();
+							((IPlayerGameMode)gameMode).swingInAir(player);
 						}
 						break;
 					case BLOCK:
@@ -190,10 +190,10 @@ public abstract class MinecraftMixin implements IMinecraft {
 									}
 								}
 							} else {
-								((PlayerExtensions) player).attackAir();
+								((IPlayerGameMode)gameMode).swingInAir(player);
 							}
 						}else {
-							((PlayerExtensions) player).attackAir();
+							((IPlayerGameMode)gameMode).swingInAir(player);
 						}
 				}
 
@@ -451,7 +451,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 
 				this.retainAttack = false;
-			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-10.0F) && ((IOptions)options).autoAttack().get()) {
+			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-5.0F) && ((IOptions)options).autoAttack().get()) {
 				this.startAttack();
 			} else {
 				this.gameMode.stopDestroyBlock();

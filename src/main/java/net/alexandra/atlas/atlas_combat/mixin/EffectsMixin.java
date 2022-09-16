@@ -32,8 +32,17 @@ public class EffectsMixin {
 			"strength",
 			new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 0.2)
 					.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
+	@Shadow
+	@Mutable
+	@Final
+	public static final MobEffect WEAKNESS = registrySet(
+			18,
+			"weakness",
+			new DummyAttackDamageMobEffect(MobEffectCategory.HARMFUL, 4738376, -0.2)
+					.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL)
+	);
 	private static MobEffect registrySet(int RawId, String id, MobEffect effect) {
-		Holder<MobEffect> mobEffectHolder = ((WritableRegistry) Registry.MOB_EFFECT).registerOrOverride(OptionalInt.of(RawId), ResourceKey.create(Registry.ATTRIBUTE.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
+		Holder<MobEffect> mobEffectHolder = ((WritableRegistry) Registry.MOB_EFFECT).registerOrOverride(OptionalInt.of(RawId), ResourceKey.create(Registry.MOB_EFFECT.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
 		return mobEffectHolder.value();
 	}
 }

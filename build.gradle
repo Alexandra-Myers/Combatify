@@ -11,8 +11,26 @@ loom {
 }
 
 repositories {
+	allprojects { repositories { maven { url 'https://jitpack.io' } } }
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/releases/" }
+
+	maven {
+		name = "Modrinth"
+		url = uri("https://api.modrinth.com/maven")
+		content {
+			includeGroup("maven.modrinth")
+		}
+	}
+	maven {
+		name = "auoeke Maven"
+		url = uri("https://maven.auoeke.net")
+	}
+
+	maven {
+		name = "ENDERZOMBI102 Maven"
+		url = uri("https://repsy.io/mvn/enderzombi102/mc")
+	}
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -32,6 +50,14 @@ dependencies {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 	modImplementation libs.quilted.fabric.api
+	modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}") {
+		exclude group: 'net.fabricmc'
+		exclude group: "net.fabricmc.fabric-api"
+	}
+	include("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}") {
+		exclude group: 'net.fabricmc'
+		exclude group: "net.fabricmc.fabric-api"
+	}
 	include 'com.github.rizecookey:CookeyMod:1.7.0+1.19.2'
 	modImplementation 'com.github.rizecookey:CookeyMod:1.7.0+1.19.2'
 	include 'com.github.TeamMidnightDust:MidnightLib:v0.6.0'

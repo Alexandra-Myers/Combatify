@@ -12,6 +12,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -35,6 +36,7 @@ public class AtlasCombat implements ModInitializer {
 			"config",           // The id for this particular config, since your mod might have multiple
 			QuiltConfigs.class      // The config class you created earlier
 	);
+	public static Player player;
 
 	public static ConfigHelper helper = new ConfigHelper();
 	NeuralNetwork nn_custom_lr_with_multithreading = new NeuralNetwork(2, 10, 1, 0.01, true);
