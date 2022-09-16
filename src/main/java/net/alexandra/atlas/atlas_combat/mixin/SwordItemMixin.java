@@ -70,7 +70,12 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 						user.startUsingItem(hand);
 						return InteractionResultHolder.consume(itemStack);
 					} else {
-						if(!(oppositeStack.getItem() instanceof SwordItem)) {
+						if(oppositeStack.isEdible()) {
+							if (user.canEat(oppositeStack.getItem().getFoodProperties().canAlwaysEat())) {
+								user.startUsingItem(hand);
+								return InteractionResultHolder.consume(itemStack);
+							}
+						}else if(!(oppositeStack.getItem() instanceof SwordItem) ) {
 							user.stopUsingItem();
 							oppositeStack.getItem().use(world, user, InteractionHand.MAIN_HAND);
 							user.startUsingItem(InteractionHand.MAIN_HAND);
@@ -90,7 +95,12 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 						user.startUsingItem(hand);
 						return InteractionResultHolder.consume(itemStack);
 					} else {
-						if(!(oppositeStack.getItem() instanceof SwordItem)) {
+						if(oppositeStack.isEdible()) {
+							if (user.canEat(oppositeStack.getItem().getFoodProperties().canAlwaysEat())) {
+								user.startUsingItem(hand);
+								return InteractionResultHolder.consume(itemStack);
+							}
+						}else if(!(oppositeStack.getItem() instanceof SwordItem)) {
 							user.stopUsingItem();
 							oppositeStack.getItem().use(world, user, InteractionHand.OFF_HAND);
 							user.startUsingItem(InteractionHand.OFF_HAND);
