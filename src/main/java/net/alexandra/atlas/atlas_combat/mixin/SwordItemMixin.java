@@ -63,64 +63,33 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		if(ConfigHelper.swordBlocking) {
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
-			if (InteractionHand.MAIN_HAND != hand) {
-				ItemStack oppositeStack = user.getItemInHand(InteractionHand.MAIN_HAND);
-				if(!user.getCooldowns().isOnCooldown(oppositeStack.getItem())) {
-					if(oppositeStack.isEmpty()) {
-						user.startUsingItem(hand);
-						return InteractionResultHolder.consume(itemStack);
-					} else {
-						if(oppositeStack.isEdible()) {
-							if (user.canEat(oppositeStack.getItem().getFoodProperties().canAlwaysEat())) {
-								user.stopUsingItem();
-								user.startUsingItem(hand);
-								return InteractionResultHolder.consume(itemStack);
-							}else {
-								user.stopUsingItem();
-								return InteractionResultHolder.fail(itemStack);
-							}
-						}else if(!(oppositeStack.getItem() instanceof SwordItem) ) {
+			ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
+			if(!user.getCooldowns().isOnCooldown(oppositeStack.getItem())) {
+				if(oppositeStack.isEmpty()) {
+					user.startUsingItem(hand);
+					return InteractionResultHolder.consume(itemStack);
+				} else {
+					if(oppositeStack.isEdible()) {
+						if (user.canEat(oppositeStack.getItem().getFoodProperties().canAlwaysEat())) {
 							user.stopUsingItem();
-							oppositeStack.getItem().use(world, user, InteractionHand.MAIN_HAND);
-							user.startUsingItem(InteractionHand.MAIN_HAND);
-							return InteractionResultHolder.fail(itemStack);
-						}
-						user.stopUsingItem();
-						return InteractionResultHolder.fail(itemStack);
-					}
-				}else {
-					user.stopUsingItem();
-					return InteractionResultHolder.fail(itemStack);
-				}
-			} else {
-				ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
-				if(!user.getCooldowns().isOnCooldown(oppositeStack.getItem())) {
-					if(oppositeStack.isEmpty()) {
-						user.startUsingItem(hand);
-						return InteractionResultHolder.consume(itemStack);
-					} else {
-						if(oppositeStack.isEdible()) {
-							if (user.canEat(oppositeStack.getItem().getFoodProperties().canAlwaysEat())) {
-								user.stopUsingItem();
-								user.startUsingItem(hand);
-								return InteractionResultHolder.consume(itemStack);
-							}else {
-								user.stopUsingItem();
-								return InteractionResultHolder.fail(itemStack);
-							}
-						}else if(!(oppositeStack.getItem() instanceof SwordItem)) {
-							user.stopUsingItem();
-							oppositeStack.getItem().use(world, user, InteractionHand.OFF_HAND);
 							user.startUsingItem(InteractionHand.OFF_HAND);
+							return InteractionResultHolder.consume(itemStack);
+						}else {
+							user.stopUsingItem();
 							return InteractionResultHolder.fail(itemStack);
 						}
+					}else if(!(oppositeStack.getItem() instanceof SwordItem)) {
 						user.stopUsingItem();
+						oppositeStack.getItem().use(world, user, InteractionHand.OFF_HAND);
+						user.startUsingItem(InteractionHand.OFF_HAND);
 						return InteractionResultHolder.fail(itemStack);
 					}
-				}else {
 					user.stopUsingItem();
 					return InteractionResultHolder.fail(itemStack);
 				}
+			}else {
+				user.stopUsingItem();
+				return InteractionResultHolder.fail(itemStack);
 			}
 		}
 		return super.use(world,user,hand);

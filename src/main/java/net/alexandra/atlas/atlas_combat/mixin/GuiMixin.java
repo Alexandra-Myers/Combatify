@@ -287,10 +287,13 @@ public abstract class GuiMixin extends GuiComponent {
 				v = tickCount % Mth.ceil(f + 5.0F);
 			}
 			EnchantmentHelper helper = new EnchantmentHelper();
-			float prot = ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.ALL_DAMAGE_PROTECTION, player) / 25.0F;
-			prot += (((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.FIRE_PROTECTION, player) * 2) / 25.0F;
-			prot += (((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.BLAST_PROTECTION, player) * 2) / 25.0F;
-			prot += (((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.PROJECTILE_PROTECTION, player) * 2) / 25.0F;
+			int fire_prot = ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.FIRE_PROTECTION, player);
+			int blast_prot = ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.BLAST_PROTECTION, player);
+			int proj_prot = ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.PROJECTILE_PROTECTION, player);
+			float prot = ((IEnchantmentHelper)helper).getFullEnchantmentLevel(Enchantments.ALL_DAMAGE_PROTECTION, player);
+			prot += fire_prot > 1 ? (fire_prot + Mth.ceil(fire_prot / 4.0F)) : 0;
+			prot += blast_prot > 1 ? (blast_prot + Mth.ceil(blast_prot / 4.0F)) : 0;
+			prot += proj_prot > 1 ? (proj_prot + Mth.ceil(proj_prot / 4.0F)) : 0;
 
 			this.minecraft.getProfiler().push("armor");
 

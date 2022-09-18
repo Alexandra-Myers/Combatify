@@ -80,11 +80,6 @@ public enum WeaponType {
 					return var2 + 3.0F;
 				}
 			case LONGSWORD:
-				if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-					return var1 == Tiers.NETHERITE ? 2.0F : 2.0F + var2 - 4;
-				}
-
-				return 1.0F;
 			case HOE:
                 if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
                     if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
