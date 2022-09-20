@@ -167,6 +167,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			((ISwordItem)swordItem).addStrengthTimer();
 		}
 		--instance.attackStrengthTicker;
+        --instance.attackStrengthTicker;
+        --instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
+		--instance.attackStrengthTicker;
 		if(getAttackStrengthScale(baseValue) > 1.0F){
 			--instance.attackStrengthTicker;
 		}
@@ -482,7 +488,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp(1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue, 0.0F, 2.0F);
+		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue)/4.0F, 0.0F, 2.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
