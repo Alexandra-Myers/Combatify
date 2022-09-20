@@ -77,7 +77,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 8.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
+			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 32.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
 		}
 	}
     public LocalPlayerMixin(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2) {
