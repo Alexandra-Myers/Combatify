@@ -168,9 +168,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		--instance.attackStrengthTicker;
 		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
 		setIsParryTicker(getIsParryTicker() + 1);
 		if(getIsParryTicker() >= 40) {
 			setIsParry(false);
@@ -460,10 +457,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void resetAttackStrengthTicker(boolean var1) {
 		this.missedAttackRecovery = !var1;
-		int var2 = (int) this.getCurrentItemAttackStrengthDelay() * 2;
-		if (var2 > player.attackStrengthTicker) {
+		int var2 = (int) (this.getCurrentItemAttackStrengthDelay() * 2);
+		if (var2 > this.attackStrengthTicker) {
 			this.attackStrengthStartValue = var2;
-			player.attackStrengthTicker = this.attackStrengthStartValue;
+			this.attackStrengthTicker = this.attackStrengthStartValue;
 		}
 	}
 
@@ -475,7 +472,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float getCurrentItemAttackStrengthDelay() {
 		float var1 = (float)this.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F;
 		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
-		return (1.0F / var1 * 20.0F + 0.5F);
+		return (int)(1.0F / var1 * 20.0F + 0.5F);
 	}
 	/**
 	 * @author
@@ -483,7 +480,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue)/3, 0.0F, 2.0F);
+		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp(1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue, 0.0F, 2.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
@@ -495,7 +492,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 20.0F;
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 8.0F;
 		}
 	}
 	@Override
@@ -503,7 +500,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!(getAttackStrengthScale(baseTime) < minValue)) {
 			return true;
 		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 20.0F;
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 8.0F;
 		}
 	}
 	@Override
@@ -511,11 +508,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!(getAttackStrengthScale(baseTime) < minValue) && !isAutoAttack) {
 			return true;
 		} else if (!(getAttackStrengthScale(baseTime) < minValue)) {
-			return getAttackStrengthScale(baseTime) > minValue + 5.0F;
+			return getAttackStrengthScale(baseTime) > minValue + 2.0F;
 		} else if (isAutoAttack){
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 25.0F;
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 10.0F;
 		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 20.0F;
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 8.0F;
 		}
 	}
 

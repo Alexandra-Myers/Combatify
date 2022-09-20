@@ -77,7 +77,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 20.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
+			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 8.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
 		}
 	}
     public LocalPlayerMixin(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2) {
@@ -113,15 +113,14 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 	@Override
 	public float getAttackAnim(float tickDelta) {
-		LocalPlayer thisEntity = ((LocalPlayer)(Object)this);
 		if(((IOptions)Minecraft.getInstance().options).rhythmicAttacks().get()) {
-			float var2 = attackAnim - oAttackAnim;
+			float var2 = this.attackAnim - this.oAttackAnim;
 			if (var2 < 0.0F) {
 				++var2;
 			}
 
 			float var3 = this.oAttackAnim + var2 * tickDelta;
-			return var3 > 0.4F && thisEntity.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
+			return var3 > 0.4F && this.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
 		}
 		float f = this.attackAnim - this.oAttackAnim;
 		if (f < 0.0F) {

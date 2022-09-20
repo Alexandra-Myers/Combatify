@@ -25,9 +25,4 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	public ServerPlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
-
-	@Override
-	public void setAttackStrengthTicker2(int value) {
-		super.setAttackStrengthTicker2(value);
-	}
 }
