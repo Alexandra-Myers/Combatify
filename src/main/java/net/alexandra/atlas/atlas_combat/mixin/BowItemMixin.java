@@ -75,7 +75,7 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 						}
 
 						stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(player.getUsedItemHand()));
-						if (bl2 || player.getAbilities().instabuild && (itemStack.is(Items.SPECTRAL_ARROW) || itemStack.is(Items.TIPPED_ARROW))) {
+						if (bl2 || player.getAbilities().instabuild && (itemStack.getItem() instanceof SpectralArrowItem || itemStack.getItem() instanceof TippedArrowItem)) {
 							abstractArrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
 						}
 
