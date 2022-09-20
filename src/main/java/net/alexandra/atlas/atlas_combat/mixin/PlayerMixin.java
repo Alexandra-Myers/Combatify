@@ -167,7 +167,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			((ISwordItem)swordItem).addStrengthTimer();
 		}
 		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
+		if(getAttackStrengthScale(baseValue) > 1.0F){
+			--instance.attackStrengthTicker;
+		}
 		setIsParryTicker(getIsParryTicker() + 1);
 		if(getIsParryTicker() >= 40) {
 			setIsParry(false);
