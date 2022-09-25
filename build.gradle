@@ -64,6 +64,9 @@ dependencies {
 	modImplementation 'com.github.TeamMidnightDust:MidnightLib:v0.6.0'
 	modApi "com.terraformersmc:modmenu:4.0.6"
 	include "com.terraformersmc:modmenu:4.0.6"
+	implementation("com.github.LlamaLad7:MixinExtras:0.0.12")
+	annotationProcessor("com.github.LlamaLad7:MixinExtras:0.0.12")
+	include("com.github.LlamaLad7:MixinExtras:0.0.12")
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 }
 

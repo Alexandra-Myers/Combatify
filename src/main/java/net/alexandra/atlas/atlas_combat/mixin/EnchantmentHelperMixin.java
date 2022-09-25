@@ -1,6 +1,8 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.enchantment.CleavingEnchantment;
+import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
@@ -65,12 +67,8 @@ public abstract class EnchantmentHelperMixin implements IEnchantmentHelper {
 		currentEnchantment = enchantment;
 		itemStack = stack;
 	}
-	@Redirect(method = "getAvailableEnchantmentResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentCategory;canEnchant(Lnet/minecraft/world/item/Item;)Z"))
-	private static boolean redirectCanEnchant(EnchantmentCategory instance, Item item) {
-		if(currentEnchantment instanceof CleavingEnchantment && itemStack != null) {
-			return currentEnchantment.canEnchant(itemStack);
-		}else {
-			return instance.canEnchant(item);
-		}
+	@ModifyExpressionValue(method = "getAvailableEnchantmentResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentCategory;canEnchant(Lnet/minecraft/world/item/Item;)Z"))
+	private static boolean redirectCanEnchant(boolean original) {
+		return currentEnchantment instanceof CustomEnchantment customEnchantment && itemStack != null ? customEnchantment.isAcceptibleConditions(itemStack) : original;
 	}
 }

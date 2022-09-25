@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
+import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
 import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.item.LongSwordItem;
 import net.minecraft.world.item.*;
@@ -17,32 +18,47 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Collections;
 
 @Mixin(Enchantment.class)
-public class EnchantmentMixin {
+public abstract class EnchantmentMixin implements CustomEnchantment {
+	@Shadow
+	public abstract boolean canEnchant(ItemStack stack);
+
+	@Shadow
+	@Final
+	public EnchantmentCategory category;
 	@Unique
 	public Enchantment thisEnchantment = ((Enchantment)(Object)this);
 
 	@Inject(method = "canEnchant", at = @At(value = "HEAD"), cancellable = true)
 	public void canEnchant(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-		if(thisEnchantment instanceof LootBonusEnchantment
-				|| thisEnchantment instanceof KnockbackEnchantment
-				|| thisEnchantment instanceof FireAspectEnchantment
-				|| thisEnchantment instanceof SweepingEdgeEnchantment) {
-			cir.setReturnValue(stack.getItem() instanceof AxeItem || stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem);
-			cir.cancel();
-		}
-		if(thisEnchantment instanceof LootBonusEnchantment
-				|| thisEnchantment instanceof FireAspectEnchantment) {
+		if(thisEnchantment instanceof SweepingEdgeEnchantment) {
 			cir.setReturnValue(stack.getItem() instanceof TieredItem);
 			cir.cancel();
 		}
-		if((thisEnchantment instanceof KnockbackEnchantment
-				|| thisEnchantment instanceof SweepingEdgeEnchantment) && ConfigHelper.toolsAreWeapons) {
-			cir.setReturnValue(stack.getItem() instanceof TieredItem);
-			cir.cancel();
+	}
+
+	@Override
+	public boolean isAcceptibleConditions(ItemStack stack) {
+		if(thisEnchantment instanceof SweepingEdgeEnchantment && !ConfigHelper.toolsAreWeapons) {
+			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
+		}else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
+			return canEnchant(stack);
 		}
 		if(thisEnchantment instanceof DamageEnchantment) {
-			cir.setReturnValue(stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem);
-			cir.cancel();
+			return stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
 		}
+		return category.canEnchant(stack.getItem());
+	}
+
+	@Override
+	public boolean isAcceptibleAnvil(ItemStack stack) {
+		if(thisEnchantment instanceof SweepingEdgeEnchantment && ConfigHelper.toolsAreWeapons) {
+			return canEnchant(stack);
+		}else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
+			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
+		}
+		if(thisEnchantment instanceof DamageEnchantment) {
+			return stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || canEnchant(stack);
+		}
+		return canEnchant(stack);
 	}
 }

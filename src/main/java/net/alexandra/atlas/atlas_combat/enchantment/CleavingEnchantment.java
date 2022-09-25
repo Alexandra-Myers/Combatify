@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.enchantment;
 
+import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.item.AxeItem;
@@ -7,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
-public class CleavingEnchantment extends Enchantment {
+public class CleavingEnchantment extends Enchantment implements CustomEnchantment {
 	public int level;
 
 	public CleavingEnchantment() {
@@ -38,5 +39,15 @@ public class CleavingEnchantment extends Enchantment {
 	@Override
 	public boolean canEnchant(ItemStack stack) {
 		return stack.getItem() instanceof AxeItem;
+	}
+
+	@Override
+	public boolean isAcceptibleConditions(ItemStack stack) {
+		return this.canEnchant(stack);
+	}
+
+	@Override
+	public boolean isAcceptibleAnvil(ItemStack stack) {
+		return this.canEnchant(stack);
 	}
 }
