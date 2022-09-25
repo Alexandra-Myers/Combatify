@@ -35,12 +35,8 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.rizecookey.cookeymod.CookeyMod;
-import net.rizecookey.cookeymod.config.category.HudRenderingCategory;
-import net.rizecookey.cookeymod.config.category.MiscCategory;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
@@ -309,7 +305,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								&& target instanceof LivingEntity)
 								|| getIsParry();
 						if (isCrit) {
-							attackDamage *= getIsParry() ? 1.125F : 1.5;
+							attackDamage *= getIsParry() ? 1.25F : 1.5;
 						}
 						if (getIsParry()) {
 							setIsParry(false);
