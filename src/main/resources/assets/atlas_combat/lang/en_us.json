@@ -11,7 +11,7 @@
   "item.atlas_combat.golden_longsword": "Golden Longsword",
   "item.atlas_combat.diamond_longsword": "Diamond Longsword",
   "item.atlas_combat.netherite_longsword": "Netherite Longsword",
-  "enchantment.atlas_combat.cleaving" : "Cleaving",
+  "enchantment.minecraft.cleaving" : "Cleaving",
   "options.autoAttack" : "Auto-Attack",
   "options.shieldCrouch" : "Use Shield on Crouch",
   "options.lowShield" : "Lower Shield",

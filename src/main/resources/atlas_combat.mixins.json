@@ -17,6 +17,7 @@
     "EggItemMixin",
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
+    "EnchantmentsMixin",
     "EntityMixin",
     "FoodDataMixin",
     "HoneyBottleItemMixin",

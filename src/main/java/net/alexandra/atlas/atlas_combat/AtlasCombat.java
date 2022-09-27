@@ -41,11 +41,6 @@ public class AtlasCombat implements ModInitializer {
 	public static ConfigHelper helper = new ConfigHelper();
 	NeuralNetwork nn_custom_lr_with_multithreading = new NeuralNetwork(2, 10, 1, 0.01, true);
 
-	public static final Enchantment CLEAVING_ENCHANTMENT = register("cleaving", new CleavingEnchantment());
-	public static Enchantment register(String name, Enchantment enchantment) {
-		return Registry.register(Registry.ENCHANTMENT, new ResourceLocation("atlas_combat", name),enchantment);
-	}
-
 	@Override
 	public void onInitialize(ModContainer mod) {
 		MidnightConfig.init("atlas_combat", ConfigHelper.class);
