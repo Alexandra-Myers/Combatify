@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
@@ -21,7 +22,7 @@ import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
 
 @Mixin(DiggerItem.class)
 public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions {
-	public boolean allToolsAreWeapons = ConfigHelper.toolsAreWeapons;
+	public boolean allToolsAreWeapons = AtlasCombat.CONFIG.toolsAreWeapons();
 	@Mutable
 	@Final
 	private WeaponType type;

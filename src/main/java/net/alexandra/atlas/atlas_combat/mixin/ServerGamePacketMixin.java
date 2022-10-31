@@ -52,7 +52,7 @@ public class ServerGamePacketMixin {
 	@Redirect(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange() {
-		return ((PlayerExtensions)player).getSquaredAttackRange(player, MAX_INTERACTION_DISTANCE);
+		return ((PlayerExtensions)player).getSquaredAttackRange(player, 30);
 	}
 
 	@Redirect(

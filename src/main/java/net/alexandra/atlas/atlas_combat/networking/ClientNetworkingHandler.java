@@ -15,7 +15,7 @@ public class ClientNetworkingHandler {
 
 	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
 
-	public int ticksTowait = ConfigHelper.maxWaitForPacketResponse;
+	public int ticksTowait = AtlasCombat.CONFIG.maxWaitForPacketResponse();
 
 	public static boolean receivedAnswer = false;
 	public static int ticksElapsed = 0;

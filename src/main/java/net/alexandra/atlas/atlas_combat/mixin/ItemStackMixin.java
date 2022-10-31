@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
@@ -150,10 +151,10 @@ public abstract class ItemStackMixin implements IItemStack {
 									d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
 									bl = true;
 								} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + 2.5;
+									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + (AtlasCombat.CONFIG.attackReach() ? 2.5 : 3);
 									bl = true;
 								} else if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID) {
-									d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + 1.0;
+									d += player.getAttribute(NewAttributes.BLOCK_REACH).getBaseValue() + 6.0;
 									bl = true;
 								} else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
 									d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();

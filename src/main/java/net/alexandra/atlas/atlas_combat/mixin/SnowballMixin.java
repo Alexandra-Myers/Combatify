@@ -17,7 +17,7 @@ import java.util.Collections;
 public class SnowballMixin {
 
 	@Unique
-	public final float snowballDamage = ConfigHelper.snowballDamage;
+	public final float snowballDamage = AtlasCombat.CONFIG.snowballDamage();
 
 
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))

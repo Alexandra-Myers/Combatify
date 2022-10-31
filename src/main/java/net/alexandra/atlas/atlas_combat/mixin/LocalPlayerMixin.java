@@ -48,10 +48,10 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
 		if(thisPlayer.isOnGround()) {
-			if (this.hasEnabledShieldOnCrouch() && thisPlayer.isCrouching()) {
+			if (this.hasEnabledShieldOnCrouch() && thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
 				for (InteractionHand interactionHand : InteractionHand.values()) {
 					ItemStack itemStack = ((LivingEntityExtensions)this.thisPlayer).getBlockingItem();
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && thisPlayer.isCrouching()) {
+					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
 						if(!thisPlayer.getCooldowns().isOnCooldown(shieldItem)) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
 							if (lowShieldEnabled()) {

@@ -14,7 +14,7 @@ import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
 
 import java.util.Arrays;
 
-public class AtlasClient implements ClientModInitializer, ModMenuApi {
+public class AtlasClient implements ClientModInitializer {
 	private static final Component ACCESSIBILITY_TOOLTIP_LOW_SHIELD = Component.translatable("options.lowShield.tooltip");
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
@@ -35,9 +35,5 @@ public class AtlasClient implements ClientModInitializer, ModMenuApi {
 	public void onInitializeClient(ModContainer mod) {
 		ClientNetworkingHandler networkingHandler = new ClientNetworkingHandler();
 
-	}
-	@Override
-	public ConfigScreenFactory<?> getModConfigScreenFactory() {
-		return parent -> MidnightConfig.getScreen(parent, "atlas_combat");
 	}
 }

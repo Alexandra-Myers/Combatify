@@ -14,7 +14,7 @@ import java.util.Collections;
 public class PotionItemMixin {
 
 	@Unique
-	public final int useDuration = ConfigHelper.potionUseDuration;
+	public final int useDuration = AtlasCombat.CONFIG.potionUseDuration();
 
 
 	/**

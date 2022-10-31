@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
@@ -167,7 +168,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 						}
 					case MISS:
 						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-						if(result != null && ConfigHelper.refinedCoyoteTime) {
+						if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
 							if(!(result.getEntity() instanceof Player)) {
 								if (result.getEntity() instanceof Guardian
 										|| result.getEntity() instanceof Cat

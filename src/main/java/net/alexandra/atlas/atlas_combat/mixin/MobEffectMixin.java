@@ -14,7 +14,7 @@ import java.util.Collections;
 public class MobEffectMixin {
 
 	@Unique
-	public final int instantHealthBonus = ConfigHelper.instantHealthBonus;
+	public final int instantHealthBonus = AtlasCombat.CONFIG.instantHealthBonus();
 
 	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
 	public int changeInstantHealth(int constant) {

@@ -14,7 +14,7 @@ import java.util.Collections;
 public class MilkBucketMixin {
 
 	@Unique
-	public final int useDuration = ConfigHelper.milkBucketUseDuration;
+	public final int useDuration = AtlasCombat.CONFIG.milkBucketUseDuration();
 
 	/**
 	 * @author zOnlyKroks

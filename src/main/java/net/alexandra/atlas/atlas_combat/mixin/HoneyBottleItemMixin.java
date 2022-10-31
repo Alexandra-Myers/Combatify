@@ -14,7 +14,7 @@ import java.util.Collections;
 public class HoneyBottleItemMixin {
 
 	@Unique
-	public final int maxUseDuration = ConfigHelper.honeyBottleUseDuration;
+	public final int maxUseDuration = AtlasCombat.CONFIG.honeyBottleUseDuration();
 
 	/**
 	 * @author zOnlyKroks

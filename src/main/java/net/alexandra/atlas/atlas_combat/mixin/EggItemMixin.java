@@ -20,7 +20,7 @@ import java.util.Collections;
 public class EggItemMixin {
 
 	@Unique
-	public final int eggItemCooldown = ConfigHelper.eggItemCooldown;
+	public final int eggItemCooldown = AtlasCombat.CONFIG.eggItemCooldown();
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {

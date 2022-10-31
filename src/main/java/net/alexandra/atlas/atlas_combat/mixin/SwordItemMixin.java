@@ -34,7 +34,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-		if(ConfigHelper.swordBlocking) {
+		if(AtlasCombat.CONFIG.swordBlocking()) {
 			float f = getShieldBlockDamageValue(stack);
 			float g = getShieldKnockbackResistanceValue(stack);
 			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength")})).withStyle(ChatFormatting.DARK_GREEN));
@@ -60,7 +60,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-		if(ConfigHelper.swordBlocking) {
+		if(AtlasCombat.CONFIG.swordBlocking()) {
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
 			ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);

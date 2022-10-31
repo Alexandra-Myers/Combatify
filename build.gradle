@@ -31,6 +31,7 @@ repositories {
 		name = "ENDERZOMBI102 Maven"
 		url = uri("https://repsy.io/mvn/enderzombi102/mc")
 	}
+	maven { url 'https://maven.wispforest.io' }
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -67,6 +68,13 @@ dependencies {
 	implementation("com.github.LlamaLad7:MixinExtras:0.0.12")
 	annotationProcessor("com.github.LlamaLad7:MixinExtras:0.0.12")
 	include("com.github.LlamaLad7:MixinExtras:0.0.12")
+	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
+	// only if you plan to use owo-config
+	annotationProcessor "io.wispforest:owo-lib:${project.owo_version}"
+
+	// include this if you don't want force your users to install owo
+	// sentinel will warn them and give the option to download it automatically
+	include "io.wispforest:owo-sentinel:${project.owo_version}"
 	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 }
 

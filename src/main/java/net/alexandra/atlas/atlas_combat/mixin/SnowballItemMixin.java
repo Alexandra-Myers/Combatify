@@ -20,7 +20,7 @@ import java.util.Collections;
 public class SnowballItemMixin {
 
 	@Unique
-	public final int useDuration = ConfigHelper.snowballItemCooldown;
+	public final int useDuration = AtlasCombat.CONFIG.snowballItemCooldown();
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {

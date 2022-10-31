@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Either;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.KnifeItem;
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -93,6 +95,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float baseValue = 1.0F;
 	@Unique
 	public Multimap additionalModifiers;
+	@Unique
+	public float originalDamage = 0.0F;
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
@@ -138,9 +142,17 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		ci.cancel();
 	}
+	@Inject(method = "hurt", at = @At("HEAD"))
+	public void extractOriginalDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+		originalDamage = amount;
+	}
+	@Inject(method = "hurt", at = @At("TAIL"), cancellable = true)
+	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(amount == 0.0F && originalDamage > 0.0F ? false : super.hurt(source, amount));
+	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		player.getAttribute(NewAttributes.BLOCK_REACH).setBaseValue(0);
+		player.getAttribute(NewAttributes.BLOCK_REACH).setBaseValue(!AtlasCombat.CONFIG.bedrockBlockReach() ? 0 : 2);
 		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(0);
 		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
 	}
@@ -154,7 +166,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
 				.add(NewAttributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)
-				.add(NewAttributes.BLOCK_REACH, !ConfigHelper.bedrockBlockReach ? 0.0 : 2.0)
+				.add(NewAttributes.BLOCK_REACH, !AtlasCombat.CONFIG.bedrockBlockReach() ? 0.0 : 2.0)
 				.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
@@ -573,6 +585,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public double getAttackRange(LivingEntity entity, double baseAttackRange) {
 		@org.jetbrains.annotations.Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
 		int var2 = 0;
+		baseAttackRange = AtlasCombat.CONFIG.attackReach() ? baseAttackRange : Mth.ceil(baseAttackRange);
 		float var3 = getAttackStrengthScale(baseValue);
 		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1;
