@@ -2,7 +2,6 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PiercingItem;
 import net.minecraft.ChatFormatting;

@@ -1,7 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -27,13 +26,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.phys.*;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import javax.annotation.Nullable;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements IMinecraft {
