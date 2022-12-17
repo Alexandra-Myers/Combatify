@@ -2,7 +2,6 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.extensions.ISwordItem;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
@@ -15,7 +14,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;

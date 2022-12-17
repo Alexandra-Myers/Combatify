@@ -1,15 +1,12 @@
 package net.alexandra.atlas.atlas_combat.networking;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.quiltmc.qsl.lifecycle.api.client.event.ClientTickEvents;
 import org.quiltmc.qsl.networking.api.client.ClientPlayConnectionEvents;
 import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
-
-import java.util.Collections;
 
 public class ClientNetworkingHandler {
 

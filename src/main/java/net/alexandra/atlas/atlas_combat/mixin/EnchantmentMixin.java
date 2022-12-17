@@ -1,7 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
 import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.item.LongSwordItem;
@@ -14,8 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Collections;
 
 @Mixin(Enchantment.class)
 public abstract class EnchantmentMixin implements CustomEnchantment {

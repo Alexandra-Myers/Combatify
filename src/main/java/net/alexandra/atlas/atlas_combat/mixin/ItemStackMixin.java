@@ -8,6 +8,7 @@ import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.*;
@@ -244,7 +245,7 @@ public abstract class ItemStackMixin implements IItemStack {
 				list.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
 			}
 
-			list.add(Component.literal(Registry.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+			list.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
 			if (this.hasTag()) {
 				list.add(Component.translatable("item.nbt_tags", this.tag.getAllKeys().size()).withStyle(ChatFormatting.DARK_GRAY));
 			}

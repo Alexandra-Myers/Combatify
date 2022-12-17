@@ -4,6 +4,7 @@ import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -22,8 +23,10 @@ public class AttributesMixin {
 	@Mutable
 	@Final
 	public static Attribute ATTACK_SPEED = registrySet(7,"generic.attack_speed", (new RangedAttribute("attribute.name.generic.attack_speed", 4.0, 0.10000000149011612, 1024.0)).setSyncable(true));
+
 	private static Attribute registrySet(int RawId, String id, Attribute attribute) {
-		Holder<Attribute> attributeHolder = ((WritableRegistry)Registry.ATTRIBUTE).registerOrOverride(OptionalInt.of(RawId), ResourceKey.create(Registry.ATTRIBUTE.key(), new ResourceLocation(id)), attribute, Lifecycle.stable());
-		return attributeHolder.value();
+		/*Holder<Attribute> attributeHolder = ((WritableRegistry) BuiltInRegistries.ITEM).registerMapping(RawId, ResourceKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(id)), attribute, Lifecycle.stable());
+		return attributeHolder.value();*/
+		return Registry.registerMapping(BuiltInRegistries.ATTRIBUTE, RawId,id, attribute);
 	}
 }

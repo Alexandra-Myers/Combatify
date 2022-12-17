@@ -40,8 +40,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +51,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Shadow
-	@Nullable
 	public abstract ItemEntity drop(ItemStack itemStack, boolean b);
 
 	@Shadow
@@ -253,7 +250,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameIgnoreDurability(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
+	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSame(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectDurability(ItemStack left, ItemStack right) {
 		return true;
 	}
@@ -441,7 +438,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Override
 	public void attackAir() {
-		LOGGER.info("attacked air");
 		if (this.isAttackAvailable(baseValue)) {
 			player.swing(InteractionHand.MAIN_HAND);
 			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);

@@ -1,9 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
-import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +27,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
@@ -144,7 +141,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public abstract boolean hasEffect(MobEffect mobEffect);
 
 	@Shadow
-	@javax.annotation.Nullable
 	public abstract MobEffectInstance getEffect(MobEffect mobEffect);
 
 	/**

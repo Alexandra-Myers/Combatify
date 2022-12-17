@@ -2,23 +2,12 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
-import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
-import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.UUID;
 
 public enum WeaponType {

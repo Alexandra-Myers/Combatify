@@ -3,8 +3,6 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
@@ -37,6 +35,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -112,8 +111,9 @@ public abstract class GuiMixin extends GuiComponent {
 					PoseStack poseStack = RenderSystem.getModelViewStack();
 					poseStack.pushPose();
 					poseStack.translate((double)(screenWidth / 2), (double)(screenHeight / 2), (double)getBlitOffset());
-					poseStack.mulPose(Vector3f.XN.rotationDegrees(camera.getXRot()));
-					poseStack.mulPose(Vector3f.YP.rotationDegrees(camera.getYRot()));
+					poseStack.mulPose(camera.rotation());
+					/*poseStack.mulPose(Vector3f.XN.rotationDegrees(camera.getXRot()));
+					poseStack.mulPose(Vector3f.YP.rotationDegrees(camera.getYRot()));*/
 					poseStack.scale(-1.0F, -1.0F, -1.0F);
 					RenderSystem.applyModelViewMatrix();
 					RenderSystem.renderCrosshair(10);

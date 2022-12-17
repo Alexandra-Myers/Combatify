@@ -3,8 +3,7 @@ package net.alexandra.atlas.atlas_combat.extensions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public interface IMinecraft {
 	void startUseItem(InteractionHand hand);

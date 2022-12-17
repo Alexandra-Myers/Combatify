@@ -2,7 +2,6 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.server.level.ServerPlayer;
