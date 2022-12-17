@@ -1,13 +1,9 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
-import com.mojang.datafixers.util.Either;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.ConfigHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
-import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,19 +15,18 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Unit;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -63,12 +58,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
-
-	@Shadow
-	public abstract Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos pos);
-
-	@Shadow
-	private ItemStack lastItemInMainHand;
 	@Shadow
 	@Final
 	private static Logger LOGGER;
@@ -77,14 +66,17 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public abstract void awardStat(Stat<?> stat);
 
 	@Shadow
-	public abstract boolean isModelPartShown(PlayerModelPart playerModelPart);
-
-	@Shadow
 	public abstract void causeFoodExhaustion(float v);
 
 	@Shadow
 	public abstract void awardStat(ResourceLocation resourceLocation, int i);
 
+	@Shadow
+	protected abstract void removeEntitiesOnShoulder();
+
+	@Shadow
+	@Final
+	public Abilities abilities;
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -95,15 +87,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float baseValue = 1.0F;
 	@Unique
 	public Multimap additionalModifiers;
-	@Unique
-	public float originalDamage = 0.0F;
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
-	@Unique
-	private static final UUID ADDITIONAL_ATTACK_REACH_UUID = UUID.fromString("c85331f2-9983-470d-8453-cd888c434dea");
-	@Unique
-	private static final UUID ADDITIONAL_BLOCK_REACH_UUID = UUID.fromString("e427a2fe-8145-483d-843b-d42a69df7742");
 
 	@Inject(method = "actuallyHurt", at = @At(value = "HEAD"), cancellable = true)
 	public void addPiercing(DamageSource source, float amount, CallbackInfo ci) {
@@ -142,13 +128,43 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		ci.cancel();
 	}
-	@Inject(method = "hurt", at = @At("HEAD"))
-	public void extractOriginalDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		originalDamage = amount;
-	}
-	@Inject(method = "hurt", at = @At("TAIL"), cancellable = true)
+	@Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
 	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(amount == 0.0F && originalDamage > 0.0F ? false : super.hurt(source, amount));
+		if (this.isInvulnerableTo(source)) {
+			cir.setReturnValue(false);
+			cir.cancel();
+		} else if (this.abilities.invulnerable && !source.isBypassInvul()) {
+			cir.setReturnValue(false);
+			cir.cancel();
+		} else {
+			this.noActionTime = 0;
+			if (this.isDeadOrDying()) {
+				cir.setReturnValue(false);
+				cir.cancel();
+			} else {
+				if (!this.level.isClientSide) {
+					removeEntitiesOnShoulder();
+				}
+				float oldDamage = amount;
+
+				if (source.scalesWithDifficulty()) {
+					if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
+						amount = 0.0F;
+					}
+
+					if (this.level.getDifficulty() == Difficulty.EASY) {
+						amount = Math.min(amount / 2.0F + 1.0F, amount);
+					}
+
+					if (this.level.getDifficulty() == Difficulty.HARD) {
+						amount = amount * 3.0F / 2.0F;
+					}
+				}
+
+				cir.setReturnValue(amount == 0.0F && oldDamage > 0.0F ? false : super.hurt(source, amount));
+				cir.cancel();
+			}
+		}
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
@@ -159,6 +175,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	/**
 	 * @author zOnlyKroks
+	 * @reason
 	 */
 	@Overwrite()
 	public static AttributeSupplier.Builder createAttributes() {
@@ -243,6 +260,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	/**
 	 * @author zOnlyKroks
+	 * @reason
 	 */
 	@Overwrite()
 	public void blockUsingShield(@NotNull LivingEntity attacker) {
@@ -277,27 +295,23 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (target.isAttackable()) {
 			if (!target.skipAttackInteraction(player)) {
 				if(isAttackAvailable(baseValue)) {
-					float attackDamage = (float) ((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player) + (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof KnifeItem && target instanceof Animal ? 1.0F : 0.0F);
 					float attackDamageBonus;
-					if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && target instanceof LivingEntity livingEntity) {
+					LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
+					boolean bl = livingEntity != null;
+					if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
 						EnchantmentHelper helper = new EnchantmentHelper();
 						attackDamageBonus = ((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity);
-					} else if (target instanceof LivingEntity livingEntity) {
+					} else if (bl) {
 						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
 					} else {
 						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), MobType.UNDEFINED);
 					}
+					float attackDamage = (float) ((IAttributeInstance)player.getAttribute(Attributes.ATTACK_DAMAGE)).calculateValue(attackDamageBonus);
 					float currentAttackReach = (float) this.getAttackRange(player, 2.5);
-
-					float attackStrengthScale = this.getAttackStrengthScale(baseValue);
-					attackDamage *= 1;
-					attackDamageBonus *= 1;
-					if (attackDamage > 0.0F || attackDamageBonus > 0.0F) {
-						if(target instanceof LivingEntity livingEntity) {
+					if (attackDamage > 0.0F) {
+						if(bl) {
 							((LivingEntityExtensions)livingEntity).setEnemy(player);
 						}
-						attackDamage += attackDamageBonus;
-						boolean bl = true;
 						boolean bl2 = false;
 						int knockbackBonus = 0;
 						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
@@ -307,44 +321,44 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 							bl2 = true;
 						}
 
-						boolean isCrit = (bl
-								&& player.fallDistance > 0.0F
+						boolean isCrit = player.fallDistance > 0.0F
 								&& !player.isOnGround()
 								&& !player.onClimbable()
 								&& !player.isInWater()
 								&& !player.hasEffect(MobEffects.BLINDNESS)
 								&& !player.isPassenger()
-								&& target instanceof LivingEntity)
-								|| getIsParry();
+								&& target instanceof LivingEntity;
 						if (isCrit) {
-							attackDamage *= getIsParry() ? 1.25F : 1.5;
+							attackDamage *= 1.5;
+							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
+							player.crit(target);
 						}
 						if (getIsParry()) {
+							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
+							attackDamage *= 1.25;
+							player.crit(target);
 							setIsParry(false);
 						}
 
 						boolean bl4 = false;
 						double d = (player.walkDist - player.walkDistO);
-						if (bl && !isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
+						if (!isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
 							bl4 = checkSweepAttack();
 						}
 
-						float j = 0.0F;
+						float j = bl ? livingEntity.getHealth() : 0.0F;
 						boolean bl5 = false;
 						int getFireAspectLvL = EnchantmentHelper.getFireAspect(player);
-						if (target instanceof LivingEntity livingEntity) {
-							j = livingEntity.getHealth();
-							if (getFireAspectLvL > 0 && !target.isOnFire()) {
-								bl5 = true;
-								target.setSecondsOnFire(1);
-							}
+						if (getFireAspectLvL > 0 && !target.isOnFire()) {
+							bl5 = true;
+							target.setSecondsOnFire(1 + getFireAspectLvL * 4);
 						}
 
 						Vec3 vec3 = target.getDeltaMovement();
 						boolean bl6 = target.hurt(DamageSource.playerAttack(player), attackDamage);
 						if (bl6) {
 							if (knockbackBonus > 0) {
-								if (target instanceof LivingEntity livingEntity) {
+								if (bl) {
 									((LivingEntityExtensions)livingEntity)
 											.newKnockback((knockbackBonus * 0.5F),
 													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
@@ -363,23 +377,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 							}
 
 							if (bl4) {
-								float l = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * attackDamage;
 								AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-
-								for (LivingEntity livingEntity : player.level.getEntitiesOfClass(LivingEntity.class, box)) {
-									if (livingEntity != player
-											&& livingEntity != target
-											&& !player.isAlliedTo(livingEntity)
-											&& (!(livingEntity instanceof ArmorStand armorStand) || !armorStand.isMarker())
-											&& player.distanceToSqr(livingEntity) < getSquaredAttackRange(player, 6.25)) {
-										((LivingEntityExtensions)livingEntity).newKnockback(
-												0.5F, Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)), (-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0)))
-										);
-										livingEntity.hurt(DamageSource.playerAttack(player), l);
-									}
-								}
-
-								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
 								this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
 							}
 
@@ -389,17 +387,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								target.setDeltaMovement(vec3);
 							}
 
-							if (isCrit) {
-								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
-								player.crit(target);
-							}
-
 							if (!isCrit && !bl4) {
-								if (bl) {
-									player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, player.getSoundSource(), 1.0F, 1.0F);
-								} else {
-									player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, player.getSoundSource(), 1.0F, 1.0F);
-								}
+								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, player.getSoundSource(), 1.0F, 1.0F);
 							}
 
 							if (attackDamageBonus > 0.0F) {
@@ -407,7 +396,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 							}
 
 							player.setLastHurtMob(target);
-							if (target instanceof LivingEntity livingEntity) {
+							if (bl) {
 								EnchantmentHelper.doPostHurtEffects(livingEntity, player);
 							}
 
@@ -418,19 +407,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 								entity = enderDragonPart.parentMob;
 							}
 
-							if (!player.level.isClientSide && !itemStack2.isEmpty() && entity instanceof LivingEntity livingEntity) {
-								itemStack2.hurtEnemy(livingEntity, player);
+							if (!player.level.isClientSide && !itemStack2.isEmpty() && entity instanceof LivingEntity livingEntity1) {
+								itemStack2.hurtEnemy(livingEntity1, player);
 								if (itemStack2.isEmpty()) {
 									player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 								}
 							}
 
-							if (target instanceof LivingEntity livingEntity) {
+							if (bl) {
 								float m = j - livingEntity.getHealth();
 								player.awardStat(Stats.DAMAGE_DEALT, Math.round(m * 10.0F));
-								if (getFireAspectLvL > 0) {
-									target.setSecondsOnFire(getFireAspectLvL * 4);
-								}
 
 								if (player.level instanceof ServerLevel serverLevel && m > 2.0F) {
 									int n = (int) (m * 0.5);
