@@ -105,20 +105,21 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				amount = getDamageAfterArmorAbsorb(source, amount);
 				amount = getDamageAfterMagicAbsorb(source, amount);
 			}
-			float var8 = Math.max(amount - this.getAbsorptionAmount(), 0.0F);
-			this.setAbsorptionAmount(this.getAbsorptionAmount() - (amount - var8));
-			float g = amount - var8;
-			if (g > 0.0F && g < 3.4028235E37F) {
-				awardStat(Stats.DAMAGE_ABSORBED, Math.round(g * 10.0F));
+			float g = amount;
+			amount = Math.max(amount - this.getAbsorptionAmount(), 0.0F);
+			this.setAbsorptionAmount(this.getAbsorptionAmount() - (g - amount));
+			float h = g - amount;
+			if (h > 0.0F && h < 3.4028235E37F) {
+				this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(h * 10.0F));
 			}
 
-			if (var8 != 0.0F) {
-				causeFoodExhaustion(source.getFoodExhaustion());
-				float h = this.getHealth();
-				this.setHealth(this.getHealth() - var8);
-				this.getCombatTracker().recordDamage(source, h, var8);
-				if (var8 < 3.4028235E37F) {
-					this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var8 * 10.0F));
+			if (amount != 0.0F) {
+				this.causeFoodExhaustion(source.getFoodExhaustion());
+				float i = this.getHealth();
+				this.setHealth(this.getHealth() - amount);
+				this.getCombatTracker().recordDamage(source, i, amount);
+				if (amount < 3.4028235E37F) {
+					this.awardStat(Stats.DAMAGE_TAKEN, Math.round(amount * 10.0F));
 				}
 
 			}

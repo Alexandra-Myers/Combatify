@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
@@ -72,18 +73,10 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			}
 		}
 	}
-	/*@ModifyVariable(method = "tick", slice = @Slice(
+	@ModifyVariable(method = "tick", slice = @Slice(
 			from = @At(value = "JUMP", ordinal = 3)
 	), at = @At(value = "FIELD", ordinal = 0))
 	public float modifyArmHeight(float f) {
-		f *= 0.5;
-		f = f * f * f * 0.25F + 0.75F;
-		double offset = (Double)this.hudRenderingCategory.attackCooldownHandOffset.get();
-		return (float)((double)f * (1.0 - offset) + offset);
-	}*/
-
-	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
-	public float modifyArmHeight(LocalPlayer instance, float f) {
 		f *= 0.5;
 		f = f * f * f * 0.25F + 0.75F;
 		double offset = this.hudRenderingCategory.attackCooldownHandOffset.get();
@@ -94,7 +87,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
 		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof SwordItem) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
-			matrices.translate((double)((float)i * 0.56F), (double)(-0.52F + 0.0 * -0.6F), -0.72F);
+			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();
 		}
 	}
@@ -102,9 +95,8 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	public void applyItemBlockTransform2(PoseStack poseStack, HumanoidArm humanoidArm) {
 		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
-		/*poseStack.mulPose(Vector3f.XP.rotationDegrees(-102.25F));
-		poseStack.mulPose(Vector3f.YP.rotationDegrees(reverse * 13.365F));
-		poseStack.mulPose(Vector3f.ZP.rotationDegrees(reverse * 78.05F));*/
-		poseStack.mulPose(new Quaternionf().rotateXYZ(-102.25F, reverse * 13.365F, reverse * 78.05F));
+		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
+		poseStack.mulPose(Axis.YP.rotationDegrees((float)reverse * 13.365F));
+		poseStack.mulPose(Axis.ZP.rotationDegrees((float)reverse * 78.05F));
 	}
 }

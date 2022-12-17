@@ -2,9 +2,12 @@ package net.alexandra.atlas.atlas_combat;
 
 import eu.midnightdust.lib.config.MidnightConfig;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
+import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.minecraft.core.Position;
+import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -17,6 +20,9 @@ import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Objects;
 
 public class AtlasCombat implements ModInitializer {
 	public static Player player;
@@ -36,5 +42,14 @@ public class AtlasCombat implements ModInitializer {
 				return trident;
 			}
 		});
+		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
+
+		for(Item item : items) {
+			if(item == Items.SNOWBALL || item == Items.EGG) {
+				((ItemExtensions) item).setStackSize(64);
+			} else if(item == Items.POTION) {
+				((ItemExtensions) item).setStackSize(16);
+			}
+		}
 	}
 }

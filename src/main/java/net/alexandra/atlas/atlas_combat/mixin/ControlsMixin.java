@@ -20,13 +20,13 @@ public abstract class ControlsMixin extends OptionsSubScreen {
 		super(screen, options, component);
 	}
 
-	@Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 4), locals = LocalCapture.CAPTURE_FAILSOFT)
+	@Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void injectOptions(CallbackInfo ci, int i, int j, int k) {
-		addRenderableWidget(((IOptions)options).autoAttack().createButton(this.options, j, k, 150));
 		k+=24;
-		addRenderableWidget(((IOptions)options).shieldCrouch().createButton(this.options, i, k, 150));
+		addRenderableWidget(((IOptions)options).autoAttack().createButton(this.options, i, k, 150));
+		addRenderableWidget(((IOptions)options).shieldCrouch().createButton(this.options, j, k, 150));
 	}
-	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5))
+	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 6))
 	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener) {
 		return this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
 			this.minecraft.setScreen(this.lastScreen);
