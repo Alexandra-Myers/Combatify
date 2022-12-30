@@ -170,34 +170,35 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 	@Inject(method = "actuallyHurt", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing(DamageSource source, float amount, CallbackInfo ci) {
+	public void addPiercing(DamageSource source, float f, CallbackInfo ci) {
 		if (!this.isInvulnerableTo(source)) {
 			if(source.getEntity() instanceof Player player) {
 				Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 				if(item instanceof PiercingItem piercingItem) {
 					double d = piercingItem.getPiercingLevel();
-					amount = getNewDamageAfterArmorAbsorb(source, amount, d);
-					amount = getNewDamageAfterMagicAbsorb(source, amount, d);
+					f = getNewDamageAfterArmorAbsorb(source, f, d);
+					f = getNewDamageAfterMagicAbsorb(source, f, d);
 				}else {
-					amount = getDamageAfterArmorAbsorb(source, amount);
-					amount = getDamageAfterMagicAbsorb(source, amount);
+					f = getDamageAfterArmorAbsorb(source, f);
+					f = getDamageAfterMagicAbsorb(source, f);
 				}
 			}else {
-				amount = getDamageAfterArmorAbsorb(source, amount);
-				amount = getDamageAfterMagicAbsorb(source, amount);
+				f = getDamageAfterArmorAbsorb(source, f);
+				f = getDamageAfterMagicAbsorb(source, f);
 			}
-			float var8 = Math.max(amount - getAbsorptionAmount(), 0.0F);
-			setAbsorptionAmount(this.getAbsorptionAmount() - (amount - var8));
-			float g = amount - var8;
-			if (g > 0.0F && g < 3.4028235E37F && source.getEntity() instanceof ServerPlayer) {
-				((ServerPlayer)source.getEntity()).awardStat(Stats.DAMAGE_DEALT_ABSORBED, Math.round(g * 10.0F));
+			float g = f;
+			f = Math.max(f - this.getAbsorptionAmount(), 0.0F);
+			this.setAbsorptionAmount(this.getAbsorptionAmount() - (g - f));
+			float h = g - f;
+			if (h > 0.0F && h < 3.4028235E37F && source.getEntity() instanceof ServerPlayer) {
+				((ServerPlayer)source.getEntity()).awardStat(Stats.DAMAGE_DEALT_ABSORBED, Math.round(h * 10.0F));
 			}
 
-			if (var8 != 0.0F) {
-				float h = getHealth();
-				setHealth(h - var8);
-				getCombatTracker().recordDamage(source, h, var8);
-				this.setAbsorptionAmount(this.getAbsorptionAmount() - var8);
+			if (f != 0.0F) {
+				float i = this.getHealth();
+				this.setHealth(i - f);
+				this.getCombatTracker().recordDamage(source, i, f);
+				this.setAbsorptionAmount(this.getAbsorptionAmount() - f);
 				this.gameEvent(GameEvent.ENTITY_DAMAGE);
 			}
 		}

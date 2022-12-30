@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
@@ -111,9 +112,8 @@ public abstract class GuiMixin extends GuiComponent {
 					PoseStack poseStack = RenderSystem.getModelViewStack();
 					poseStack.pushPose();
 					poseStack.translate((double)(screenWidth / 2), (double)(screenHeight / 2), (double)getBlitOffset());
-					poseStack.mulPose(camera.rotation());
-					/*poseStack.mulPose(Vector3f.XN.rotationDegrees(camera.getXRot()));
-					poseStack.mulPose(Vector3f.YP.rotationDegrees(camera.getYRot()));*/
+					poseStack.mulPose(Axis.XN.rotationDegrees(camera.getXRot()));
+					poseStack.mulPose(Axis.YP.rotationDegrees(camera.getYRot()));
 					poseStack.scale(-1.0F, -1.0F, -1.0F);
 					RenderSystem.applyModelViewMatrix();
 					RenderSystem.renderCrosshair(10);

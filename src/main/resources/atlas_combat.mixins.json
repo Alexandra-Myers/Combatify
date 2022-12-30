@@ -7,6 +7,7 @@
   "mixins": [
     "AnvilMenuMixin",
     "AttackDamageMobEffectMixin",
+    "AttributeInstanceMixin",
     "AttributesMixin",
     "AxeItemMixin",
     "BowItemMixin",

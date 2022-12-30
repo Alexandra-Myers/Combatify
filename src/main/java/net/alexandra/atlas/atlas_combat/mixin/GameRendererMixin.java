@@ -22,9 +22,9 @@ abstract class GameRendererMixin implements ResourceManagerReloadListener/*, Aut
         require = 1, allow = 1, constant = @Constant(doubleValue = 6.0))
     private double getActualReachDistance(final double reachDistance) {
         if (this.minecraft.player != null) {
-            return ((PlayerExtensions)minecraft.player).getReach(this.minecraft.player, reachDistance);
+            return ((PlayerExtensions)minecraft.player).getReach(this.minecraft.player, 2.5);
         }
-        return reachDistance;
+        return 2.5;
     }
 
     @ModifyConstant(method = "pick(F)V", constant = @Constant(doubleValue = 3.0))
