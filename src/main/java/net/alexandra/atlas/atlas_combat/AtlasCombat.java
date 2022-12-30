@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat;
 import eu.midnightdust.lib.config.MidnightConfig;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
+import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.world.entity.EntityType;
@@ -13,17 +14,13 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-import org.quiltmc.loader.api.ModContainer;
-import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AtlasCombat implements ModInitializer {
 	public static Player player;
 	public static final AtlasConfig CONFIG = AtlasConfig.createAndLoad();
 
 	@Override
-	public void onInitialize(ModContainer mod) {
+	public void onInitialize() {
 		new NetworkingHandler();
 
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {

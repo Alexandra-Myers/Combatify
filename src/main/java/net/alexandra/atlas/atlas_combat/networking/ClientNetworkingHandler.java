@@ -1,12 +1,12 @@
 package net.alexandra.atlas.atlas_combat.networking;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.quiltmc.qsl.lifecycle.api.client.event.ClientTickEvents;
-import org.quiltmc.qsl.networking.api.client.ClientPlayConnectionEvents;
-import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 public class ClientNetworkingHandler {
 
@@ -26,7 +26,7 @@ public class ClientNetworkingHandler {
 			}
 		});
 
-		ClientTickEvents.END.register(client -> {
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if(Minecraft.getInstance().getConnection() != null && Minecraft.getInstance().player != null && !receivedAnswer) {
 				ticksElapsed++;
 
