@@ -11,14 +11,11 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.item.*;
 import net.rizecookey.cookeymod.CookeyMod;
 import net.rizecookey.cookeymod.config.category.MiscCategory;
 import org.objectweb.asm.Opcodes;
-import org.quiltmc.loader.api.minecraft.ClientOnly;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,7 +35,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	private boolean startedUsingItem;
 
 	@Final
-	@ClientOnly
 	public Minecraft minecraft = Minecraft.getInstance();
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
 	@Environment(EnvType.CLIENT)

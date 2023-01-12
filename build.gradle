@@ -1,6 +1,6 @@
 plugins {
+	id 'fabric-loom' version '1.0-SNAPSHOT'
 	id 'maven-publish'
-	alias(libs.plugins.quilt.loom)
 }
 
 archivesBaseName = project.archives_base_name
@@ -21,11 +21,9 @@ repositories {
 
 	maven {
 		name = "Modrinth"
-		url = uri("https://api.modrinth.com/maven")
-		content {
-			includeGroup("maven.modrinth")
-		}
+		url = "https://api.modrinth.com/maven"
 	}
+
 	maven {
 		name = "auoeke Maven"
 		url = uri("https://maven.auoeke.net")
@@ -41,18 +39,15 @@ repositories {
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
 // See https://docs.gradle.org/current/userguide/platforms.html for information on how version catalogs work.
 dependencies {
-	minecraft libs.minecraft
-	mappings loom.layered {
-		officialMojangMappings()
-	}
-	modImplementation libs.quilt.loader
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
 	// Quilted Fabric API will automatically pull in the correct QSL version.
 	modApi ("me.shedaniel.cloth:cloth-config-fabric:9.0.94") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	modImplementation libs.quilted.fabric.api
 	modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}") {
 		exclude group: 'net.fabricmc'
 		exclude group: "net.fabricmc.fabric-api"
@@ -65,8 +60,8 @@ dependencies {
 	modImplementation 'com.github.rizecookey:CookeyMod:1.7.1+1.19.3'*/
 	include('com.github.rizecookey:CookeyMod:1.7.1+1.19.3')
 	modImplementation('com.github.rizecookey:CookeyMod:1.7.1+1.19.3')
-	include 'com.github.TeamMidnightDust:MidnightLib:v0.6.0'
-	modImplementation 'com.github.TeamMidnightDust:MidnightLib:v0.6.0'
+	include "maven.modrinth:midnightlib:${project.midnightlib_version}"
+	modImplementation "maven.modrinth:midnightlib:${project.midnightlib_version}"
 	modApi "com.terraformersmc:modmenu:5.0.2"
 	include "com.terraformersmc:modmenu:5.0.2"
 	implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
@@ -86,10 +81,10 @@ loom {
 }
 
 processResources {
-	inputs.property "version", version
+	inputs.property "version", project.version
 
-	filesMatching('quilt.mod.json') {
-		expand "version": version
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
 	}
 }
 
