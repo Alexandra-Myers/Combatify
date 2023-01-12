@@ -45,17 +45,9 @@ dependencies {
 
 	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
 	// Quilted Fabric API will automatically pull in the correct QSL version.
-	modApi ("me.shedaniel.cloth:cloth-config-fabric:9.0.94") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-	modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}") {
-		exclude group: 'net.fabricmc'
-		exclude group: "net.fabricmc.fabric-api"
-	}
-	include("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}") {
-		exclude group: 'net.fabricmc'
-		exclude group: "net.fabricmc.fabric-api"
-	}
+	modApi ("me.shedaniel.cloth:cloth-config-fabric:9.0.94")
+	modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}")
+	include("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}")
 	/*include 'com.github.rizecookey:CookeyMod:1.7.1+1.19.3'
 	modImplementation 'com.github.rizecookey:CookeyMod:1.7.1+1.19.3'*/
 	include('com.github.rizecookey:CookeyMod:1.7.1+1.19.3')

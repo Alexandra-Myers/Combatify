@@ -9,6 +9,8 @@
 		"Alexandra",
 		"zOnlyKroks"
 	],
+    "contact": {},
+    "license": "GPL-3.0",
 	"icon": "assets/atlas_combat/icon.png",
 
 	"environment": "*",
