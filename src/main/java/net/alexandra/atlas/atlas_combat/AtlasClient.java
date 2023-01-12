@@ -1,12 +1,8 @@
 package net.alexandra.atlas.atlas_combat;
 
 import com.mojang.serialization.Codec;
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
-import eu.midnightdust.lib.config.MidnightConfig;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.Component;
 import org.quiltmc.loader.api.ModContainer;
