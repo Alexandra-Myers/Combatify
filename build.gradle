@@ -52,8 +52,6 @@ dependencies {
 	modImplementation 'com.github.rizecookey:CookeyMod:1.7.1+1.19.3'*/
 	include('com.github.rizecookey:CookeyMod:1.7.1+1.19.3')
 	modImplementation('com.github.rizecookey:CookeyMod:1.7.1+1.19.3')
-	include "maven.modrinth:midnightlib:${project.midnightlib_version}"
-	modImplementation "maven.modrinth:midnightlib:${project.midnightlib_version}"
 	modApi "com.terraformersmc:modmenu:5.0.2"
 	include "com.terraformersmc:modmenu:5.0.2"
 	implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
