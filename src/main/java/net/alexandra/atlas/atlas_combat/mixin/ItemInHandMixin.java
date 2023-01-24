@@ -60,13 +60,18 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@Shadow
 	protected abstract void renderPlayerArm(PoseStack poseStack, MultiBufferSource multiBufferSource, int i, float f, float g, HumanoidArm humanoidArm);
+	@ModifyVariable(method = "tick", slice = @Slice(
+			from = @At(value = "JUMP", ordinal = 3)
+	), at = @At(value = "FIELD", ordinal = 0))
+	public float modifyArmHeight(float f) {
+		f *= 0.5;
+		f = f * f * f * 0.25F + 0.75F;
+		double offset = this.hudRenderingCategory.attackCooldownHandOffset.get();
+		return (float)((double)f * (1.0 - offset) + offset);
+	}
 
-	@Inject(
-			method = {"renderArmWithItem"},
-			at = {@At("HEAD")},
-			cancellable = true
-	)
-	public void onRenderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
+	@Inject(method = "renderArmWithItem", at = @At(value = "HEAD"), cancellable = true)
+	private void renderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
 		if (AtlasCombat.CONFIG.swordBlocking()) {
 			if (abstractClientPlayer.getUsedItemHand() == interactionHand && !((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().isEmpty() && ((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().getItem() instanceof SwordItem) {
 				poseStack.pushPose();
@@ -85,19 +90,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				ci.cancel();
 			}
 		}
-	}
-	@ModifyVariable(method = "tick", slice = @Slice(
-			from = @At(value = "JUMP", ordinal = 3)
-	), at = @At(value = "FIELD", ordinal = 0))
-	public float modifyArmHeight(float f) {
-		f *= 0.5;
-		f = f * f * f * 0.25F + 0.75F;
-		double offset = this.hudRenderingCategory.attackCooldownHandOffset.get();
-		return (float)((double)f * (1.0 - offset) + offset);
-	}
-
-	@Inject(method = "renderArmWithItem", at = @At(value = "HEAD"), cancellable = true)
-	private void renderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
 		if (!abstractClientPlayer.isScoping()) {
 			boolean bl = interactionHand == InteractionHand.MAIN_HAND;
 			HumanoidArm humanoidArm = bl ? abstractClientPlayer.getMainArm() : abstractClientPlayer.getMainArm().getOpposite();
