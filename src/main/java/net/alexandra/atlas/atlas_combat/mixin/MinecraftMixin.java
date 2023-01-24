@@ -145,7 +145,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 			this.retainAttack = false;
 			boolean bl = false;
-			if (!this.player.isHandsBusy()) {
+			ItemStack itemStack = this.player.getItemInHand(InteractionHand.MAIN_HAND);
+			if (itemStack.isItemEnabled(level.enabledFeatures())) {
 				switch (redirectResult(this.hitResult)) {
 					case ENTITY:
 						if (player.distanceTo(((EntityHitResult)hitResult).getEntity()) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
@@ -191,13 +192,16 @@ public abstract class MinecraftMixin implements IMinecraft {
 							} else {
 								((IPlayerGameMode)gameMode).swingInAir(player);
 							}
-						}else {
+						} else {
 							((IPlayerGameMode)gameMode).swingInAir(player);
 						}
 				}
 
 				this.player.swing(InteractionHand.MAIN_HAND);
 				cir.setReturnValue(bl);
+				cir.cancel();
+			} else {
+				cir.setReturnValue(false);
 				cir.cancel();
 			}
 		}
@@ -450,7 +454,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 
 				this.retainAttack = false;
-			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-8.0F) && ((IOptions)options).autoAttack().get()) {
+			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-1.0F) && ((IOptions)options).autoAttack().get()) {
 				this.startAttack();
 			} else {
 				this.gameMode.stopDestroyBlock();

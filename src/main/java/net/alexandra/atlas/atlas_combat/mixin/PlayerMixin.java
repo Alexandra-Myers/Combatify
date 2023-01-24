@@ -190,15 +190,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			((ISwordItem)swordItem).addStrengthTimer();
 		}
 		--instance.attackStrengthTicker;
-        --instance.attackStrengthTicker;
-        --instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
-		--instance.attackStrengthTicker;
-		if(getAttackStrengthScale(baseValue) > 1.0F){
-			--instance.attackStrengthTicker;
-		}
 		setIsParryTicker(getIsParryTicker() + 1);
 		if(getIsParryTicker() >= 40) {
 			setIsParry(false);
@@ -469,9 +460,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getCurrentItemAttackStrengthDelay() {
-		float var1 = (float)this.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F;
-		var1 = Mth.clamp(var1, 0.1F, 1024.0F);
-		return (int)(1.0F / var1 * 20.0F + 0.5F);
+		float f = (float)getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F;
+		f = Mth.clamp(f, 0.1F, 1024.0F);
+		return (int)(1.0F / f * 20.0F + 0.5F);
 	}
 	/**
 	 * @author
@@ -479,7 +470,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite
 	public float getAttackStrengthScale(float baseTime) {
-		return this.attackStrengthStartValue == 0 ? 2.0F : Mth.clamp((1.0F - ((float)this.attackStrengthTicker - baseTime) / (float)this.attackStrengthStartValue)/4.0F, 0.0F, 2.0F);
+		if (this.attackStrengthStartValue == 0) {
+			return 2.0F;
+		}
+		return Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F);
 	}
 
 	public float getCurrentAttackReach(float baseValue) {
@@ -491,27 +485,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 32.0F;
-		}
-	}
-	@Override
-	public boolean isAttackAvailable(float baseTime, float minValue) {
-		if (!(getAttackStrengthScale(baseTime) < minValue)) {
-			return true;
-		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 32.0F;
-		}
-	}
-	@Override
-	public boolean isAttackAvailable(float baseTime, float minValue, boolean isAutoAttack) {
-		if (!(getAttackStrengthScale(baseTime) < minValue) && !isAutoAttack) {
-			return true;
-		} else if (!(getAttackStrengthScale(baseTime) < minValue)) {
-			return getAttackStrengthScale(baseTime) > minValue + 8.0F;
-		} else if (isAutoAttack){
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 40.0F;
-		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 32.0F;
+			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 4.0F;
 		}
 	}
 

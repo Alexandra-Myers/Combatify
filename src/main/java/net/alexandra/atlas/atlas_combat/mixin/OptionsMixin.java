@@ -82,7 +82,7 @@ public abstract class OptionsMixin implements IOptions {
 			new OptionInstance.IntRange(1, 20).xmap(sliderValue -> (double)sliderValue / 10.0, value -> (int)(value * 10.0)),
 			Codec.doubleRange(0.1, 2.0),
 			2.0,
-			(Consumer) value -> {
+			value -> {
 
 			}
 	);

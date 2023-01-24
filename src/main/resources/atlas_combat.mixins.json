@@ -20,6 +20,7 @@
     "EnchantmentMixin",
     "EnchantmentsMixin",
     "EntityMixin",
+    "FishingHookMixin",
     "FoodDataMixin",
     "HoneyBottleItemMixin",
     "ItemMixin",

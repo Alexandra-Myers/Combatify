@@ -500,9 +500,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					currentVector = (new Vec3(currentVector.x, 0.0, currentVector.z)).normalize();
 					Vec3 sourceVector = sourcePos.vectorTo(this.position());
 					sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
-					if (sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554) {
-						return true;
-					}
+					return sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554;
 				}
 			}
 		}
