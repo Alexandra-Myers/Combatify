@@ -96,7 +96,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public abstract double getAttributeValue(Attribute attribute);
 
 	@Shadow
-	protected abstract void hurtHelmet(DamageSource par1, float par2);
+	public abstract void hurtHelmet(DamageSource par1, float par2);
 
 	@Shadow
 	protected int noActionTime;
@@ -325,7 +325,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			enemy = entity2;
 			int invulnerableTime = 10;
 			if (entity2 instanceof Player player) {
-				invulnerableTime = Math.min(((PlayerExtensions)player).getAttackDelay(player), invulnerableTime);
+				invulnerableTime = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
 			}
 			if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic() && !source.isFall()) {
 				thisEntity.stopUsingItem();

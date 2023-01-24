@@ -22,10 +22,6 @@ public interface PlayerExtensions {
 	default boolean hasEnabledShieldOnCrouch() {
 		return false;
 	}
-
-	default int getAttackDelay(Player player) {
-		return (int)(1.0F / (player.getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5F) * 20.0F + 0.5F);
-	}
 	Multimap getAdditionalModifiers();
 	boolean getMissedAttackRecovery();
 	int getAttackStrengthStartValue();
