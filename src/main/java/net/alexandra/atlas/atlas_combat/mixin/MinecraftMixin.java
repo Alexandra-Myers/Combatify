@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
@@ -97,8 +98,23 @@ public abstract class MinecraftMixin implements IMinecraft {
 			this.retainAttack = false;
 		}
 	}
+	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 4))
+	public boolean redirectContinue(KeyMapping instance) {
+		return instance.isDown() || retainAttack;
+	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance) {
+		if (!((PlayerExtensions)this.player).isAttackAvailable(0.0F)) {
+			float var1 = this.player.getAttackStrengthScale(0.0F);
+			if (var1 < 0.8F) {
+				return false;
+			}
+
+			if (var1 < 1.0F) {
+				this.retainAttack = true;
+				return false;
+			}
+		}
 		return startAttack();
 	}
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
@@ -126,20 +142,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 			cir.setReturnValue(false);
 			cir.cancel();
 		} else {
-			if (!((PlayerExtensions)this.player).isAttackAvailable(0.0F) && redirectResult(this.hitResult) != HitResult.Type.BLOCK) {
-				float var1 = this.player.getAttackStrengthScale(0.0F);
-				if (var1 < 0.8F) {
-					cir.setReturnValue(false);
-					cir.cancel();
-				}
-
-				if (var1 < 1.0F) {
-					this.retainAttack = true;
-					cir.setReturnValue(false);
-					cir.cancel();
-				}
-			}
-
 			this.retainAttack = false;
 			boolean bl = false;
 			ItemStack itemStack = this.player.getItemInHand(InteractionHand.MAIN_HAND);
