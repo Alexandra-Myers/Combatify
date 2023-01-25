@@ -482,11 +482,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
-			return true;
-		} else {
-			return this.missedAttackRecovery && (float)this.attackStrengthStartValue - ((float)this.attackStrengthTicker - baseTime) > 4.0F;
+		if (getAttackStrengthScale(baseTime) < 1.0F) {
+			return (this.missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker - baseTime > 4.0F);
 		}
+		return true;
 	}
 
 	protected boolean checkSweepAttack() {
