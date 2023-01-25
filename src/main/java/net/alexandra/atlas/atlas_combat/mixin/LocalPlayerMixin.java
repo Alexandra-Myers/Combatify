@@ -75,7 +75,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
     @Redirect(method="hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal=0))
     private void syncInvulnerability(LocalPlayer player, int x) {
-        player.invulnerableTime = 5;
+        player.invulnerableTime = x / 2;
     }
 
 	@Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
