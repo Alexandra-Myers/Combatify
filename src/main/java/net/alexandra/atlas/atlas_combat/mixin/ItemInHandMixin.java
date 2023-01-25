@@ -37,13 +37,11 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Unique
 	private float i;
 	@Unique
-	private int q;
+	private ItemStack itemStack;
 	@Unique
 	private float f;
 	@Unique
 	private boolean bow = false;
-	@Unique
-	private ItemStack itemStack;
 	HudRenderingCategory hudRenderingCategory = (HudRenderingCategory)CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class);
 
 	@Shadow
@@ -103,45 +101,25 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	private void modifyBowCode(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci, boolean bl, HumanoidArm humanoidArm, boolean bl2, int q) {
 		this.poseStack = poseStack;
 		this.humanoidArm = humanoidArm;
-		this.i = i;
 		this.itemStack = itemStack;
-		this.q = q;
+		this.i = i;
 		this.f = f;
 	}
-	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"))
-	private UseAnim modifyBowCode(ItemStack instance) {
-		if(instance.getUseAnimation().equals(UseAnim.BOW)) {
-			this.applyItemArmTransform(poseStack, humanoidArm, i);
-			poseStack.translate((float) q * -0.2785682F, 0.18344387F, 0.15731531F);
-			poseStack.mulPose(Axis.XP.rotationDegrees(-13.935F));
-			poseStack.mulPose(Axis.YP.rotationDegrees((float) q * 35.3F));
-			poseStack.mulPose(Axis.ZP.rotationDegrees((float) q * -9.785F));
-			float r = (float) itemStack.getUseDuration() - ((float) this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
-			float l = r / 20.0F;
-			l = (l * l + l * 2.0F) / 3.0F;
-			if (l > 1.0F) {
-				l = 1.0F;
-			}
-			if (l > 0.1F) {
-				float m = Mth.sin((r - 0.1F) * 1.3F);
-				float n = ((IBowItem)itemStack.getItem()).getFatigueForTime((int)r) - 0.1F;
-				float o = m * n;
-				poseStack.translate(o * 0.0F, o * 0.004F, o * 0.0F);
-			}
-			poseStack.translate(l * 0.0F, l * 0.0F, l * 0.04F);
-			poseStack.scale(1.0F, 1.0F, 1.0F + l * 0.2F);
-			poseStack.mulPose(Axis.YN.rotationDegrees((float) q * 45.0F));
-			bow = true;
-			return UseAnim.NONE;
-		}
-		bow = false;
-		return instance.getUseAnimation();
+	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
+	private void modifyBowCode(PoseStack instance, float x, float y, float z) {
+		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
+		instance.translate(q * -0.2785682, 0.18344387412071228, 0.15731531381607056);
+	}
+	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
+	private void modifyBowCode1(PoseStack instance, float x, float y, float z) {
+		float r = (float)itemStack.getUseDuration() - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
+		float m = Mth.sin((r - 0.1F) * 1.3F);
+		float n = ((IBowItem)itemStack.getItem()).getFatigueForTime((int) r) - 0.1F;
+		float o = m * n;
+		instance.translate(o * 0.0F, o * 0.004F, o * 0.0F);
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
-		if(bow) {
-			ci.cancel();
-		}
 		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof SwordItem) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
