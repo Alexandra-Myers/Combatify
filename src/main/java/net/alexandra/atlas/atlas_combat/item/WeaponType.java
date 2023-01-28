@@ -46,7 +46,8 @@ public enum WeaponType {
     }
 
 	public float getDamage(Tier var1) {
-		float var2 = var1.getAttackDamageBonus() + (AtlasCombat.CONFIG.fistDamage() ? 1 : 0);
+		int modifier = AtlasCombat.CONFIG.fistDamage() ? 1 : 0;
+		float var2 = var1.getAttackDamageBonus() + modifier;
 		boolean bl = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
         switch (this) {
 			case KNIFE:
@@ -72,19 +73,19 @@ public enum WeaponType {
 			case HOE:
                 if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
                     if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-                        return var1 == Tiers.NETHERITE ? 2.0F : 2.0F + var2 - 4;
+                        return var1 == Tiers.NETHERITE ? 2.0F + modifier : 2.0F + var2 - 4 + modifier;
                     }
 
-                    return 0.0F;
+                    return 0.0F + modifier;
                 }
 
-                return 1.0F;
+                return 1.0F + modifier;
             case SHOVEL:
                 return var2;
             case TRIDENT:
-                return 5.0F;
+                return 5.0F + modifier;
             default:
-                return 0.0F;
+                return 0.0F + modifier;
         }
     }
 
