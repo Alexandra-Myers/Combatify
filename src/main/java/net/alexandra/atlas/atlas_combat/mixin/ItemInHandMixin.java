@@ -79,9 +79,11 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				ci.cancel();
 			}
 		}
-		if(((IOptions) minecraft.options).fishingRodLegacy().get() && abstractClientPlayer.getItemInHand(interactionHand).getItem() instanceof FishingRodItem || abstractClientPlayer.getItemInHand(interactionHand).getItem() instanceof FoodOnAStickItem<?>) {
+		if(((IOptions) minecraft.options).fishingRodLegacy().get() && itemStack.getItem() instanceof FishingRodItem || itemStack.getItem() instanceof FoodOnAStickItem<?>) {
+			poseStack.pushPose();
 			poseStack.translate(0.08f, 0.1f, -0.33f);
 			poseStack.scale(0.95f, 1f, 1f);
+			poseStack.popPose();
 		}
 	}
 	@Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"), locals = LocalCapture.CAPTURE_FAILSOFT)
