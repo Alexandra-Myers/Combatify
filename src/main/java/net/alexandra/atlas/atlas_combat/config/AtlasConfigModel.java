@@ -13,6 +13,8 @@ public class AtlasConfigModel {
 	public boolean bedrockBlockReach = false;
 	public boolean refinedCoyoteTime = false;
 	public boolean fishingHookKB = false;
+	@RestartRequired
+	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
 	@RestartRequired
 	public boolean blockReach = true;

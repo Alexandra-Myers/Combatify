@@ -168,7 +168,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
 		player.getAttribute(NewAttributes.BLOCK_REACH).setBaseValue(!AtlasCombat.CONFIG.bedrockBlockReach() ? 0 : 2);
 		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(0);
-		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(2.0);
+		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(!AtlasCombat.CONFIG.fistDamage() ? 2 : 1);
 	}
 
 	/**
@@ -177,7 +177,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	 */
 	@Overwrite()
 	public static AttributeSupplier.Builder createAttributes() {
-		return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 2.0)
+		return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, !AtlasCombat.CONFIG.fistDamage() ? 2 : 1)
 				.add(Attributes.MOVEMENT_SPEED, 0.1F)
 				.add(NewAttributes.ATTACK_SPEED)
 				.add(Attributes.LUCK)

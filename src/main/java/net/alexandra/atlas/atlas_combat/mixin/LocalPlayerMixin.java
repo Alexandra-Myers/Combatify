@@ -92,15 +92,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			instance.tick(b, v);
 		}
 	}
-	@ModifyConstant(method = "aiStep", constant = @Constant(floatValue = 0.2F))
-	public float modifySwordBlockSpeed(float constant) {
-		Item item = ((LivingEntityExtensions) thisPlayer).getBlockingItem().getItem();
-		if(item instanceof SwordItem) {
-			return 0.8F;
-		}else {
-			return constant;
-		}
-	}
 	@Override
 	public float getAttackAnim(float tickDelta) {
 		if(((IOptions)Minecraft.getInstance().options).rhythmicAttacks().get()) {

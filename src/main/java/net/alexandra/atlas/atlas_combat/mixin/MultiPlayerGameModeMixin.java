@@ -40,6 +40,9 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@Shadow
 	private GameType localPlayerMode;
 
+	@Shadow
+	public abstract GameType getPlayerMode();
+
 	@ModifyConstant(
 			method = "getPickRange",
 			require = 2, allow = 2, constant = { @Constant(floatValue = 5.0F), @Constant(floatValue = 4.5F) })
@@ -64,6 +67,10 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset2(LocalPlayer instance) {
+		if(getPlayerMode() == GameType.ADVENTURE) {
+			return;
+		}
+		((PlayerExtensions)instance).resetAttackStrengthTicker(true);
 	}
 
 	@Override
