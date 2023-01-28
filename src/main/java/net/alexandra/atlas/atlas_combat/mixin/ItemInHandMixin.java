@@ -61,6 +61,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@Inject(method = "renderArmWithItem", at = @At(value = "HEAD"), cancellable = true)
 	private void renderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
+		this.itemStack = itemStack;
 		if (AtlasCombat.CONFIG.swordBlocking()) {
 			if (abstractClientPlayer.getUsedItemHand() == interactionHand && !((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().isEmpty() && ((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().getItem() instanceof SwordItem) {
 				poseStack.pushPose();
@@ -79,17 +80,21 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				ci.cancel();
 			}
 		}
+	}
+	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
+	private void injectFishing(PoseStack poseStack) {
 		if(((IOptions) minecraft.options).fishingRodLegacy().get() && itemStack.getItem() instanceof FishingRodItem || itemStack.getItem() instanceof FoodOnAStickItem<?>) {
 			poseStack.pushPose();
 			poseStack.translate(0.08f, 0.1f, -0.33f);
 			poseStack.scale(0.95f, 1f, 1f);
-			poseStack.popPose();
+			return;
+		} else {
+			poseStack.pushPose();
 		}
 	}
 	@Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void modifyBowCode(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci, boolean bl, HumanoidArm humanoidArm, boolean bl2, int q) {
 		this.humanoidArm = humanoidArm;
-		this.itemStack = itemStack;
 		this.f = f;
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
