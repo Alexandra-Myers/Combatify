@@ -14,8 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.function.Consumer;
-
 @Mixin(Options.class)
 public abstract class OptionsMixin implements IOptions {
 	@Shadow
@@ -42,6 +40,7 @@ public abstract class OptionsMixin implements IOptions {
 		visitor.process("lowShield", AtlasClient.lowShield);
 		visitor.process("rhythmicAttacks", AtlasClient.rhythmicAttacks);
 		visitor.process("protIndicator", AtlasClient.protectionIndicator);
+		visitor.process("fishingRodLegacy", AtlasClient.fishingRodLegacy);
 		visitor.process("attackIndicatorValue", attackIndicatorValue);
 		visitor.process("shieldIndicator", AtlasClient.shieldIndicator);
 	}
@@ -66,6 +65,10 @@ public abstract class OptionsMixin implements IOptions {
 	@Override
 	public OptionInstance<Boolean> protIndicator() {
 		return AtlasClient.protectionIndicator;
+	}
+	@Override
+	public OptionInstance<Boolean> fishingRodLegacy() {
+		return AtlasClient.fishingRodLegacy;
 	}
 	@Override
 	public OptionInstance<ShieldIndicatorStatus> shieldIndicator() {

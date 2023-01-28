@@ -34,7 +34,8 @@ public class AccessibilityOptionsMixin {
 				((IOptions)options).autoAttack(),
 				((IOptions)options).shieldCrouch(),
 				((IOptions)options).lowShield(),
-				((IOptions)options).attackIndicatorValue()
+				((IOptions)options).attackIndicatorValue(),
+				((IOptions)options).fishingRodLegacy()
 		};
 		cir.setReturnValue(optionInstances);
 		cir.cancel();

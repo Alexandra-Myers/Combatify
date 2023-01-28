@@ -38,7 +38,8 @@ public class VideoSettingsMixin {
 				((IOptions)options).lowShield(),
 				((IOptions)options).attackIndicatorValue(),
 				((IOptions)options).rhythmicAttacks(),
-				((IOptions)options).protIndicator()
+				((IOptions)options).protIndicator(),
+				((IOptions)options).fishingRodLegacy()
 		};
 		cir.setReturnValue(optionInstances);
 		cir.cancel();

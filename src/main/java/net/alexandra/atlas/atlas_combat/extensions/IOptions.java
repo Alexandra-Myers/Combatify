@@ -14,10 +14,14 @@ public interface IOptions {
 
     OptionInstance<Boolean> protIndicator();
 
-    OptionInstance<ShieldIndicatorStatus> shieldIndicator();
+    OptionInstance<Boolean> swordBlockStyle();
+
+	OptionInstance<Boolean> fishingRodLegacy();
+
+	OptionInstance<ShieldIndicatorStatus> shieldIndicator();
 
     OptionInstance<Double> attackIndicatorValue();
-	OptionInstance<Boolean> getReducedDebugInfo();
+
 	static Component doubleValueLabel(Component optionText, double value) {
 		return Component.translatable("options.double_value", optionText, value);
 	}

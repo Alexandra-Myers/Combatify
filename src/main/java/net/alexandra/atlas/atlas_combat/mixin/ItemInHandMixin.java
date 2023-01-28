@@ -31,18 +31,12 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Final
 	private Minecraft minecraft;
 	@Unique
-	private PoseStack poseStack;
-	@Unique
 	private HumanoidArm humanoidArm;
-	@Unique
-	private float i;
 	@Unique
 	private ItemStack itemStack;
 	@Unique
 	private float f;
-	@Unique
-	private boolean bow = false;
-	HudRenderingCategory hudRenderingCategory = (HudRenderingCategory)CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class);
+	HudRenderingCategory hudRenderingCategory = CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class);
 
 	@Shadow
 	protected abstract void applyItemArmAttackTransform(PoseStack matrices, HumanoidArm arm, float swingProgress);
@@ -55,17 +49,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemTransforms.TransformType renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
 
-	@Shadow
-	protected abstract void applyEatTransform(PoseStack poseStack, float f, HumanoidArm humanoidArm, ItemStack itemStack);
-
-	@Shadow
-	protected abstract void renderTwoHandedMap(PoseStack poseStack, MultiBufferSource multiBufferSource, int i, float f, float g, float h);
-
-	@Shadow
-	protected abstract void renderOneHandedMap(PoseStack poseStack, MultiBufferSource multiBufferSource, int i, float f, HumanoidArm humanoidArm, float g, ItemStack itemStack);
-
-	@Shadow
-	protected abstract void renderPlayerArm(PoseStack poseStack, MultiBufferSource multiBufferSource, int i, float f, float g, HumanoidArm humanoidArm);
 	@ModifyVariable(method = "tick", slice = @Slice(
 			from = @At(value = "JUMP", ordinal = 3)
 	), at = @At(value = "FIELD", ordinal = 0))
@@ -96,13 +79,15 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				ci.cancel();
 			}
 		}
+		if(((IOptions) minecraft.options).fishingRodLegacy().get() && abstractClientPlayer.getItemInHand(interactionHand).getItem() instanceof FishingRodItem || abstractClientPlayer.getItemInHand(interactionHand).getItem() instanceof FoodOnAStickItem<?>) {
+			poseStack.translate(0.08f, 0.1f, -0.33f);
+			poseStack.scale(0.95f, 1f, 1f);
+		}
 	}
 	@Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void modifyBowCode(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci, boolean bl, HumanoidArm humanoidArm, boolean bl2, int q) {
-		this.poseStack = poseStack;
 		this.humanoidArm = humanoidArm;
 		this.itemStack = itemStack;
-		this.i = i;
 		this.f = f;
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
@@ -131,7 +116,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
 		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
-		poseStack.mulPose(Axis.YP.rotationDegrees((float)reverse * 13.365F));
-		poseStack.mulPose(Axis.ZP.rotationDegrees((float)reverse * 78.05F));
+		poseStack.mulPose(Axis.YP.rotationDegrees((float) reverse * 13.365F));
+		poseStack.mulPose(Axis.ZP.rotationDegrees((float) reverse * 78.05F));
 	}
 }

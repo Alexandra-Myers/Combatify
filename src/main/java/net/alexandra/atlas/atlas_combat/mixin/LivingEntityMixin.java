@@ -247,21 +247,44 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			float g = 0.0F;
 			Entity entity;
 			if (amount > 0.0F && this.isDamageSourceBlocked(source)) {
-				for(InteractionHand hand : InteractionHand.values()) {
-					if(thisEntity instanceof Player player && this.getBlockingItem().getItem() instanceof ShieldItem shieldItem && player.isUsingItem() && !player.getCooldowns().isOnCooldown(shieldItem)) {
+				if(thisEntity instanceof Player player && this.getBlockingItem().getItem() instanceof ShieldItem shieldItem && player.isUsingItem() && !player.getCooldowns().isOnCooldown(shieldItem)) {
+					float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
+					if (source.isExplosion() || source.isProjectile()) {
+						hurtCurrentlyUsedShield(amount);
+						amount = 0.0F;
+						g = f;
+					} else if (blockStrength >= amount) {
+						hurtCurrentlyUsedShield(amount);
+						amount -= blockStrength;
+						g = f - amount;
+					} else if (blockStrength < amount) {
+						hurtCurrentlyUsedShield(blockStrength);
+						amount -= blockStrength;
+						g = f - blockStrength;
+					}
+					if (!source.isProjectile() && !source.isExplosion()) {
+						entity = source.getDirectEntity();
+						if (entity instanceof LivingEntity) {
+							this.blockUsingShield((LivingEntity) entity);
+						}
+					}
+					bl = true;
+				}else if(thisEntity instanceof Player player && this.getBlockingItem().getItem() instanceof SwordItem shieldItem && player.isUsingItem()) {
+					if(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
+						isParryTicker = 0;
+						isParry = true;
 						float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-						if (source.isExplosion() || source.isProjectile()) {
-							hurtCurrentlyUsedShield(amount);
-							amount = 0.0F;
-							g = f;
-						} else if (blockStrength >= amount) {
-							hurtCurrentlyUsedShield(amount);
-							amount -= blockStrength;
+						float actualStrength = Math.max(0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F), 0.125F);
+						if (source.isExplosion()) {
+							hurtCurrentlyUsedShield(20 * actualStrength);
+							amount -= 20 * actualStrength;
 							g = f - amount;
-						} else if (blockStrength < amount) {
-							hurtCurrentlyUsedShield(blockStrength);
-							amount -= blockStrength;
-							g = f - blockStrength;
+						} else if(source.isProjectile()) {
+							amount -= 0.0F;
+						} else {
+							hurtCurrentlyUsedShield(amount * actualStrength);
+							amount -= amount * actualStrength;
+							g = f - amount;
 						}
 						if (!source.isProjectile() && !source.isExplosion()) {
 							entity = source.getDirectEntity();
@@ -270,58 +293,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 							}
 						}
 						bl = true;
-					}else if(thisEntity instanceof Player player && this.getBlockingItem().getItem() instanceof SwordItem shieldItem && player.isUsingItem()) {
-						if(hand != InteractionHand.OFF_HAND) {
-							if(player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-								isParryTicker = 0;
-								isParry = true;
-								float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-								float actualStrength = 0.5F + (blockStrength * 0.125F);
-								if (source.isExplosion()) {
-									hurtCurrentlyUsedShield(20 * actualStrength);
-									amount -= 20 * actualStrength;
-									g = f - amount;
-								} else if(source.isProjectile()) {
-									amount -= 0.0F;
-								} else {
-									hurtCurrentlyUsedShield(amount * actualStrength);
-									amount -= amount * actualStrength;
-									g = f - amount;
-								}
-								if (!source.isProjectile() && !source.isExplosion()) {
-									entity = source.getDirectEntity();
-									if (entity instanceof LivingEntity) {
-										this.blockUsingShield((LivingEntity) entity);
-									}
-								}
-								bl = true;
-							}
-						}else {
-							if(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-								isParryTicker = 0;
-								isParry = true;
-								float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-								float actualStrength = Math.max(0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F), 0.125F);
-								if (source.isExplosion()) {
-									hurtCurrentlyUsedShield(20 * actualStrength);
-									amount -= 20 * actualStrength;
-									g = f - amount;
-								} else if(source.isProjectile()) {
-									amount -= 0.0F;
-								} else {
-									hurtCurrentlyUsedShield(amount * actualStrength);
-									amount -= amount * actualStrength;
-									g = f - amount;
-								}
-								if (!source.isProjectile() && !source.isExplosion()) {
-									entity = source.getDirectEntity();
-									if (entity instanceof LivingEntity) {
-										this.blockUsingShield((LivingEntity) entity);
-									}
-								}
-								bl = true;
-							}
-						}
 					}
 				}
 			}
