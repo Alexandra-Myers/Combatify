@@ -62,12 +62,13 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Inject(method = "renderArmWithItem", at = @At(value = "HEAD"), cancellable = true)
 	private void renderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
 		this.itemStack = itemStack;
+		HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
+				? abstractClientPlayer.getMainArm()
+				: abstractClientPlayer.getMainArm().getOpposite();
+		this.humanoidArm = humanoidArm;
 		if (AtlasCombat.CONFIG.swordBlocking()) {
 			if (abstractClientPlayer.getUsedItemHand() == interactionHand && !((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().isEmpty() && ((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().getItem() instanceof SwordItem) {
 				poseStack.pushPose();
-				HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
-						? abstractClientPlayer.getMainArm()
-						: abstractClientPlayer.getMainArm().getOpposite();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform2(poseStack, humanoidArm);
 				if (animationsCategory.swingAndUseItem.get()) {
@@ -83,11 +84,11 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
 	private void injectFishing(PoseStack poseStack) {
+		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		if(((IOptions) minecraft.options).fishingRodLegacy().get() && itemStack.getItem() instanceof FishingRodItem || itemStack.getItem() instanceof FoodOnAStickItem<?>) {
 			poseStack.pushPose();
-			poseStack.translate(0.08f, 0.1f, -0.33f);
+			poseStack.translate(q * 0.08f, 0.1f, -0.33f);
 			poseStack.scale(0.95f, 1f, 1f);
-			return;
 		} else {
 			poseStack.pushPose();
 		}
