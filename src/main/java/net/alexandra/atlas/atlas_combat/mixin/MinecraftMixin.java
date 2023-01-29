@@ -131,7 +131,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		assert player != null;
+		Item item = player.getUseItem().getItem();
 		if(player.getUseItemRemainingTicks() > 0) {
+			player.getCooldowns().addCooldown(item, 20);
 			player.stopUsingItem();
 		}
 		if(missTime < 0) {
