@@ -179,14 +179,13 @@ public abstract class MinecraftMixin implements IMinecraft {
 										|| result.getEntity() instanceof AbstractFish
 										|| result.getEntity() instanceof Rabbit) {
 									result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-									if(result != null) {
-										this.gameMode.attack(this.player, result.getEntity());
-									}
 								} else {
 									result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
-									if(result != null) {
-										this.gameMode.attack(this.player, result.getEntity());
-									}
+								}
+								if(result != null) {
+									this.gameMode.attack(this.player, result.getEntity());
+								} else {
+									((IPlayerGameMode)gameMode).swingInAir(player);
 								}
 							} else {
 								((IPlayerGameMode)gameMode).swingInAir(player);
