@@ -7,7 +7,9 @@ import net.minecraft.world.item.ItemStack;
 
 public interface LivingEntityExtensions {
 
-    ItemStack getBlockingItem();
+	void projectileKnockback(float var1, double var2, double var4);
+
+	ItemStack getBlockingItem();
 
 	boolean isItemOnCooldown(ItemStack var1);
 

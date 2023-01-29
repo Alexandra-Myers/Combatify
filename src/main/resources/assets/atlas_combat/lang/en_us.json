@@ -33,6 +33,7 @@
   "text.config.atlas-combat-config.option.momentumKnockback": "Momentum Based Knockback",
   "text.config.atlas-combat-config.option.bedrockBlockReach": "Block Reach minimum value matches Bedrock Edition",
   "text.config.atlas-combat-config.option.refinedCoyoteTime": "Coyote Time V2",
+  "text.config.atlas-combat-config.option.midairKB": "Allows Non-Projectile sources of damage to knock players up into the air even if they are already in the air",
   "text.config.atlas-combat-config.option.fishingHookKB": "Fishing Rod deals knockback",
   "text.config.atlas-combat-config.option.fistDamage": "Fist Damage is updated to 1, matching the change made to Bedrock Edition",
   "text.config.atlas-combat-config.option.swordBlocking": "Sword Blocking",

@@ -12,6 +12,7 @@ public class AtlasConfigModel {
 	@RestartRequired
 	public boolean bedrockBlockReach = false;
 	public boolean refinedCoyoteTime = false;
+	public boolean midairKB = false;
 	public boolean fishingHookKB = false;
 	@RestartRequired
 	public boolean fistDamage = false;
@@ -29,6 +30,8 @@ public class AtlasConfigModel {
 	public int honeyBottleUseDuration = 20;
 	@RangeConstraint(min = 1, max = 1000)
 	public int milkBucketUseDuration = 20;
+	@RangeConstraint(min = 1, max = 1000)
+	public int stewUseDuration = 20;
 	@RangeConstraint(min = 1, max = 1000)
 	public int instantHealthBonus = 6;
 	@RangeConstraint(min = 1, max = 1000)

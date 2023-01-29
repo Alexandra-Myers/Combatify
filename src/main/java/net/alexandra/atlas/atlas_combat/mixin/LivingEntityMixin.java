@@ -1,10 +1,10 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
@@ -26,6 +26,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -390,12 +391,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					double d = entity2.getX() - this.getX();
 
 					double e;
-					for(e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
+					for (e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
 						d = (Math.random() - Math.random()) * 0.01;
 					}
 
-					thisEntity.hurtDir = (float)(Mth.atan2(e, d) * 180.0F / (float)Math.PI - (double)this.getYRot());
-					newKnockback(0.5F, d, e);
+					thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
+					if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
+						projectileKnockback(0.5F, d, e);
+					} else {
+						newKnockback(0.5F, d, e);
+					}
 				} else {
 					thisEntity.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
 				}
@@ -450,8 +455,24 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (!(var1 <= 0.0F)) {
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale((double)var1);
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
 			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
+		}
+	}
+	@Override
+	public void projectileKnockback(float var1, double var2, double var4) {
+		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack var8 = this.getBlockingItem();
+		if (!var8.isEmpty()) {
+			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		}
+
+		var1 = (float)((double)var1 * (1.0 - var6));
+		if (!(var1 <= 0.0F)) {
+			this.hasImpulse = true;
+			Vec3 var9 = this.getDeltaMovement();
+			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
 		}
 	}
 	/**

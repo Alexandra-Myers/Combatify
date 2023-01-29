@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.KeyMapping;
@@ -98,9 +99,19 @@ public abstract class MinecraftMixin implements IMinecraft {
 			this.retainAttack = false;
 		}
 	}
-	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 4))
-	public boolean redirectContinue(KeyMapping instance) {
-		return instance.isDown() || retainAttack;
+	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 10))
+	public boolean allowBlockHitting(boolean original) {
+		if (!original) return false;
+		assert player != null;
+		boolean bl = !(player.getUseItem().getItem() instanceof ShieldItem);
+		if(bl && ((PlayerExtensions)this.player).isAttackAvailable(0.0F)) {
+			startAttack();
+		}
+		return bl;
+	}
+	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 4))
+	public boolean redirectContinue(boolean original) {
+		return original || retainAttack;
 	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance) {
@@ -119,13 +130,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
-		Item item = ((LivingEntityExtensions)player).getBlockingItem().getItem();
-		boolean handHasShieldItem = item instanceof ShieldItem;
-		if (handHasShieldItem) {
-			player.getCooldowns().addCooldown(item, 20);
-			player.releaseUsingItem();
+		assert player != null;
+		if(player.getUseItemRemainingTicks() > 0) {
 			player.stopUsingItem();
-			player.level.broadcastEntityEvent(player, (byte)30);
 		}
 		if(missTime < 0) {
 			cir.setReturnValue(false);
