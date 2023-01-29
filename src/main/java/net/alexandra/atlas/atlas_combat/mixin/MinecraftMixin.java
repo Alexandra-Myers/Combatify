@@ -104,8 +104,11 @@ public abstract class MinecraftMixin implements IMinecraft {
 		if (!original) return false;
 		assert player != null;
 		boolean bl = !(player.getUseItem().getItem() instanceof ShieldItem);
-		if(bl && ((PlayerExtensions)this.player).isAttackAvailable(0.0F)) {
-			startAttack();
+		if(bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
+			assert hitResult != null;
+			if (hitResult.getType() != HitResult.Type.BLOCK) {
+				startAttack();
+			}
 		}
 		return bl;
 	}
@@ -130,12 +133,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
-		assert player != null;
-		Item item = player.getUseItem().getItem();
-		if(player.getUseItemRemainingTicks() > 0) {
-			player.getCooldowns().addCooldown(item, 20);
-			player.stopUsingItem();
-		}
 		if(missTime < 0) {
 			cir.setReturnValue(false);
 			cir.cancel();
