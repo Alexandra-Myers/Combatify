@@ -1,10 +1,12 @@
 package net.alexandra.atlas.atlas_combat.networking;
 
+import io.netty.buffer.Unpooled;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -30,12 +32,17 @@ public class ClientNetworkingHandler {
 			if(Minecraft.getInstance().getConnection() != null && Minecraft.getInstance().player != null && !receivedAnswer) {
 				ticksElapsed++;
 
-				if(ticksElapsed >= ticksTowait && !receivedAnswer) {
+				if(ticksElapsed >= ticksTowait) {
 					Minecraft.getInstance().player.connection.getConnection().disconnect(Component.literal("Mod not present on server!"));
 					ticksElapsed = 0;
 					receivedAnswer = false;
 				}
 			}
+		});
+		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel, (handler, sender, client) -> {
+			FriendlyByteBuf packetBuf = new FriendlyByteBuf(Unpooled.buffer());
+			packetBuf.writeBoolean(true);
+			ClientPlayNetworking.send(modDetectionNetworkChannel, packetBuf);
 		});
 	}
 }

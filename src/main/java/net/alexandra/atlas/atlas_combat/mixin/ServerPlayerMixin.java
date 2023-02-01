@@ -4,6 +4,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import net.alexandra.atlas.atlas_combat.extensions.IServerPlayer;
 import net.alexandra.atlas.atlas_combat.extensions.LivingEntityExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
-public abstract class ServerPlayerMixin extends PlayerMixin {
+public abstract class ServerPlayerMixin extends PlayerMixin implements IServerPlayer {
+	private boolean receivedAnswer = false;
 	public ServerPlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
@@ -33,5 +35,14 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
 		super.swing(hand);
 		ci.cancel();
+	}
+
+	@Override
+	public void setReceivedAnswer(boolean bl) {
+		receivedAnswer = bl;
+	}
+	@Override
+	public boolean getReceivedAnswer() {
+		return receivedAnswer;
 	}
 }
