@@ -24,11 +24,13 @@ public class NetworkingHandler {
 	public NetworkingHandler() {
 
 		ServerPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(server, player, handler, buf, responseSender) -> {
+			if(!server.isDedicatedServer()) return;
 			if(buf.getBoolean(0)) {
 				((IServerPlayer)player).setReceivedAnswer(true);
 			}
 		});
 		ServerTickEvents.END_SERVER_TICK.register(modDetectionNetworkChannel, server -> {
+			if(!server.isDedicatedServer()) return;
 			ticksElapsed++;
 			if(ticksElapsed > ticksTowait) {
 				server.getPlayerList().getPlayers().forEach(serverPlayer -> {
