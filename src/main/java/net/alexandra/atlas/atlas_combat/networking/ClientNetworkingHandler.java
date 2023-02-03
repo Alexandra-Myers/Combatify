@@ -39,10 +39,5 @@ public class ClientNetworkingHandler {
 				}
 			}
 		});
-		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel, (handler, sender, client) -> {
-			FriendlyByteBuf packetBuf = new FriendlyByteBuf(Unpooled.buffer());
-			packetBuf.writeBoolean(true);
-			ClientPlayNetworking.send(modDetectionNetworkChannel, packetBuf);
-		});
 	}
 }
