@@ -43,6 +43,7 @@
   "text.config.atlas-combat-config.option.potionUseDuration": "Potion Use Duration",
   "text.config.atlas-combat-config.option.honeyBottleUseDuration": "Honey Bottle Use Duration",
   "text.config.atlas-combat-config.option.milkBucketUseDuration": "Milk Bucket Use Duration",
+  "text.config.atlas-combat-config.option.stewUseDuration": "Stew Use Duration",
   "text.config.atlas-combat-config.option.instantHealthBonus": "Instant Health Bonus",
   "text.config.atlas-combat-config.option.eggItemCooldown": "Egg Item Cooldown",
   "text.config.atlas-combat-config.option.snowballItemCooldown": "Snowball Item Cooldown",

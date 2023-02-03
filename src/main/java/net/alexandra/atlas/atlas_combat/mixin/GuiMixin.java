@@ -5,10 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
-import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
-import net.alexandra.atlas.atlas_combat.extensions.IMinecraft;
-import net.alexandra.atlas.atlas_combat.extensions.IOptions;
-import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
@@ -105,6 +102,7 @@ public abstract class GuiMixin extends GuiComponent {
 	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"), cancellable = true)
 	private void renderCrosshair(PoseStack matrices, CallbackInfo ci) {
 		Options options = this.minecraft.options;
+		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		if (options.getCameraType().isFirstPerson()) {
 			if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
 				if (options.renderDebug && !options.hideGui && !this.minecraft.player.isReducedDebugInfo() && !options.reducedDebugInfo().get()) {
@@ -132,8 +130,12 @@ public abstract class GuiMixin extends GuiComponent {
 					int j = this.screenHeight / 2 - 7 + 16;
 					int k = this.screenWidth / 2 - 8;
 					ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
+					ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
+					boolean offHandShieldCooldown = offHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem());
+					boolean mainHandShieldCooldown = mainHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem());
+					boolean isShieldCooldown = offHandShieldCooldown || mainHandShieldCooldown;
 					boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
-					if (var7 && offHandStack.getItem() == Items.SHIELD && this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem())) {
+					if (var7 && isShieldCooldown) {
 						this.blit(matrices, k, j, 52, 112, 16, 16);
 					} else if (var7 && this.minecraft.player.isBlocking()) {
 						this.blit(matrices, k, j, 36, 112, 16, 16);
@@ -141,7 +143,7 @@ public abstract class GuiMixin extends GuiComponent {
 						float maxIndicator =  ((IOptions)options).attackIndicatorValue().get().floatValue();
 						float f = this.minecraft.player.getAttackStrengthScale(0.0F);
 						boolean bl = false;
-						EntityHitResult hitResult = ((IMinecraft)minecraft).rayTraceEntity(minecraft.player, 1.0F, ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5));
+						EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 						minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 						if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
 							bl = (minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
@@ -167,6 +169,7 @@ public abstract class GuiMixin extends GuiComponent {
 	@Inject(method = "renderHotbar", at = @At(value = "HEAD"), cancellable = true)
 	private void renderHotbar(float tickDelta, PoseStack matrices, CallbackInfo ci) {
 		Player player = getCameraPlayer();
+		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		if (player != null) {
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -217,7 +220,11 @@ public abstract class GuiMixin extends GuiComponent {
 				o = i - 91 - 22;
 			}
 			boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
-			if (var7 && itemStack.getItem() == Items.SHIELD && this.minecraft.player.getCooldowns().isOnCooldown(itemStack.getItem())) {
+			ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
+			boolean offHandShieldCooldown = itemStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(itemStack.getItem());
+			boolean mainHandShieldCooldown = mainHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem());
+			boolean isShieldCooldown = offHandShieldCooldown || mainHandShieldCooldown;
+			if (var7 && isShieldCooldown) {
 				this.blit(matrices, o, n, 18, 112, 18, 18);
 			} else if (var7 && this.minecraft.player.isBlocking()) {
 				this.blit(matrices, o, n, 0, 112, 18, 18);
@@ -225,7 +232,7 @@ public abstract class GuiMixin extends GuiComponent {
 				float maxIndicator =  ((IOptions)minecraft.options).attackIndicatorValue().get().floatValue();
 				float f = this.minecraft.player.getAttackStrengthScale(0.0F);
 				boolean bl = false;
-				EntityHitResult hitResult = ((IMinecraft)minecraft).rayTraceEntity(minecraft.player, 1.0F, ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5));
+				EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 				minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 				if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
 					bl = (minecraft.hitResult).distanceTo(this.minecraft.crosshairPickEntity) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
