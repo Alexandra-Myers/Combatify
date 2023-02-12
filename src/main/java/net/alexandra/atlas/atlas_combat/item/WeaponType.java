@@ -126,6 +126,7 @@ public enum WeaponType {
 			case KNIFE -> -0.5F;
 			case SWORD -> 0.5F;
 			case LONGSWORD, HOE, TRIDENT -> 1.0F;
+			case AXE -> !AtlasCombat.CONFIG.axeReachBuff() ? 0.0F : 0.5F;
 			default -> 0.0F;
 		};
     }

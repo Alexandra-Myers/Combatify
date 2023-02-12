@@ -8,9 +8,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class NetworkingHandler {
+import static net.alexandra.atlas.atlas_combat.AtlasCombat.modDetectionNetworkChannel;
 
-	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
+public class NetworkingHandler {
 
 	public NetworkingHandler() {
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {

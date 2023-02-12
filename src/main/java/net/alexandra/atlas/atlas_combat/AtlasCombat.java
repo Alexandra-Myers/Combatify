@@ -7,6 +7,7 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -21,6 +22,7 @@ import java.util.Objects;
 
 public class AtlasCombat implements ModInitializer {
 	public static Player player;
+	public static ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
 	public static final AtlasConfig CONFIG = AtlasConfig.createAndLoad();
 
 	@Override

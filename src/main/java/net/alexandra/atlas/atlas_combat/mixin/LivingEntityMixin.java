@@ -275,7 +275,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 						isParryTicker = 0;
 						isParry = true;
 						float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-						float actualStrength = Math.max(0.5F + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 240F)) * 0.125F), 0.125F);
+						float actualStrength = Math.max((0.5F + (0.125F * AtlasCombat.CONFIG.swordProtectionEfficacy())) + ((blockStrength + (-(((ISwordItem) shieldItem).getStrengthTimer()) / 480F)) * 0.125F), 0.125F);
 						if (source.isExplosion()) {
 							hurtCurrentlyUsedShield(20 * actualStrength);
 							amount -= 20 * actualStrength;

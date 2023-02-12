@@ -17,6 +17,8 @@ public class AtlasConfigModel {
 	@RestartRequired
 	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
+	public boolean saturationHealing = false;
+	public boolean axeReachBuff = false;
 	@RestartRequired
 	public boolean blockReach = true;
 	@RestartRequired
@@ -24,6 +26,8 @@ public class AtlasConfigModel {
 	@SectionHeader("Integers")
 	@RangeConstraint(min = 10, max = 1000)
 	public int maxWaitForPacketResponse = 20;
+	@RangeConstraint(min = -3, max = 4)
+	public int swordProtectionEfficacy = 0;
 	@RangeConstraint(min = 1, max = 1000)
 	public int potionUseDuration = 20;
 	@RangeConstraint(min = 1, max = 1000)

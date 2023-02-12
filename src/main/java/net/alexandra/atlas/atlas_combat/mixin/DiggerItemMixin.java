@@ -47,47 +47,11 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	@Redirect(method = "hurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
-		decreaseDurability(instance, amount, entity, breakCallback);
-	}
-	public <T extends LivingEntity> void decreaseDurability(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
-		if (!entity.level.isClientSide && (!(entity instanceof Player) || !((Player)entity).getAbilities().invulnerable)) {
-			if (instance.isDamageableItem() && allToolsAreWeapons) {
-				if (instance.hurt(1, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
-					breakCallback.accept(entity);
-					Item item = instance.getItem();
-					instance.shrink(1);
-					if (entity instanceof Player) {
-						((Player) entity).awardStat(Stats.ITEM_BROKEN.get(item));
-					}
-
-					instance.setDamageValue(0);
-				}
-			}else if(instance.isDamageableItem()) {
-				if((Object)this instanceof AxeItem || (Object) this instanceof HoeItem) {
-					if (instance.hurt(1, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
-						breakCallback.accept(entity);
-						Item item = instance.getItem();
-						instance.shrink(1);
-						if (entity instanceof Player) {
-							((Player) entity).awardStat(Stats.ITEM_BROKEN.get(item));
-						}
-
-						instance.setDamageValue(0);
-					}
-				}else{
-					if (instance.hurt(amount, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
-						breakCallback.accept(entity);
-						Item item = instance.getItem();
-						instance.shrink(1);
-						if (entity instanceof Player) {
-							((Player) entity).awardStat(Stats.ITEM_BROKEN.get(item));
-						}
-
-						instance.setDamageValue(0);
-					}
-				}
-			}
+		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
+		if(allToolsAreWeapons || bl) {
+			amount += 1;
 		}
+		instance.hurtAndBreak(amount, entity, breakCallback);
 	}
 	@Override
 	public double getAttackReach(Player player) {

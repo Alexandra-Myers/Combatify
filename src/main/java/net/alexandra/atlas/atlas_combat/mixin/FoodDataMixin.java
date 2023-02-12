@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.food.FoodData;
@@ -19,7 +20,8 @@ public class FoodDataMixin {
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 18))
 	public int changeConst(int constant) {
-		return 6;
+		if(AtlasCombat.CONFIG.saturationHealing()) return constant;
+		return 7;
 	}
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 20))
@@ -34,6 +36,10 @@ public class FoodDataMixin {
 
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V",ordinal = 1))
 	public void modifyNaturalHealing(FoodData instance, float exhaustion) {
+		if(AtlasCombat.CONFIG.saturationHealing()) {
+			instance.addExhaustion(exhaustion);
+			return;
+		}
 		int randomNumber = Mth.randomBetweenInclusive(RandomSource.create(), 1, 2);
 		if(randomNumber == 2) {
 			--foodLevel;

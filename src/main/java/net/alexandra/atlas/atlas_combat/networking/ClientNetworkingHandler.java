@@ -10,9 +10,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class ClientNetworkingHandler {
+import static net.alexandra.atlas.atlas_combat.AtlasCombat.modDetectionNetworkChannel;
 
-	public ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
+public class ClientNetworkingHandler {
 
 	public int ticksTowait = AtlasCombat.CONFIG.maxWaitForPacketResponse();
 
