@@ -24,6 +24,7 @@ public class AtlasConfigModel {
 	public boolean blockReach = true;
 	@RestartRequired
 	public boolean attackReach = true;
+	public boolean eatingInterruption = true;
 	@SectionHeader("Integers")
 	@RangeConstraint(min = 10, max = 1000)
 	public int maxWaitForPacketResponse = 20;
