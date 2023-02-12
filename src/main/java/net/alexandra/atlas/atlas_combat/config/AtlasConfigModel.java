@@ -18,6 +18,7 @@ public class AtlasConfigModel {
 	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
 	public boolean saturationHealing = false;
+	@RestartRequired
 	public boolean axeReachBuff = false;
 	@RestartRequired
 	public boolean blockReach = true;
