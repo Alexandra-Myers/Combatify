@@ -49,7 +49,7 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
 		if(allToolsAreWeapons || bl) {
-			amount += 1;
+			amount -= 1;
 		}
 		instance.hurtAndBreak(amount, entity, breakCallback);
 	}
