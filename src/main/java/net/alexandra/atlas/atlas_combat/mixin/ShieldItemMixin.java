@@ -30,6 +30,7 @@ public class ShieldItemMixin extends Item implements IShieldItem {
         float g = getShieldKnockbackResistanceValue(itemStack);
         list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double)f), Component.translatable("attribute.name.generic.shield_strength")})).withStyle(ChatFormatting.DARK_GREEN));
         list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double)(g * 10.0F)), Component.translatable("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
+		ci.cancel();
     }
 
 	@Override
