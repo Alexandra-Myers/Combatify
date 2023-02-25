@@ -8,10 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
@@ -22,8 +19,10 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ThrownTrident.class)
@@ -34,7 +33,9 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements net.al
 	private static EntityDataAccessor<Byte> ID_LOYALTY;
 
 	@Shadow
-	private ItemStack tridentItem;
+	public ItemStack tridentItem;
+	@Unique
+	public LivingEntity livingEntity;
 
 	@Shadow
 	private boolean dealtDamage;
@@ -72,54 +73,17 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements net.al
 			}
 		}
 	}
-	@Inject(method = "onHitEntity", at = @At(value = "HEAD"), cancellable = true)
-	public void setDealtDamage(EntityHitResult entityHitResult, CallbackInfo ci) {
-		dealtDamage(entityHitResult);
-		ci.cancel();
+	@Inject(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getDamageBonus(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/MobType;)F"))
+	public void extractTarget(EntityHitResult p_37573_, CallbackInfo ci) {
+		Entity entity = p_37573_.getEntity();
+		if(entity instanceof LivingEntity livingEntity1) {
+			livingEntity = livingEntity1;
+		}
 	}
-	public void dealtDamage(EntityHitResult entityHitResult) {
-		ThrownTrident trident = ((ThrownTrident) (Object)this);
-		Entity entity = entityHitResult.getEntity();
-		float f = 8.0F;
+	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getDamageBonus(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/MobType;)F"))
+	public float dealtDamage(ItemStack p_44834_, MobType p_44835_) {
 		EnchantmentHelper helper = new EnchantmentHelper();
-		if (entity instanceof LivingEntity livingEntity) {
-			f += ((IEnchantmentHelper)helper).getDamageBonus(this.tridentItem, livingEntity);
-		}
-
-		Entity entity2 = trident.getOwner();
-		DamageSource damageSource = DamageSource.trident(trident, (Entity)(entity2 == null ? trident : entity2));
-		dealtDamage = true;
-		SoundEvent soundEvent = SoundEvents.TRIDENT_HIT;
-		if (entity.hurt(damageSource, f)) {
-			if (entity.getType() == EntityType.ENDERMAN) {
-				return;
-			}
-
-			if (entity instanceof LivingEntity livingEntity2) {
-				if (entity2 instanceof LivingEntity) {
-					EnchantmentHelper.doPostHurtEffects(livingEntity2, entity2);
-					EnchantmentHelper.doPostDamageEffects((LivingEntity)entity2, livingEntity2);
-				}
-
-				this.doPostHurtEffects(livingEntity2);
-			}
-		}
-
-		trident.setDeltaMovement(trident.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
-		float g = 1.0F;
-		if (trident.level instanceof ServerLevel && trident.level.isThundering() && trident.isChanneling()) {
-			BlockPos blockPos = entity.blockPosition();
-			if (trident.level.canSeeSky(blockPos)) {
-				LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(trident.level);
-				lightningBolt.moveTo(Vec3.atBottomCenterOf(blockPos));
-				lightningBolt.setCause(entity2 instanceof ServerPlayer ? (ServerPlayer)entity2 : null);
-				trident.level.addFreshEntity(lightningBolt);
-				soundEvent = SoundEvents.TRIDENT_THUNDER;
-				g = 5.0F;
-			}
-		}
-
-		trident.playSound(soundEvent, g, 1.0F);
+		return ((IEnchantmentHelper)helper).getDamageBonus(this.tridentItem, livingEntity);
 	}
 
 }
