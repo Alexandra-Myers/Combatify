@@ -5,17 +5,13 @@ import net.alexandra.atlas.atlas_combat.util.DummyAttackDamageMobEffect;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.AttackDamageMobEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -43,7 +39,7 @@ public class EffectsMixin {
 					.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL)
 	);
 	private static MobEffect registrySet(int RawId, String id, MobEffect effect) {
-		Holder<MobEffect> mobEffectHolder = ((WritableRegistry) BuiltInRegistries.MOB_EFFECT).registerMapping(RawId, ResourceKey.create(BuiltInRegistries.MOB_EFFECT.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
+		Holder<MobEffect> mobEffectHolder = ((WritableRegistry) Registry.MOB_EFFECT).registerMapping(RawId, ResourceKey.create(Registry.MOB_EFFECT.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
 		return mobEffectHolder.value();
 	}
 }

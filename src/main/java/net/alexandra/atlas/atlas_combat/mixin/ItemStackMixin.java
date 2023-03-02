@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
@@ -8,10 +7,6 @@ import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -21,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

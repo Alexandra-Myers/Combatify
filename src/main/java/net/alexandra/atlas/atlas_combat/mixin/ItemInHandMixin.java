@@ -1,7 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
+import com.mojang.math.Vector3f;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
@@ -98,18 +98,18 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		this.humanoidArm = humanoidArm;
 		this.f = f;
 	}
-	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
-	private void modifyBowCode(PoseStack instance, float x, float y, float z) {
+	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(DDD)V", ordinal = 5))
+	private void modifyBowCode(PoseStack instance, double d, double e, double f) {
 		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		instance.translate(q * -0.2785682, 0.18344387412071228, 0.15731531381607056);
 	}
-	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
-	private void modifyBowCode1(PoseStack instance, float x, float y, float z) {
-		float r = (float)itemStack.getUseDuration() - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
-		float m = Mth.sin((r - 0.1F) * 1.3F);
-		float n = ((IBowItem)itemStack.getItem()).getFatigueForTime((int) r) - 0.1F;
-		float o = m * n;
-		instance.translate(o * 0.0F, o * 0.004F, o * 0.0F);
+	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(DDD)V", ordinal = 6))
+	private void modifyBowCode1(PoseStack instance, double d, double e, double f) {
+		double r = itemStack.getUseDuration() - (this.minecraft.player.getUseItemRemainingTicks() - f + 1.0);
+		float m = Mth.sin((float) ((r - 0.1) * 1.3));
+		double n = ((IBowItem)itemStack.getItem()).getFatigueForTime((int) r) - 0.1;
+		double o = m * n;
+		instance.translate(o * 0.0, o * 0.004, o * 0.0);
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
@@ -123,8 +123,8 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	public void applyItemBlockTransform2(PoseStack poseStack, HumanoidArm humanoidArm) {
 		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
-		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
-		poseStack.mulPose(Axis.YP.rotationDegrees((float) reverse * 13.365F));
-		poseStack.mulPose(Axis.ZP.rotationDegrees((float) reverse * 78.05F));
+		poseStack.mulPose(Vector3f.XP.rotationDegrees(-102.25F));
+		poseStack.mulPose(Vector3f.YP.rotationDegrees((float) reverse * 13.365F));
+		poseStack.mulPose(Vector3f.ZP.rotationDegrees((float) reverse * 78.05F));
 	}
 }

@@ -35,7 +35,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 
 	@Shadow
 	@Final
-	private ClientPacketListener connection;
+	public ClientPacketListener connection;
 
 	@Shadow
 	private GameType localPlayerMode;

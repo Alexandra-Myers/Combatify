@@ -14,7 +14,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 
 public class NewServerboundInteractPacket extends ServerboundInteractPacket implements IServerboundInteractPacket {
 	public static final ServerboundInteractPacket.Action MISS_ATTACK_ACTION = new ServerboundInteractPacket.Action() {
-		ServerboundInteractPacket.ActionType type = ClassTinkerers.getEnum(ServerboundInteractPacket.ActionType.class, "MISS_ATTACK");
+		final ServerboundInteractPacket.ActionType type = ClassTinkerers.getEnum(ServerboundInteractPacket.ActionType.class, "MISS_ATTACK");
 		@Override
 		public ServerboundInteractPacket.ActionType getType() {
 			return type;

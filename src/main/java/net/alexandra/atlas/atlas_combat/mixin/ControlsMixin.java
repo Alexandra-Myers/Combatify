@@ -26,11 +26,11 @@ public abstract class ControlsMixin extends OptionsSubScreen {
 		addRenderableWidget(((IOptions)options).autoAttack().createButton(this.options, i, k, 150));
 		addRenderableWidget(((IOptions)options).shieldCrouch().createButton(this.options, j, k, 150));
 	}
-	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 6))
+	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5))
 	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener) {
-		return this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
+		return this.addRenderableWidget(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, (button) -> {
 			this.minecraft.setScreen(this.lastScreen);
-		}).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
+		}));
 
 		//return addRenderableWidget(this.addRenderableWidget(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.lastScreen))));
 	}

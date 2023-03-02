@@ -151,64 +151,58 @@ public abstract class MinecraftMixin implements IMinecraft {
 		} else {
 			this.retainAttack = false;
 			boolean bl = false;
-			ItemStack itemStack = this.player.getItemInHand(InteractionHand.MAIN_HAND);
-			if (itemStack.isItemEnabled(level.enabledFeatures())) {
-				switch (redirectResult(this.hitResult).getType()) {
-					case ENTITY:
-						if (player.distanceTo(((EntityHitResult)hitResult).getEntity()) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
-							this.gameMode.attack(this.player, ((EntityHitResult) this.hitResult).getEntity());
-						} else {
-							((IPlayerGameMode)gameMode).swingInAir(player);
+			switch (redirectResult(this.hitResult).getType()) {
+				case ENTITY:
+					if (player.distanceTo(((EntityHitResult)hitResult).getEntity()) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
+						this.gameMode.attack(this.player, ((EntityHitResult) this.hitResult).getEntity());
+					} else {
+						((IPlayerGameMode)gameMode).swingInAir(player);
+					}
+					break;
+				case BLOCK:
+					BlockHitResult blockHitResult = (BlockHitResult)this.hitResult;
+					BlockPos blockPos = blockHitResult.getBlockPos();
+					if (!this.level.getBlockState(blockPos).isAir()) {
+						this.gameMode.startDestroyBlock(blockPos, blockHitResult.getDirection());
+						if (this.level.getBlockState(blockPos).isAir()) {
+							bl = true;
 						}
 						break;
-					case BLOCK:
-						BlockHitResult blockHitResult = (BlockHitResult)this.hitResult;
-						BlockPos blockPos = blockHitResult.getBlockPos();
-						if (!this.level.getBlockState(blockPos).isAir()) {
-							this.gameMode.startDestroyBlock(blockPos, blockHitResult.getDirection());
-							if (this.level.getBlockState(blockPos).isAir()) {
-								bl = true;
+					}
+				case MISS:
+					EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
+					if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
+						if(!(result.getEntity() instanceof Player)) {
+							if (result.getEntity() instanceof Guardian
+									|| result.getEntity() instanceof Cat
+									|| result.getEntity() instanceof Vex
+									|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
+									|| result.getEntity() instanceof Fox
+									|| result.getEntity() instanceof Frog
+									|| result.getEntity() instanceof Bee
+									|| result.getEntity() instanceof Bat
+									|| result.getEntity() instanceof AbstractFish
+									|| result.getEntity() instanceof Rabbit) {
+								result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
+							} else {
+								result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
 							}
-							break;
-						}
-					case MISS:
-						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-						if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
-							if(!(result.getEntity() instanceof Player)) {
-								if (result.getEntity() instanceof Guardian
-										|| result.getEntity() instanceof Cat
-										|| result.getEntity() instanceof Vex
-										|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
-										|| result.getEntity() instanceof Fox
-										|| result.getEntity() instanceof Frog
-										|| result.getEntity() instanceof Bee
-										|| result.getEntity() instanceof Bat
-										|| result.getEntity() instanceof AbstractFish
-										|| result.getEntity() instanceof Rabbit) {
-									result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-								} else {
-									result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
-								}
-								if(result != null) {
-									this.gameMode.attack(this.player, result.getEntity());
-								} else {
-									((IPlayerGameMode)gameMode).swingInAir(player);
-								}
+							if(result != null) {
+								this.gameMode.attack(this.player, result.getEntity());
 							} else {
 								((IPlayerGameMode)gameMode).swingInAir(player);
 							}
 						} else {
 							((IPlayerGameMode)gameMode).swingInAir(player);
 						}
-				}
-
-				this.player.swing(InteractionHand.MAIN_HAND);
-				cir.setReturnValue(bl);
-				cir.cancel();
-			} else {
-				cir.setReturnValue(false);
-				cir.cancel();
+					} else {
+						((IPlayerGameMode)gameMode).swingInAir(player);
+					}
 			}
+
+			this.player.swing(InteractionHand.MAIN_HAND);
+			cir.setReturnValue(bl);
+			cir.cancel();
 		}
 		cir.setReturnValue(false);
 		cir.cancel();

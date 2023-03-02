@@ -3,10 +3,6 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
@@ -27,6 +23,6 @@ public class AttributesMixin {
 	private static Attribute registrySet(int RawId, String id, Attribute attribute) {
 		/*Holder<Attribute> attributeHolder = ((WritableRegistry) BuiltInRegistries.ITEM).registerMapping(RawId, ResourceKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(id)), attribute, Lifecycle.stable());
 		return attributeHolder.value();*/
-		return Registry.registerMapping(BuiltInRegistries.ATTRIBUTE, RawId,id, attribute);
+		return Registry.registerMapping(Registry.ATTRIBUTE, RawId,id, attribute);
 	}
 }

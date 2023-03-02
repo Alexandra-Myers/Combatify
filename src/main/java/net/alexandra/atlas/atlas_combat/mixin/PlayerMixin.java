@@ -73,7 +73,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	@Final
-	public Abilities abilities;
+	private Abilities abilities;
 	@Unique
 	protected int attackStrengthStartValue;
 

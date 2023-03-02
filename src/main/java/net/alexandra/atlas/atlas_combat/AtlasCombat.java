@@ -5,8 +5,8 @@ import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Position;
+import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +39,7 @@ public class AtlasCombat implements ModInitializer {
 				return trident;
 			}
 		});
-		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
+		List<Item> items = Registry.ITEM.stream().toList();
 
 		for(Item item : items) {
 			if(item == Items.SNOWBALL || item == Items.EGG) {
