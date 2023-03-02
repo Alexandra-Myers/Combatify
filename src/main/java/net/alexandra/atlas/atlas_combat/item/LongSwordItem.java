@@ -7,6 +7,8 @@ import net.alexandra.atlas.atlas_combat.extensions.PiercingItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -114,7 +116,7 @@ public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanisha
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
 		double f = getPiercingLevel();
-		tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.longsword_piercing")})).withStyle(ChatFormatting.DARK_GREEN));
+		tooltip.add((new TextComponent("")).append(new TranslatableComponent("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), new TranslatableComponent("attribute.name.generic.longsword_piercing")})).withStyle(ChatFormatting.DARK_GREEN));
 		super.appendHoverText(stack, world, tooltip, context);
 	}
 }

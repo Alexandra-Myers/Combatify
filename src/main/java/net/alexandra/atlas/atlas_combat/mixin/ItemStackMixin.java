@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
@@ -52,9 +53,9 @@ public abstract class ItemStackMixin implements IItemStack {
 	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"))
 	public boolean preventOutcome(boolean original) {
 		if (!original) {
-			boolean attackReach = AtlasCombat.CONFIG.attackReach();
-			list.add(CommonComponents.EMPTY);
-			list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
+			boolean attackReach = AtlasConfig.attackReach;
+			list.add(TextComponent.EMPTY);
+			list.add(new TranslatableComponent("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 
 			for (Map.Entry<Attribute, AttributeModifier> entry : multimap.entries()) {
 				AttributeModifier attributeModifier = entry.getValue();
@@ -91,32 +92,32 @@ public abstract class ItemStackMixin implements IItemStack {
 
 				if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || bl) {
 					list.add(
-							Component.literal(" ")
+							new TextComponent(" ")
 									.append(
-											Component.translatable(
+											new TranslatableComponent(
 													"attribute.modifier.equals." + attributeModifier.getOperation().toValue(),
 													ATTRIBUTE_MODIFIER_FORMAT.format(e),
-													Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
+													new TranslatableComponent(((Attribute) entry.getKey()).getDescriptionId())
 											)
 									)
 									.withStyle(ChatFormatting.DARK_GREEN)
 					);
 				} else if (d > 0.0) {
 					list.add(
-							Component.translatable(
+							new TranslatableComponent(
 											"attribute.modifier.plus." + attributeModifier.getOperation().toValue(),
 											ATTRIBUTE_MODIFIER_FORMAT.format(e),
-											Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
+											new TranslatableComponent(((Attribute) entry.getKey()).getDescriptionId())
 									)
 									.withStyle(ChatFormatting.BLUE)
 					);
 				} else if (d < 0.0) {
 					e *= -1.0;
 					list.add(
-							Component.translatable(
+							new TranslatableComponent(
 											"attribute.modifier.take." + attributeModifier.getOperation().toValue(),
 											ATTRIBUTE_MODIFIER_FORMAT.format(e),
-											Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
+											new TranslatableComponent(((Attribute) entry.getKey()).getDescriptionId())
 									)
 									.withStyle(ChatFormatting.RED)
 					);

@@ -2,12 +2,15 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.extensions.ISwordItem;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -32,12 +35,12 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-		if(AtlasCombat.CONFIG.swordBlocking()) {
+		if(AtlasConfig.swordBlocking) {
 			float f = getShieldBlockDamageValue(stack);
 			float g = getShieldKnockbackResistanceValue(stack);
-			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength")})).withStyle(ChatFormatting.DARK_GREEN));
+			tooltip.add((new TextComponent("")).append(new TranslatableComponent("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), new TranslatableComponent("attribute.name.generic.sword_block_strength")})).withStyle(ChatFormatting.DARK_GREEN));
 			if (g > 0.0F) {
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) (g * 10.0F)), Component.translatable("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
+				tooltip.add((new TextComponent("")).append(new TranslatableComponent("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) (g * 10.0F)), new TranslatableComponent("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
 			}
 		}
 		super.appendHoverText(stack, world, tooltip, context);
@@ -58,7 +61,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-		if(AtlasCombat.CONFIG.swordBlocking() && hand != InteractionHand.OFF_HAND) {
+		if(AtlasConfig.swordBlocking && hand != InteractionHand.OFF_HAND) {
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
 			ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
@@ -118,7 +121,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	public float getShieldBlockDamageValue(ItemStack itemStack) {
 		Tier var2 = getTier();
 		float strengthIncrease = var2.getAttackDamageBonus() <= 1.0F ? -1F : 0.0F;
-		strengthIncrease += AtlasCombat.CONFIG.swordProtectionEfficacy();
+		strengthIncrease += AtlasConfig.swordProtectionEfficacy;
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		return 0.5F + (strengthIncrease * 0.125F);
 	}

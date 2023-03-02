@@ -4,13 +4,7 @@ import com.chocohead.mm.api.ClassTinkerers;
 import net.alexandra.atlas.atlas_combat.extensions.IHandler;
 import net.alexandra.atlas.atlas_combat.extensions.IServerboundInteractPacket;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 
 public class NewServerboundInteractPacket extends ServerboundInteractPacket implements IServerboundInteractPacket {
 	public static final ServerboundInteractPacket.Action MISS_ATTACK_ACTION = new ServerboundInteractPacket.Action() {

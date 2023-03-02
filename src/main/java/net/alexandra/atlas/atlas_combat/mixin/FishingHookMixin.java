@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -33,14 +34,14 @@ public abstract class FishingHookMixin extends Entity {
 
 	@Inject(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;II)V", at = @At(value = "TAIL"))
 	public void injectChanges(Player player, Level level, int i, int j, CallbackInfo ci) {
-		if(AtlasCombat.CONFIG.fishingHookKB())
+		if(AtlasConfig.fishingHookKB)
 			setDeltaMovement(getDeltaMovement().multiply(1.5, 1, 1.5));
 
 	}
 
 	@Inject(method = "onHitEntity", at = @At(value = "TAIL"))
 	protected void onHitEntity(EntityHitResult entityHitResult, CallbackInfo ci) {
-		if(AtlasCombat.CONFIG.fishingHookKB() && entityHitResult.getEntity() instanceof LivingEntity livingEntity)
+		if(AtlasConfig.fishingHookKB && entityHitResult.getEntity() instanceof LivingEntity livingEntity)
 			livingEntity.hurt(DamageSource.thrown(((FishingHook) (Object) this), getPlayerOwner()), 0);
 	}
 }

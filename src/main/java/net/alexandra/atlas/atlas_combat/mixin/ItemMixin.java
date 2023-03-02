@@ -2,9 +2,8 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.AtlasConfigModel;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
-import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -53,7 +52,7 @@ public abstract class ItemMixin implements ItemExtensions {
 	@Overwrite
 	public int getUseDuration(ItemStack stack) {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
-			return AtlasCombat.CONFIG.stewUseDuration();
+			return AtlasConfig.stewUseDuration;
 		}else if (stack.getItem().isEdible()) {
 			return ((Item) (Object)this).getFoodProperties().isFastFood() ? 16 : 32;
 		} else {

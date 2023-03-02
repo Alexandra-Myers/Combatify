@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Blaze;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class SnowballMixin {
 
 	@Unique
-	public final float snowballDamage = AtlasCombat.CONFIG.snowballDamage();
+	public final float snowballDamage = AtlasConfig.snowballDamage;
 
 
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))

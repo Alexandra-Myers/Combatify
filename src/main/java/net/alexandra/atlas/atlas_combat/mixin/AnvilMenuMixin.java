@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class AnvilMenuMixin {
 	@Redirect(method = "createResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;canEnchant(Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectCheck(Enchantment instance, ItemStack stack) {
-		return instance instanceof SweepingEdgeEnchantment && instance instanceof CustomEnchantment customEnchantment ? customEnchantment.isAcceptibleAnvil(stack) : instance.canEnchant(stack);
+		return instance instanceof SweepingEdgeEnchantment && instance instanceof CustomEnchantment customEnchantment ? customEnchantment.isAcceptableAnvil(stack) : instance.canEnchant(stack);
 	}
 }

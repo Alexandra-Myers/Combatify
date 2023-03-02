@@ -3,6 +3,8 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
@@ -28,8 +30,8 @@ public class ShieldItemMixin extends Item implements IShieldItem {
         BannerItem.appendHoverTextFromBannerBlockEntityTag(itemStack, list);
         float f = getShieldBlockDamageValue(itemStack);
         float g = getShieldKnockbackResistanceValue(itemStack);
-        list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double)f), Component.translatable("attribute.name.generic.shield_strength")})).withStyle(ChatFormatting.DARK_GREEN));
-        list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double)(g * 10.0F)), Component.translatable("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
+        list.add((new TextComponent("")).append(new TranslatableComponent("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double)f), new TranslatableComponent("attribute.name.generic.shield_strength")})).withStyle(ChatFormatting.DARK_GREEN));
+        list.add((new TextComponent("")).append(new TranslatableComponent("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double)(g * 10.0F)), new TranslatableComponent("attribute.name.generic.knockback_resistance")})).withStyle(ChatFormatting.DARK_GREEN));
 		ci.cancel();
     }
 

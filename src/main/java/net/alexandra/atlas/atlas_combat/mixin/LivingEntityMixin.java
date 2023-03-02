@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
@@ -204,7 +205,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				this.setHealth(i - f);
 				this.getCombatTracker().recordDamage(source, i, f);
 				this.setAbsorptionAmount(this.getAbsorptionAmount() - f);
-				this.gameEvent(GameEvent.ENTITY_DAMAGE);
+				this.gameEvent(GameEvent.ENTITY_DAMAGED);
 			}
 		}
 		ci.cancel();
@@ -300,7 +301,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (entity2 instanceof Player player) {
 				invulnerableTime = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
 			}
-			if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic() && !source.isFall() && AtlasCombat.CONFIG.eatingInterruption()) {
+			if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic() && !source.isFall() && AtlasConfig.eatingInterruption) {
 				thisEntity.stopUsingItem();
 			}
 
@@ -391,7 +392,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 					}
 
 					thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-					if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
+					if ((AtlasConfig.fishingHookKB && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasConfig.midairKB)) {
 						projectileKnockback(0.5F, d, e);
 					} else {
 						newKnockback(0.5F, d, e);
@@ -580,7 +581,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 			if (amount <= 0.0F) {
 				return 0.0F;
-			} else if (source.isBypassEnchantments()) {
+			} else if (source.isBypassMagic()) {
 				return amount;
 			} else {
 				int i = EnchantmentHelper.getDamageProtection(this.getArmorSlots(), source);

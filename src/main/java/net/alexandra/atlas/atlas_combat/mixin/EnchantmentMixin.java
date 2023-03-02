@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
 import net.alexandra.atlas.atlas_combat.item.KnifeItem;
 import net.alexandra.atlas.atlas_combat.item.LongSwordItem;
@@ -34,8 +35,8 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	}
 
 	@Override
-	public boolean isAcceptibleConditions(ItemStack stack) {
-		if(thisEnchantment instanceof SweepingEdgeEnchantment && !AtlasCombat.CONFIG.toolsAreWeapons()) {
+	public boolean isAcceptableConditions(ItemStack stack) {
+		if(thisEnchantment instanceof SweepingEdgeEnchantment && !AtlasConfig.toolsAreWeapons) {
 			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
 		}else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
 			return canEnchant(stack);
@@ -47,8 +48,8 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	}
 
 	@Override
-	public boolean isAcceptibleAnvil(ItemStack stack) {
-		if(thisEnchantment instanceof SweepingEdgeEnchantment && AtlasCombat.CONFIG.toolsAreWeapons()) {
+	public boolean isAcceptableAnvil(ItemStack stack) {
+		if(thisEnchantment instanceof SweepingEdgeEnchantment && AtlasConfig.toolsAreWeapons) {
 			return canEnchant(stack);
 		}else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
 			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());

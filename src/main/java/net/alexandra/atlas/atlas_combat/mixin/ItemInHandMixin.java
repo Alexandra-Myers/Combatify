@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -66,7 +67,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				? abstractClientPlayer.getMainArm()
 				: abstractClientPlayer.getMainArm().getOpposite();
 		this.humanoidArm = humanoidArm;
-		if (AtlasCombat.CONFIG.swordBlocking()) {
+		if (AtlasConfig.swordBlocking) {
 			if (abstractClientPlayer.getUsedItemHand() == interactionHand && !((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().isEmpty() && ((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().getItem() instanceof SwordItem) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
@@ -85,7 +86,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
 	private void injectFishing(PoseStack poseStack) {
 		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
-		if(((IOptions) minecraft.options).fishingRodLegacy().get() && itemStack.getItem() instanceof FishingRodItem || itemStack.getItem() instanceof FoodOnAStickItem<?>) {
+		if(((IOptions) minecraft.options).fishingRodLegacy() && itemStack.getItem() instanceof FishingRodItem || itemStack.getItem() instanceof FoodOnAStickItem<?>) {
 			poseStack.pushPose();
 			poseStack.translate(q * 0.08f, 0.1f, -0.33f);
 			poseStack.scale(0.95f, 1f, 1f);

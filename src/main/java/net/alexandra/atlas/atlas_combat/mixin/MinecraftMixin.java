@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -18,7 +19,6 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.*;
-import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
@@ -171,14 +171,13 @@ public abstract class MinecraftMixin implements IMinecraft {
 					}
 				case MISS:
 					EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-					if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
+					if(result != null && AtlasConfig.refinedCoyoteTime) {
 						if(!(result.getEntity() instanceof Player)) {
 							if (result.getEntity() instanceof Guardian
 									|| result.getEntity() instanceof Cat
 									|| result.getEntity() instanceof Vex
 									|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
 									|| result.getEntity() instanceof Fox
-									|| result.getEntity() instanceof Frog
 									|| result.getEntity() instanceof Bee
 									|| result.getEntity() instanceof Bat
 									|| result.getEntity() instanceof AbstractFish
@@ -237,7 +236,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 					ItemStack itemStack = this.player.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty()) {
-						this.gameMode.useItem(this.player, interactionHand);
+						this.gameMode.useItem(this.player, level, interactionHand);
 					}
 				}
 		}
@@ -288,7 +287,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 								|| entityHitResult.getEntity() instanceof Vex
 								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
 								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
 								|| entityHitResult.getEntity() instanceof Bee
 								|| entityHitResult.getEntity() instanceof Bat
 								|| entityHitResult.getEntity() instanceof AbstractFish
@@ -329,7 +327,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 								|| entityHitResult.getEntity() instanceof Vex
 								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
 								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
 								|| entityHitResult.getEntity() instanceof Bee
 								|| entityHitResult.getEntity() instanceof Bat
 								|| entityHitResult.getEntity() instanceof AbstractFish
@@ -373,7 +370,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 								|| entityHitResult.getEntity() instanceof Vex
 								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
 								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
 								|| entityHitResult.getEntity() instanceof Bee
 								|| entityHitResult.getEntity() instanceof Bat
 								|| entityHitResult.getEntity() instanceof AbstractFish
@@ -417,7 +413,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 								|| entityHitResult.getEntity() instanceof Vex
 								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
 								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
 								|| entityHitResult.getEntity() instanceof Bee
 								|| entityHitResult.getEntity() instanceof Bat
 								|| entityHitResult.getEntity() instanceof AbstractFish
@@ -453,7 +448,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 
 				this.retainAttack = false;
-			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-1.0F) && ((IOptions)options).autoAttack().get()) {
+			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-1.0F) && ((IOptions)options).autoAttack()) {
 				this.startAttack();
 			} else {
 				this.gameMode.stopDestroyBlock();

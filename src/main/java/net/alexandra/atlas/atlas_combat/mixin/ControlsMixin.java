@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasClient;
 import net.alexandra.atlas.atlas_combat.extensions.IOptions;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -23,8 +24,8 @@ public abstract class ControlsMixin extends OptionsSubScreen {
 	@Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void injectOptions(CallbackInfo ci, int i, int j, int k) {
 		k+=24;
-		addRenderableWidget(((IOptions)options).autoAttack().createButton(this.options, i, k, 150));
-		addRenderableWidget(((IOptions)options).shieldCrouch().createButton(this.options, j, k, 150));
+		addRenderableWidget(AtlasClient.autoAttackOption.createButton(this.options, i, k, 150));
+		addRenderableWidget(AtlasClient.shieldCrouchOption.createButton(this.options, j, k, 150));
 	}
 	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5))
 	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener) {

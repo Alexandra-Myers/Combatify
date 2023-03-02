@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -35,10 +36,10 @@ public enum WeaponType {
 		float var6 = this.getBlockReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
         var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
-        if (var5 != 0.0F && AtlasCombat.CONFIG.attackReach()) {
+        if (var5 != 0.0F && AtlasConfig.attackReach) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-		if (var6 != 0.0F && AtlasCombat.CONFIG.blockReach()) {
+		if (var6 != 0.0F && AtlasConfig.blockReach) {
 			var2.put(NewAttributes.BLOCK_REACH, new AttributeModifier(BASE_BLOCK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
 		}
 
@@ -46,7 +47,7 @@ public enum WeaponType {
     }
 
 	public float getDamage(Tier var1) {
-		int modifier = AtlasCombat.CONFIG.fistDamage() ? 1 : 0;
+		int modifier = AtlasConfig.fistDamage ? 1 : 0;
 		float var2 = var1.getAttackDamageBonus() + modifier;
 		boolean bl = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
         switch (this) {
@@ -126,7 +127,7 @@ public enum WeaponType {
 			case KNIFE -> -0.5F;
 			case SWORD -> 0.5F;
 			case LONGSWORD, HOE, TRIDENT -> 1.0F;
-			case AXE -> !AtlasCombat.CONFIG.axeReachBuff() ? 0.0F : 0.5F;
+			case AXE -> !AtlasConfig.axeReachBuff ? 0.0F : 0.5F;
 			default -> 0.0F;
 		};
     }
