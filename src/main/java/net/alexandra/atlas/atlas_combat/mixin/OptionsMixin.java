@@ -30,7 +30,7 @@ public abstract class OptionsMixin implements IOptions {
 		AtlasClient.protectionIndicator = visitor.process("protIndicator", AtlasClient.protectionIndicator);
 		AtlasClient.fishingRodLegacy = visitor.process("fishingRodLegacy", AtlasClient.fishingRodLegacy);
 		AtlasClient.attackIndicatorValue = Mth.clamp(visitor.process("attackIndicatorValue", AtlasClient.attackIndicatorValue), 0.1, 2.0);
-//		AtlasClient.shieldIndicator = visitor.process("shieldIndicator", AtlasClient.shieldIndicator, (IntFunction)(ShieldIndicatorStatus::byId), (ToIntFunction)(ShieldIndicatorStatus::getId));
+		AtlasClient.shieldIndicator = visitor.process("shieldIndicator", AtlasClient.shieldIndicator, ShieldIndicatorStatus::byId, ShieldIndicatorStatus::getId);
 	}
 
 	@Override
