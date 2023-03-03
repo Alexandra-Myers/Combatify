@@ -21,11 +21,11 @@ public abstract class ControlsMixin extends OptionsSubScreen {
 		super(screen, options, component);
 	}
 
-	@Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5), locals = LocalCapture.CAPTURE_FAILSOFT)
+	@Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 4), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void injectOptions(CallbackInfo ci, int i, int j, int k) {
+		addRenderableWidget(AtlasClient.autoAttackOption.createButton(this.options, j, k, 150));
 		k+=24;
-		addRenderableWidget(AtlasClient.autoAttackOption.createButton(this.options, i, k, 150));
-		addRenderableWidget(AtlasClient.shieldCrouchOption.createButton(this.options, j, k, 150));
+		addRenderableWidget(AtlasClient.shieldCrouchOption.createButton(this.options, i, k, 150));
 	}
 	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5))
 	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener) {

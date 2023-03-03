@@ -16,6 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": ["net.alexandra.atlas.atlas_combat.AtlasCombat"],
+        "modmenu": ["net.alexandra.atlas.atlas_combat.ModMenuIntegration"],
 		"client": ["net.alexandra.atlas.atlas_combat.AtlasClient"],
 		"mm:early_risers": ["net.alexandra.atlas.atlas_combat.EarlyRiser"]
 	},

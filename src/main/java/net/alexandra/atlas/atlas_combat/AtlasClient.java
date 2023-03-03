@@ -36,7 +36,7 @@ public class AtlasClient implements ClientModInitializer {
 	public static final ProgressOption attackIndicatorValueOption = new ProgressOption("options.attackIndicatorValue",
 			0.1, 2.0, 0.0F, (options) -> attackIndicatorValue, (options, double_) -> attackIndicatorValue = double_, (options, progressOption) -> {
 		double d = progressOption.get(options);
-		return d == 2.0 ? CommonComponents.optionStatus(new TranslatableComponent("options.attackIndicatorValue.default"), false) : IOptions.doubleValueLabel(new TranslatableComponent("options.attackIndicatorValue"),d);
+		return d == 2.0 ? new TranslatableComponent("options.attackIndicatorValue.default") : IOptions.doubleValueLabel(new TranslatableComponent("options.attackIndicatorValue"),d);
 	}, (minecraft) -> minecraft.font.split(new TranslatableComponent("options.attackIndicatorValue.tooltip"), 200));
 	public static final CycleOption<ShieldIndicatorStatus> shieldIndicatorOption = CycleOption.create("options.shieldIndicator", ShieldIndicatorStatus.values(),
 			(shieldIndicatorStatus) -> new TranslatableComponent(shieldIndicatorStatus.getKey()),
