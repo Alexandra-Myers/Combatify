@@ -1,71 +1,57 @@
 package net.alexandra.atlas.atlas_combat.networking;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 
 import static net.alexandra.atlas.atlas_combat.AtlasCombat.modDetectionNetworkChannel;
 
 public class ClientNetworkingHandler {
-
-	public int ticksTowait = AtlasConfig.maxWaitForPacketResponse;
-
-	public static boolean receivedAnswer = false;
-	public static int ticksElapsed = 0;
 	public ClientNetworkingHandler() {
 
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> receivedAnswer = false);
-
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
-			if(buf.getBoolean(0)) {
-				receivedAnswer = true;
-			}
-			AtlasConfig.toolsAreWeapons = buf.getBoolean(1);
-			if(AtlasConfig.bedrockBlockReach != buf.getBoolean(2)) {
+			AtlasConfig.toolsAreWeapons = buf.getBoolean(0);
+			if(AtlasConfig.bedrockBlockReach != buf.getBoolean(1)) {
 				boolean oldValue = AtlasConfig.bedrockBlockReach;
-				AtlasConfig.bedrockBlockReach = buf.getBoolean(2);
+				AtlasConfig.bedrockBlockReach = buf.getBoolean(1);
 				AtlasConfig.write("atlas-combat");
 				AtlasConfig.bedrockBlockReach = oldValue;
 				handler.getConnection().disconnect(new TextComponent("Cannot connect to this server without restarting due to a config mismatch!"));
 			}
-			AtlasConfig.refinedCoyoteTime = buf.getBoolean(3);
-			AtlasConfig.midairKB = buf.getBoolean(4);
-			AtlasConfig.fishingHookKB = buf.getBoolean(5);
-			if(AtlasConfig.fistDamage != buf.getBoolean(6)) {
+			AtlasConfig.refinedCoyoteTime = buf.getBoolean(2);
+			AtlasConfig.midairKB = buf.getBoolean(3);
+			AtlasConfig.fishingHookKB = buf.getBoolean(4);
+			if(AtlasConfig.fistDamage != buf.getBoolean(5)) {
 				boolean oldValue = AtlasConfig.bedrockBlockReach;
-				AtlasConfig.fistDamage = buf.getBoolean(6);
+				AtlasConfig.fistDamage = buf.getBoolean(5);
 				AtlasConfig.write("atlas-combat");
 				AtlasConfig.fistDamage = oldValue;
 				handler.getConnection().disconnect(new TextComponent("Cannot connect to this server without restarting due to a config mismatch!"));
 			}
-			AtlasConfig.swordBlocking = buf.getBoolean(7);
-			AtlasConfig.saturationHealing = buf.getBoolean(8);
-			if(AtlasConfig.axeReachBuff != buf.getBoolean(9)) {
+			AtlasConfig.swordBlocking = buf.getBoolean(6);
+			AtlasConfig.saturationHealing = buf.getBoolean(7);
+			if(AtlasConfig.axeReachBuff != buf.getBoolean(8)) {
 				boolean oldValue = AtlasConfig.bedrockBlockReach;
-				AtlasConfig.axeReachBuff = buf.getBoolean(9);
+				AtlasConfig.axeReachBuff = buf.getBoolean(8);
 				AtlasConfig.write("atlas-combat");
 				AtlasConfig.axeReachBuff = oldValue;
 				handler.getConnection().disconnect(new TextComponent("Cannot connect to this server without restarting due to a config mismatch!"));
 			}
-			if(AtlasConfig.blockReach != buf.getBoolean(10)) {
+			if(AtlasConfig.blockReach != buf.getBoolean(9)) {
 				boolean oldValue = AtlasConfig.bedrockBlockReach;
-				AtlasConfig.blockReach = buf.getBoolean(10);
+				AtlasConfig.blockReach = buf.getBoolean(9);
 				AtlasConfig.write("atlas-combat");
 				AtlasConfig.blockReach = oldValue;
 				handler.getConnection().disconnect(new TextComponent("Cannot connect to this server without restarting due to a config mismatch!"));
 			}
-			if(AtlasConfig.attackReach != buf.getBoolean(11)) {
+			if(AtlasConfig.attackReach != buf.getBoolean(10)) {
 				boolean oldValue = AtlasConfig.bedrockBlockReach;
-				AtlasConfig.attackReach = buf.getBoolean(11);
+				AtlasConfig.attackReach = buf.getBoolean(10);
 				AtlasConfig.write("atlas-combat");
 				AtlasConfig.attackReach = oldValue;
 				handler.getConnection().disconnect(new TextComponent("Cannot connect to this server without restarting due to a config mismatch!"));
 			}
-			AtlasConfig.eatingInterruption = buf.getBoolean(12);
+			AtlasConfig.eatingInterruption = buf.getBoolean(11);
 			AtlasConfig.swordProtectionEfficacy = buf.getInt(0);
 			AtlasConfig.potionUseDuration = buf.getInt(1);
 			AtlasConfig.honeyBottleUseDuration = buf.getInt(2);
@@ -77,18 +63,6 @@ public class ClientNetworkingHandler {
 			AtlasConfig.snowballDamage = buf.getFloat(0);
 			AtlasConfig.bowUncertainty = buf.getFloat(1);
 
-		});
-
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if(Minecraft.getInstance().getConnection() != null && Minecraft.getInstance().player != null && !receivedAnswer) {
-				ticksElapsed++;
-
-				if(ticksElapsed >= ticksTowait) {
-					Minecraft.getInstance().player.connection.getConnection().disconnect(new TextComponent("Mod not present on server!"));
-					ticksElapsed = 0;
-					receivedAnswer = false;
-				}
-			}
 		});
 	}
 }

@@ -5,8 +5,6 @@ import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 import static net.alexandra.atlas.atlas_combat.AtlasCombat.modDetectionNetworkChannel;
 
@@ -15,7 +13,6 @@ public class NetworkingHandler {
 	public NetworkingHandler() {
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			FriendlyByteBuf packetBuf = new FriendlyByteBuf(Unpooled.buffer());
-			packetBuf.writeBoolean(true);
 			packetBuf.writeBoolean(AtlasConfig.toolsAreWeapons);
 			packetBuf.writeBoolean(AtlasConfig.bedrockBlockReach);
 			packetBuf.writeBoolean(AtlasConfig.refinedCoyoteTime);
@@ -38,9 +35,6 @@ public class NetworkingHandler {
 			packetBuf.writeInt(AtlasConfig.snowballItemCooldown);
 			packetBuf.writeFloat(AtlasConfig.snowballDamage);
 			packetBuf.writeFloat(AtlasConfig.bowUncertainty);
-			if(!ServerPlayNetworking.canSend(handler.player, modDetectionNetworkChannel)) {
-				handler.player.connection.getConnection().disconnect(new TextComponent("Atlas Combat needs to be installed on the client to join this server!"));
-			}
 			ServerPlayNetworking.send(handler.player, modDetectionNetworkChannel,packetBuf);
 		});
 	}

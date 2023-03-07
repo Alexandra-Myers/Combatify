@@ -15,7 +15,6 @@ public class AtlasConfig extends MidnightConfig {
 	@Entry public static boolean blockReach = true;
 	@Entry public static boolean attackReach = true;
 	@Entry public static boolean eatingInterruption = true;
-	@Entry(min=10,max=10000) public static int maxWaitForPacketResponse = 20;
 	@Entry(min=-3, max =4) public static int swordProtectionEfficacy = 0;
 	@Entry(min=1,max=1000) public static int potionUseDuration = 20;
 	@Entry(min=1,max=1000) public static int honeyBottleUseDuration = 20;
