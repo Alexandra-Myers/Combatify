@@ -26,8 +26,6 @@ public class AtlasConfigModel {
 	public boolean attackReach = true;
 	public boolean eatingInterruption = true;
 	@SectionHeader("Integers")
-	@RangeConstraint(min = 10, max = 1000)
-	public int maxWaitForPacketResponse = 20;
 	@RangeConstraint(min = -3, max = 4)
 	public int swordProtectionEfficacy = 0;
 	@RangeConstraint(min = 1, max = 1000)
