@@ -15,7 +15,7 @@ public class VersionMixin {
 	}
 	@Inject(method = "getProtocol", at = @At(value = "RETURN"), cancellable = true)
 	public void changeProtocol(CallbackInfoReturnable<Integer> cir) {
-		cir.setReturnValue(803);
+		cir.setReturnValue(800);
 		cir.cancel();
 	}
 }
