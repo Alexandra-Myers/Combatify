@@ -34,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
@@ -73,15 +74,18 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	@Final
-	public Abilities abilities;
+	private Abilities abilities;
+
 	@Unique
 	protected int attackStrengthStartValue;
 
 	@Unique
 	public boolean missedAttackRecovery;
+
 	@Unique
 	@Final
 	public float baseValue = 1.0F;
+
 	@Unique
 	public Multimap additionalModifiers;
 
@@ -532,6 +536,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean isItemOnCooldown(ItemStack var1) {
 		return player.getCooldowns().isOnCooldown(var1.getItem());
 	}
+
 	@Override
 	public Multimap getAdditionalModifiers() {
 		return additionalModifiers;
@@ -539,7 +544,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public double getAttackRange(LivingEntity entity, double baseAttackRange) {
-		@org.jetbrains.annotations.Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
+		@Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
 		int var2 = 0;
 		baseAttackRange = AtlasCombat.CONFIG.attackReach() ? baseAttackRange : Mth.ceil(baseAttackRange);
 		float var3 = getAttackStrengthScale(baseValue);

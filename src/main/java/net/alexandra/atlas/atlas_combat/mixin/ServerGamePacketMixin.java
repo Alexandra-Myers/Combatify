@@ -44,11 +44,6 @@ public class ServerGamePacketMixin {
 	@Unique
 	ServerGamePacketListenerImpl thisListener = ((ServerGamePacketListenerImpl)(Object)this);
 
-	@Inject(method = "handleInteract", at = @At(value = "HEAD"))
-	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
-		AtlasCombat.player = player;
-	}
-
 	@Redirect(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange() {

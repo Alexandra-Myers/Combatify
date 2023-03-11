@@ -18,7 +18,9 @@ public abstract class AttributeInstanceMixin implements IAttributeInstance {
 	@Shadow
 	@Final
 	private Attribute attribute;
+
 	AttributeInstance attributeInstance = ((AttributeInstance)(Object)this);
+
 	@Override
 	public final double calculateValue(float damageBonus) {
 		double d = attributeInstance.getBaseValue();

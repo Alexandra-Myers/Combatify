@@ -20,12 +20,14 @@ import net.minecraft.world.level.material.Material;
 
 public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions {
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
-	public AbstractKnifeItem(Tier tier, Properties properties) {
+
+	protected AbstractKnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		WeaponType.KNIFE.addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 	}
+
 	public float getDamage() {
 		return WeaponType.KNIFE.getDamage(this.getTier());
 	}

@@ -2,10 +2,11 @@ package net.alexandra.atlas.atlas_combat.config;
 
 import io.wispforest.owo.config.Option;
 import io.wispforest.owo.config.annotation.*;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 
 @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-@Modmenu(modId = "atlas_combat")
-@Config(name = "atlas-combat-config", wrapperName = "AtlasConfig")
+@Modmenu(modId = AtlasCombat.MOD_ID)
+@Config(name = AtlasCombat.MOD_ID, wrapperName = "AtlasConfig")
 public class AtlasConfigModel {
 	@SectionHeader("Booleans")
 	public boolean toolsAreWeapons = false;

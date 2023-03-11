@@ -6,14 +6,12 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AnvilMenuMixin",
-    "AttackDamageMobEffectMixin",
     "AttributeInstanceMixin",
     "AttributesMixin",
     "AxeItemMixin",
     "BowItemMixin",
     "DamageEnchantmentMixin",
     "DamageSourceMixin",
-    "DetectedVersionMixin",
     "DiggerItemMixin",
     "EffectsMixin",
     "EggItemMixin",
@@ -46,8 +44,7 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
-    "TridentItemMixin",
-    "VersionMixin"
+    "TridentItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
