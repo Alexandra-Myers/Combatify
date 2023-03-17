@@ -1,9 +1,26 @@
-# Atlas Combat
+![Atlas Combat](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Header.webp)
 
-A mod that ports Combat Test 8c to modern versions of Minecraft, and more!
+***
 
-## CTS 8c Features
+[![Get a Bisect Hosting Server with 25% off using code atlasdev!](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Promo.webp)](https://bisecthosting.com/atlasdev)
 
+***
+
+![Description](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Description.webp)
+
+***
+
+**This mod is a port of Mojang's Combat Test 8c to modern versions of MC, with an aim to be as accurate as possible without compromising any usability for the user.**
+
+**This mod completely overhauls the current combat system in favor of CTS, with customizability for servers and clients so that you can get the best experience possible.**
+
+**As well, we aim for a great deal of mod support (as much as can be reasonably expected) to give plenty of options to the end user.**
+
+***
+
+![CTS 8c Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Features.webp)
+
+***
 
 ### Attacks and Basic Combat Changes
 1. Attack speed, reach, damage are different for different weapons
@@ -85,6 +102,34 @@ A mod that ports Combat Test 8c to modern versions of Minecraft, and more!
 
 7. Healing potions heal 6 points per level and harming potions harm 6 points per level (4 previously)
 
+***
+
+![Atlas Combat Exclusive Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Exclusive.webp)
+
+***
+
+1. Block Reach: Weapon and Tool specific reach used for mining. Can be disabled in the config, and the default reach used can be set to match Bedrock Edition.
+
+2. Sword Blocking: Config option that defines whether or not swords should be able to block.
+
+3. Midair KB: Config option that defines if you should be able to knock opponents further into the air.
+
+4. Fishing Rod KB: Config option that brings back the 1.8 Fishing Rods in a revised form.
+
+5. Coyote Time V2: Config option that brings back the Coyote Time from CTS 5 but with changes to make it more acceptable.
+ 
+
+6. Buffed Axe Reach: Config option that raises axe reach to 3 instead of 2.5 to make it more viable.
+
+7. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
+
+***
+
+[![Get a Bisect Hosting Server with 25% off using code atlasdev!](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Promo.webp)](https://bisecthosting.com/atlasdev)
+
+***
+
 ## License
 
 This mod is licensed under the [GPL-3.0 License](./LICENSE).
+
