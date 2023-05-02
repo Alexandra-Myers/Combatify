@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
 import net.alexandra.atlas.atlas_combat.item.KnifeItem;
@@ -24,7 +23,7 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	@Final
 	public EnchantmentCategory category;
 	@Unique
-	public Enchantment thisEnchantment = ((Enchantment)(Object)this);
+	public Enchantment thisEnchantment = Enchantment.class.cast(this);
 
 	@Inject(method = "canEnchant", at = @At(value = "HEAD"), cancellable = true)
 	public void canEnchant(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {

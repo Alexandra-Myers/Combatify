@@ -1,7 +1,6 @@
 package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -35,7 +34,8 @@ public enum WeaponType {
         float var5 = this.getReach();
 		float var6 = this.getBlockReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
-        var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
+		if(AtlasConfig.attackSpeed)
+        	var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F && AtlasConfig.attackReach) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
@@ -49,77 +49,86 @@ public enum WeaponType {
 	public float getDamage(Tier var1) {
 		int modifier = AtlasConfig.fistDamage ? 1 : 0;
 		float var2 = var1.getAttackDamageBonus() + modifier;
-		boolean bl = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
-        switch (this) {
-			case KNIFE:
-			case PICKAXE:
-				if(bl) {
+		boolean isTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
+		boolean bl = isTier1 && AtlasConfig.ctsAttackBalancing;
+		switch (this) {
+			case KNIFE, PICKAXE -> {
+				if (bl) {
 					return var2;
-				}else {
+				} else {
 					return var2 + 1.0F;
 				}
-            case SWORD:
-				if(bl) {
-                	return var2 + 1.0F;
-				}else {
-					return var2 + 2.0F;
+			}
+			case SWORD -> {
+				if (bl) {
+					return var2 + AtlasConfig.swordAttackDamage;
+				} else {
+					return var2 + AtlasConfig.swordAttackDamage + 1.0F;
 				}
-            case AXE:
-				if(bl) {
-					return var2 + 2.0F;
-				}else {
-					return var2 + 3.0F;
+			}
+			case AXE -> {
+				if(!AtlasConfig.ctsAttackBalancing) {
+					return !isTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
+				} else if (bl) {
+					return var2 + AtlasConfig.axeAttackDamage;
+				} else {
+					return var2 + AtlasConfig.axeAttackDamage + 1.0F;
 				}
-			case LONGSWORD:
-			case HOE:
-                if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
-                    if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-                        return var1 == Tiers.NETHERITE ? 2.0F + modifier : 2.0F + var2 - 4 + modifier;
-                    }
+			}
+			case LONGSWORD, HOE -> {
+				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
+					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
+						return var1 == Tiers.NETHERITE ? AtlasConfig.netheriteHoeAttackDamage + modifier : AtlasConfig.netheriteHoeAttackDamage + var2 - 4 + modifier;
+					}
 
-                    return 0.0F + modifier;
-                }
-
-                return 1.0F + modifier;
-            case SHOVEL:
-                return var2;
-            case TRIDENT:
-                return 5.0F + modifier;
-            default:
-                return 0.0F + modifier;
-        }
+					return AtlasConfig.baseHoeAttackDamage + modifier;
+				}
+				return AtlasConfig.ironDiaHoeAttackDamage + modifier;
+			}
+			case SHOVEL -> {
+				return var2;
+			}
+			case TRIDENT -> {
+				return AtlasConfig.tridentAttackDamage + modifier + (AtlasConfig.ctsAttackBalancing ? 0 : 1);
+			}
+			default -> {
+				return 0.0F + modifier;
+			}
+		}
     }
 
     public float getSpeed(Tier var1) {
-        switch (this) {
-			case KNIFE:
+		switch (this) {
+			case KNIFE -> {
 				return 1.0F;
-			case LONGSWORD:
-			case SWORD:
+			}
+			case LONGSWORD, SWORD -> {
 				return 0.5F;
-			case AXE:
-			case SHOVEL:
-			case TRIDENT:
+			}
+			case AXE, SHOVEL, TRIDENT -> {
 				return -0.5F;
-			case HOE:
-                if (var1 == Tiers.WOOD) {
-                    return -0.5F;
-                } else if (var1 == Tiers.IRON) {
-                    return 0.5F;
-                } else if (var1 == Tiers.DIAMOND) {
-                    return 1.0F;
-                } else if (var1 == Tiers.GOLD) {
-                    return 1.0F;
-                } else {
-                    if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-                        return 1.0F;
-                    }
+			}
+			case HOE -> {
+				if (var1 == Tiers.WOOD) {
+					return -0.5F;
+				} else if (var1 == Tiers.IRON) {
+					return 0.5F;
+				} else if (var1 == Tiers.DIAMOND) {
+					return 1.0F;
+				} else if (var1 == Tiers.GOLD) {
+					return 1.0F;
+				} else {
+					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
+						return 1.0F;
+					}
 
-                    return 0.0F;
-                }
-            default:
-                return 0.0F;
-        }
+					return 0.0F;
+				}
+			}
+			default -> {
+				return 0.0F;
+			}
+		}
     }
 
     public float getReach() {

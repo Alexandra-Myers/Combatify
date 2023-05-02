@@ -37,6 +37,8 @@
   "atlas-combat.midnightconfig.saturationHealing": "Healing relies on saturation as a buffer, rather than just taking hunger",
   "atlas-combat.midnightconfig.axeReachBuff": "Raises axe reach to 3 as a balancing change",
   "atlas-combat.midnightconfig.attackReach": "Attack Reach Enabled",
+  "atlas-combat.midnightconfig.attackSpeed": "Attack Speed Enabled",
+  "atlas-combat.midnightconfig.ctsAttackBalancing": "Determines whether or not weapons will deal less damage than they do in 1.9",
   "atlas-combat.midnightconfig.eatingInterruption": "Eating Interruption Enabled",
   "atlas-combat.midnightconfig.blockReach": "Block Reach Enabled",
   "atlas-combat.midnightconfig.maxWaitForPacketResponse": "Ticks to wait before disconnecting from server",
@@ -49,5 +51,12 @@
   "atlas-combat.midnightconfig.eggItemCooldown": "Egg Item Cooldown",
   "atlas-combat.midnightconfig.snowballItemCooldown": "Snowball Item Cooldown",
   "atlas-combat.midnightconfig.snowballDamage": "Snowball Damage",
-  "atlas-combat.midnightconfig.bowUncertainty": "Bow Uncertainty AKA Accuracy"
+  "atlas-combat.midnightconfig.eggDamage": "Egg Damage",
+  "atlas-combat.midnightconfig.bowUncertainty": "Bow Uncertainty AKA Accuracy",
+  "atlas-combat.midnightconfig.swordAttackDamage": "Sword Damage Bonus",
+  "atlas-combat.midnightconfig.axeAttackDamage": "Axe Damage Bonus",
+  "atlas-combat.midnightconfig.baseHoeAttackDamage": "Wood, Stone, and Gold Hoe Damage Bonus",
+  "atlas-combat.midnightconfig.ironDiaHoeAttackDamage": "Iron and Diamond Hoe Damage Bonus",
+  "atlas-combat.midnightconfig.netheriteHoeAttackDamage": "Netherite Hoe Damage Bonus",
+  "atlas-combat.midnightconfig.tridentAttackDamage": "Trident Damage Bonus"
 }

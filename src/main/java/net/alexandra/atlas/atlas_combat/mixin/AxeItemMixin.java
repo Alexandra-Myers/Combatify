@@ -11,7 +11,7 @@ public class AxeItemMixin extends DiggerItemMixin implements IAxeItem {
 		super(tier, properties);
 	}
 	@Override
-	public float getShieldCooldownMultiplier(int SHIELD_DISABLE) {
-		return 1.6F+SHIELD_DISABLE * 0.5F;
+	public float getShieldCooldownMultiplier(int shieldDisable) {
+		return 1.6F + shieldDisable * 0.5F;
 	}
 }

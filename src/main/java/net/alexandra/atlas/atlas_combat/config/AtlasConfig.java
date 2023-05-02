@@ -14,6 +14,8 @@ public class AtlasConfig extends MidnightConfig {
 	@Entry public static boolean axeReachBuff = false;
 	@Entry public static boolean blockReach = true;
 	@Entry public static boolean attackReach = true;
+	@Entry public static boolean attackSpeed = true;
+	@Entry public static boolean ctsAttackBalancing = true;
 	@Entry public static boolean eatingInterruption = true;
 	@Entry(min=-3, max =4) public static int swordProtectionEfficacy = 0;
 	@Entry(min=1,max=1000) public static int potionUseDuration = 20;
@@ -24,5 +26,12 @@ public class AtlasConfig extends MidnightConfig {
 	@Entry(min=1,max=1000) public static int eggItemCooldown = 4;
 	@Entry(min=1,max=1000) public static int snowballItemCooldown = 4;
 	@Entry(min=0,max=40) public static float snowballDamage = 0.0F;
+	@Entry(min=0,max=40) public static float eggDamage = 0.0F;
 	@Entry(min=0,max=4) public static float bowUncertainty = 0.25F;
+	@Entry(min = 0, max = 10) public static float swordAttackDamage = 1;
+	@Entry(min = 0, max = 10) public static float axeAttackDamage = 2;
+	@Entry(min = 0, max = 10) public static float baseHoeAttackDamage = 0;
+	@Entry(min = 0, max = 10) public static float ironDiaHoeAttackDamage = 1;
+	@Entry(min = 0, max = 10) public static float netheriteHoeAttackDamage = 2;
+	@Entry(min = 0, max = 10) public static float tridentAttackDamage = 5;
 }

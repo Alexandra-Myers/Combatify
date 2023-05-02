@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -22,7 +21,7 @@ public class SnowballItemMixin {
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
-		user.getCooldowns().addCooldown(((SnowballItem) (Object)this), useDuration);
+		user.getCooldowns().addCooldown(SnowballItem.class.cast(this), useDuration);
 	}
 
 }
