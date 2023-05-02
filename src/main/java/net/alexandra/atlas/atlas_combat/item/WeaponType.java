@@ -89,7 +89,7 @@ public enum WeaponType {
 				return var2;
 			}
 			case TRIDENT -> {
-				return AtlasCombat.CONFIG.tridentAttackDamage() + modifier;
+				return AtlasCombat.CONFIG.tridentAttackDamage() + modifier + (AtlasCombat.CONFIG.ctsAttackBalancing() ? 0 : 1);
 			}
 			default -> {
 				return 0.0F + modifier;
