@@ -465,7 +465,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		f = Mth.clamp(f, 0.1, 1024.0);
 		return (float) (1.0F / f * 20.0F + 0.5F);
 	}
-	}
 	/**
 	 * @author
 	 * @reason
