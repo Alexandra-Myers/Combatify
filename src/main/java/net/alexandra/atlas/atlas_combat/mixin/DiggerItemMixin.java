@@ -7,6 +7,8 @@ import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Final;
@@ -30,15 +32,17 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	}
 
 	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"))
-	public ImmutableMultimap test(ImmutableMultimap.Builder instance) {
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
-		if((Object)this instanceof AxeItem) {
+	public ImmutableMultimap<Attribute, AttributeModifier> test(ImmutableMultimap.Builder<Attribute, AttributeModifier> instance) {
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		var digger = DiggerItem.class.cast(this);
+
+		if (digger instanceof AxeItem) {
 			type = AXE;
-		}else if((Object)this instanceof PickaxeItem) {
+		} else if (digger instanceof PickaxeItem) {
 			type = WeaponType.PICKAXE;
-		}else if((Object)this instanceof ShovelItem) {
+		} else if (digger instanceof ShovelItem) {
 			type = WeaponType.SHOVEL;
-		}else {
+		} else {
 			type = WeaponType.HOE;
 		}
 		type.addCombatAttributes(this.getTier(), var3);

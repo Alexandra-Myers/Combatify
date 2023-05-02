@@ -22,7 +22,8 @@ import java.util.Objects;
 
 public class AtlasCombat implements ModInitializer {
 	public static Player player;
-	public static ResourceLocation modDetectionNetworkChannel = new ResourceLocation("atlas-combat","networking");
+	public static final String MOD_ID = "atlas_combat";
+	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public static final AtlasConfig CONFIG = AtlasConfig.createAndLoad();
 
 	@Override
@@ -48,5 +49,8 @@ public class AtlasCombat implements ModInitializer {
 				((ItemExtensions) item).setStackSize(16);
 			}
 		}
+	}
+	public static ResourceLocation id(String path) {
+		return new ResourceLocation(MOD_ID, path);
 	}
 }

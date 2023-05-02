@@ -47,6 +47,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
 						if(!thisPlayer.getCooldowns().isOnCooldown(shieldItem)) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
+
 							if (lowShieldEnabled()) {
 								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 							}
@@ -70,7 +71,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 4.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
+			return this.getMissedAttackRecovery() && this.getAttackStrengthStartValue() - this.attackStrengthTicker - baseTime > 4.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
 		}
 	}
     @Redirect(method="hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal=0))
