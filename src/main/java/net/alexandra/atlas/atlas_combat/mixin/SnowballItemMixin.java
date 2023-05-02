@@ -21,7 +21,7 @@ public class SnowballItemMixin {
 
 	@Inject(method = "use", at = @At("RETURN"))
 	public void injectDelay(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
-		user.getCooldowns().addCooldown(((SnowballItem) (Object)this), useDuration);
+		user.getCooldowns().addCooldown(SnowballItem.class.cast(this), useDuration);
 	}
 
 }
