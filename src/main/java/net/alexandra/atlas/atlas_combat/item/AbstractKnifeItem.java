@@ -22,7 +22,7 @@ public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnly
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public AbstractKnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		WeaponType.KNIFE.addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 	}

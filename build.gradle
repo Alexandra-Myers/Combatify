@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
+	id 'fabric-loom' version '1.1-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -43,27 +43,17 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
-	// Quilted Fabric API will automatically pull in the correct QSL version.
 	modApi ("me.shedaniel.cloth:cloth-config-fabric:8.0.75")
 	modImplementation("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}")
 	include("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}")
-	/*include 'com.github.rizecookey:CookeyMod:1.7.1+1.19.3'
-	modImplementation 'com.github.rizecookey:CookeyMod:1.7.1+1.19.3'*/
-	include('com.github.rizecookey:CookeyMod:1.7.0+1.19.2')
-	modImplementation('com.github.rizecookey:CookeyMod:1.7.0+1.19.2')
-	modApi "com.terraformersmc:modmenu:4.0.6"
-	include "com.terraformersmc:modmenu:4.0.6"
-	implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
-	annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
-	include("com.github.LlamaLad7:MixinExtras:0.1.1")
-	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
-	// only if you plan to use owo-config
-	annotationProcessor "io.wispforest:owo-lib:${project.owo_version}"
+	include(modImplementation('com.github.rizecookey:CookeyMod:1.7.0+1.19.2'))
+	modApi("com.terraformersmc:modmenu:4.0.6")
+	annotationProcessor(include(implementation("com.github.LlamaLad7:MixinExtras:0.1.1")))
+	annotationProcessor(modImplementation("io.wispforest:owo-lib:${project.owo_version}"))
 
 	// include this if you don't want force your users to install owo
 	// sentinel will warn them and give the option to download it automatically
-	include "io.wispforest:owo-sentinel:${project.owo_version}"
+	include("io.wispforest:owo-sentinel:${project.owo_version}")
 }
 
 loom {

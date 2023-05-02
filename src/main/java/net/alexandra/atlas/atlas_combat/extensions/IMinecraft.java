@@ -24,5 +24,5 @@ public interface IMinecraft {
 	@Nullable
 	EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier);
 
-	void getStartAttack();
+	void initiateAttack();
 }

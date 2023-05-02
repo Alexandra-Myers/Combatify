@@ -24,6 +24,10 @@ public class AtlasConfigModel {
 	public boolean blockReach = true;
 	@RestartRequired
 	public boolean attackReach = true;
+	@RestartRequired
+	public boolean attackSpeed = true;
+	@RestartRequired
+	public boolean ctsAttackBalancing = true;
 	public boolean eatingInterruption = true;
 	@SectionHeader("Integers")
 	@RangeConstraint(min = -3, max = 4)
@@ -45,8 +49,22 @@ public class AtlasConfigModel {
 	@SectionHeader("Floats")
 	@RangeConstraint(min = 0, max = 40)
 	public float snowballDamage = 0.0F;
+	@RangeConstraint(min = 0, max = 40)
+	public float eggDamage = 0.0F;
 	@RangeConstraint(min = 0, max = 4)
 	public float bowUncertainty = 0.25F;
+	@RangeConstraint(min = 0, max = 10)
+	public float swordAttackDamage = 1;
+	@RangeConstraint(min = 0, max = 10)
+	public float axeAttackDamage = 2;
+	@RangeConstraint(min = 0, max = 10)
+	public float baseHoeAttackDamage = 0;
+	@RangeConstraint(min = 0, max = 10)
+	public float ironDiaHoeAttackDamage = 1;
+	@RangeConstraint(min = 0, max = 10)
+	public float netheriteHoeAttackDamage = 2;
+	@RangeConstraint(min = 0, max = 10)
+	public float tridentAttackDamage = 5;
 	public static class UseDurations {
 	}
 	public static class Cooldowns {

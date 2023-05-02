@@ -72,7 +72,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (!(getAttackStrengthScale(baseTime) < 1.0F)) {
 			return true;
 		} else {
-			return getMissedAttackRecovery() && (float)getAttackStrengthStartValue() - ((float)this.attackStrengthTicker - baseTime) > 4.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
+			return this.getMissedAttackRecovery() && this.getAttackStrengthStartValue() - this.attackStrengthTicker - baseTime > 4.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
 		}
 	}
     @Redirect(method="hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal=0))
