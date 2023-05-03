@@ -2,13 +2,11 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +37,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -213,34 +210,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public void hurtCurrentlyUsedShield(float amount) {
-		if (this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem) {
-			if (!this.level.isClientSide) {
-				awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
-			}
-
-			if (amount >= 3.0F) {
-				int i = 1 + Mth.floor(amount);
-				InteractionHand interactionHand = this.getUsedItemHand();
-				this.useItem.hurtAndBreak(i, this, player -> player.broadcastBreakEvent(interactionHand));
-				if (this.useItem.isEmpty()) {
-					if (interactionHand == InteractionHand.MAIN_HAND) {
-						this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-					} else {
-						this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-					}
-
-					this.useItem = ItemStack.EMPTY;
-					this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level.random.nextFloat() * 0.4F);
-				}
-			}
-
-		}
+	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+	public boolean hurtCurrentlyUsedShield(boolean original) {
+		return this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameIgnoreDurability(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
@@ -248,13 +220,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason
-	 */
-	@Overwrite()
-	public void blockUsingShield(@NotNull LivingEntity attacker) {
-		super.blockUsingShield(attacker);
+	@Inject(method = "blockUsingShield", at=@At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/LivingEntity;blockUsingShield(Lnet/minecraft/world/entity/LivingEntity;)V"), cancellable = true)
+	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
+		ci.cancel();
 	}
 
 	@Override
@@ -271,10 +239,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason change attacks
-	 */
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
 		newAttack(target);
