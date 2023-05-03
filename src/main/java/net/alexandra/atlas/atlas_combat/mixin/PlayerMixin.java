@@ -224,7 +224,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "blockUsingShield", at=@At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/LivingEntity;blockUsingShield(Lnet/minecraft/world/entity/LivingEntity;)V"), cancellable = true)
+	@Inject(method = "blockUsingShield", at=@At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
 	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
 		ci.cancel();
 	}
