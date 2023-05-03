@@ -214,34 +214,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public void hurtCurrentlyUsedShield(float amount) {
-		if (this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem) {
-			if (!this.level.isClientSide) {
-				awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
-			}
-
-			if (amount >= 3.0F) {
-				int i = 1 + Mth.floor(amount);
-				InteractionHand interactionHand = this.getUsedItemHand();
-				this.useItem.hurtAndBreak(i, this, player -> player.broadcastBreakEvent(interactionHand));
-				if (this.useItem.isEmpty()) {
-					if (interactionHand == InteractionHand.MAIN_HAND) {
-						this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-					} else {
-						this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-					}
-
-					this.useItem = ItemStack.EMPTY;
-					this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level.random.nextFloat() * 0.4F);
-				}
-			}
-
-		}
+	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+	public boolean hurtCurrentlyUsedShield(boolean original) {
+		return this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSame(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
@@ -249,13 +224,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason
-	 */
-	@Overwrite()
-	public void blockUsingShield(@NotNull LivingEntity attacker) {
-		super.blockUsingShield(attacker);
+	@Inject(method = "blockUsingShield", at=@At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/LivingEntity;blockUsingShield(Lnet/minecraft/world/entity/LivingEntity;)V"), cancellable = true)
+	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
+		ci.cancel();
 	}
 
 	@Override
