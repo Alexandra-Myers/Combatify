@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = MultiPlayerGameMode.class, priority = 999)
+@Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@Shadow
 	@Final
