@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-@Mixin(Player.class)
+@Mixin(value = Player.class, priority = 800)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
@@ -72,6 +72,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	@Final
 	private Abilities abilities;
+
+	@Shadow
+	public abstract float getAttackStrengthScale(float f);
+
+	@Shadow
+	public abstract float getCurrentItemAttackStrengthDelay();
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -169,18 +175,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(!AtlasConfig.fistDamage ? 2 : 1);
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason
-	 */
-	@Overwrite()
-	public static AttributeSupplier.Builder createAttributes() {
-		return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, !AtlasConfig.fistDamage ? 2 : 1)
-				.add(Attributes.MOVEMENT_SPEED, 0.1F)
-				.add(NewAttributes.ATTACK_SPEED)
-				.add(Attributes.LUCK)
+	@ModifyConstant(method = "createAttributes", constant = @Constant(doubleValue = 1.0))
+	private static double changeAttack(double constant) {
+		return !AtlasConfig.fistDamage ? 2 : 1;
+	}
+	@Inject(method = "createAttributes", at = @At(value = "RETURN"), cancellable = true)
+	private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+		cir.setReturnValue(cir.getReturnValue()
 				.add(NewAttributes.BLOCK_REACH, !AtlasConfig.bedrockBlockReach ? 0.0 : 2.0)
-				.add(NewAttributes.ATTACK_REACH);
+				.add(NewAttributes.ATTACK_REACH));
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
@@ -418,26 +421,19 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			this.attackStrengthTicker = this.attackStrengthStartValue;
 		}
 	}
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public float getCurrentItemAttackStrengthDelay() {
+	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
+	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
 		double f = getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5D;
 		f = Mth.clamp(f, 0.1, 1024.0);
-		return (float) (1.0F / f * 20.0F + 0.5F);
+		cir.setReturnValue((float) (1.0F / f * 20.0F + 0.5F));
 	}
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public float getAttackStrengthScale(float baseTime) {
+
+	@Inject(method = "getAttackStrengthScale", at = @At(value = "RETURN"), cancellable = true)
+	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
 		if (this.attackStrengthStartValue == 0) {
-			return 2.0F;
+			cir.setReturnValue(2.0F);
 		}
-		return Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F);
+		cir.setReturnValue(Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F));
 	}
 
 	public float getCurrentAttackReach(float baseValue) {

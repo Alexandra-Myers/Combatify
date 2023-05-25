@@ -64,5 +64,6 @@
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
     "VideoSettingsMixin"
-  ]
+  ],
+  "mixinPriority": 999
 }
