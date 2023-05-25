@@ -2,9 +2,7 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.config.AtlasConfigModel;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
-import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -14,8 +12,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SuspiciousStewItem;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
@@ -46,18 +46,14 @@ public abstract class ItemMixin implements ItemExtensions {
 		((Item) (Object)this).maxStackSize = stackSize;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason doesnt hurt other mods
-	 */
-	@Overwrite
-	public int getUseDuration(ItemStack stack) {
+	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
+	public void getUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
-			return AtlasCombat.CONFIG.stewUseDuration();
+			cir.setReturnValue(AtlasCombat.CONFIG.stewUseDuration());
 		}else if (stack.getItem().isEdible()) {
-			return ((Item) (Object)this).getFoodProperties().isFastFood() ? 16 : 32;
+			cir.setReturnValue(((Item) (Object)this).getFoodProperties().isFastFood() ? 16 : 32);
 		} else {
-			return 0;
+			cir.setReturnValue(0);
 		}
 	}
 
