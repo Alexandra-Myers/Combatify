@@ -124,6 +124,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 			while(options.keyUse.consumeClick()) {
 				startUseItem();
 			}
+			while(options.keyAttack.consumeClick()) {
+				startAttack();
+			}
 		}
 	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
