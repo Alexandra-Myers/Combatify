@@ -15,12 +15,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static net.alexandra.atlas.atlas_combat.networking.NewServerboundInteractPacket.MISS_ATTACK_ACTION;
 
@@ -52,13 +49,10 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		}
 		return 4.5F;
 	}
-	/**
-	 * @author
-	 * @reason
-	 */
-	@Overwrite
-	public boolean hasFarPickRange() {
-		return false;
+
+	@Inject(method = "hasFarPickRange", at = @At(value = "RETURN"), cancellable = true)
+	public void hasFarPickRange(CallbackInfoReturnable<Boolean> cir) {
+		cir.setReturnValue(false);
 	}
 
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
