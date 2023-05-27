@@ -98,35 +98,37 @@ public enum WeaponType {
     }
 
     public float getSpeed(Tier var1) {
-        switch (this) {
-			case KNIFE:
+		switch (this) {
+			case KNIFE -> {
 				return 1.0F;
-			case LONGSWORD:
-			case SWORD:
+			}
+			case LONGSWORD, SWORD -> {
 				return 0.5F;
-			case AXE:
-			case SHOVEL:
-			case TRIDENT:
+			}
+			case AXE, SHOVEL, TRIDENT -> {
 				return -0.5F;
-			case HOE:
-                if (var1 == Tiers.WOOD) {
-                    return -0.5F;
-                } else if (var1 == Tiers.IRON) {
-                    return 0.5F;
-                } else if (var1 == Tiers.DIAMOND) {
-                    return 1.0F;
-                } else if (var1 == Tiers.GOLD) {
-                    return 1.0F;
-                } else {
-                    if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-                        return 1.0F;
-                    }
+			}
+			case HOE -> {
+				if (var1 == Tiers.WOOD) {
+					return -0.5F;
+				} else if (var1 == Tiers.IRON) {
+					return 0.5F;
+				} else if (var1 == Tiers.DIAMOND) {
+					return 1.0F;
+				} else if (var1 == Tiers.GOLD) {
+					return 1.0F;
+				} else {
+					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
+						return 1.0F;
+					}
 
-                    return 0.0F;
-                }
-            default:
-                return 0.0F;
-        }
+					return 0.0F;
+				}
+			}
+			default -> {
+				return 0.0F;
+			}
+		}
     }
 
     public float getReach() {

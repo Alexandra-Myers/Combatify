@@ -67,11 +67,11 @@ public abstract class ItemStackMixin implements IItemStack {
 				double d = attributeModifier.getAmount();
 				boolean bl = false;
 				if (player != null) {
-					if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID) {
+					if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID) {
 						d += player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
 						d += EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, player.getMobType());
 						bl = true;
-					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
+					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID) {
 						d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
 						bl = true;
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
@@ -95,7 +95,7 @@ public abstract class ItemStackMixin implements IItemStack {
 					e = d;
 				}
 
-				if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || bl) {
+				if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || bl) {
 					list.add(
 							Component.literal(" ")
 									.append(

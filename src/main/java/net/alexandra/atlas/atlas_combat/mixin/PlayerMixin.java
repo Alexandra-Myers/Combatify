@@ -46,7 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-@Mixin(value = Player.class, priority = 800)
+@Mixin(value = Player.class, priority = 1400)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
