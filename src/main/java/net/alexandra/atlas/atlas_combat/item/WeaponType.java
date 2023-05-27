@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -34,8 +35,7 @@ public enum WeaponType {
         float var5 = this.getReach();
 		float var6 = this.getBlockReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
-		if(AtlasCombat.CONFIG.attackSpeed())
-        	var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
+		var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F && AtlasCombat.CONFIG.attackReach()) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
@@ -61,35 +61,35 @@ public enum WeaponType {
 			}
 			case SWORD -> {
 				if (bl) {
-					return var2 + AtlasCombat.CONFIG.swordAttackDamage();
+					return var2 + min(AtlasCombat.CONFIG.swordAttackDamage(), 0);
 				} else {
-					return var2 + AtlasCombat.CONFIG.swordAttackDamage() + 1.0F;
+					return var2 + min(AtlasCombat.CONFIG.swordAttackDamage(), 0) + 1.0F;
 				}
 			}
 			case AXE -> {
 				if(!AtlasCombat.CONFIG.ctsAttackBalancing()) {
 					return !isTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
 				} else if (bl) {
-					return var2 + AtlasCombat.CONFIG.axeAttackDamage();
+					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0);
 				} else {
-					return var2 + AtlasCombat.CONFIG.axeAttackDamage() + 1.0F;
+					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0) + 1.0F;
 				}
 			}
 			case LONGSWORD, HOE -> {
 				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return var1 == Tiers.NETHERITE ? AtlasCombat.CONFIG.netheriteHoeAttackDamage() + modifier : AtlasCombat.CONFIG.netheriteHoeAttackDamage() + var2 - 4 + modifier;
+						return var1 == Tiers.NETHERITE ? min(AtlasCombat.CONFIG.netheriteHoeAttackDamage(), 0) + modifier : min(AtlasCombat.CONFIG.netheriteHoeAttackDamage(), 0) + var2 - 4 + modifier;
 					}
 
-					return AtlasCombat.CONFIG.baseHoeAttackDamage() + modifier;
+					return min(AtlasCombat.CONFIG.baseHoeAttackDamage(), 0) + modifier;
 				}
-				return AtlasCombat.CONFIG.ironDiaHoeAttackDamage() + modifier;
+				return min(AtlasCombat.CONFIG.ironDiaHoeAttackDamage(), 0) + modifier;
 			}
 			case SHOVEL -> {
 				return var2;
 			}
 			case TRIDENT -> {
-				return AtlasCombat.CONFIG.tridentAttackDamage() + modifier + (AtlasCombat.CONFIG.ctsAttackBalancing() ? 0 : 1);
+				return min(AtlasCombat.CONFIG.tridentAttackDamage(), 0) + modifier + (AtlasCombat.CONFIG.ctsAttackBalancing() ? 0 : 1);
 			}
 			default -> {
 				return 0.0F + modifier;
@@ -100,33 +100,36 @@ public enum WeaponType {
     public float getSpeed(Tier var1) {
 		switch (this) {
 			case KNIFE -> {
-				return 1.0F;
+				return AtlasCombat.CONFIG.goldDiaNethHoeAttackSpeed();
 			}
 			case LONGSWORD, SWORD -> {
-				return 0.5F;
+				return AtlasCombat.CONFIG.swordAttackSpeed();
 			}
-			case AXE, SHOVEL, TRIDENT -> {
-				return -0.5F;
+			case AXE, SHOVEL -> {
+				return AtlasCombat.CONFIG.axeAttackSpeed();
+			}
+			case TRIDENT -> {
+				return AtlasCombat.CONFIG.tridentAttackSpeed();
 			}
 			case HOE -> {
 				if (var1 == Tiers.WOOD) {
-					return -0.5F;
+					return AtlasCombat.CONFIG.woodenHoeAttackSpeed();
 				} else if (var1 == Tiers.IRON) {
-					return 0.5F;
+					return AtlasCombat.CONFIG.ironHoeAttackSpeed();
 				} else if (var1 == Tiers.DIAMOND) {
-					return 1.0F;
+					return AtlasCombat.CONFIG.goldDiaNethHoeAttackSpeed();
 				} else if (var1 == Tiers.GOLD) {
-					return 1.0F;
+					return AtlasCombat.CONFIG.goldDiaNethHoeAttackSpeed();
 				} else {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return 1.0F;
+						return AtlasCombat.CONFIG.goldDiaNethHoeAttackSpeed();
 					}
 
-					return 0.0F;
+					return AtlasCombat.CONFIG.stoneHoeAttackSpeed();
 				}
 			}
 			default -> {
-				return 0.0F;
+				return AtlasCombat.CONFIG.defaultAttackSpeed();
 			}
 		}
     }
@@ -148,5 +151,11 @@ public enum WeaponType {
 			case LONGSWORD, HOE, TRIDENT -> 2.0F;
 			default -> 0.0F;
 		};
+	}
+	public static float min(float f, float j) {
+		if(f < j) {
+			return j;
+		}
+		return f;
 	}
 }

@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Final;
@@ -24,19 +25,19 @@ public class AttributeModifierMixin {
 	private void injectChanges(UUID uUID, Supplier<String> supplier, double d, AttributeModifier.Operation operation, CallbackInfo ci) {
 		if (uUID == Item.BASE_ATTACK_SPEED_UUID) {
 			if(d >= 0) {
-				amount = 1.0F;
+				amount = AtlasCombat.CONFIG.fastestToolAttackSpeed();
 			} else if(d >= -1) {
-				amount = 0.5F;
+				amount = AtlasCombat.CONFIG.fastToolAttackSpeed();
 			} else if(d == -2) {
-				amount = 0;
+				amount = AtlasCombat.CONFIG.defaultAttackSpeed();
 			} else if(d >= -2.5) {
-				amount = 0.5;
+				amount = AtlasCombat.CONFIG.fastToolAttackSpeed();
 			} else if(d > -3) {
-				amount = 0;
+				amount = AtlasCombat.CONFIG.defaultAttackSpeed();
 			} else if (d > -3.5) {
-				amount = -0.5;
+				amount = AtlasCombat.CONFIG.slowToolAttackSpeed();
 			} else {
-				amount = -1;
+				amount = AtlasCombat.CONFIG.slowestToolAttackSpeed();
 			}
 		}
 	}
