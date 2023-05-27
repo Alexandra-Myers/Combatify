@@ -18,6 +18,7 @@ public class AtlasConfigModel {
 	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
 	public boolean saturationHealing = false;
+	public boolean autoAttackAllowed = true;
 	@RestartRequired
 	public boolean axeReachBuff = false;
 	@RestartRequired
@@ -53,18 +54,60 @@ public class AtlasConfigModel {
 	public float eggDamage = 0.0F;
 	@RangeConstraint(min = 0, max = 4)
 	public float bowUncertainty = 0.25F;
-	@RangeConstraint(min = 0, max = 10)
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float swordAttackDamage = 1;
-	@RangeConstraint(min = 0, max = 10)
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float axeAttackDamage = 2;
-	@RangeConstraint(min = 0, max = 10)
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float baseHoeAttackDamage = 0;
-	@RangeConstraint(min = 0, max = 10)
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float ironDiaHoeAttackDamage = 1;
-	@RangeConstraint(min = 0, max = 10)
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float netheriteHoeAttackDamage = 2;
-	@RangeConstraint(min = 0, max = 10)
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float tridentAttackDamage = 5;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float swordAttackSpeed = 0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float axeAttackSpeed = -0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float woodenHoeAttackSpeed = -0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float stoneHoeAttackSpeed = 0;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float ironHoeAttackSpeed = 0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float goldDiaNethHoeAttackSpeed = 1;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float tridentAttackSpeed = -0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float defaultAttackSpeed = 0F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float slowestToolAttackSpeed = -1F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float slowToolAttackSpeed = -0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float fastToolAttackSpeed = 0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float fastestToolAttackSpeed = 1F;
 	public static class UseDurations {
 	}
 	public static class Cooldowns {

@@ -2,6 +2,8 @@ accessWidener	v1	named
 mutable field net/minecraft/world/item/SwordItem defaultModifiers Lcom/google/common/collect/Multimap;
 mutable field net/minecraft/world/item/DiggerItem defaultModifiers Lcom/google/common/collect/Multimap;
 accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
+accessible field net/minecraft/world/item/Item BASE_ATTACK_DAMAGE_UUID Ljava/util/UUID;
+accessible field net/minecraft/world/item/Item BASE_ATTACK_SPEED_UUID Ljava/util/UUID;
 accessible field net/minecraft/world/item/Item$Properties maxStackSize I
 mutable field net/minecraft/world/item/Item$Properties maxStackSize I
 accessible field net/minecraft/world/item/Item maxStackSize I
@@ -24,7 +26,6 @@ accessible field net/minecraft/world/entity/LivingEntity lastDamageSource Lnet/m
 mutable field net/minecraft/world/entity/LivingEntity lastDamageSource Lnet/minecraft/world/damagesource/DamageSource;
 accessible field net/minecraft/world/entity/LivingEntity lastDamageStamp J
 mutable field net/minecraft/world/entity/LivingEntity lastDamageStamp J
-accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
 accessible field net/minecraft/world/entity/projectile/ThrownTrident tridentItem Lnet/minecraft/world/item/ItemStack;
 accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
 mutable field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
