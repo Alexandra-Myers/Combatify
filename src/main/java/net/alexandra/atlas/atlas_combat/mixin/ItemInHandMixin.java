@@ -106,8 +106,14 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
 	private void modifyBowCode1(PoseStack instance, float x, float y, float z) {
 		float r = (float)itemStack.getUseDuration() - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
+		float l = r / 20.0F;
+		l = (l * l + l * 2.0F) / 3.0F;
+		if (l > 1.0F) {
+			l = 1.0F;
+		}
 		float m = Mth.sin((r - 0.1F) * 1.3F);
-		float n = ((IBowItem)itemStack.getItem()).getFatigueForTime((int) r) - 0.1F;
+		Item item = itemStack.getItem();
+		float n = (item instanceof IBowItem ? ((IBowItem)item).getFatigueForTime((int) r) : l) - 0.1F;
 		float o = m * n;
 		instance.translate(o * 0.0F, o * 0.004F, o * 0.0F);
 	}
