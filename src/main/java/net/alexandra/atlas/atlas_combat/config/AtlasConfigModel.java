@@ -18,6 +18,7 @@ public class AtlasConfigModel {
 	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
 	public boolean saturationHealing = false;
+	public boolean autoAttackAllowed = true;
 	@RestartRequired
 	public boolean axeReachBuff = false;
 	@RestartRequired
@@ -53,16 +54,22 @@ public class AtlasConfigModel {
 	public float eggDamage = 0.0F;
 	@RangeConstraint(min = 0, max = 4)
 	public float bowUncertainty = 0.25F;
+	@RestartRequired
 	@RangeConstraint(min = 0, max = 10)
 	public float swordAttackDamage = 1;
+	@RestartRequired
 	@RangeConstraint(min = 0, max = 10)
 	public float axeAttackDamage = 2;
+	@RestartRequired
 	@RangeConstraint(min = 0, max = 10)
 	public float baseHoeAttackDamage = 0;
+	@RestartRequired
 	@RangeConstraint(min = 0, max = 10)
 	public float ironDiaHoeAttackDamage = 1;
+	@RestartRequired
 	@RangeConstraint(min = 0, max = 10)
 	public float netheriteHoeAttackDamage = 2;
+	@RestartRequired
 	@RangeConstraint(min = 0, max = 10)
 	public float tridentAttackDamage = 5;
 	public static class UseDurations {
