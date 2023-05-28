@@ -457,7 +457,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 		if (missTime <= 0 && !this.player.isUsingItem()) {
 			if (bl && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
 				this.retainAttack = false;
-			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-1.0F) && ((IOptions)options).autoAttack()) {
+			} else if (bl && ((PlayerExtensions)this.player).isAttackAvailable(-1.0F) && ((IOptions)options).autoAttack() && AtlasConfig.autoAttackAllowed) {
 				this.startAttack();
 				ci.cancel();
 			}

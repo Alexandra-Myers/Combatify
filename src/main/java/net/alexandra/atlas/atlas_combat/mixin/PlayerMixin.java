@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
+import net.alexandra.atlas.atlas_combat.util.UtilClass;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
@@ -45,7 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-@Mixin(value = Player.class, priority = 800)
+@Mixin(value = Player.class, priority = 1400)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
@@ -415,8 +416,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
 		this.missedAttackRecovery = !hit;
+		if(!AtlasConfig.attackSpeed) {
+			if(getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5 >= 10) {
+				return;
+			} else if(attackSpeedsMaxed()) {
+				return;
+			}
+		}
 		int var2 = (int) (this.getCurrentItemAttackStrengthDelay() * 2);
-		if (var2 > this.attackStrengthTicker && AtlasConfig.attackSpeed) {
+		if (var2 > this.attackStrengthTicker) {
 			this.attackStrengthStartValue = var2;
 			this.attackStrengthTicker = this.attackStrengthStartValue;
 		}
@@ -540,5 +548,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void setAttackStrengthTicker2(int value) {
 		this.attackStrengthStartValue = value;
 		player.attackStrengthTicker = this.attackStrengthStartValue;
+	}
+	public boolean attackSpeedsMaxed() {
+		UtilClass<Float> util = new UtilClass<>();
+		return util.compare(1.5F, AtlasConfig.swordAttackSpeed, AtlasConfig.axeAttackSpeed, AtlasConfig.woodenHoeAttackSpeed, AtlasConfig.stoneHoeAttackSpeed, AtlasConfig.ironHoeAttackSpeed, AtlasConfig.goldDiaNethHoeAttackSpeed, AtlasConfig.defaultAttackSpeed, AtlasConfig.tridentAttackSpeed, AtlasConfig.fastToolAttackSpeed, AtlasConfig.fastestToolAttackSpeed, AtlasConfig.slowToolAttackSpeed, AtlasConfig.slowestToolAttackSpeed);
 	}
 }

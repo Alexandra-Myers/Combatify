@@ -34,8 +34,7 @@ public enum WeaponType {
         float var5 = this.getReach();
 		float var6 = this.getBlockReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
-		if(AtlasConfig.attackSpeed)
-        	var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
+		var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F && AtlasConfig.attackReach) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
@@ -61,35 +60,35 @@ public enum WeaponType {
 			}
 			case SWORD -> {
 				if (bl) {
-					return var2 + AtlasConfig.swordAttackDamage;
+					return var2 + min(AtlasConfig.swordAttackDamage, 0);
 				} else {
-					return var2 + AtlasConfig.swordAttackDamage + 1.0F;
+					return var2 + min(AtlasConfig.swordAttackDamage, 0) + 1.0F;
 				}
 			}
 			case AXE -> {
 				if(!AtlasConfig.ctsAttackBalancing) {
 					return !isTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
 				} else if (bl) {
-					return var2 + AtlasConfig.axeAttackDamage;
+					return var2 + min(AtlasConfig.axeAttackDamage, 0);
 				} else {
-					return var2 + AtlasConfig.axeAttackDamage + 1.0F;
+					return var2 + min(AtlasConfig.axeAttackDamage, 0) + 1.0F;
 				}
 			}
 			case LONGSWORD, HOE -> {
 				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return var1 == Tiers.NETHERITE ? AtlasConfig.netheriteHoeAttackDamage + modifier : AtlasConfig.netheriteHoeAttackDamage + var2 - 4 + modifier;
+						return var1 == Tiers.NETHERITE ? min(AtlasConfig.netheriteHoeAttackDamage, 0) + modifier : min(AtlasConfig.netheriteHoeAttackDamage, 0) + var2 - 4 + modifier;
 					}
 
-					return AtlasConfig.baseHoeAttackDamage + modifier;
+					return min(AtlasConfig.baseHoeAttackDamage, 0) + modifier;
 				}
-				return AtlasConfig.ironDiaHoeAttackDamage + modifier;
+				return min(AtlasConfig.ironDiaHoeAttackDamage, 0) + modifier;
 			}
 			case SHOVEL -> {
 				return var2;
 			}
 			case TRIDENT -> {
-				return AtlasConfig.tridentAttackDamage + modifier + (AtlasConfig.ctsAttackBalancing ? 0 : 1);
+				return min(AtlasConfig.tridentAttackDamage, 0) + modifier + (AtlasConfig.ctsAttackBalancing ? 0 : 1);
 			}
 			default -> {
 				return 0.0F + modifier;
@@ -100,33 +99,36 @@ public enum WeaponType {
     public float getSpeed(Tier var1) {
 		switch (this) {
 			case KNIFE -> {
-				return 1.0F;
+				return AtlasConfig.goldDiaNethHoeAttackSpeed;
 			}
 			case LONGSWORD, SWORD -> {
-				return 0.5F;
+				return AtlasConfig.swordAttackSpeed;
 			}
-			case AXE, SHOVEL, TRIDENT -> {
-				return -0.5F;
+			case AXE, SHOVEL -> {
+				return AtlasConfig.axeAttackSpeed;
+			}
+			case TRIDENT -> {
+				return AtlasConfig.tridentAttackSpeed;
 			}
 			case HOE -> {
 				if (var1 == Tiers.WOOD) {
-					return -0.5F;
+					return AtlasConfig.woodenHoeAttackSpeed;
 				} else if (var1 == Tiers.IRON) {
-					return 0.5F;
+					return AtlasConfig.ironHoeAttackSpeed;
 				} else if (var1 == Tiers.DIAMOND) {
-					return 1.0F;
+					return AtlasConfig.goldDiaNethHoeAttackSpeed;
 				} else if (var1 == Tiers.GOLD) {
-					return 1.0F;
+					return AtlasConfig.goldDiaNethHoeAttackSpeed;
 				} else {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return 1.0F;
+						return AtlasConfig.goldDiaNethHoeAttackSpeed;
 					}
 
-					return 0.0F;
+					return AtlasConfig.stoneHoeAttackSpeed;
 				}
 			}
 			default -> {
-				return 0.0F;
+				return AtlasConfig.defaultAttackSpeed;
 			}
 		}
     }
@@ -148,5 +150,11 @@ public enum WeaponType {
 			case LONGSWORD, HOE, TRIDENT -> 2.0F;
 			default -> 0.0F;
 		};
+	}
+	public static float min(float f, float j) {
+		if(f < j) {
+			return j;
+		}
+		return f;
 	}
 }

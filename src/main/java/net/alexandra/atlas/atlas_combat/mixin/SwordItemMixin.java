@@ -21,7 +21,9 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -51,12 +53,9 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		WeaponType.SWORD.addCombatAttributes(this.getTier(), var3);
 		return var3.build();
 	}
-	/**
-	 * @author Mojank
-	 */
-	@Overwrite
-	public float getDamage() {
-		return WeaponType.SWORD.getDamage(this.getTier());
+	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)
+	public void getDamage(CallbackInfoReturnable<Float> cir) {
+		cir.setReturnValue(WeaponType.SWORD.getDamage(this.getTier()));
 	}
 
 	@Override
