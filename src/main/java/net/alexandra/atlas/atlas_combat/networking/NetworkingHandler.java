@@ -38,6 +38,7 @@ public class NetworkingHandler {
 			packetBuf.writeInt(AtlasConfig.snowballItemCooldown);
 			packetBuf.writeFloat(AtlasConfig.snowballDamage);
 			packetBuf.writeFloat(AtlasConfig.eggDamage);
+			packetBuf.writeFloat(AtlasConfig.bowUncertainty);
 			packetBuf.writeFloat(AtlasConfig.swordAttackDamage);
 			packetBuf.writeFloat(AtlasConfig.axeAttackDamage);
 			packetBuf.writeFloat(AtlasConfig.baseHoeAttackDamage);
