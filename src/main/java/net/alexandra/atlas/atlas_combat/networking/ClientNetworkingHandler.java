@@ -60,7 +60,7 @@ public class ClientNetworkingHandler {
 				AtlasConfig.ctsAttackBalancing = oldValue;
 				handler.getConnection().disconnect(new TextComponent("Cannot connect to this server without restarting due to a config mismatch!"));
 			}
-			AtlasConfig.eatingInterruption = buf.getBoolean(11);
+			AtlasConfig.eatingInterruption = buf.getBoolean(14);
 			AtlasConfig.swordProtectionEfficacy = buf.getInt(0);
 			AtlasConfig.potionUseDuration = buf.getInt(1);
 			AtlasConfig.honeyBottleUseDuration = buf.getInt(2);
