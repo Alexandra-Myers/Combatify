@@ -31,7 +31,7 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 		super(tier, properties);
 	}
 
-	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"))
+	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"),remap = false)
 	public ImmutableMultimap<Attribute, AttributeModifier> test(ImmutableMultimap.Builder<Attribute, AttributeModifier> instance) {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		var digger = DiggerItem.class.cast(this);

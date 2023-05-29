@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
@@ -43,9 +44,9 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		}
 		super.appendHoverText(stack, world, tooltip, context);
 	}
-	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"))
-	public ImmutableMultimap test(ImmutableMultimap.Builder instance) {
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
+	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"),remap = false)
+	public ImmutableMultimap<Attribute, AttributeModifier> test(ImmutableMultimap.Builder<Attribute, AttributeModifier> instance) {
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		WeaponType.SWORD.addCombatAttributes(this.getTier(), var3);
 		return var3.build();
 	}

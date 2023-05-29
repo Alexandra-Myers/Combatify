@@ -17,7 +17,6 @@ public class EggMixin {
 	@Unique
 	public final float eggDamage = AtlasCombat.CONFIG.eggDamage();
 
-
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public boolean redirectDamage(Entity instance, DamageSource source, float amount) {
 		var egg = ThrownEgg.class.cast(this);

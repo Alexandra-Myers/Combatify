@@ -26,9 +26,6 @@ public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnly
 		WeaponType.KNIFE.addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 	}
-	public float getDamage() {
-		return WeaponType.KNIFE.getDamage(this.getTier());
-	}
 
 	@Override
 	public boolean canAttackBlock(BlockState state, Level world, BlockPos pos, Player miner) {

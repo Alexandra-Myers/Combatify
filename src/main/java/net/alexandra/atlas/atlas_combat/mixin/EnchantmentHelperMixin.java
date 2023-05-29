@@ -44,23 +44,19 @@ public abstract class EnchantmentHelperMixin implements IEnchantmentHelper {
 
 	@Override
 	public float getKnockbackDebuff(ItemStack level, LivingEntity entity){
-		return (getDamageBonus(level, MobType.WATER)/2.5F);
+		return getDamageBonus(level, MobType.WATER)/2.5F;
 	}
 	@Override
 	public int getFullEnchantmentLevel(Enchantment enchantment, LivingEntity entity) {
 		Iterable<ItemStack> iterable = enchantment.getSlotItems(entity).values();
-		if (iterable == null) {
-			return 0;
-		} else {
-			int i = 0;
+		int i = 0;
 
-			for(ItemStack itemStack : iterable) {
-				int j = getItemEnchantmentLevel(enchantment, itemStack);
-				i += j;
-			}
-
-			return i;
+		for(ItemStack itemStack : iterable) {
+			int j = getItemEnchantmentLevel(enchantment, itemStack);
+			i += j;
 		}
+
+		return i;
 	}
 	@Inject(method = "getAvailableEnchantmentResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;isTreasureOnly()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
 	private static void extractEnchantment(int power, ItemStack stack, boolean treasureAllowed, CallbackInfoReturnable<List<EnchantmentInstance>> cir, List<EnchantmentInstance> list, Item item, boolean bl, Iterator iterator, Enchantment enchantment) {

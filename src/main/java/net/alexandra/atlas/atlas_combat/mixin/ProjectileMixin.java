@@ -20,7 +20,7 @@ public abstract class ProjectileMixin {
 		float f = -Mth.sin(yaw * (float) (Math.PI / 180.0)) * Mth.cos(pitch * (float) (Math.PI / 180.0));
 		float g = -Mth.sin((pitch + roll) * (float) (Math.PI / 180.0));
 		float h = Mth.cos(yaw * (float) (Math.PI / 180.0)) * Mth.cos(pitch * (float) (Math.PI / 180.0));
-		shoot((double)f, (double)g, (double)h, modifierZ, modifierXYZ);
+		shoot(f, g, h, modifierZ, modifierXYZ);
 		ci.cancel();
 	}
 }

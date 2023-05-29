@@ -153,9 +153,6 @@ public enum WeaponType {
 		};
 	}
 	public static float min(float f, float j) {
-		if(f < j) {
-			return j;
-		}
-		return f;
+		return Math.max(f, j);
 	}
 }

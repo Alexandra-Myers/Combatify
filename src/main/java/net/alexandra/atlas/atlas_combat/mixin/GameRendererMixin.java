@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 abstract class GameRendererMixin implements ResourceManagerReloadListener/*, AutoCloseable*/ {
     @Shadow
 	@Final
-	private Minecraft minecraft;
+	Minecraft minecraft;
 
     @ModifyConstant(
         method = "pick(F)V",

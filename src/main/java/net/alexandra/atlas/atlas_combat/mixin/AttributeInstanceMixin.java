@@ -21,24 +21,22 @@ public abstract class AttributeInstanceMixin implements IAttributeInstance {
 	AttributeInstance attributeInstance = ((AttributeInstance)(Object)this);
 	@Override
 	public final double calculateValue(float damageBonus) {
-		double d = attributeInstance.getBaseValue();
+		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
 
 		for(AttributeModifier attributeModifier : getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
-			d += attributeModifier.getAmount();
+			attributeInstanceBaseValue += attributeModifier.getAmount();
 		}
 
-		double e = d;
-
-		e += damageBonus;
+		double withDamageBonus = attributeInstanceBaseValue + damageBonus;
 
 		for(AttributeModifier attributeModifier2 : getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
-			e += d * attributeModifier2.getAmount();
+			withDamageBonus += attributeInstanceBaseValue * attributeModifier2.getAmount();
 		}
 
 		for(AttributeModifier attributeModifier2 : getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
-			e *= 1.0 + attributeModifier2.getAmount();
+			withDamageBonus *= 1.0 + attributeModifier2.getAmount();
 		}
 
-		return attribute.sanitizeValue(e);
+		return attribute.sanitizeValue(withDamageBonus);
 	}
 }

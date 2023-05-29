@@ -19,10 +19,11 @@ import java.util.OptionalInt;
 
 @Mixin(Attributes.class)
 public class AttributesMixin {
+
 	@Shadow
 	@Mutable
 	@Final
-	private static Attribute ATTACK_SPEED = registrySet(7,"generic.attack_speed", (new RangedAttribute("attribute.name.generic.attack_speed", 4.0, 0.10000000149011612, 1024.0)).setSyncable(true));
+	public static Attribute ATTACK_SPEED = registrySet(7,"generic.attack_speed", (new RangedAttribute("attribute.name.generic.attack_speed", 4.0, 0.10000000149011612, 1024.0)).setSyncable(true));
 
 	private static Attribute registrySet(int rawId, String id, Attribute attribute) {
 		/*Holder<Attribute> attributeHolder = ((WritableRegistry) BuiltInRegistries.ITEM).registerMapping(RawId, ResourceKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(id)), attribute, Lifecycle.stable());

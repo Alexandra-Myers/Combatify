@@ -3,6 +3,8 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,9 +17,9 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 		super(properties);
 	}
 
-	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"))
-	public ImmutableMultimap test(ImmutableMultimap.Builder instance) {
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
+	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMultimap$Builder;build()Lcom/google/common/collect/ImmutableMultimap;"),remap = false)
+	public ImmutableMultimap<Attribute, AttributeModifier> test(ImmutableMultimap.Builder<Attribute, AttributeModifier> instance) {
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		WeaponType.TRIDENT.addCombatAttributes(Tiers.NETHERITE, var3);
 		return var3.build();
 	}

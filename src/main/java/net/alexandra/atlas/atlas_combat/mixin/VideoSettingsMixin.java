@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class VideoSettingsMixin {
 	@Inject(method = "options", at = @At(value = "HEAD"), cancellable = true)
 	private static void injectOptions(Options options, CallbackInfoReturnable<OptionInstance<?>[]> cir) {
-		OptionInstance[] optionInstances = new OptionInstance[]{
+		OptionInstance<?>[] optionInstances = new OptionInstance[]{
 				options.graphicsMode(),
 				options.renderDistance(),
 				options.prioritizeChunkUpdates(),

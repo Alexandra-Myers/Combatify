@@ -28,13 +28,10 @@ public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanisha
 	public final Tier tier;
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		WeaponType.LONGSWORD.addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 		this.tier = tier;
-	}
-	public float getDamage() {
-		return WeaponType.LONGSWORD.getDamage(this.getTier());
 	}
 
 	@Override

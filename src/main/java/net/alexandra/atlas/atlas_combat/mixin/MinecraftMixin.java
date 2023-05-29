@@ -66,9 +66,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	protected abstract boolean startAttack();
 
 	@Shadow
-	public abstract @org.jetbrains.annotations.Nullable Entity getCameraEntity();
-
-	@Shadow
 	@org.jetbrains.annotations.Nullable
 	public Entity crosshairPickEntity;
 
@@ -77,13 +74,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 	@Unique
 	Entity lastPickedEntity = null;
-
-	@Shadow
-	@Final
-	public ParticleEngine particleEngine;
-
-	@Shadow
-	public abstract void setConnectedToRealms(boolean b);
 
 	@Shadow
 	@Nullable

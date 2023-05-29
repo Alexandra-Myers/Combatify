@@ -49,6 +49,8 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemTransforms.TransformType renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
 
+
+	//This works, trust us
 	@ModifyVariable(method = "tick", slice = @Slice(
 			from = @At(value = "JUMP", ordinal = 3)
 	), at = @At(value = "FIELD", ordinal = 0))

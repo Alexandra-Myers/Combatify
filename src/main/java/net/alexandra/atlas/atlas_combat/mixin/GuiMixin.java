@@ -95,10 +95,6 @@ public abstract class GuiMixin extends GuiComponent {
 	@Shadow
 	protected abstract int getVisibleVehicleHeartRows(int heartCount);
 
-	/**
-	 * @author
-	 * @reason
-	 */
 	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"), cancellable = true)
 	private void renderCrosshair(PoseStack matrices, CallbackInfo ci) {
 		Options options = this.minecraft.options;
@@ -254,7 +250,6 @@ public abstract class GuiMixin extends GuiComponent {
 	}
 	@Inject(method = "renderPlayerHealth", at = @At(value = "HEAD"), cancellable = true)
 	private void renderPlayerHealth(PoseStack matrices, CallbackInfo ci) {
-		Gui gui = (Gui)(Object)this;
 		Player player = this.getCameraPlayer();
 		if (player != null) {
 			int i = Mth.ceil(player.getHealth());
@@ -262,10 +257,10 @@ public abstract class GuiMixin extends GuiComponent {
 			long l = Util.getMillis();
 			if (i < lastHealth && player.invulnerableTime > 0) {
 				lastHealthTime = l;
-				healthBlinkTime = (long)(tickCount + 20);
+				healthBlinkTime = tickCount + 20;
 			} else if (i > lastHealth && player.invulnerableTime > 0) {
 				lastHealthTime = l;
-				healthBlinkTime = (long)(tickCount + 10);
+				healthBlinkTime = tickCount + 10;
 			}
 
 			if (l - lastHealthTime > 1000L) {
@@ -276,7 +271,7 @@ public abstract class GuiMixin extends GuiComponent {
 
 			lastHealth = i;
 			int j = displayHealth;
-			random.setSeed((long)(tickCount * 312871));
+			random.setSeed(tickCount * 312871);
 			FoodData foodData = player.getFoodData();
 			int k = foodData.getFoodLevel();
 			int m = this.screenWidth / 2 - 91;

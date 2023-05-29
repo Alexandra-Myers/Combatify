@@ -102,15 +102,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	protected int noActionTime;
 
 	@Shadow
-	public float attackAnim;
-
-	@Shadow
-	public float oAttackAnim;
-
-	@Shadow
-	public abstract boolean doHurtTarget(Entity target);
-
-	@Shadow
 	protected abstract float getDamageAfterArmorAbsorb(DamageSource damageSource, float v);
 
 	@Shadow
@@ -157,8 +148,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Inject(method="blockedByShield", at=@At(value="RETURN"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
-		double x = target.getX() - ((LivingEntity)(Object)this).getX();
-		double z = target.getZ() - ((LivingEntity)(Object)this).getZ();
+		double x = target.getX() - this.getX();
+		double z = target.getZ() - this.getZ();
 		if(((LivingEntityExtensions)target).getBlockingItem().getItem() instanceof SwordItem) {
 			((LivingEntityExtensions)target).newKnockback(0.25F, x, z);
 			newKnockback(0.25F, x, z);
@@ -433,10 +424,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 
-	/**
-	 * @author
-	 * @reason
-	 */
 	@Override
 	public void newKnockback(float var1, double var2, double var4) {
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);

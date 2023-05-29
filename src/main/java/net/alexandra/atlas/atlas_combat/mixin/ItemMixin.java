@@ -20,9 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
 
-	@Shadow
-	public abstract Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot);
-
 	@Override
 	public double getAttackReach(Player player) {
 		float var2 = 0.0F;

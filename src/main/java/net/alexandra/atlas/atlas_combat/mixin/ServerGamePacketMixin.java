@@ -38,11 +38,6 @@ public class ServerGamePacketMixin {
 	@Shadow
 	@Final
 	public static double MAX_INTERACTION_DISTANCE;
-	@Shadow
-	@Final
-	private MinecraftServer server;
-	@Unique
-	ServerGamePacketListenerImpl thisListener = ((ServerGamePacketListenerImpl)(Object)this);
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"))
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
