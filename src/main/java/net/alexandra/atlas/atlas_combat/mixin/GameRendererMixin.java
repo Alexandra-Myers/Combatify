@@ -1,5 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.extensions.PlayerExtensions;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.client.Minecraft;
@@ -8,6 +9,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
@@ -17,26 +19,16 @@ abstract class GameRendererMixin implements ResourceManagerReloadListener/*, Aut
 	@Final
 	Minecraft minecraft;
 
-    @ModifyConstant(
-        method = "pick(F)V",
-        require = 1, allow = 1, constant = @Constant(doubleValue = 6.0))
-    private double getActualReachDistance(final double reachDistance) {
-        if (this.minecraft.player != null) {
-            return ((PlayerExtensions)minecraft.player).getReach(this.minecraft.player, 2.5);
-        }
-        return 2.5;
-    }
-
-    @ModifyConstant(method = "pick(F)V", constant = @Constant(doubleValue = 3.0))
-    private double getActualAttackRange0(final double attackRange) {
+    @ModifyExpressionValue(method = "pick(F)V", at = @At(value = "CONSTANT", args = "doubleValue=3.0"))
+    private double getActualAttackRange0(double original) {
         if (this.minecraft.player != null) {
             return ((PlayerExtensions)minecraft.player).getAttackRange(this.minecraft.player, 2.5);
         }
         return 2.5;
     }
 
-    @ModifyConstant(method = "pick(F)V", constant = @Constant(doubleValue = 9.0))
-    private double getActualAttackRange1(final double attackRange) {
+	@ModifyExpressionValue(method = "pick(F)V", at = @At(value = "CONSTANT", args = "doubleValue=9.0"))
+    private double getActualAttackRange1(double original) {
         if (this.minecraft.player != null) {
             return ((PlayerExtensions)minecraft.player).getSquaredAttackRange(this.minecraft.player, 6.25);
         }
