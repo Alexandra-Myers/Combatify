@@ -5,7 +5,5 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public interface IBowItem {
-    void stopUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks);
-
     float getFatigueForTime(int f);
 }

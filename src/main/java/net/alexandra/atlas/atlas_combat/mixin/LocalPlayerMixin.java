@@ -40,12 +40,12 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if(thisPlayer.isOnGround()) {
-			if (this.hasEnabledShieldOnCrouch() && thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
-				for (InteractionHand interactionHand : InteractionHand.values()) {
-					ItemStack itemStack = ((LivingEntityExtensions)this.thisPlayer).getBlockingItem();
+		if(thisPlayer.isOnGround() && this.hasEnabledShieldOnCrouch()) {
+			for (InteractionHand interactionHand : InteractionHand.values()) {
+				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
+					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
-						if(!thisPlayer.getCooldowns().isOnCooldown(shieldItem)) {
+						if (!thisPlayer.getCooldowns().isOnCooldown(shieldItem)) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
 
 							if (lowShieldEnabled()) {
@@ -53,9 +53,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 							}
 						}
 					}
-				}
-			} else if ((this.hasEnabledShieldOnCrouch() && thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
-				for (InteractionHand interactionHand : InteractionHand.values()) {
+				} else if ((thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
+
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof ShieldItem)) {
 						minecraft.gameMode.releaseUsingItem(thisPlayer);

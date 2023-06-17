@@ -17,8 +17,6 @@ public interface LivingEntityExtensions {
 
     void setEnemy(Entity enemy);
 
-    boolean doHurt(DamageSource source, float amount);
-
 	void newKnockback(float var1, double var2, double var4);
 
 	boolean getIsParry();

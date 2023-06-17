@@ -49,7 +49,7 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	public boolean isAcceptibleAnvil(ItemStack stack) {
 		if(thisEnchantment instanceof SweepingEdgeEnchantment && AtlasCombat.CONFIG.toolsAreWeapons()) {
 			return canEnchant(stack);
-		}else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
+		} else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
 			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
 		}
 		if(thisEnchantment instanceof DamageEnchantment) {

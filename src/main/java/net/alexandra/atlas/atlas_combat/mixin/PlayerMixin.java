@@ -2,6 +2,9 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.*;
@@ -15,10 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
@@ -39,13 +40,13 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Mixin(value = Player.class, priority = 1400)
@@ -71,7 +72,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	@Final
-	public Abilities abilities;
+	private Abilities abilities;
 
 	@Shadow
 	public abstract float getAttackStrengthScale(float f);
@@ -89,6 +90,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float baseValue = 1.0F;
 	@Unique
 	public Multimap additionalModifiers;
+	@Unique
+	float oldDamage;
+	@Unique
+	float currentAttackReach;
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
@@ -131,43 +136,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		ci.cancel();
 	}
-	@Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "hurt", at = @At("HEAD"))
 	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		if (this.isInvulnerableTo(source)) {
-			cir.setReturnValue(false);
-			cir.cancel();
-		} else if (this.abilities.invulnerable && !source.isBypassInvul()) {
-			cir.setReturnValue(false);
-			cir.cancel();
-		} else {
-			this.noActionTime = 0;
-			if (this.isDeadOrDying()) {
-				cir.setReturnValue(false);
-				cir.cancel();
-			} else {
-				if (!this.level.isClientSide) {
-					removeEntitiesOnShoulder();
-				}
-				float oldDamage = amount;
-
-				if (source.scalesWithDifficulty()) {
-					if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
-						amount = 0.0F;
-					}
-
-					if (this.level.getDifficulty() == Difficulty.EASY) {
-						amount = Math.min(amount / 2.0F + 1.0F, amount);
-					}
-
-					if (this.level.getDifficulty() == Difficulty.HARD) {
-						amount = amount * 3.0F / 2.0F;
-					}
-				}
-
-				cir.setReturnValue(amount == 0.0F && oldDamage > 0.0F ? false : super.hurt(source, amount));
-				cir.cancel();
-			}
-		}
+		oldDamage = amount;
+	}
+	@ModifyReturnValue(method = "hurt", at = @At(value = "RETURN"))
+	public boolean changeReturn(boolean original, @Local(ordinal = 0) DamageSource source, @Local(ordinal = 0) float amount) {
+		boolean bl = amount == 0.0F && !original;
+		return bl && oldDamage > 0.0F ? false : super.hurt(source, amount);
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
@@ -243,161 +219,151 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason change attacks
-	 */
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
+		if(!isAttackAvailable(baseValue)) ci.cancel();
 		newAttack(target);
-		ci.cancel();
+	}
+	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
+	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) LocalFloatRef attackDamageBonus) {
+		LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
+		boolean bl = livingEntity != null;
+		if(bl)
+			((LivingEntityExtensions)livingEntity).setEnemy(player);
+		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
+			EnchantmentHelper helper = new EnchantmentHelper();
+			attackDamageBonus.set(((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity));
+		}
+		attackDamage.set((float) ((IAttributeInstance) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE))).calculateValue(attackDamageBonus.get()));
+		attackDamageBonus.set(0);
+	}
+	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
+	public float redirectStrengthCheck(float original) {
+		currentAttackReach = (float) this.getAttackRange(player, 2.5);
+		return 1.0F;
+	}
+	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
+	public void reset(Player instance) {
+		this.resetAttackStrengthTicker(true);
+	}
+	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getSpeed()F"))
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage) {
+		boolean isCrit = player.fallDistance > 0.0F
+			&& !player.isOnGround()
+			&& !player.onClimbable()
+			&& !player.isInWater()
+			&& !player.hasEffect(MobEffects.BLINDNESS)
+			&& !player.isPassenger()
+			&& target instanceof LivingEntity;
+		if (isCrit) {
+			attackDamage.set(attackDamage.get() * 1.5F);
+			player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
+			player.crit(target);
+		}
+		if (getIsParry()) {
+			player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
+			attackDamage.set(attackDamage.get() * 1.25F);
+			player.crit(target);
+			setIsParry(false);
+		}
 	}
 	@Override
 	public void newAttack(Entity target) {
-		if (target.isAttackable()) {
-			if (!target.skipAttackInteraction(player)) {
-				if(isAttackAvailable(baseValue)) {
-					float attackDamageBonus;
-					LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
-					boolean bl = livingEntity != null;
-					if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
-						EnchantmentHelper helper = new EnchantmentHelper();
-						attackDamageBonus = ((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity);
-					} else if (bl) {
-						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
+		if (attackDamage > 0.0F) {
+			boolean bl2 = false;
+			int knockbackBonus = 0;
+			knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
+
+			boolean bl4 = false;
+			double d = (player.walkDist - player.walkDistO);
+			if (!isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
+				bl4 = checkSweepAttack();
+			}
+
+			float j = bl ? livingEntity.getHealth() : 0.0F;
+			boolean bl5 = false;
+			int getFireAspectLvL = EnchantmentHelper.getFireAspect(player);
+			if (getFireAspectLvL > 0 && !target.isOnFire()) {
+				bl5 = true;
+				target.setSecondsOnFire(1 + getFireAspectLvL * 4);
+			}
+
+			Vec3 vec3 = target.getDeltaMovement();
+			boolean bl6 = target.hurt(DamageSource.playerAttack(player), attackDamage);
+			if (bl6) {
+				if (knockbackBonus > 0) {
+					if (bl) {
+						((LivingEntityExtensions)livingEntity)
+								.newKnockback((knockbackBonus * 0.5F),
+										Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
+										-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
+								);
 					} else {
-						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), MobType.UNDEFINED);
-					}
-					float attackDamage = (float) ((IAttributeInstance)player.getAttribute(Attributes.ATTACK_DAMAGE)).calculateValue(attackDamageBonus);
-					float currentAttackReach = (float) this.getAttackRange(player, 2.5);
-					if (attackDamage > 0.0F) {
-						if(bl) {
-							((LivingEntityExtensions)livingEntity).setEnemy(player);
-						}
-						boolean bl2 = false;
-						int knockbackBonus = 0;
-						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting()) {
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
-							++knockbackBonus;
-							bl2 = true;
-						}
-
-						boolean isCrit = player.fallDistance > 0.0F
-								&& !player.isOnGround()
-								&& !player.onClimbable()
-								&& !player.isInWater()
-								&& !player.hasEffect(MobEffects.BLINDNESS)
-								&& !player.isPassenger()
-								&& target instanceof LivingEntity;
-						if (isCrit) {
-							attackDamage *= 1.5;
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
-							player.crit(target);
-						}
-						if (getIsParry()) {
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
-							attackDamage *= 1.25;
-							player.crit(target);
-							setIsParry(false);
-						}
-
-						boolean bl4 = false;
-						double d = (player.walkDist - player.walkDistO);
-						if (!isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
-							bl4 = checkSweepAttack();
-						}
-
-						float j = bl ? livingEntity.getHealth() : 0.0F;
-						boolean bl5 = false;
-						int getFireAspectLvL = EnchantmentHelper.getFireAspect(player);
-						if (getFireAspectLvL > 0 && !target.isOnFire()) {
-							bl5 = true;
-							target.setSecondsOnFire(1 + getFireAspectLvL * 4);
-						}
-
-						Vec3 vec3 = target.getDeltaMovement();
-						boolean bl6 = target.hurt(DamageSource.playerAttack(player), attackDamage);
-						if (bl6) {
-							if (knockbackBonus > 0) {
-								if (bl) {
-									((LivingEntityExtensions)livingEntity)
-											.newKnockback((knockbackBonus * 0.5F),
-													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
-													-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
-											);
-								} else {
-									target.push(
-											(-Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F),
-											0.1,
-											(Mth.cos(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F)
-									);
-								}
-
-								player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-								player.setSprinting(false);
-							}
-
-							if (bl4) {
-								AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-								this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
-							}
-
-							if (target instanceof ServerPlayer serverPlayer && target.hurtMarked) {
-								serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(target));
-								target.hurtMarked = false;
-								target.setDeltaMovement(vec3);
-							}
-
-							if (!isCrit && !bl4) {
-								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, player.getSoundSource(), 1.0F, 1.0F);
-							}
-
-							if (attackDamageBonus > 0.0F) {
-								player.magicCrit(target);
-							}
-
-							player.setLastHurtMob(target);
-							if (bl) {
-								EnchantmentHelper.doPostHurtEffects(livingEntity, player);
-							}
-
-							EnchantmentHelper.doPostDamageEffects(player, target);
-							ItemStack itemStack2 = player.getMainHandItem();
-							Entity entity = target;
-							if (target instanceof EnderDragonPart enderDragonPart) {
-								entity = enderDragonPart.parentMob;
-							}
-
-							if (!player.level.isClientSide && !itemStack2.isEmpty() && entity instanceof LivingEntity livingEntity1) {
-								itemStack2.hurtEnemy(livingEntity1, player);
-								if (itemStack2.isEmpty()) {
-									player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-								}
-							}
-
-							if (bl) {
-								float m = j - livingEntity.getHealth();
-								player.awardStat(Stats.DAMAGE_DEALT, Math.round(m * 10.0F));
-
-								if (player.level instanceof ServerLevel serverLevel && m > 2.0F) {
-									int n = (int) (m * 0.5);
-									serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY(0.5), target.getZ(), n, 0.1, 0.0, 0.1, 0.2);
-								}
-							}
-
-							player.causeFoodExhaustion(0.1F);
-						} else {
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
-							if (bl5) {
-								target.clearFire();
-							}
-						}
+						target.push(
+								(-Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F),
+								0.1,
+								(Mth.cos(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F)
+						);
 					}
 
-					this.resetAttackStrengthTicker(true);
+					player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
+					player.setSprinting(false);
 				}
 
+				if (bl4) {
+					AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
+					this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
+				}
+
+				if (target instanceof ServerPlayer serverPlayer && target.hurtMarked) {
+					serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(target));
+					target.hurtMarked = false;
+					target.setDeltaMovement(vec3);
+				}
+
+				if (!isCrit && !bl4) {
+					player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, player.getSoundSource(), 1.0F, 1.0F);
+				}
+
+				if (attackDamageBonus > 0.0F) {
+					player.magicCrit(target);
+				}
+
+				player.setLastHurtMob(target);
+				if (bl) {
+					EnchantmentHelper.doPostHurtEffects(livingEntity, player);
+				}
+
+				EnchantmentHelper.doPostDamageEffects(player, target);
+				ItemStack itemStack2 = player.getMainHandItem();
+				Entity entity = target;
+				if (target instanceof EnderDragonPart enderDragonPart) {
+					entity = enderDragonPart.parentMob;
+				}
+
+				if (!player.level.isClientSide && !itemStack2.isEmpty() && entity instanceof LivingEntity livingEntity1) {
+					itemStack2.hurtEnemy(livingEntity1, player);
+					if (itemStack2.isEmpty()) {
+						player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+					}
+				}
+
+				if (bl) {
+					float m = j - livingEntity.getHealth();
+					player.awardStat(Stats.DAMAGE_DEALT, Math.round(m * 10.0F));
+
+					if (player.level instanceof ServerLevel serverLevel && m > 2.0F) {
+						int n = (int) (m * 0.5);
+						serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY(0.5), target.getZ(), n, 0.1, 0.0, 0.1, 0.2);
+					}
+				}
+
+				player.causeFoodExhaustion(0.1F);
+			} else {
+				player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
+				if (bl5) {
+					target.clearFire();
+				}
 			}
 		}
 	}

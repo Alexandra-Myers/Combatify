@@ -12,9 +12,9 @@ public interface IOptions {
 	OptionInstance<Boolean> lowShield();
 	OptionInstance<Boolean> rhythmicAttacks();
 
-    OptionInstance<Boolean> protIndicator();
-
     OptionInstance<Boolean> swordBlockStyle();
+
+	OptionInstance<Boolean> protIndicator();
 
 	OptionInstance<Boolean> fishingRodLegacy();
 

@@ -33,6 +33,8 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
+
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements IMinecraft {
 	@Shadow
@@ -121,8 +123,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
-		if(((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching()) {
-		} else {
+		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching()) {
 			instance.releaseUsingItem(player);
 		}
 	}
@@ -148,86 +149,52 @@ public abstract class MinecraftMixin implements IMinecraft {
 		}
 		return startAttack();
 	}
-	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
+	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
-		if(missTime < 0) {
-			cir.setReturnValue(false);
-			cir.cancel();
-		}else if (this.hitResult == null) {
-			LOGGER.error("Null returned as 'hitResult', this shouldn't happen!");
-			if (this.gameMode.hasMissTime()) {
-				this.missTime = 10;
-			}
-
-			cir.setReturnValue(false);
-			cir.cancel();
-		}else if (this.player.isHandsBusy()) {
-			cir.setReturnValue(false);
-			cir.cancel();
+		this.retainAttack = false;
+	}
+	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
+	public void redirectAttack(MultiPlayerGameMode instance, Player player, Entity entity) {
+		if (player.distanceTo(entity) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
+			instance.attack(player, entity);
 		} else {
-			this.retainAttack = false;
-			boolean bl = false;
-			ItemStack itemStack = this.player.getItemInHand(InteractionHand.MAIN_HAND);
-			if (itemStack.isItemEnabled(level.enabledFeatures())) {
-				switch (redirectResult(this.hitResult).getType()) {
-					case ENTITY:
-						if (player.distanceTo(((EntityHitResult)hitResult).getEntity()) <= ((PlayerExtensions)player).getAttackRange(player, 2.5)) {
-							this.gameMode.attack(this.player, ((EntityHitResult) this.hitResult).getEntity());
-						} else {
-							((IPlayerGameMode)gameMode).swingInAir(player);
-						}
-						break;
-					case BLOCK:
-						BlockHitResult blockHitResult = (BlockHitResult)this.hitResult;
-						BlockPos blockPos = blockHitResult.getBlockPos();
-						if (!this.level.getBlockState(blockPos).isAir()) {
-							this.gameMode.startDestroyBlock(blockPos, blockHitResult.getDirection());
-							if (this.level.getBlockState(blockPos).isAir()) {
-								bl = true;
-							}
-							break;
-						}
-					case MISS:
-						EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-						if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
-							if(!(result.getEntity() instanceof Player)) {
-								if (result.getEntity() instanceof Guardian
-										|| result.getEntity() instanceof Cat
-										|| result.getEntity() instanceof Vex
-										|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
-										|| result.getEntity() instanceof Fox
-										|| result.getEntity() instanceof Frog
-										|| result.getEntity() instanceof Bee
-										|| result.getEntity() instanceof Bat
-										|| result.getEntity() instanceof AbstractFish
-										|| result.getEntity() instanceof Rabbit) {
-									result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
-								} else {
-									result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
-								}
-								if(result != null) {
-									this.gameMode.attack(this.player, result.getEntity());
-								} else {
-									((IPlayerGameMode)gameMode).swingInAir(player);
-								}
-							} else {
-								((IPlayerGameMode)gameMode).swingInAir(player);
-							}
-						} else {
-							((IPlayerGameMode)gameMode).swingInAir(player);
-						}
-				}
-
-				this.player.swing(InteractionHand.MAIN_HAND);
-				cir.setReturnValue(bl);
-				cir.cancel();
-			} else {
-				cir.setReturnValue(false);
-				cir.cancel();
-			}
+			((IPlayerGameMode)instance).swingInAir(player);
 		}
-		cir.setReturnValue(false);
-		cir.cancel();
+	}
+	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))
+	public boolean removeMissTime(boolean original) {
+		return false;
+	}
+	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
+	public void redirectReset(LocalPlayer player) {
+		EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
+		if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
+			if(!(result.getEntity() instanceof Player)) {
+				if (result.getEntity() instanceof Guardian
+					|| result.getEntity() instanceof Cat
+					|| result.getEntity() instanceof Vex
+					|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
+					|| result.getEntity() instanceof Fox
+					|| result.getEntity() instanceof Frog
+					|| result.getEntity() instanceof Bee
+					|| result.getEntity() instanceof Bat
+					|| result.getEntity() instanceof AbstractFish
+					|| result.getEntity() instanceof Rabbit) {
+					result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(player, 2.5));
+				} else {
+					result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(player, 2.5));
+				}
+				if(result != null) {
+					this.gameMode.attack(player, result.getEntity());
+				} else {
+					((IPlayerGameMode)gameMode).swingInAir(player);
+				}
+			} else {
+				((IPlayerGameMode)gameMode).swingInAir(player);
+			}
+		} else {
+			((IPlayerGameMode)gameMode).swingInAir(player);
+		}
 	}
 	@Override
 	public final HitResult redirectResult(HitResult instance) {

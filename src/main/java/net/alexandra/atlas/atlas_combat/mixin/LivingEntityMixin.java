@@ -1,38 +1,34 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.CombatRules;
-import net.minecraft.world.damagesource.CombatTracker;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -47,27 +43,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		super(entityType, level);
 	}
 
-	@Shadow
-	public abstract boolean checkTotemDeathProtection(DamageSource source);
-
-	@Shadow
-	@Nullable
-	public abstract SoundEvent getDeathSound();
-
-	@Shadow
-	public abstract float getSoundVolume();
-
-	@Shadow
-	public abstract void playHurtSound(DamageSource source);
-
-	@Shadow
-	@Nullable
-	public DamageSource lastDamageSource;
 	@Unique
 	boolean isParry = false;
-
-	@Shadow
-	public long lastDamageStamp;
 
 	@Shadow
 	public abstract void hurtCurrentlyUsedShield(float amount);
@@ -77,53 +54,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Unique
 	public int isParryTicker = 0;
 
-	@Shadow
-	@Nullable
-	public Player lastHurtByPlayer;
 	@Unique
 	public Entity enemy;
-
-	@Shadow
-	public int lastHurtByPlayerTime;
-
-	@Shadow
-	public float lastHurt;
-
-	@Shadow
-	public abstract void actuallyHurt(DamageSource source, float amount);
+	@Unique
+	LivingEntity thisEntity = LivingEntity.class.cast(this);
 
 	@Shadow
 	public abstract double getAttributeValue(Attribute attribute);
 
 	@Shadow
-	public abstract void hurtHelmet(DamageSource par1, float par2);
-
-	@Shadow
-	protected int noActionTime;
-
-	@Shadow
-	protected abstract float getDamageAfterArmorAbsorb(DamageSource damageSource, float v);
-
-	@Shadow
-	protected abstract float getDamageAfterMagicAbsorb(DamageSource damageSource, float v);
-
-	@Shadow
-	public abstract float getAbsorptionAmount();
-
-	@Shadow
-	public abstract void setAbsorptionAmount(float v);
-
-	@Shadow
-	public abstract CombatTracker getCombatTracker();
-
-	@Shadow
-	public abstract void setHealth(float v);
-
-	@Shadow
-	public abstract float getHealth();
-
-	@Shadow
-	protected abstract void hurtArmor(DamageSource damageSource, float v);
+	public abstract void hurtArmor(DamageSource damageSource, float v);
 
 	@Shadow
 	public abstract int getArmorValue();
@@ -164,40 +104,27 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 	}
-	@Inject(method = "actuallyHurt", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing(DamageSource source, float f, CallbackInfo ci) {
-		if (!this.isInvulnerableTo(source)) {
-			if(source.getEntity() instanceof Player player) {
-				Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-				if(item instanceof PiercingItem piercingItem) {
-					double d = piercingItem.getPiercingLevel();
-					f = getNewDamageAfterArmorAbsorb(source, f, d);
-					f = getNewDamageAfterMagicAbsorb(source, f, d);
-				}else {
-					f = getDamageAfterArmorAbsorb(source, f);
-					f = getDamageAfterMagicAbsorb(source, f);
-				}
-			}else {
-				f = getDamageAfterArmorAbsorb(source, f);
-				f = getDamageAfterMagicAbsorb(source, f);
-			}
-			float g = f;
-			f = Math.max(f - this.getAbsorptionAmount(), 0.0F);
-			this.setAbsorptionAmount(this.getAbsorptionAmount() - (g - f));
-			float h = g - f;
-			if (h > 0.0F && h < 3.4028235E37F && source.getEntity() instanceof ServerPlayer) {
-				((ServerPlayer)source.getEntity()).awardStat(Stats.DAMAGE_DEALT_ABSORBED, Math.round(h * 10.0F));
-			}
-
-			if (f != 0.0F) {
-				float i = this.getHealth();
-				this.setHealth(i - f);
-				this.getCombatTracker().recordDamage(source, i, f);
-				this.setAbsorptionAmount(this.getAbsorptionAmount() - f);
-				this.gameEvent(GameEvent.ENTITY_DAMAGE);
+	@Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+	public float addPiercing(LivingEntity instance, DamageSource source, float f) {
+		if(source.getEntity() instanceof LivingEntity livingEntity) {
+			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+			if(item instanceof PiercingItem piercingItem) {
+				double d = piercingItem.getPiercingLevel();
+				return getNewDamageAfterArmorAbsorb(source, f, d);
 			}
 		}
-		ci.cancel();
+		return f;
+	}
+	@Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterMagicAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+	public float addPiercing1(LivingEntity instance, DamageSource source, float f) {
+		if(source.getEntity() instanceof LivingEntity livingEntity) {
+			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+			if(item instanceof PiercingItem piercingItem) {
+				double d = piercingItem.getPiercingLevel();
+				return getNewDamageAfterMagicAbsorb(source, f, d);
+			}
+		}
+		return f;
 	}
 	@ModifyConstant(method = "handleEntityEvent", constant = @Constant(intValue = 20, ordinal = 0))
 	private int syncInvulnerability(int x) {
@@ -208,219 +135,83 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		this.enemy = enemy;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 */
-	@Inject(method = "hurt", at = @At("HEAD"),cancellable = true)
-	public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(doHurt(source, amount));
-		cir.cancel();
-	}
-	@Override
-	public boolean doHurt(DamageSource source, float amount) {
-		LivingEntity thisEntity = ((LivingEntity)(Object)this);
-		if (this.isInvulnerableTo(source)) {
-			return false;
-		} else if (this.level.isClientSide) {
-			return false;
-		} else if (thisEntity.isDeadOrDying()) {
-			return false;
-		} else if (source.isFire() && thisEntity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-			return false;
-		} else {
-			if (thisEntity.isSleeping() && !this.level.isClientSide) {
-				thisEntity.stopSleeping();
-			}
-
-			noActionTime = 0;
-			float f = amount;
-			boolean bl = false;
-			float g = 0.0F;
-			Entity entity;
-			if (amount > 0.0F && isDamageSourceBlocked(source) && thisEntity instanceof Player player) {
-				if(this.getBlockingItem().getItem() instanceof ShieldItem shieldItem && !player.getCooldowns().isOnCooldown(shieldItem)) {
-					float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
-					if (source.isExplosion() || source.isProjectile()) {
-						hurtCurrentlyUsedShield(amount);
-						amount = 0.0F;
-						g = f;
-					} else if (blockStrength >= amount) {
-						hurtCurrentlyUsedShield(amount);
-						amount -= blockStrength;
-						g = f - amount;
-					} else if (blockStrength < amount) {
-						hurtCurrentlyUsedShield(blockStrength);
-						amount -= blockStrength;
-						g = f - blockStrength;
+	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
+		Entity entity;
+		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
+			if(this.getBlockingItem().getItem() instanceof ShieldItem shieldItem && instance instanceof Player player && !player.getCooldowns().isOnCooldown(shieldItem)) {
+				float blockStrength = ShieldUtils.getShieldBlockDamageValue(getBlockingItem());
+				g.set(Math.min(blockStrength, amount.get()));
+				if (!source.isProjectile() && !source.isExplosion()) {
+					entity = source.getDirectEntity();
+					if (entity instanceof LivingEntity) {
+						this.blockUsingShield((LivingEntity) entity);
 					}
-					if (!source.isProjectile() && !source.isExplosion()) {
+				} else {
+					g.set(amount.get());
+				}
+
+				hurtCurrentlyUsedShield(g.get());
+				amount.set(amount.get() - g.get());
+				bl.set(true);
+			} else if(this.getBlockingItem().getItem() instanceof SwordItem shieldItem) {
+				if(instance.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
+					boolean blocked = !source.isExplosion() && !source.isProjectile();
+					if (source.isExplosion()) {
+						g.set(10);
+					} else if (blocked) {
+						isParryTicker = 0;
+						isParry = true;
+						float actualStrength = ((IShieldItem) shieldItem).getShieldBlockDamageValue(getBlockingItem());
+						g.set(amount.get() * actualStrength);
 						entity = source.getDirectEntity();
 						if (entity instanceof LivingEntity) {
 							this.blockUsingShield((LivingEntity) entity);
 						}
-					}
-					bl = true;
-				}else if(this.getBlockingItem().getItem() instanceof SwordItem shieldItem) {
-					if(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-						boolean blocked = !source.isExplosion() && !source.isProjectile();
-						if (source.isExplosion()) {
-							hurtCurrentlyUsedShield(10);
-							amount -= 10;
-							g = f - amount;
-						}
-						if(!blocked){
-							isParryTicker = 0;
-							isParry = true;
-							float actualStrength = ((IShieldItem) shieldItem).getShieldBlockDamageValue(getBlockingItem());
-							hurtCurrentlyUsedShield(amount * actualStrength);
-							amount -= amount * actualStrength;
-							g = f - (f * actualStrength);
-							entity = source.getDirectEntity();
-							if (entity instanceof LivingEntity) {
-								this.blockUsingShield((LivingEntity) entity);
-							}
-							bl = true;
-						}
-					}
+						bl.set(true);
+					} else
+						g.set(0);
+					hurtCurrentlyUsedShield(g.get());
+					amount.set(amount.get() - g.get());
 				}
 			}
-			Entity entity2 = source.getEntity();
-			enemy = entity2;
-			int invulnerableTime = 10;
-			if (entity2 instanceof Player player) {
-				invulnerableTime = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-			}
-			if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic() && !source.isFall() && AtlasCombat.CONFIG.eatingInterruption()) {
-				thisEntity.stopUsingItem();
-			}
+		}
+		return false;
+	}
+	@ModifyConstant(method = "hurt", constant = @Constant(intValue = 20, ordinal = 0))
+	public int changeIFrames(int constant, @Local(ordinal = 0) final DamageSource source, @Local(ordinal = 0) final float amount) {
+		Entity entity2 = source.getEntity();
+		enemy = entity2;
+		int invulnerableTime = 10;
+		if (entity2 instanceof Player player) {
+			invulnerableTime = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
+		}
 
-			if (source.isProjectile()) {
-				invulnerableTime = 0;
-			}
-			thisEntity.animationSpeed = 1.5F;
-			boolean bl2 = true;
-			if (this.invulnerableTime > 0) {
-				if (amount <= this.lastHurt) {
-					return false;
-				}
+		if (source.isProjectile()) {
+			invulnerableTime = 0;
+		}
+		return invulnerableTime;
 
-				this.actuallyHurt(source, amount - this.lastHurt);
-				this.lastHurt = amount;
-				bl2 = false;
-			} else if(source.isFire()) {
-				this.lastHurt = amount;
-				this.invulnerableTime = 15;
-				this.actuallyHurt(source, amount);
-				thisEntity.hurtDuration = 10;
-				thisEntity.hurtTime = thisEntity.hurtDuration;
-			} else {
-				this.lastHurt = amount;
-				this.invulnerableTime = invulnerableTime;
-				this.actuallyHurt(source, amount);
-				thisEntity.hurtDuration = 10;
-				thisEntity.hurtTime = thisEntity.hurtDuration;
-			}
-
-			if (source.isDamageHelmet() && !thisEntity.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-				hurtHelmet(source, amount);
-				amount *= 0.75F;
-			}
-
-			thisEntity.hurtDir = 0.0F;
-			if (entity2 != null) {
-				if (entity2 instanceof LivingEntity && !source.isNoAggro()) {
-					thisEntity.setLastHurtByMob((LivingEntity)entity2);
-				}
-
-				if (entity2 instanceof Player) {
-					this.lastHurtByPlayerTime = 100;
-					this.lastHurtByPlayer = (Player)entity2;
-				} else if (entity2 instanceof Wolf wolf && wolf.isTame()) {
-					this.lastHurtByPlayerTime = 100;
-					LivingEntity livingEntity = wolf.getOwner();
-					if (livingEntity != null && livingEntity.getType() == EntityType.PLAYER) {
-						this.lastHurtByPlayer = (Player)livingEntity;
-					} else {
-						this.lastHurtByPlayer = null;
-					}
-				}
-			}
-
-			if (bl2) {
-				if (bl) {
-					this.level.broadcastEntityEvent(thisEntity, (byte)29);
-				} else if (source instanceof EntityDamageSource && ((EntityDamageSource)source).isThorns()) {
-					this.level.broadcastEntityEvent(thisEntity, (byte)33);
-				} else {
-					byte b;
-					if (source == DamageSource.DROWN) {
-						b = 36;
-					} else if (source.isFire()) {
-						b = 37;
-					} else if (source == DamageSource.SWEET_BERRY_BUSH) {
-						b = 44;
-					} else if (source == DamageSource.FREEZE) {
-						b = 57;
-					} else {
-						b = 2;
-					}
-
-					this.level.broadcastEntityEvent(thisEntity, b);
-				}
-
-				if (source != DamageSource.DROWN && (!bl || amount > 0.0F)) {
-					this.markHurt();
-				}
-
-				if (entity2 != null) {
-					double d = entity2.getX() - this.getX();
-
-					double e;
-					for (e = entity2.getZ() - this.getZ(); d * d + e * e < 1.0E-4; e = (Math.random() - Math.random()) * 0.01) {
-						d = (Math.random() - Math.random()) * 0.01;
-					}
-
-					thisEntity.hurtDir = (float) (Mth.atan2(e, d) * 180.0F / (float) Math.PI - (double) this.getYRot());
-					if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
-						projectileKnockback(0.5F, d, e);
-					} else {
-						newKnockback(0.5F, d, e);
-					}
-				} else {
-					thisEntity.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
-				}
-			}
-
-			if (thisEntity.isDeadOrDying()) {
-				if (!this.checkTotemDeathProtection(source)) {
-					SoundEvent soundEvent = this.getDeathSound();
-					if (bl2 && soundEvent != null) {
-						this.playSound(soundEvent, this.getSoundVolume(), thisEntity.getVoicePitch());
-					}
-
-					thisEntity.die(source);
-				}
-			} else if (bl2) {
-				this.playHurtSound(source);
-			}
-
-			boolean bl3 = !bl || amount > 0.0F;
-			if (bl3) {
-				this.lastDamageSource = source;
-				this.lastDamageStamp = this.level.getGameTime();
-			}
-
-			if (((LivingEntity)(Object)this) instanceof ServerPlayer) {
-				CriteriaTriggers.ENTITY_HURT_PLAYER.trigger((ServerPlayer)thisEntity, source, f, amount, bl);
-				if (g > 0.0F && g < 3.4028235E37F) {
-					((ServerPlayer)thisEntity).awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(g * 10.0F));
-				}
-			}
-
-			if (entity2 instanceof ServerPlayer) {
-				CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)entity2, thisEntity, source, f, amount, bl);
-			}
-			return bl3;
+	}
+	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I"))
+	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
+		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic() && !source.isFall() && AtlasCombat.CONFIG.eatingInterruption()) {
+			thisEntity.stopUsingItem();
+		}
+	}
+	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = {
+		"floatValue=10.0F", "ordinal=0"
+	}))
+	public float changeIFrames(float constant) {
+		return constant - 10;
+	}
+	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
+		thisEntity.hurtDir = (float) (Mth.atan2(f, e) * 180.0F / (float) Math.PI - (double) this.getYRot());
+		if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
+			projectileKnockback(0.5F, e, f);
+		} else {
+			newKnockback(0.5F, e, f);
 		}
 	}
 
