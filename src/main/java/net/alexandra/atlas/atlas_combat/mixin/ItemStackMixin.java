@@ -47,7 +47,7 @@ public abstract class ItemStackMixin implements IItemStack {
 	@Shadow
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
-	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"), locals = LocalCapture.CAPTURE_FAILHARD,remap = false)
+	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
 	public void extractLines(Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, List<Component> list, MutableComponent mutablecomponent, int j, EquipmentSlot[] var6, int var7, int var8, EquipmentSlot equipmentslot, Multimap<Attribute, AttributeModifier> multimap) {
 		this.list = list;
 		this.player = player;
@@ -55,7 +55,7 @@ public abstract class ItemStackMixin implements IItemStack {
 		this.equipmentSlot = equipmentslot;
 	}
 
-	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"),remap = false)
+	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"))
 	public boolean preventOutcome(boolean original) {
 		if (!original) {
 			boolean attackReach = AtlasCombat.CONFIG.attackReach();
