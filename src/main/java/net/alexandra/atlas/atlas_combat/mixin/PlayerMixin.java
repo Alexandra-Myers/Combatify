@@ -306,10 +306,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		cir.setReturnValue(Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F));
 	}
 
-	public float getCurrentAttackReach(float baseValue) {
-		return (float)((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player);
-	}
-
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
 		if (getAttackStrengthScale(baseTime) < 1.0F) {

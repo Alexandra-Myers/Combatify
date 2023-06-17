@@ -47,7 +47,7 @@ dependencies {
 	include("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}")
 	include(modImplementation("com.github.rizecookey:CookeyMod:1.7.1+1.19.3"))
 	modApi("com.terraformersmc:modmenu:5.0.2")
-	annotationProcessor(include(implementation("com.github.LlamaLad7:MixinExtras:0.2.0-beta.8")))
+	include(implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.8")))
 	annotationProcessor(modImplementation("io.wispforest:owo-lib:${project.owo_version}"))
 
 	// include this if you don't want force your users to install owo
