@@ -2,7 +2,6 @@ package net.alexandra.atlas.atlas_combat.extensions;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public interface LivingEntityExtensions {
@@ -17,7 +16,7 @@ public interface LivingEntityExtensions {
 
     void setEnemy(Entity enemy);
 
-	void newKnockback(float var1, double var2, double var4);
+	void newKnockback(double var1, double var2, double var4);
 
 	boolean getIsParry();
 

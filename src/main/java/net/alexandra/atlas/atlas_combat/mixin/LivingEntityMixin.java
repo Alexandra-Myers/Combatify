@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
@@ -81,9 +82,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
 
-	@Inject(method = "isBlocking", at = @At(value="RETURN"), cancellable = true)
-	public void isBlocking(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(!this.getBlockingItem().isEmpty());
+	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
+	public boolean isBlocking(boolean original) {
+		return !this.getBlockingItem().isEmpty();
 	}
 
 	@Inject(method="blockedByShield", at=@At(value="RETURN"), cancellable = true)
@@ -91,12 +92,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double x = target.getX() - this.getX();
 		double z = target.getZ() - this.getZ();
 		if(((LivingEntityExtensions)target).getBlockingItem().getItem() instanceof SwordItem) {
-			((LivingEntityExtensions)target).newKnockback(0.25F, x, z);
-			newKnockback(0.25F, x, z);
+			((LivingEntityExtensions)target).newKnockback(0.25, x, z);
+			newKnockback(0.25, x, z);
 			ci.cancel();
 		}
-		((LivingEntityExtensions)target).newKnockback(0.5F, x, z);
-		newKnockback(0.5F, x, z);
+		((LivingEntityExtensions)target).newKnockback(0.5, x, z);
 		if (((LivingEntity)(Object)this).getMainHandItem().getItem() instanceof AxeItem) {
 			float damage = 1.6F + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * 0.5F;
 			if(target instanceof PlayerExtensions player) {
@@ -207,28 +207,34 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
-		thisEntity.hurtDir = (float) (Mth.atan2(f, e) * 180.0F / (float) Math.PI - (double) this.getYRot());
 		if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
 			projectileKnockback(0.5F, e, f);
 		} else {
-			newKnockback(0.5F, e, f);
+			newKnockback(0.5, e, f);
 		}
+	}
+	@Inject(method = "knockback", at = @At("HEAD"), cancellable = true)
+	public void redirectKnockback(double d, double e, double f, CallbackInfo ci) {
+		if(d == 0.4000000059604645)
+			d = 0.5;
+		newKnockback(d, e, f);
+		ci.cancel();
 	}
 
 	@Override
-	public void newKnockback(float var1, double var2, double var4) {
+	public void newKnockback(double var1, double var2, double var4) {
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
 			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
 		}
 
-		var1 = (float)((double)var1 * (1.0 - var6));
+		var1 = var1 * (1.0 - var6);
 		if (!(var1 <= 0.0F)) {
 			this.hasImpulse = true;
 			Vec3 var9 = this.getDeltaMovement();
 			Vec3 var10 = (new Vec3(var2, 0.0, var4)).normalize().scale(var1);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, (double)var1 * 0.75) : Math.min(0.4, var9.y + (double)var1 * 0.5), var9.z / 2.0 - var10.z);
+			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround ? Math.min(0.4, var1 * 0.75) : Math.min(0.4, var9.y + var1 * 0.5), var9.z / 2.0 - var10.z);
 		}
 	}
 	@Override

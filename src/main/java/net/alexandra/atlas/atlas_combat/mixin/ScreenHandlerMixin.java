@@ -18,9 +18,7 @@ abstract class ScreenHandlerMixin {
         at = @At(value = "HEAD"), cancellable = true)
     private static void getActualReachDistance(ContainerLevelAccess context, Player player, Block block, CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(context.evaluate(
-				(world, pos) -> !world.getBlockState(pos).is(block)
-						? false
-						: player.distanceToSqr((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5) <= ((PlayerExtensions)player).getSquaredReach(player, 64.0),
+				(world, pos) -> world.getBlockState(pos).is(block) && player.distanceToSqr((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5) <= ((PlayerExtensions) player).getSquaredReach(player, 64.0),
 				true
 		));
 		cir.cancel();
