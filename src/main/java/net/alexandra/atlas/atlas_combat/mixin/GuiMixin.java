@@ -109,6 +109,7 @@ public abstract class GuiMixin extends GuiComponent {
 			bl = minecraft.crosshairPickEntity.distanceTo(minecraft.player) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
 			bl &= this.minecraft.crosshairPickEntity.isAlive();
 		}
+		RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 		if (bl) {
 			this.blit(matrices, o, n, 0, 130, 18, 18);
 		} else if (g > maxIndicator - 0.7F && g < maxIndicator) {
@@ -133,6 +134,7 @@ public abstract class GuiMixin extends GuiComponent {
 		boolean offHandShieldCooldown = itemStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(itemStack.getItem());
 		boolean mainHandShieldCooldown = mainHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem());
 		boolean isShieldCooldown = offHandShieldCooldown || mainHandShieldCooldown;
+		RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 		if (var7 && isShieldCooldown) {
 			this.blit(matrices, o, n, 18, 112, 18, 18);
 		} else if (var7 && this.minecraft.player.isBlocking()) {
