@@ -13,10 +13,8 @@ import net.alexandra.atlas.atlas_combat.util.UtilClass;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -35,6 +33,7 @@ import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -57,17 +56,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
 
 	@Shadow
-	public abstract void causeFoodExhaustion(float v);
-
-	@Shadow
-	public abstract void awardStat(ResourceLocation resourceLocation, int i);
-
-	@Shadow
 	public abstract float getAttackStrengthScale(float f);
 
 	@Shadow
 	public abstract float getCurrentItemAttackStrengthDelay();
 
+	@Shadow
+	@Final
+	private static Logger LOGGER;
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -240,14 +236,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			setIsParry(false);
 		}
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;", ordinal = 0))
-	public void injectCTSSweep(Entity entity, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4) {
-		bl4.set(checkSweepAttack());
-	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/LivingEntity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
-	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage) {
+	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
+		LOGGER.info("Attempted to sweep");
+		bl4.set(false);
+		if (!bl3 && !bl2 && this.onGround && d < (double)this.getSpeed())
+			bl4.set(checkSweepAttack());
 		if(bl6) {
 			if(bl4.get()) {
+				LOGGER.info("Can sweep");
 				AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 				this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
 				bl4.set(false);

@@ -11,7 +11,6 @@ import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -24,7 +23,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -36,6 +34,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Objects;
 
 @Mixin(value = LivingEntity.class, priority = 1400)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
@@ -75,9 +75,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract MobEffectInstance getEffect(MobEffect mobEffect);
 
-
-	@Shadow
-	public abstract boolean isBlocking();
 
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
@@ -193,7 +190,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return invulnerableTime;
 
 	}
-	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I"))
+	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.isFire() && !source.isMagic() && !source.isFall() && AtlasCombat.CONFIG.eatingInterruption()) {
 			thisEntity.stopUsingItem();
@@ -254,30 +251,15 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 
-	@Inject(method = "isDamageSourceBlocked", at = @At(value = "HEAD"), cancellable = true)
+	@Inject(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;"), cancellable = true)
 	public void isDamageSourceBlocked(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
-		Entity entity = source.getDirectEntity();
-		boolean bl = false;
-		if (entity instanceof AbstractArrow arrow) {
-			if (arrow.getPierceLevel() > 0) {
-				bl = true;
-			}
+		Vec3 currentVector = this.getViewVector(1.0F);
+		if (currentVector.y > -0.99 && currentVector.y < 0.99) {
+			currentVector = (new Vec3(currentVector.x, 0.0, currentVector.z)).normalize();
+			Vec3 sourceVector = Objects.requireNonNull(source.getSourcePosition()).vectorTo(this.position());
+			sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
+			cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
 		}
-
-		if (!source.isBypassArmor() && this.isBlocking() && !bl) {
-			Vec3 sourcePos = source.getSourcePosition();
-			if (sourcePos != null) {
-				Vec3 currentVector = this.getViewVector(1.0F);
-				if (currentVector.y > -0.99 && currentVector.y < 0.99) {
-					currentVector = (new Vec3(currentVector.x, 0.0, currentVector.z)).normalize();
-					Vec3 sourceVector = sourcePos.vectorTo(this.position());
-					sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
-					cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
-				}
-			}
-		}
-
-		cir.setReturnValue(false);
 	}
 
 	@Override
