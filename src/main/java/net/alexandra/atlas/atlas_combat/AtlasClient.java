@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.network.chat.Component;
 
 import java.util.Arrays;
 
