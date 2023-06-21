@@ -4,27 +4,15 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.extensions.*;
-import net.minecraft.Util;
-import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -57,11 +45,7 @@ public abstract class GuiMixin extends GuiComponent {
 			if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
 				int j = this.screenHeight / 2 - 7 + 16;
 				int k = this.screenWidth / 2 - 8;
-				ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
-				ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
-				boolean offHandShieldCooldown = offHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem());
-				boolean mainHandShieldCooldown = mainHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem());
-				boolean isShieldCooldown = offHandShieldCooldown || mainHandShieldCooldown;
+				boolean isShieldCooldown = isShieldOnCooldown();
 				boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
 				if (var7 && isShieldCooldown) {
 					this.blit(matrices, k, j, 52, 112, 16, 16);
@@ -71,8 +55,17 @@ public abstract class GuiMixin extends GuiComponent {
 			}
 		}
 	}
-	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
+	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true)
 	public void renderCrosshair1(PoseStack matrices, CallbackInfo ci) {
+		boolean isShieldCooldown = isShieldOnCooldown();
+		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
+		if(var7 && isShieldCooldown) {
+			ci.cancel();
+			return;
+		} else if(var7 && this.minecraft.player.isBlocking()) {
+			ci.cancel();
+			return;
+		}
 		int j = this.screenHeight / 2 - 7 + 16;
 		int k = this.screenWidth / 2 - 8;
 		Options options = this.minecraft.options;
@@ -92,9 +85,21 @@ public abstract class GuiMixin extends GuiComponent {
 			this.blit(matrices, k, j, 36, 94, 16, 4);
 			this.blit(matrices, k, j, 52, 94, l, 4);
 		}
+		ci.cancel();
 	}
 	@Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void renderHotbar(float f, PoseStack matrices, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
+		boolean isShieldCooldown = isShieldOnCooldown();
+		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
+		if(var7 && isShieldCooldown) {
+			RenderSystem.disableBlend();
+			ci.cancel();
+			return;
+		} else if(var7 && this.minecraft.player.isBlocking()) {
+			RenderSystem.disableBlend();
+			ci.cancel();
+			return;
+		}
 		int n = this.screenHeight - 20;
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT) {
@@ -130,15 +135,19 @@ public abstract class GuiMixin extends GuiComponent {
 			o = i - 91 - 22;
 		}
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
-		ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
-		boolean offHandShieldCooldown = itemStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(itemStack.getItem());
-		boolean mainHandShieldCooldown = mainHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem());
-		boolean isShieldCooldown = offHandShieldCooldown || mainHandShieldCooldown;
+		boolean isShieldCooldown = isShieldOnCooldown();
 		RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 		if (var7 && isShieldCooldown) {
 			this.blit(matrices, o, n, 18, 112, 18, 18);
 		} else if (var7 && this.minecraft.player.isBlocking()) {
 			this.blit(matrices, o, n, 0, 112, 18, 18);
 		}
+	}
+	public boolean isShieldOnCooldown() {
+		ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
+		ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
+		boolean offHandShieldCooldown = offHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem());
+		boolean mainHandShieldCooldown = mainHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem());
+		return offHandShieldCooldown || mainHandShieldCooldown;
 	}
 }

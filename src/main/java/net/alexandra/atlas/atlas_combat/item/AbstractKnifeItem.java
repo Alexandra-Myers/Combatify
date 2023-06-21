@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.item;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
@@ -18,12 +19,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 
-public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions {
+public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions, WeaponWithType {
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public AbstractKnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		WeaponType.KNIFE.addCombatAttributes(this.getTier(), var3);
+		getWeaponType().addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 	}
 
@@ -73,22 +74,27 @@ public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnly
 		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1.0F;
 		}
-		return WeaponType.KNIFE.getReach() + 2.5 + var2;
+		return getWeaponType().getReach() + 2.5 + var2;
 	}
 
 	@Override
 	public double getAttackSpeed(Player player) {
-		return WeaponType.KNIFE.getSpeed(this.getTier()) + 4.0;
+		return getWeaponType().getSpeed(this.getTier()) + 4.0;
 	}
 
 	@Override
 	public double getAttackDamage(Player player) {
-		return WeaponType.KNIFE.getDamage(this.getTier()) + 2.0;
+		return getWeaponType().getDamage(this.getTier()) + 2.0;
 	}
 
 	@Override
 	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
 		destroyWithoutConfig(stack);
 		super.inventoryTick(stack, world, entity, slot, selected);
+	}
+
+	@Override
+	public WeaponType getWeaponType() {
+		return WeaponType.KNIFE;
 	}
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.extensions.DefaultedItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -18,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TridentItem.class)
-public class TridentItemMixin extends Item implements Vanishable, ItemExtensions, DefaultedItemExtensions {
+public class TridentItemMixin extends Item implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
 	@Mutable
 	@Shadow
 	@Final
@@ -31,7 +32,7 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
 	public void test(Properties properties, CallbackInfo ci) {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		WeaponType.TRIDENT.addCombatAttributes(Tiers.NETHERITE, var3);
+		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
 		((DefaultedItemExtensions)this).setDefaultModifiers(var3.build());
 	}
 	@Override
@@ -41,17 +42,17 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1.0F;
 		}
-		return WeaponType.TRIDENT.getReach() + 2.5 + var2;
+		return getWeaponType().getReach() + 2.5 + var2;
 	}
 
 	@Override
 	public double getAttackSpeed(Player player) {
-		return WeaponType.TRIDENT.getSpeed(Tiers.NETHERITE) + 4.0;
+		return getWeaponType().getSpeed(Tiers.NETHERITE) + 4.0;
 	}
 
 	@Override
 	public double getAttackDamage(Player player) {
-		return WeaponType.TRIDENT.getDamage(Tiers.NETHERITE) + 2.0;
+		return getWeaponType().getDamage(Tiers.NETHERITE) + 2.0;
 	}
 
 	@Override
@@ -67,5 +68,10 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 	@Override
 	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
+	}
+
+	@Override
+	public WeaponType getWeaponType() {
+		return WeaponType.TRIDENT;
 	}
 }

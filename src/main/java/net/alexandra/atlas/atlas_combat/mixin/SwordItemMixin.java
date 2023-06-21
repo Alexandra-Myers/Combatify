@@ -2,16 +2,20 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.extensions.DefaultedItemExtensions;
-import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
-import net.alexandra.atlas.atlas_combat.extensions.ISwordItem;
-import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
+import net.alexandra.atlas.atlas_combat.util.BlockingType;
+import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 @Mixin(SwordItem.class)
-public class SwordItemMixin extends TieredItem implements ItemExtensions, IShieldItem, ISwordItem, DefaultedItemExtensions {
+public class SwordItemMixin extends TieredItem implements ItemExtensions, IShieldItem, ISwordItem, DefaultedItemExtensions, WeaponWithType {
 	@Shadow
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public int strengthTimer = 0;
@@ -52,13 +56,13 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
 	public void test(Tier tier, int i, float f, Properties properties, CallbackInfo ci) {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		WeaponType.SWORD.addCombatAttributes(this.getTier(), var3);
+		getWeaponType().addCombatAttributes(this.getTier(), var3);
 		((DefaultedItemExtensions)this).setDefaultModifiers(var3.build());
 	}
 
 	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)
 	public void getDamage(CallbackInfoReturnable<Float> cir) {
-		cir.setReturnValue(WeaponType.SWORD.getDamage(this.getTier()));
+		cir.setReturnValue(getWeaponType().getDamage(this.getTier()));
 	}
 
 	@Override
@@ -92,17 +96,17 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1.0F;
 		}
-		return WeaponType.SWORD.getReach() + 2.5 + var2;
+		return getWeaponType().getReach() + 2.5 + var2;
 	}
 
 	@Override
 	public double getAttackSpeed(Player player) {
-		return WeaponType.SWORD.getSpeed(this.getTier()) + 4.0;
+		return getWeaponType().getSpeed(this.getTier()) + 4.0;
 	}
 
 	@Override
 	public double getAttackDamage(Player player) {
-		return WeaponType.SWORD.getDamage(this.getTier()) + 2.0;
+		return getWeaponType().getDamage(this.getTier()) + 2.0;
 	}
 
 	@Override
@@ -127,6 +131,35 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		return 0.5F + (strengthIncrease * 0.125F);
 	}
+
+	@Override
+	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
+			boolean blocked = !source.isExplosion() && !source.isProjectile();
+			if (source.isExplosion()) {
+				g.set(10);
+			} else if (blocked) {
+				((LivingEntityExtensions)instance).setIsParryTicker(0);
+				((LivingEntityExtensions)instance).setIsParry(true);
+				float actualStrength = ShieldUtils.getShieldBlockDamageValue(blockingItem);
+				g.set(amount.get() * actualStrength);
+				entity = source.getDirectEntity();
+				if (entity instanceof LivingEntity) {
+					instance.blockUsingShield((LivingEntity) entity);
+				}
+				bl.set(true);
+			} else
+				g.set(0);
+			instance.hurtCurrentlyUsedShield(g.get());
+			amount.set(amount.get() - g.get());
+		}
+	}
+
+	@Override
+	public BlockingType getBlockingType() {
+		return BlockingType.SWORD;
+	}
+
 	@Override
 	public void addStrengthTimer() {
 		++strengthTimer;
@@ -149,5 +182,10 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
+	}
+
+	@Override
+	public WeaponType getWeaponType() {
+		return WeaponType.SWORD;
 	}
 }

@@ -166,15 +166,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "blockUsingShield", at=@At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
+	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
 	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
 		ci.cancel();
 	}
 
 	@Override
-	public boolean customShieldInteractions(float damage) {
-		player.getCooldowns().addCooldown(Items.SHIELD, (int)(damage * 20.0F));
-		player.releaseUsingItem();
+	public boolean customShieldInteractions(float damage, Item item) {
+		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
 		player.stopUsingItem();
 		player.level.broadcastEntityEvent(player, (byte)30);
 		return true;
@@ -236,7 +235,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			setIsParry(false);
 		}
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/LivingEntity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
 		LOGGER.info("Attempted to sweep");
 		bl4.set(false);
@@ -251,7 +250,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			}
 		}
 	}
-	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z"))
+	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
 	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4) {
 		bl4.set(checkSweepAttack());
 	}

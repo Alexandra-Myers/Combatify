@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
+import net.alexandra.atlas.atlas_combat.util.BlockingType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -67,9 +68,10 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
 				? abstractClientPlayer.getMainArm()
 				: abstractClientPlayer.getMainArm().getOpposite();
+		LivingEntityExtensions livingEntityExtensions = ((LivingEntityExtensions)abstractClientPlayer);
 		this.humanoidArm = humanoidArm;
 		if (AtlasCombat.CONFIG.swordBlocking()) {
-			if (abstractClientPlayer.getUsedItemHand() == interactionHand && !((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().isEmpty() && ((LivingEntityExtensions)abstractClientPlayer).getBlockingItem().getItem() instanceof SwordItem) {
+			if (abstractClientPlayer.getUsedItemHand() == interactionHand && livingEntityExtensions.getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD)) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform2(poseStack, humanoidArm);
@@ -121,7 +123,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
-		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof SwordItem) {
+		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD)) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();

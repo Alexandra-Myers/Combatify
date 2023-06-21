@@ -2,7 +2,6 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -49,18 +48,18 @@ public enum WeaponType {
 	public float getDamage(Tier var1) {
 		int modifier = AtlasCombat.CONFIG.fistDamage() ? 1 : 0;
 		float var2 = var1.getAttackDamageBonus() + modifier;
-		boolean isTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
-		boolean bl = isTier1 && AtlasCombat.CONFIG.ctsAttackBalancing();
+		boolean isNotTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
+		boolean isCTSNotT1 = isNotTier1 && AtlasCombat.CONFIG.ctsAttackBalancing();
 		switch (this) {
 			case KNIFE, PICKAXE -> {
-				if (bl) {
+				if (isCTSNotT1) {
 					return var2;
 				} else {
 					return var2 + 1.0F;
 				}
 			}
 			case SWORD -> {
-				if (bl) {
+				if (isCTSNotT1) {
 					return var2 + min(AtlasCombat.CONFIG.swordAttackDamage(), 0);
 				} else {
 					return var2 + min(AtlasCombat.CONFIG.swordAttackDamage(), 0) + 1.0F;
@@ -68,8 +67,8 @@ public enum WeaponType {
 			}
 			case AXE -> {
 				if(!AtlasCombat.CONFIG.ctsAttackBalancing()) {
-					return !isTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
-				} else if (bl) {
+					return !isNotTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
+				} else if (isCTSNotT1) {
 					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0);
 				} else {
 					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0) + 1.0F;

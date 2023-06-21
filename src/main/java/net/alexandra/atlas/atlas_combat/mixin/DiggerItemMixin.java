@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.DefaultedItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
+import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,10 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Consumer;
 
-import static net.alexandra.atlas.atlas_combat.item.WeaponType.AXE;
-
 @Mixin(DiggerItem.class)
-public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions, DefaultedItemExtensions {
+public abstract class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
 	public boolean allToolsAreWeapons = AtlasCombat.CONFIG.toolsAreWeapons();
 	@Mutable
 	@Final
@@ -40,17 +39,8 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
 	public void test(float f, float g, Tier tier, TagKey tagKey, Properties properties, CallbackInfo ci) {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		var digger = DiggerItem.class.cast(this);
 
-		if (digger instanceof AxeItem) {
-			type = AXE;
-		} else if (digger instanceof PickaxeItem) {
-			type = WeaponType.PICKAXE;
-		} else if (digger instanceof ShovelItem) {
-			type = WeaponType.SHOVEL;
-		} else {
-			type = WeaponType.HOE;
-		}
+		type = getWeaponType();
 		type.addCombatAttributes(this.getTier(), var3);
 		((DefaultedItemExtensions)this).setDefaultModifiers(var3.build());
 	}
@@ -94,5 +84,10 @@ public class DiggerItemMixin extends TieredItem implements Vanishable, ItemExten
 	@Override
 	public void setStackSize(int stackSize) {
 		this.maxStackSize = stackSize;
+	}
+
+	@Override
+	public WeaponType getWeaponType() {
+		return WeaponType.PICKAXE;
 	}
 }
