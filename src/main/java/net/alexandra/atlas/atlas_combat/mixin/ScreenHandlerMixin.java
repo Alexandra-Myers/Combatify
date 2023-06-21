@@ -20,6 +20,5 @@ abstract class ScreenHandlerMixin {
 				(world, pos) -> world.getBlockState(pos).is(block) && player.distanceToSqr((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5) <= ((PlayerExtensions) player).getSquaredReach(player, 64.0),
 				true
 		));
-		cir.cancel();
     }
 }

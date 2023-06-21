@@ -23,6 +23,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -84,8 +85,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double z = target.getZ() - this.getZ();
 		Item blockingItem = ((LivingEntityExtensions)target).getBlockingItem().getItem();
 		if(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD)) {
-			((LivingEntityExtensions)target).newKnockback(0.25, x, z);
-			newKnockback(0.25, x, z);
+			((LivingEntityExtensions)target).newKnockback(0.4, x, z);
+			newKnockback(0.4, x, z);
 			ci.cancel();
 			return;
 		}
@@ -184,7 +185,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			var6 = Math.min(1.0, var6 + ((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
 		}
 
 		strength = strength * (1.0 - var6);
@@ -200,7 +201,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack var8 = this.getBlockingItem();
 		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + (double)((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+			var6 = Math.min(1.0, var6 + ((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
 		}
 
 		strength = strength * (1.0 - var6);
@@ -220,6 +221,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			Vec3 sourceVector = Objects.requireNonNull(source.getSourcePosition()).vectorTo(this.position());
 			sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
 			cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
+			return;
 		}
 		cir.setReturnValue(false);
 	}

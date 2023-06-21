@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public interface IShieldItem {
-	float getShieldKnockbackResistanceValue(ItemStack itemStack);
+	double getShieldKnockbackResistanceValue(ItemStack itemStack);
 	float getShieldBlockDamageValue(ItemStack itemStack);
 
 	void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl);

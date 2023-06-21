@@ -12,11 +12,9 @@ public abstract class DetectedVersionMixin implements WorldVersion {
 	@Inject(method = "getName", at = @At(value = "RETURN"), cancellable = true)
 	public void changeName(CallbackInfoReturnable<String> cir) {
 		cir.setReturnValue("Combat Test 8c");
-		cir.cancel();
 	}
 	@Inject(method = "getProtocolVersion", at = @At(value = "RETURN"), cancellable = true)
 	public void changeProtocol(CallbackInfoReturnable<Integer> cir) {
 		cir.setReturnValue(800);
-		cir.cancel();
 	}
 }

@@ -8,7 +8,6 @@ import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.alexandra.atlas.atlas_combat.util.BlockingType;
-import net.alexandra.atlas.atlas_combat.util.ShieldUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -45,10 +44,10 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
 		if(AtlasCombat.CONFIG.swordBlocking()) {
 			float f = getShieldBlockDamageValue(stack);
-			float g = getShieldKnockbackResistanceValue(stack);
+			double g = getShieldKnockbackResistanceValue(stack);
 			tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-			if (g > 0.0F) {
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0F), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+			if (g > 0.0) {
+				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
 		}
 		super.appendHoverText(stack, world, tooltip, context);
@@ -119,8 +118,8 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		return 72000;
 	}
 	@Override
-	public float getShieldKnockbackResistanceValue(ItemStack itemStack) {
-		return 0.0F;
+	public double getShieldKnockbackResistanceValue(ItemStack itemStack) {
+		return 0.0;
 	}
 
 	@Override
@@ -137,19 +136,19 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
 			boolean blocked = !source.isExplosion() && !source.isProjectile();
 			if (source.isExplosion()) {
-				g.set(10);
+				g.set(Math.min(amount.get(), 10));
 			} else if (blocked) {
 				((LivingEntityExtensions)instance).setIsParryTicker(0);
 				((LivingEntityExtensions)instance).setIsParry(true);
-				float actualStrength = ShieldUtils.getShieldBlockDamageValue(blockingItem);
+				float actualStrength = this.getShieldBlockDamageValue(blockingItem);
 				g.set(amount.get() * actualStrength);
 				entity = source.getDirectEntity();
 				if (entity instanceof LivingEntity) {
 					instance.blockUsingShield((LivingEntity) entity);
 				}
 				bl.set(true);
-			} else
-				g.set(0);
+			}
+
 			instance.hurtCurrentlyUsedShield(g.get());
 			amount.set(amount.get() - g.get());
 		}

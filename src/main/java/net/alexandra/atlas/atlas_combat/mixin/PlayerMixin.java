@@ -122,11 +122,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	private static double changeAttack(double constant) {
 		return !AtlasCombat.CONFIG.fistDamage() ? 2 : 1;
 	}
-	@Inject(method = "createAttributes", at = @At(value = "RETURN"), cancellable = true)
-	private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
-		cir.setReturnValue(cir.getReturnValue()
-				.add(NewAttributes.BLOCK_REACH, !AtlasCombat.CONFIG.bedrockBlockReach() ? 0.0 : 2.0)
-				.add(NewAttributes.ATTACK_REACH));
+	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
+	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
+		return original.add(NewAttributes.BLOCK_REACH, !AtlasCombat.CONFIG.bedrockBlockReach() ? 0.0 : 2.0)
+			.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
@@ -158,7 +157,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
-		return this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem;
+		return this.useItem.getItem() instanceof IShieldItem || original;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSame(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
@@ -298,6 +297,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
 		if (this.attackStrengthStartValue == 0) {
 			cir.setReturnValue(2.0F);
+			return;
 		}
 		cir.setReturnValue(Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F));
 	}
@@ -397,6 +397,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean attackSpeedsMaxed() {
 		AtlasConfig c = AtlasCombat.CONFIG;
 		UtilClass<Float> util = new UtilClass<>();
-		return util.compare(1.5F, c.swordAttackSpeed(), c.axeAttackSpeed(), c.woodenHoeAttackSpeed(), c.stoneHoeAttackSpeed(), c.ironHoeAttackSpeed(), c.goldDiaNethHoeAttackSpeed(), c.defaultAttackSpeed(), c.tridentAttackSpeed(), c.fastToolAttackSpeed(), c.fastestToolAttackSpeed(), c.slowToolAttackSpeed(), c.slowestToolAttackSpeed());
+		return util.compare(7.5F, c.swordAttackSpeed(), c.axeAttackSpeed(), c.woodenHoeAttackSpeed(), c.stoneHoeAttackSpeed(), c.ironHoeAttackSpeed(), c.goldDiaNethHoeAttackSpeed(), c.defaultAttackSpeed(), c.tridentAttackSpeed(), c.fastToolAttackSpeed(), c.fastestToolAttackSpeed(), c.slowToolAttackSpeed(), c.slowestToolAttackSpeed());
 	}
 }
