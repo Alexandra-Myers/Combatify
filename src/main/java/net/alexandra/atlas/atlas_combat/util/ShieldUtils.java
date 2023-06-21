@@ -12,11 +12,4 @@ public class ShieldUtils {
 		return blockingItem.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
 	}
 
-	/*public static float getShieldKnockbackResistanceValue(ItemStack blockingItem) {
-		if(blockingItem.getItem() instanceof SwordItem swordItem) {
-			return swordItem.getTier() == Tiers.NETHERITE || swordItem.getTier().getLevel() == 4 ? 0.1F : 0.0F;
-		}
-		return blockingItem.getTagElement("BlockEntityTag") != null ? 0.8F : 0.5F;
-	}*/
-
 }

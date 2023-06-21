@@ -66,10 +66,10 @@ public abstract class OptionsMixin implements IOptions {
 	public OptionInstance<Double> attackIndicatorValue() {
 		return attackIndicatorValue;
 	}
-	private final OptionInstance<Double> attackIndicatorValue = new OptionInstance(
+	private final OptionInstance<Double> attackIndicatorValue = new OptionInstance<>(
 			"options.attackIndicatorValue",
 			OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorValue.tooltip")),
-			(optionText, value) -> (Double)value == 2.0 ? genericValueLabel(optionText, Component.translatable("options.attackIndicatorValue.default")) : IOptions.doubleValueLabel(optionText, (Double) value),
+			(optionText, value) -> value == 2.0 ? genericValueLabel(optionText, Component.translatable("options.attackIndicatorValue.default")) : IOptions.doubleValueLabel(optionText, (Double) value),
 			new OptionInstance.IntRange(1, 20).xmap(sliderValue -> (double)sliderValue / 10.0, value -> (int)(value * 10.0)),
 			Codec.doubleRange(0.1, 2.0),
 			2.0,

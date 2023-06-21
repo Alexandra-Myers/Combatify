@@ -6,7 +6,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
-public class NewAttributes extends Attributes{
+public class NewAttributes extends Attributes {
 
 	private static Attribute register(String id, Attribute attribute) {
 		return Registry.register(BuiltInRegistries.ATTRIBUTE, id, attribute);

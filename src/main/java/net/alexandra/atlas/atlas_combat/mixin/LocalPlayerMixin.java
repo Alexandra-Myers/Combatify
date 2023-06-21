@@ -99,7 +99,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			}
 
 			float var3 = this.oAttackAnim + var2 * tickDelta;
-			return var3 > 0.4F && this.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((double)((var3 - 0.4F) / 0.6F), 4.0) : var3;
+			return var3 > 0.4F && this.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((var3 - 0.4F) / 0.6F, 4.0) : var3;
 		}
 		float f = this.attackAnim - this.oAttackAnim;
 		if (f < 0.0F) {

@@ -28,13 +28,13 @@
 2. Attack speed alterations
     - Charged hits (200%) give 1 extra block of reach
         - You won't get the reach bonus while sneaking
-    - Weak attacks no longer exist and you’re forced to wait for weapons to charge to 100% to hit
+    - Weak attacks no longer exist, and you’re forced to wait for weapons to charge to 100% to hit
     - Missing only puts a 4 tick delay until the next attack regardless of weapon.
-    - Invulnerability time is 10 ticks unless attacker's weapon's attack speed is faster
-    - The attack timer only resets by performing an attack, no longer unaffected by switching items
+    - Invulnerability time is 10 ticks unless the attacker's weapon's attack speed is faster
+    - The attack timer only resets by performing an attack, no longer affected by switching items
 
 3. Added "Auto-Attack" performed by holding left click
-    - Auto attacks are 1 tick slower from optimal fast hit timing
+    - Auto attacks are 1 tick slower from optimal fast-hit timing
 
 4. Reintroduced upwards knockback when hitting players in the air
 
@@ -44,15 +44,15 @@
     - Players can now crit and sprint hit at the same time
     - Weapon enchantments are now included in the base damage when calculating crits and potion effects
 
-7. Sweeping Edge alterations
-    - Sweep attacks exists with sweeping enchantment only
-    - Nerfed Sweeping Edge enchantment to 25/33/37.5% percent (was 50/66/75%)
- 
+7. Sweeping-Edge alterations
+    - Sweep-attacks exist with sweeping enchantment only
+    - Nerfed Sweeping-Edge enchantment to 25/33/37.5% percent (was 50/66/75%)
+
 8. Shield alterations
     - Shields protect up to 5 damage for melee attacks, 100% against projectiles
     - Bannered shields protect up to 10 damage for melee attacks
-    - Axes disable shields for 1.6 seconds by default)
-    - Shields activate when sneaking and you can hit opponents while sneak shielding
+    - Axes disable shields for 1.6 seconds by default
+    - Shields activate when sneaking, and you can hit opponents while sneak shielding
     - Option to disable the use-shield-on-crouch in accessibility menu
     - Shields protective arc decreased to 100 degrees
     - Shields now add a 50% knockback resistance when active
@@ -69,7 +69,7 @@
 11. Strength I/II now adds +20%/+40% (was +3/+6 damage)
 
 12. Tridents with impaling now deal enchantment damage to all mobs that are in water or rain
- 
+
 
 ### Projectiles
 1. Projectiles don't trigger invulnerability ticks
@@ -80,14 +80,14 @@
 
 4. Trident alterations
     - Tridents can be shot from dispensers
-    - Tridents with Loyalty that fall into the void will return to its owner
+    - Tridents with Loyalty which fall into the void will return to their owner
 
 5. Snowball alterations
     - Snowballs now stack to 64
-    - Snowballs and eggs have a 4 tick cooldown
+    - Snowballs and eggs have a 4-tick cooldown
     - Snowballs are not rendered the first 2 ticks (hack to prevent screen flickering)
     - Made it possible to hit players with snowballs
- 
+
 
 ### Hunger System
 1. Eating gets reset when you get hit
@@ -98,9 +98,9 @@
 
 4. Natural healing now drains food points directly with a 50% chance to not consume a food point. Saturation is not used when healing damage, and is only relevant as a "pause" until food drains (as originally intended)
 
-6. Liquid food (stews, honey, milk, potions) can now be consumed in 20 ticks
+5. Liquid food (stews, honey, milk, potions) can now be consumed in 20 ticks
 
-7. Healing potions heal 6 points per level and harming potions harm 6 points per level (4 previously)
+6. Healing potions heal 6 points per level, and harming potions harm 6 points per level (4 previously)
 
 ***
 
@@ -108,9 +108,9 @@
 
 ***
 
-1. Block Reach: Weapon and Tool specific reach used for mining. Can be disabled in the config, and the default reach used can be set to match Bedrock Edition.
+1. Block Reach: Weapon and Tool specific reach used for mining. This can be disabled in the config, and the default reach used can be set to match Bedrock Edition.
 
-2. Sword Blocking: Config option that defines whether or not swords should be able to block.
+2. Sword Blocking: Config option that defines whether swords should be able to block.
 
 3. Midair KB: Config option that defines if you should be able to knock opponents further into the air.
 

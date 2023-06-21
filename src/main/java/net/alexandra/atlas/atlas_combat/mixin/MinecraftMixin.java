@@ -8,10 +8,8 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -32,8 +30,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Objects;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements IMinecraft {
@@ -149,7 +145,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 		}
 		return startAttack();
 	}
-	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
+	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		this.retainAttack = false;
 	}
@@ -349,7 +345,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 							player,
 							from,
 							to,
-							new AABB(from, to.add(i * (strengthMultiplier / 100), j * (strengthMultiplier / 100), k * (strengthMultiplier / 100))),
+							new AABB(from, to.add(i * (strengthMultiplier / 100F), j * (strengthMultiplier / 100F), k * (strengthMultiplier / 100F))),
 							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
 									&& e.isPickable()
 									&& e instanceof LivingEntity)
@@ -393,7 +389,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 							player,
 							from,
 							to,
-							new AABB(from, to.add(i * (strengthMultiplier / 100), j * (strengthMultiplier / 100), k * (strengthMultiplier / 100))),
+							new AABB(from, to.add(i * (strengthMultiplier / 100F), j * (strengthMultiplier / 100F), k * (strengthMultiplier / 100F))),
 							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
 									&& e.isPickable()
 									&& e instanceof LivingEntity)

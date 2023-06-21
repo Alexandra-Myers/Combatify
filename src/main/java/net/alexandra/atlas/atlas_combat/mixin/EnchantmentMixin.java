@@ -23,7 +23,7 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	@Final
 	public EnchantmentCategory category;
 	@Unique
-	public Enchantment thisEnchantment = Enchantment.class.cast(this);;
+	public Enchantment thisEnchantment = Enchantment.class.cast(this);
 
 	@Inject(method = "canEnchant", at = @At(value = "HEAD"), cancellable = true)
 	public void canEnchant(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {

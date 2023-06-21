@@ -37,7 +37,7 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	}
 
 	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
-	public void test(float f, float g, Tier tier, TagKey tagKey, Properties properties, CallbackInfo ci) {
+	public void test(float f, float g, Tier tier, TagKey<?> tagKey, Properties properties, CallbackInfo ci) {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 
 		type = getWeaponType();
