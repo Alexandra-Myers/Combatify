@@ -21,7 +21,6 @@ public class AccessibilityOptionsMixin {
 
 		optionInstance.addAll(((IOptions)options).autoAttack(),
 			((IOptions)options).shieldCrouch(),
-			((IOptions)options).lowShield(),
 			((IOptions)options).attackIndicatorValue(),
 			((IOptions)options).fishingRodLegacy());
 

@@ -25,7 +25,6 @@ public abstract class OptionsMixin implements IOptions {
 	public void injectOptions(Options.FieldAccess visitor, CallbackInfo ci) {
 		visitor.process("autoAttack", AtlasClient.autoAttack);
 		visitor.process("shieldCrouch", AtlasClient.shieldCrouch);
-		visitor.process("lowShield", AtlasClient.lowShield);
 		visitor.process("rhythmicAttacks", AtlasClient.rhythmicAttacks);
 		visitor.process("protIndicator", AtlasClient.protectionIndicator);
 		visitor.process("fishingRodLegacy", AtlasClient.fishingRodLegacy);
@@ -40,11 +39,6 @@ public abstract class OptionsMixin implements IOptions {
 	@Override
 	public OptionInstance<Boolean> shieldCrouch() {
 		return AtlasClient.shieldCrouch;
-	}
-
-	@Override
-	public OptionInstance<Boolean> lowShield() {
-		return AtlasClient.lowShield;
 	}
 	@Override
 	public OptionInstance<Boolean> rhythmicAttacks() {

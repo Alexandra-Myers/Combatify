@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 public interface IOptions {
 	OptionInstance<Boolean> autoAttack();
 	OptionInstance<Boolean> shieldCrouch();
-	OptionInstance<Boolean> lowShield();
 	OptionInstance<Boolean> rhythmicAttacks();
 
     OptionInstance<Boolean> swordBlockStyle();

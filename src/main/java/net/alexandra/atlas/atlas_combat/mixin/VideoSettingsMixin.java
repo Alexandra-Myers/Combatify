@@ -20,8 +20,7 @@ public class VideoSettingsMixin {
 		int i = optionInstance.indexOf(options.attackIndicator());
 
 		optionInstance.add(i + 1, ((IOptions)options).shieldIndicator());
-		optionInstance.addAll(((IOptions)options).lowShield(),
-			((IOptions)options).attackIndicatorValue(),
+		optionInstance.addAll(((IOptions)options).attackIndicatorValue(),
 			((IOptions)options).rhythmicAttacks(),
 			((IOptions)options).fishingRodLegacy());
 

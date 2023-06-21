@@ -45,10 +45,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof ShieldItem shieldItem && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(shieldItem)) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
-
-							if (lowShieldEnabled()) {
-								minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
-							}
+							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 						}
 					}
 				} else if ((thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
@@ -113,9 +110,5 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	public boolean hasEnabledShieldOnCrouch() {
 		return ((IOptions)minecraft.options).shieldCrouch().get();
-	}
-	@Environment(EnvType.CLIENT)
-	public boolean lowShieldEnabled() {
-		return ((IOptions)minecraft.options).lowShield().get();
 	}
 }
