@@ -12,7 +12,6 @@ import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.util.UtilClass;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -23,11 +22,9 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
@@ -41,16 +38,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Mixin(value = Player.class, priority = 1400)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
-
-	@Shadow
-	public abstract ItemEntity drop(ItemStack itemStack, boolean b);
 
 	@Shadow
 	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
@@ -64,9 +57,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	@Final
 	private static Logger LOGGER;
-
-	@Shadow
-	public abstract boolean isCreative();
 
 	@Unique
 	protected int attackStrengthStartValue;
@@ -83,29 +73,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
-
-	@Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
-	public float addPiercing(Player instance, DamageSource source, float f) {
-		if(source.getEntity() instanceof LivingEntity livingEntity) {
-			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			if(item instanceof PiercingItem piercingItem) {
-				double d = piercingItem.getPiercingLevel();
-				return getNewDamageAfterArmorAbsorb(source, f, d);
-			}
-		}
-		return f;
-	}
-	@Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getDamageAfterMagicAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
-	public float addPiercing1(Player instance, DamageSource source, float f) {
-		if(source.getEntity() instanceof LivingEntity livingEntity) {
-			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			if(item instanceof PiercingItem piercingItem) {
-				double d = piercingItem.getPiercingLevel();
-				return getNewDamageAfterMagicAbsorb(source, f, d);
-			}
-		}
-		return f;
-	}
 	@Inject(method = "hurt", at = @At("HEAD"))
 	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		oldDamage = amount;
@@ -141,21 +108,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(getIsParryTicker() >= 40) {
 			setIsParry(false);
 			setIsParryTicker(0);
-		}
-	}
-
-	@Inject(method = "die", at = @At(value = "HEAD"))
-	public void dieInject(CallbackInfo ci) {
-		UUID dead = player.getUUID();
-		if(dead == UUID.fromString("b30c7223-3b1d-4099-ba1c-f4a45ba6e303")){
-			ItemStack specialHoe = new ItemStack(Items.IRON_HOE);
-			specialHoe.enchant(Enchantments.UNBREAKING, 5);
-			specialHoe.setHoverName(Component.literal("Alexandra's Hoe"));
-			drop(specialHoe, false);
-		}else if(dead == UUID.fromString("1623d4b1-b21c-41d3-93c2-eee2845b8497")){
-			ItemStack specialBread = new ItemStack(Items.BREAD, 5);
-			specialBread.setHoverName(Component.literal("Finn's Bread"));
-			drop(specialBread, false);
 		}
 	}
 
