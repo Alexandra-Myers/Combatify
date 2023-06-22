@@ -1,8 +1,10 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.IBowItem;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,26 +17,19 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 
 	@Unique
 	private final float configUncertainty = AtlasCombat.CONFIG.bowUncertainty();
-	@Unique
-	private float fatigue;
 
 
 	private BowItemMixin(Properties properties) {
 		super(properties);
 	}
-	@Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
-	public void releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-		int time = this.getUseDuration(stack) - remainingUseTicks;
-		fatigue = getFatigueForTime(time);
-	}
 	@ModifyConstant(method = "releaseUsing", constant = @Constant(floatValue = 1.0F, ordinal = 0))
-	public float releaseUsing1(float constant) {
-		return configUncertainty * fatigue;
+	public float releaseUsing(float constant, @Local(ordinal = 1) final int time) {
+		return configUncertainty * getFatigueForTime(time);
 	}
-	@Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;setCritArrow(Z)V"), cancellable = true)
-	public void releaseUsing2(ItemStack itemStack, Level level, LivingEntity livingEntity, int i, CallbackInfo ci) {
-		if(fatigue > 0.5F)
-			ci.cancel();
+	@Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I", ordinal = 1), cancellable = true)
+	public void releaseUsing1(ItemStack itemStack, Level level, LivingEntity livingEntity, int i, CallbackInfo ci, @Local(ordinal = 0) final AbstractArrow abstractArrow, @Local(ordinal = 1) final int time) {
+		if(getFatigueForTime(time) > 0.5F)
+			abstractArrow.setCritArrow(false);
 	}
 
 	@Override

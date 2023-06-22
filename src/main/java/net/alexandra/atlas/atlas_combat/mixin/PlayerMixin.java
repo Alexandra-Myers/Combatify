@@ -213,7 +213,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void reset(CallbackInfo ci) {
 		ci.cancel();
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getSpeed()F"))
+	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;walkDist:F"))
 	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 2)LocalBooleanRef bl3) {
 		attackDamage.set(attackDamage.get() - attackDamageBonus);
 		if(bl3.get())
@@ -233,16 +233,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			attackDamage.set(attackDamage.get() * 1.25F);
 			setIsParry(false);
 		}
+
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
-		LOGGER.info("Attempted to sweep");
 		bl4.set(false);
 		if (!bl3 && !bl2 && this.onGround && d < (double)this.getSpeed())
 			bl4.set(checkSweepAttack());
 		if(bl6) {
 			if(bl4.get()) {
-				LOGGER.info("Can sweep");
 				AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 				this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
 				bl4.set(false);
