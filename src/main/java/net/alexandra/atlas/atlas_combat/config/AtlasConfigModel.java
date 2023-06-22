@@ -65,6 +65,9 @@ public class AtlasConfigModel {
 	public float axeAttackDamage = 2;
 	@RestartRequired
 	@RangeConstraint(min = 0, max = 1000)
+	public float knifeAttackDamage = 0;
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float baseHoeAttackDamage = 0;
 	@RestartRequired
 	@RangeConstraint(min = 0, max = 1000)
@@ -93,6 +96,9 @@ public class AtlasConfigModel {
 	@RestartRequired
 	@RangeConstraint(min = -1, max = 7.5)
 	public float goldDiaNethHoeAttackSpeed = 1;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float knifeAttackSpeed = 1;
 	@RestartRequired
 	@RangeConstraint(min = -1, max = 7.5)
 	public float tridentAttackSpeed = -0.5F;

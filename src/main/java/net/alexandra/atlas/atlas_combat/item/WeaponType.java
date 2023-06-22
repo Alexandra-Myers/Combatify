@@ -51,7 +51,14 @@ public enum WeaponType {
 		boolean isNotTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
 		boolean isCTSNotT1 = isNotTier1 && AtlasCombat.CONFIG.ctsAttackBalancing();
 		switch (this) {
-			case KNIFE, PICKAXE -> {
+			case KNIFE -> {
+				if (isCTSNotT1) {
+					return var2 + min(AtlasCombat.CONFIG.knifeAttackDamage(), 0);
+				} else {
+					return var2 + min(AtlasCombat.CONFIG.knifeAttackDamage(), 0) + 1.0F;
+				}
+			}
+			case PICKAXE -> {
 				if (isCTSNotT1) {
 					return var2;
 				} else {
@@ -99,7 +106,7 @@ public enum WeaponType {
     public float getSpeed(Tier var1) {
 		switch (this) {
 			case KNIFE -> {
-				return AtlasCombat.CONFIG.goldDiaNethHoeAttackSpeed();
+				return AtlasCombat.CONFIG.knifeAttackSpeed();
 			}
 			case LONGSWORD, SWORD -> {
 				return AtlasCombat.CONFIG.swordAttackSpeed();
