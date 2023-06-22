@@ -17,8 +17,11 @@ public class AtlasConfigModel {
 	@RestartRequired
 	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
+	public boolean sprintCritsEnabled = true;
 	public boolean saturationHealing = false;
 	public boolean autoAttackAllowed = true;
+	@RestartRequired
+	public boolean configOnlyWeapons = false;
 	@RestartRequired
 	public boolean axeReachBuff = false;
 	@RestartRequired

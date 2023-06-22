@@ -64,6 +64,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	@Final
 	private static Logger LOGGER;
+
+	@Shadow
+	public abstract boolean isCreative();
+
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -225,6 +229,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			&& !player.hasEffect(MobEffects.BLINDNESS)
 			&& !player.isPassenger()
 			&& target instanceof LivingEntity;
+		if(!AtlasCombat.CONFIG.sprintCritsEnabled()) {
+			isCrit &= !isSprinting();
+		}
 		bl3.set(isCrit || getIsParry());
 		if (isCrit) {
 			attackDamage.set(attackDamage.get() * 1.5F);

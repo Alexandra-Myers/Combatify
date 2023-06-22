@@ -37,6 +37,7 @@
   "text.config.atlas-combat-config.option.fishingHookKB": "Fishing Rod deals knockback",
   "text.config.atlas-combat-config.option.fistDamage": "Fist Damage is updated to 1, matching the change made to Bedrock Edition",
   "text.config.atlas-combat-config.option.swordBlocking": "Sword Blocking",
+  "text.config.atlas-combat-config.option.sprintCritsEnabled": "Can crit while sprinting",
   "text.config.atlas-combat-config.option.saturationHealing": "Healing relies on saturation as a buffer, rather than just taking hunger",
   "text.config.atlas-combat-config.option.autoAttackAllowed": "Option for servers which will prevent using auto-attack on client",
   "text.config.atlas-combat-config.option.axeReachBuff": "Raises axe reach to 3 as a balancing change",

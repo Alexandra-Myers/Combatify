@@ -23,7 +23,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -74,6 +73,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
 
+	@Shadow
+	protected abstract float getDamageAfterArmorAbsorb(DamageSource damageSource, float f);
+
+	@Shadow
+	protected abstract float getDamageAfterMagicAbsorb(DamageSource damageSource, float f);
+
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
 		return !this.getBlockingItem().isEmpty();
@@ -98,27 +103,25 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 	}
-	@Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
-	public float addPiercing(LivingEntity instance, DamageSource source, float f) {
+	@Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
+	public void addPiercing(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
 		if(source.getEntity() instanceof LivingEntity livingEntity) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			if(item instanceof PiercingItem piercingItem) {
 				double d = piercingItem.getPiercingLevel();
-				return getNewDamageAfterArmorAbsorb(source, f, d);
+				cir.setReturnValue(getNewDamageAfterArmorAbsorb(source, f, d));
 			}
 		}
-		return f;
 	}
-	@Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterMagicAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
-	public float addPiercing1(LivingEntity instance, DamageSource source, float f) {
+	@Inject(method = "getDamageAfterMagicAbsorb", at = @At(value = "HEAD"), cancellable = true)
+	public void addPiercing1(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
 		if(source.getEntity() instanceof LivingEntity livingEntity) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			if(item instanceof PiercingItem piercingItem) {
 				double d = piercingItem.getPiercingLevel();
-				return getNewDamageAfterMagicAbsorb(source, f, d);
+				cir.setReturnValue(getNewDamageAfterMagicAbsorb(source, f, d));
 			}
 		}
-		return f;
 	}
 	@ModifyConstant(method = "handleEntityEvent", constant = @Constant(intValue = 20, ordinal = 0))
 	private int syncInvulnerability(int x) {
