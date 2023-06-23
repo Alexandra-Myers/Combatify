@@ -54,10 +54,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	public abstract float getCurrentItemAttackStrengthDelay();
 
-	@Shadow
-	@Final
-	private static Logger LOGGER;
-
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -193,6 +189,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			setIsParry(false);
 		}
 
+	}
+	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void knockback(LivingEntity instance, double d, double e, double f) {
+		((LivingEntityExtensions) instance).newKnockback(d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {

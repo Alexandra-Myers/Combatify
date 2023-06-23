@@ -73,12 +73,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
 
-	@Shadow
-	protected abstract float getDamageAfterArmorAbsorb(DamageSource damageSource, float f);
-
-	@Shadow
-	protected abstract float getDamageAfterMagicAbsorb(DamageSource damageSource, float f);
-
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
 		return !this.getBlockingItem().isEmpty();
@@ -95,6 +89,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			ci.cancel();
 			return;
 		}
+		((LivingEntityExtensions)target).newKnockback(0.5, x, z);
 		newKnockback(0.5, x, z);
 		if (((LivingEntity)(Object)this).getMainHandItem().getItem() instanceof AxeItem) {
 			float damage = 1.6F + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * 0.5F;
@@ -102,6 +97,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				player.customShieldInteractions(damage, blockingItem);
 			}
 		}
+		ci.cancel();
 	}
 	@Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
 	public void addPiercing(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
@@ -174,13 +170,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		} else {
 			newKnockback(0.5, e, f);
 		}
-	}
-	@Inject(method = "knockback", at = @At("HEAD"), cancellable = true)
-	public void redirectKnockback(double d, double e, double f, CallbackInfo ci) {
-		if(d == 0.4000000059604645)
-			d = 0.5;
-		newKnockback(d, e, f);
-		ci.cancel();
 	}
 
 	@Override
