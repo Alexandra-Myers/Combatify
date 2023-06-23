@@ -73,7 +73,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		oldDamage = amount;
 	}
-	@ModifyReturnValue(method = "hurt", at = @At(value = "RETURN"))
+	@ModifyReturnValue(method = "hurt", at = @At(value = "TAIL"))
 	public boolean changeReturn(boolean original, @Local(ordinal = 0) DamageSource source, @Local(ordinal = 0) float amount) {
 		boolean bl = amount == 0.0F && !original;
 		return bl && oldDamage > 0.0F ? false : super.hurt(source, amount);
