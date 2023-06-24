@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
@@ -68,9 +69,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
 
-	@Inject(method = "isBlocking", at = @At(value="RETURN"), cancellable = true)
-	public void isBlocking(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(!this.getBlockingItem().isEmpty());
+	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
+	public boolean isBlocking(boolean original) {
+		return !this.getBlockingItem().isEmpty();
 	}
 	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
@@ -161,9 +162,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
 		thisEntity.hurtDir = (float) (Mth.atan2(f, e) * 180.0F / (float) Math.PI - (double) this.getYRot());
 		if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
-			projectileKnockback(0.5, e, f);
+			projectileKnockback(0.4, e, f);
 		} else {
-			newKnockback(0.5, e, f);
+			newKnockback(0.4, e, f);
 		}
 	}
 
