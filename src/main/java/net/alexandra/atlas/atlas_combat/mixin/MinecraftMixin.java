@@ -130,8 +130,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance) {
 		assert hitResult != null;
-		this.hitResult = redirectResult(hitResult);
-		assert hitResult != null;
+		HitResult newResult = redirectResult(hitResult);
+		this.hitResult = newResult == null ? hitResult : newResult;
 		if (!((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
