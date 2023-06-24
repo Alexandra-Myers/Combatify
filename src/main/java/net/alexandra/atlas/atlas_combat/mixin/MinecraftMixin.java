@@ -145,6 +145,10 @@ public abstract class MinecraftMixin implements IMinecraft {
 		}
 		return startAttack();
 	}
+	@ModifyExpressionValue(method = "startAttack", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;", ordinal = 1))
+	public HitResult changeResult(HitResult original) {
+		return redirectResult(original);
+	}
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		this.retainAttack = false;
