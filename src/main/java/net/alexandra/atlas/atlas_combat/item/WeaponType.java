@@ -48,18 +48,25 @@ public enum WeaponType {
 	public float getDamage(Tier var1) {
 		int modifier = AtlasCombat.CONFIG.fistDamage() ? 1 : 0;
 		float var2 = var1.getAttackDamageBonus() + modifier;
-		boolean isTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
-		boolean bl = isTier1 && AtlasCombat.CONFIG.ctsAttackBalancing();
+		boolean isNotTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
+		boolean isCTSNotT1 = isNotTier1 && AtlasCombat.CONFIG.ctsAttackBalancing();
 		switch (this) {
-			case KNIFE, PICKAXE -> {
-				if (bl) {
+			case KNIFE -> {
+				if (isCTSNotT1) {
+					return var2 + min(AtlasCombat.CONFIG.knifeAttackDamage(), 0);
+				} else {
+					return var2 + min(AtlasCombat.CONFIG.knifeAttackDamage(), 0) + 1.0F;
+				}
+			}
+			case PICKAXE -> {
+				if (isCTSNotT1) {
 					return var2;
 				} else {
 					return var2 + 1.0F;
 				}
 			}
 			case SWORD -> {
-				if (bl) {
+				if (isCTSNotT1) {
 					return var2 + min(AtlasCombat.CONFIG.swordAttackDamage(), 0);
 				} else {
 					return var2 + min(AtlasCombat.CONFIG.swordAttackDamage(), 0) + 1.0F;
@@ -67,8 +74,8 @@ public enum WeaponType {
 			}
 			case AXE -> {
 				if(!AtlasCombat.CONFIG.ctsAttackBalancing()) {
-					return !isTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
-				} else if (bl) {
+					return !isNotTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
+				} else if (isCTSNotT1) {
 					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0);
 				} else {
 					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0) + 1.0F;
@@ -99,7 +106,7 @@ public enum WeaponType {
     public float getSpeed(Tier var1) {
 		switch (this) {
 			case KNIFE -> {
-				return AtlasCombat.CONFIG.goldDiaNethHoeAttackSpeed();
+				return AtlasCombat.CONFIG.knifeAttackSpeed();
 			}
 			case LONGSWORD, SWORD -> {
 				return AtlasCombat.CONFIG.swordAttackSpeed();
@@ -152,9 +159,6 @@ public enum WeaponType {
 		};
 	}
 	public static float min(float f, float j) {
-		if(f < j) {
-			return j;
-		}
-		return f;
+		return Math.max(f, j);
 	}
 }

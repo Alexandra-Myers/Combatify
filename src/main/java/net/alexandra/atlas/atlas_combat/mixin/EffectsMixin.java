@@ -17,8 +17,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
-import java.util.OptionalInt;
-
 @Mixin(MobEffects.class)
 public class EffectsMixin {
 	@Shadow
@@ -39,7 +37,7 @@ public class EffectsMixin {
 					.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL)
 	);
 	private static MobEffect registrySet(int RawId, String id, MobEffect effect) {
-		Holder<MobEffect> mobEffectHolder = ((WritableRegistry) Registry.MOB_EFFECT).registerMapping(RawId, ResourceKey.create(Registry.MOB_EFFECT.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
+		Holder<MobEffect> mobEffectHolder = ((WritableRegistry<MobEffect>) Registry.MOB_EFFECT).registerMapping(RawId, ResourceKey.create(Registry.MOB_EFFECT.key(), new ResourceLocation(id)), effect, Lifecycle.stable());
 		return mobEffectHolder.value();
 	}
 }

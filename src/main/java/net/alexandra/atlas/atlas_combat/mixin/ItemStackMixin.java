@@ -83,7 +83,7 @@ public abstract class ItemStackMixin implements IItemStack {
 				if (attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE
 						|| attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
 					e = d * 100.0;
-				} else if (((Attribute) entry.getKey()).equals(Attributes.KNOCKBACK_RESISTANCE)) {
+				} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
 					e = d * 10.0;
 				} else {
 					e = d;
@@ -96,7 +96,7 @@ public abstract class ItemStackMixin implements IItemStack {
 											Component.translatable(
 													"attribute.modifier.equals." + attributeModifier.getOperation().toValue(),
 													ATTRIBUTE_MODIFIER_FORMAT.format(e),
-													Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
+													Component.translatable(entry.getKey().getDescriptionId())
 											)
 									)
 									.withStyle(ChatFormatting.DARK_GREEN)
@@ -106,7 +106,7 @@ public abstract class ItemStackMixin implements IItemStack {
 							Component.translatable(
 											"attribute.modifier.plus." + attributeModifier.getOperation().toValue(),
 											ATTRIBUTE_MODIFIER_FORMAT.format(e),
-											Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
+											Component.translatable(entry.getKey().getDescriptionId())
 									)
 									.withStyle(ChatFormatting.BLUE)
 					);
@@ -116,7 +116,7 @@ public abstract class ItemStackMixin implements IItemStack {
 							Component.translatable(
 											"attribute.modifier.take." + attributeModifier.getOperation().toValue(),
 											ATTRIBUTE_MODIFIER_FORMAT.format(e),
-											Component.translatable(((Attribute) entry.getKey()).getDescriptionId())
+											Component.translatable(entry.getKey().getDescriptionId())
 									)
 									.withStyle(ChatFormatting.RED)
 					);

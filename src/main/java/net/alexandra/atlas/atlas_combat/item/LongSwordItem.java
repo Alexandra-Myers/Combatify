@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PiercingItem;
+import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -23,18 +24,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions, PiercingItem {
+public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions, PiercingItem, WeaponWithType {
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public final Tier tier;
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
-		ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
-		WeaponType.LONGSWORD.addCombatAttributes(this.getTier(), var3);
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		getWeaponType().addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 		this.tier = tier;
-	}
-	public float getDamage() {
-		return WeaponType.LONGSWORD.getDamage(this.getTier());
 	}
 
 	@Override
@@ -83,17 +81,17 @@ public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanisha
 		if (var3 > 1.95F && !player.isCrouching()) {
 			var2 = 1.0F;
 		}
-		return WeaponType.LONGSWORD.getReach() + 2.5 + var2;
+		return getWeaponType().getReach() + 2.5 + var2;
 	}
 
 	@Override
 	public double getAttackSpeed(Player player) {
-		return WeaponType.LONGSWORD.getSpeed(this.getTier()) + 4.0;
+		return getWeaponType().getSpeed(this.getTier()) + 4.0;
 	}
 
 	@Override
 	public double getAttackDamage(Player player) {
-		return WeaponType.LONGSWORD.getDamage(this.getTier()) + 2.0;
+		return getWeaponType().getDamage(this.getTier()) + 2.0;
 	}
 
 	@Override
@@ -114,7 +112,12 @@ public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanisha
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
 		double f = getPiercingLevel();
-		tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.longsword_piercing")})).withStyle(ChatFormatting.DARK_GREEN));
+		tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f * 100), Component.translatable("attribute.name.generic.longsword_piercing"))).withStyle(ChatFormatting.DARK_GREEN));
 		super.appendHoverText(stack, world, tooltip, context);
+	}
+
+	@Override
+	public WeaponType getWeaponType() {
+		return WeaponType.LONGSWORD;
 	}
 }

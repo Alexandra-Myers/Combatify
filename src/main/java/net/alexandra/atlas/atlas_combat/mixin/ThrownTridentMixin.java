@@ -1,13 +1,9 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import net.alexandra.atlas.atlas_combat.extensions.IEnchantmentHelper;
-import net.minecraft.core.BlockPos;
+import net.alexandra.atlas.atlas_combat.extensions.IThrownTrident;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -26,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ThrownTrident.class)
-public abstract class ThrownTridentMixin extends AbstractArrow implements net.alexandra.atlas.atlas_combat.extensions.IThrownTrident {
+public abstract class ThrownTridentMixin extends AbstractArrow implements IThrownTrident {
 
 	@Shadow
 	@Final
@@ -36,9 +32,6 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements net.al
 	public ItemStack tridentItem;
 	@Unique
 	public LivingEntity livingEntity;
-
-	@Shadow
-	private boolean dealtDamage;
 
 	protected ThrownTridentMixin(EntityType<? extends AbstractArrow> entityType, Level level) {
 		super(entityType, level);

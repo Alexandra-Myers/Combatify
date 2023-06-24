@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 
 public interface LivingEntityExtensions {
 
-	void projectileKnockback(float var1, double var2, double var4);
+	void projectileKnockback(double strength, double x, double z);
 
 	ItemStack getBlockingItem();
 
@@ -17,9 +17,7 @@ public interface LivingEntityExtensions {
 
     void setEnemy(Entity enemy);
 
-    boolean doHurt(DamageSource source, float amount);
-
-	void newKnockback(float var1, double var2, double var4);
+	void newKnockback(double strength, double x, double z);
 
 	boolean getIsParry();
 

@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.1-SNAPSHOT'
+	id 'fabric-loom' version '1.2-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -48,7 +48,7 @@ dependencies {
 	include("com.github.Chocohead:Fabric-ASM:v${rootProject.fabric_asm_version}")
 	include(modImplementation('com.github.rizecookey:CookeyMod:1.7.0+1.19.2'))
 	modApi("com.terraformersmc:modmenu:4.0.6")
-	annotationProcessor(include(implementation("com.github.LlamaLad7:MixinExtras:0.1.1")))
+	include(implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.8")))
 	annotationProcessor(modImplementation("io.wispforest:owo-lib:${project.owo_version}"))
 
 	// include this if you don't want force your users to install owo
@@ -58,6 +58,12 @@ dependencies {
 
 loom {
 	accessWidenerPath = file("src/main/resources/atlas_combat.accesswidener")
+}
+
+configurations.all {
+	resolutionStrategy {
+		force("net.fabricmc:fabric-loader:${project.loader_version}")
+	}
 }
 
 processResources {

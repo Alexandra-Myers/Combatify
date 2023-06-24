@@ -1,7 +1,10 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
-import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.*;
@@ -9,171 +12,66 @@ import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.util.UtilClass;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stat;
-import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 
 @Mixin(value = Player.class, priority = 1400)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
-
-	@Shadow
-	public abstract ItemEntity drop(ItemStack itemStack, boolean b);
-
 	@Shadow
 	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
-	@Shadow
-	@Final
-	private static Logger LOGGER;
-
-	@Shadow
-	public abstract void awardStat(Stat<?> stat);
-
-	@Shadow
-	public abstract void causeFoodExhaustion(float v);
-
-	@Shadow
-	public abstract void awardStat(ResourceLocation resourceLocation, int i);
-
-	@Shadow
-	protected abstract void removeEntitiesOnShoulder();
-
-	@Shadow
-	@Final
-	private Abilities abilities;
 
 	@Shadow
 	public abstract float getAttackStrengthScale(float f);
-
 	@Shadow
 	public abstract float getCurrentItemAttackStrengthDelay();
-
 	@Unique
 	protected int attackStrengthStartValue;
-
 	@Unique
 	public boolean missedAttackRecovery;
 	@Unique
 	@Final
 	public float baseValue = 1.0F;
 	@Unique
-	public Multimap additionalModifiers;
+	float oldDamage;
+	@Unique
+	float currentAttackReach;
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
-
-	@Inject(method = "actuallyHurt", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing(DamageSource source, float amount, CallbackInfo ci) {
-		if (!this.isInvulnerableTo(source)) {
-			if(source.getEntity() instanceof Player player) {
-				Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-				if(item instanceof PiercingItem piercingItem) {
-					double d = piercingItem.getPiercingLevel();
-					amount = getNewDamageAfterArmorAbsorb(source, amount, d);
-					amount = getNewDamageAfterMagicAbsorb(source, amount, d);
-				}else {
-					amount = getDamageAfterArmorAbsorb(source, amount);
-					amount = getDamageAfterMagicAbsorb(source, amount);
-				}
-			}else {
-				amount = getDamageAfterArmorAbsorb(source, amount);
-				amount = getDamageAfterMagicAbsorb(source, amount);
-			}
-			float g = amount;
-			amount = Math.max(amount - this.getAbsorptionAmount(), 0.0F);
-			this.setAbsorptionAmount(this.getAbsorptionAmount() - (g - amount));
-			float h = g - amount;
-			if (h > 0.0F && h < 3.4028235E37F) {
-				this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(h * 10.0F));
-			}
-
-			if (amount != 0.0F) {
-				this.causeFoodExhaustion(source.getFoodExhaustion());
-				float i = this.getHealth();
-				this.setHealth(this.getHealth() - amount);
-				this.getCombatTracker().recordDamage(source, i, amount);
-				if (amount < 3.4028235E37F) {
-					this.awardStat(Stats.DAMAGE_TAKEN, Math.round(amount * 10.0F));
-				}
-
-			}
-		}
-		ci.cancel();
-	}
-	@Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "hurt", at = @At("HEAD"))
 	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		if (this.isInvulnerableTo(source)) {
-			cir.setReturnValue(false);
-			cir.cancel();
-		} else if (this.abilities.invulnerable && !source.isBypassInvul()) {
-			cir.setReturnValue(false);
-			cir.cancel();
-		} else {
-			this.noActionTime = 0;
-			if (this.isDeadOrDying()) {
-				cir.setReturnValue(false);
-				cir.cancel();
-			} else {
-				if (!this.level.isClientSide) {
-					removeEntitiesOnShoulder();
-				}
-				float oldDamage = amount;
-
-				if (source.scalesWithDifficulty()) {
-					if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
-						amount = 0.0F;
-					}
-
-					if (this.level.getDifficulty() == Difficulty.EASY) {
-						amount = Math.min(amount / 2.0F + 1.0F, amount);
-					}
-
-					if (this.level.getDifficulty() == Difficulty.HARD) {
-						amount = amount * 3.0F / 2.0F;
-					}
-				}
-
-				cir.setReturnValue(amount == 0.0F && oldDamage > 0.0F ? false : super.hurt(source, amount));
-				cir.cancel();
-			}
-		}
+		oldDamage = amount;
+	}
+	@ModifyReturnValue(method = "hurt", at = @At(value = "TAIL"))
+	public boolean changeReturn(boolean original, @Local(ordinal = 0) DamageSource source, @Local(ordinal = 0) float amount) {
+		boolean bl = amount == 0.0F && !original;
+		return bl && oldDamage > 0.0F ? false : super.hurt(source, amount);
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
@@ -186,11 +84,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	private static double changeAttack(double constant) {
 		return !AtlasCombat.CONFIG.fistDamage() ? 2 : 1;
 	}
-	@Inject(method = "createAttributes", at = @At(value = "RETURN"), cancellable = true)
-	private static void createAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
-		cir.setReturnValue(cir.getReturnValue()
-				.add(NewAttributes.BLOCK_REACH, !AtlasCombat.CONFIG.bedrockBlockReach() ? 0.0 : 2.0)
-				.add(NewAttributes.ATTACK_REACH));
+	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
+	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
+		return original.add(NewAttributes.BLOCK_REACH, !AtlasCombat.CONFIG.bedrockBlockReach() ? 0.0 : 2.0)
+			.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
@@ -205,24 +102,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-	@Inject(method = "die", at = @At(value = "HEAD"))
-	public void dieInject(CallbackInfo ci) {
-		UUID dead = player.getUUID();
-		if(dead == UUID.fromString("b30c7223-3b1d-4099-ba1c-f4a45ba6e303")){
-			ItemStack specialHoe = new ItemStack(Items.IRON_HOE);
-			specialHoe.enchant(Enchantments.UNBREAKING, 5);
-			specialHoe.setHoverName(Component.literal("Alexandra's Hoe"));
-			drop(specialHoe, false);
-		}else if(dead == UUID.fromString("1623d4b1-b21c-41d3-93c2-eee2845b8497")){
-			ItemStack specialBread = new ItemStack(Items.BREAD, 5);
-			specialBread.setHoverName(Component.literal("Finn's Bread"));
-			drop(specialBread, false);
-		}
-	}
-
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
-		return this.useItem.getItem() instanceof ShieldItem || this.useItem.getItem() instanceof SwordItem;
+		return this.useItem.getItem() instanceof IShieldItem || original;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameIgnoreDurability(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
@@ -230,15 +112,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "blockUsingShield", at=@At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
+	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
 	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
 		ci.cancel();
 	}
 
 	@Override
-	public boolean customShieldInteractions(float damage) {
-		player.getCooldowns().addCooldown(Items.SHIELD, (int)(damage * 20.0F));
-		player.releaseUsingItem();
+	public boolean customShieldInteractions(float damage, Item item) {
+		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
 		player.stopUsingItem();
 		player.level.broadcastEntityEvent(player, (byte)30);
 		return true;
@@ -249,163 +130,81 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	/**
-	 * @author zOnlyKroks
-	 * @reason change attacks
-	 */
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
-		newAttack(target);
+		if(!isAttackAvailable(baseValue)) ci.cancel();
+	}
+	@Inject(method = "attack", at = @At(value = "TAIL"))
+	public void resetTicker(Entity target, CallbackInfo ci) {
+		if (target.isAttackable() && !target.skipAttackInteraction(this) && isAttackAvailable(baseValue))
+			this.resetAttackStrengthTicker(true);
+	}
+	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
+	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) LocalFloatRef attackDamageBonus) {
+		LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
+		boolean bl = livingEntity != null;
+		if(bl)
+			((LivingEntityExtensions)livingEntity).setEnemy(player);
+		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
+			EnchantmentHelper helper = new EnchantmentHelper();
+			attackDamageBonus.set(((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity));
+		}
+		attackDamage.set((float) ((IAttributeInstance) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE))).calculateValue(attackDamageBonus.get()));
+	}
+	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
+	public float redirectStrengthCheck(float original) {
+		currentAttackReach = (float) this.getAttackRange(player, 2.5);
+		return 1.0F;
+	}
+	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
+	public void reset(CallbackInfo ci) {
 		ci.cancel();
 	}
-	@Override
-	public void newAttack(Entity target) {
-		if (target.isAttackable()) {
-			if (!target.skipAttackInteraction(player)) {
-				if(isAttackAvailable(baseValue)) {
-					float attackDamageBonus;
-					LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
-					boolean bl = livingEntity != null;
-					if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
-						EnchantmentHelper helper = new EnchantmentHelper();
-						attackDamageBonus = ((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity);
-					} else if (bl) {
-						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity.getMobType());
-					} else {
-						attackDamageBonus = EnchantmentHelper.getDamageBonus(player.getMainHandItem(), MobType.UNDEFINED);
-					}
-					float attackDamage = (float) ((IAttributeInstance)player.getAttribute(Attributes.ATTACK_DAMAGE)).calculateValue(attackDamageBonus);
-					float currentAttackReach = (float) this.getAttackRange(player, 2.5);
-					if (attackDamage > 0.0F) {
-						if(bl) {
-							((LivingEntityExtensions)livingEntity).setEnemy(player);
-						}
-						boolean bl2 = false;
-						int knockbackBonus = 0;
-						knockbackBonus += EnchantmentHelper.getKnockbackBonus(player);
-						if (player.isSprinting()) {
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, player.getSoundSource(), 1.0F, 1.0F);
-							++knockbackBonus;
-							bl2 = true;
-						}
+	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;walkDist:F"))
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 2) LocalBooleanRef bl3) {
+		attackDamage.set(attackDamage.get() - attackDamageBonus);
+		if(bl3.get())
+			attackDamage.set(attackDamage.get() / 1.5F);
+		boolean isCrit = player.fallDistance > 0.0F
+			&& !player.isOnGround()
+			&& !player.onClimbable()
+			&& !player.isInWater()
+			&& !player.hasEffect(MobEffects.BLINDNESS)
+			&& !player.isPassenger()
+			&& target instanceof LivingEntity;
+		if(!AtlasCombat.CONFIG.sprintCritsEnabled()) {
+			isCrit &= !isSprinting();
+		}
+		bl3.set(isCrit || getIsParry());
+		if (isCrit) {
+			attackDamage.set(attackDamage.get() * 1.5F);
+		}
+		if (getIsParry()) {
+			attackDamage.set(attackDamage.get() * 1.25F);
+			setIsParry(false);
+		}
 
-						boolean isCrit = player.fallDistance > 0.0F
-								&& !player.isOnGround()
-								&& !player.onClimbable()
-								&& !player.isInWater()
-								&& !player.hasEffect(MobEffects.BLINDNESS)
-								&& !player.isPassenger()
-								&& target instanceof LivingEntity;
-						if (isCrit) {
-							attackDamage *= 1.5;
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
-							player.crit(target);
-						}
-						if (getIsParry()) {
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, player.getSoundSource(), 1.0F, 1.0F);
-							attackDamage *= 1.25;
-							player.crit(target);
-							setIsParry(false);
-						}
-
-						boolean bl4 = false;
-						double d = (player.walkDist - player.walkDistO);
-						if (!isCrit && !bl2 && player.isOnGround() && d < player.getSpeed()) {
-							bl4 = checkSweepAttack();
-						}
-
-						float j = bl ? livingEntity.getHealth() : 0.0F;
-						boolean bl5 = false;
-						int getFireAspectLvL = EnchantmentHelper.getFireAspect(player);
-						if (getFireAspectLvL > 0 && !target.isOnFire()) {
-							bl5 = true;
-							target.setSecondsOnFire(1 + getFireAspectLvL * 4);
-						}
-
-						Vec3 vec3 = target.getDeltaMovement();
-						boolean bl6 = target.hurt(DamageSource.playerAttack(player), attackDamage);
-						if (bl6) {
-							if (knockbackBonus > 0) {
-								if (bl) {
-									((LivingEntityExtensions)livingEntity)
-											.newKnockback((knockbackBonus * 0.5F),
-													Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)),
-													-Mth.cos(player.getYRot() * (float) (Math.PI / 180.0))
-											);
-								} else {
-									target.push(
-											(-Mth.sin(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F),
-											0.1,
-											(Mth.cos(player.getYRot() * (float) (Math.PI / 180.0)) * knockbackBonus * 0.5F)
-									);
-								}
-
-								player.setDeltaMovement(player.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-								player.setSprinting(false);
-							}
-
-							if (bl4) {
-								AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-								this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
-							}
-
-							if (target instanceof ServerPlayer serverPlayer && target.hurtMarked) {
-								serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(target));
-								target.hurtMarked = false;
-								target.setDeltaMovement(vec3);
-							}
-
-							if (!isCrit && !bl4) {
-								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, player.getSoundSource(), 1.0F, 1.0F);
-							}
-
-							if (attackDamageBonus > 0.0F) {
-								player.magicCrit(target);
-							}
-
-							player.setLastHurtMob(target);
-							if (bl) {
-								EnchantmentHelper.doPostHurtEffects(livingEntity, player);
-							}
-
-							EnchantmentHelper.doPostDamageEffects(player, target);
-							ItemStack itemStack2 = player.getMainHandItem();
-							Entity entity = target;
-							if (target instanceof EnderDragonPart enderDragonPart) {
-								entity = enderDragonPart.parentMob;
-							}
-
-							if (!player.level.isClientSide && !itemStack2.isEmpty() && entity instanceof LivingEntity livingEntity1) {
-								itemStack2.hurtEnemy(livingEntity1, player);
-								if (itemStack2.isEmpty()) {
-									player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-								}
-							}
-
-							if (bl) {
-								float m = j - livingEntity.getHealth();
-								player.awardStat(Stats.DAMAGE_DEALT, Math.round(m * 10.0F));
-
-								if (player.level instanceof ServerLevel serverLevel && m > 2.0F) {
-									int n = (int) (m * 0.5);
-									serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY(0.5), target.getZ(), n, 0.1, 0.0, 0.1, 0.2);
-								}
-							}
-
-							player.causeFoodExhaustion(0.1F);
-						} else {
-							player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
-							if (bl5) {
-								target.clearFire();
-							}
-						}
-					}
-
-					this.resetAttackStrengthTicker(true);
-				}
-
+	}
+	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void knockback(LivingEntity instance, double d, double e, double f) {
+		((LivingEntityExtensions) instance).newKnockback(d, e, f);
+	}
+	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
+		bl4.set(false);
+		if (!bl3 && !bl2 && this.onGround && d < (double)this.getSpeed())
+			bl4.set(checkSweepAttack());
+		if(bl6) {
+			if(bl4.get()) {
+				AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
+				this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
+				bl4.set(false);
 			}
 		}
+	}
+	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
+	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4) {
+		bl4.set(checkSweepAttack());
 	}
 	@Override
 	public void attackAir() {
@@ -450,12 +249,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
 		if (this.attackStrengthStartValue == 0) {
 			cir.setReturnValue(2.0F);
+			return;
 		}
 		cir.setReturnValue(Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F));
-	}
-
-	public float getCurrentAttackReach(float baseValue) {
-		return (float)((ItemExtensions) player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackReach(player);
 	}
 
 	@Override
@@ -500,7 +296,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 			float var9 = var2 + var8.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(var8) < (var9 * var9)) {
-				((LivingEntityExtensions)var8).newKnockback(0.5F, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+				((LivingEntityExtensions)var8).newKnockback(0.5, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
 				var8.hurt(DamageSource.playerAttack(player), sweepingDamageRatio);
 			}
 		}
@@ -509,10 +305,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public boolean isItemOnCooldown(ItemStack var1) {
 		return player.getCooldowns().isOnCooldown(var1.getItem());
-	}
-	@Override
-	public Multimap getAdditionalModifiers() {
-		return additionalModifiers;
 	}
 
 	@Override
@@ -554,14 +346,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public int getAttackStrengthStartValue() {
 		return attackStrengthStartValue;
 	}
-	@Override
-	public void setAttackStrengthTicker2(int value) {
-		this.attackStrengthStartValue = value;
-		player.attackStrengthTicker = this.attackStrengthStartValue;
-	}
 	public boolean attackSpeedsMaxed() {
 		AtlasConfig c = AtlasCombat.CONFIG;
 		UtilClass<Float> util = new UtilClass<>();
-		return util.compare(1.5F, c.swordAttackSpeed(), c.axeAttackSpeed(), c.woodenHoeAttackSpeed(), c.stoneHoeAttackSpeed(), c.ironHoeAttackSpeed(), c.goldDiaNethHoeAttackSpeed(), c.defaultAttackSpeed(), c.tridentAttackSpeed(), c.fastToolAttackSpeed(), c.fastestToolAttackSpeed(), c.slowToolAttackSpeed(), c.slowestToolAttackSpeed());
+		return util.compare(7.5F, c.swordAttackSpeed(), c.axeAttackSpeed(), c.woodenHoeAttackSpeed(), c.stoneHoeAttackSpeed(), c.ironHoeAttackSpeed(), c.goldDiaNethHoeAttackSpeed(), c.defaultAttackSpeed(), c.tridentAttackSpeed(), c.fastToolAttackSpeed(), c.fastestToolAttackSpeed(), c.slowToolAttackSpeed(), c.slowestToolAttackSpeed());
 	}
 }

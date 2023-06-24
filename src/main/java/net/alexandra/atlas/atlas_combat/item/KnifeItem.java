@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.item;
 
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;
 
 public class KnifeItem extends AbstractKnifeItem {
