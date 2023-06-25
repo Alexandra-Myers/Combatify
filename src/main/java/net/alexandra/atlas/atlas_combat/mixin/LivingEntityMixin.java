@@ -166,9 +166,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
 		if ((AtlasCombat.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.isProjectile() && AtlasCombat.CONFIG.midairKB())) {
-			projectileKnockback(0.5, e, f);
+			projectileKnockback(0.4, e, f);
 		} else {
-			newKnockback(0.5, e, f);
+			newKnockback(0.4, e, f);
 		}
 	}
 
