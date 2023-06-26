@@ -19,7 +19,7 @@ public abstract class MiscCategoryMixin extends Category implements IMiscCategor
 		super(modConfig);
 	}
 
-	@Inject(method = "<init>", at = @At(value = "RETURN"))
+	@Inject(method = "<init>", at = @At(value = "RETURN"), remap = false)
 	public void addOption(ModConfig modConfig, CallbackInfo ci) {
 		this.force100PercentRecharge = register(new BooleanOption("force100PercentRecharge", this, false));
 	}

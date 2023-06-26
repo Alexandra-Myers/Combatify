@@ -48,7 +48,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	AnimationsCategory animationsCategory = CookeyMod.getInstance().getConfig().getCategory(AnimationsCategory.class);
 
 	@Shadow
-	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemTransforms.TransformType renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
+	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
 
 
 	//This works, trust us
@@ -79,7 +79,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 				}
 				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
-				renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
+				renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
 
 				poseStack.popPose();
 				ci.cancel();

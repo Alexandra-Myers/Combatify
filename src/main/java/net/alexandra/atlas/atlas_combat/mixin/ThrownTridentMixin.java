@@ -52,7 +52,7 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements IThrow
 				trident.setNoPhysics(true);
 				Vec3 vec3 = trident.getEyePosition().subtract(trident.position());
 				trident.setPosRaw(trident.getX(), trident.getY() + vec3.y * 0.015 * j, trident.getZ());
-				if (trident.level.isClientSide) {
+				if (trident.level().isClientSide) {
 					trident.yOld = trident.getY();
 				}
 

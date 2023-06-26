@@ -112,7 +112,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return this.useItem.getItem() instanceof IShieldItem || original;
 	}
 
-	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSame(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
+	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectDurability(boolean original) {
 		return true;
 	}
@@ -126,7 +126,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean customShieldInteractions(float damage, Item item) {
 		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
 		player.stopUsingItem();
-		player.level.broadcastEntityEvent(player, (byte)30);
+		player.level().broadcastEntityEvent(player, (byte)30);
 		return true;
 	}
 
@@ -171,7 +171,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(bl3.get())
 			attackDamage.set(attackDamage.get() / 1.5F);
 		boolean isCrit = player.fallDistance > 0.0F
-			&& !player.isOnGround()
+			&& !player.onGround()
 			&& !player.onClimbable()
 			&& !player.isInWater()
 			&& !player.hasEffect(MobEffects.BLINDNESS)
@@ -197,7 +197,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
 		bl4.set(false);
-		if (!bl3 && !bl2 && this.onGround && d < (double)this.getSpeed())
+		if (!bl3 && !bl2 && this.onGround() && d < (double)this.getSpeed())
 			bl4.set(checkSweepAttack());
 		if(bl6) {
 			if(bl4.get()) {
@@ -237,7 +237,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				return;
 			}
 		}
-		int var2 = (int) (this.getCurrentItemAttackStrengthDelay() * 2);
+		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * 2;
 		if (var2 > this.attackStrengthTicker) {
 			this.attackStrengthStartValue = var2;
 			this.attackStrengthTicker = this.attackStrengthStartValue;
@@ -246,9 +246,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
-		double f = getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5D;
-		f = Mth.clamp(f, 0.1, 1024.0);
-		cir.setReturnValue((float) (1.0F / f * 20.0F + 0.5F));
+		float f = (float)(getAttribute(Attributes.ATTACK_SPEED).getValue()) - 1.5F;
+		f = Mth.clamp(f, 0.1F, 1024.0F);
+		cir.setReturnValue(1.0F / f * 20.0F + 0.5F);
 	}
 
 	@Inject(method = "getAttackStrengthScale", at = @At(value = "RETURN"), cancellable = true)
@@ -274,7 +274,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	public void betterSweepAttack(AABB var1, float var2, float var3, Entity var4) {
 		float sweepingDamageRatio = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * var3;
-		List<LivingEntity> livingEntities = player.level.getEntitiesOfClass(LivingEntity.class, var1);
+		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, var1);
 		Iterator<LivingEntity> livingEntityIterator = livingEntities.iterator();
 
 		while (true) {
@@ -284,8 +284,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					do {
 						do {
 							if (!livingEntityIterator.hasNext()) {
-								player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
-								if (player.level instanceof ServerLevel serverLevel) {
+								player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
+								if (player.level() instanceof ServerLevel serverLevel) {
 									double var11 = -Mth.sin(player.getYRot() * 0.017453292F);
 									double var12 = Mth.cos(player.getYRot() * 0.017453292F);
 									serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, player.getX() + var11, player.getY() + player.getBbHeight() * 0.5, player.getZ() + var12, 0, var11, 0.0, var12, 0.0);
@@ -303,7 +303,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			float var9 = var2 + var8.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(var8) < (var9 * var9)) {
 				((LivingEntityExtensions)var8).newKnockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
-				var8.hurt(DamageSource.playerAttack(player), sweepingDamageRatio);
+				var8.hurt(damageSources().playerAttack(player), sweepingDamageRatio);
 			}
 		}
 	}

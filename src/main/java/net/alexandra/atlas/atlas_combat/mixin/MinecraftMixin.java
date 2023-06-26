@@ -237,7 +237,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
 
 		return ProjectileUtil.getEntityHitResult(
-				player.level,
+				player.level(),
 				player,
 				from,
 				to,
@@ -258,7 +258,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			for (double j = -1.0; j <= 1.0; j += 0.1) {
 				for (double k = -1.0; k <= 1.0; k += 0.1) {
 					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level,
+							player.level(),
 							player,
 							from,
 							to,
@@ -299,7 +299,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			for (double j = -0.5; j <= 0.5; j += 0.1) {
 				for (double k = -0.5; k <= 0.5; k += 0.1) {
 					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level,
+							player.level(),
 							player,
 							from,
 							to,
@@ -343,7 +343,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			for (double j = -1.0; j <= 1.0; j += 0.1) {
 				for (double k = -1.0; k <= 1.0; k += 0.1) {
 					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level,
+							player.level(),
 							player,
 							from,
 							to,
@@ -387,7 +387,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			for (double j = -0.5; j <= 0.5; j += 0.1) {
 				for (double k = -0.5; k <= 0.5; k += 0.1) {
 					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level,
+							player.level(),
 							player,
 							from,
 							to,

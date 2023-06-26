@@ -16,7 +16,6 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 
 public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions, WeaponWithType {
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
@@ -37,8 +36,7 @@ public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnly
 		if (state.is(Blocks.COBWEB)) {
 			return 15.0F;
 		} else {
-			Material material = state.getMaterial();
-			return material != Material.PLANT && material != Material.REPLACEABLE_PLANT && !state.is(BlockTags.LEAVES) && material != Material.VEGETABLE ? 1.0F : 1.5F;
+			return state.is(BlockTags.SWORD_EFFICIENT) ? 1.5F : 1.0F;
 		}
 	}
 

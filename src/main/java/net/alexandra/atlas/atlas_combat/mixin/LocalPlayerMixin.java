@@ -38,7 +38,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if(thisPlayer.isOnGround() && this.hasEnabledShieldOnCrouch()) {
+		if(thisPlayer.onGround() && this.hasEnabledShieldOnCrouch()) {
 			for (InteractionHand interactionHand : InteractionHand.values()) {
 				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
 					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();

@@ -10,6 +10,7 @@ import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.alexandra.atlas.atlas_combat.util.BlockingType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -134,8 +135,8 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
 		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-			boolean blocked = !source.isExplosion() && !source.isProjectile();
-			if (source.isExplosion()) {
+			boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
+			if (source.is(DamageTypeTags.IS_EXPLOSION)) {
 				g.set(Math.min(amount.get(), 10));
 			} else if (blocked) {
 				((LivingEntityExtensions)instance).setIsParryTicker(0);
