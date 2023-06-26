@@ -233,7 +233,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				return;
 			}
 		}
-		int var2 = (int) (this.getCurrentItemAttackStrengthDelay() * 2);
+		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * 2;
 		if (var2 > this.attackStrengthTicker) {
 			this.attackStrengthStartValue = var2;
 			this.attackStrengthTicker = this.attackStrengthStartValue;
