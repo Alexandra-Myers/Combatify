@@ -84,21 +84,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
 		double x = target.getX() - this.getX();
 		double z = target.getZ() - this.getZ();
+		double x2 = this.getX() - target.getX();
+		double z2 = this.getZ() - target.getZ();
 		Item blockingItem = ((LivingEntityExtensions)target).getBlockingItem().getItem();
-		if(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD)) {
-			((LivingEntityExtensions)target).newKnockback(0.4, x, z);
-			newKnockback(0.4, x, z);
-			ci.cancel();
-			return;
-		}
-		((LivingEntityExtensions)target).newKnockback(0.5, x, z);
-		newKnockback(0.5, x, z);
-		if (((LivingEntity)(Object)this).getMainHandItem().getItem() instanceof AxeItem) {
+		if (((LivingEntity)(Object)this).getMainHandItem().getItem() instanceof AxeItem && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canBeDisabled()) {
 			float damage = 1.6F + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * 0.5F;
 			if(target instanceof PlayerExtensions player) {
 				player.customShieldInteractions(damage, blockingItem);
 			}
 		}
+		if(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().isToolBlocker()) {
+			((LivingEntityExtensions)target).newKnockback(0.4, x2, z2);
+			newKnockback(0.4, x, z);
+			ci.cancel();
+			return;
+		}
+		((LivingEntityExtensions)target).newKnockback(0.5, x2, z2);
+		newKnockback(0.5, x, z);
 		ci.cancel();
 	}
 	@Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
@@ -230,7 +232,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		} else if ((thisLivingEntity.onGround() && thisLivingEntity.isCrouching() && this.hasEnabledShieldOnCrouch() || thisLivingEntity.isPassenger()) && this.hasEnabledShieldOnCrouch()) {
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = thisLivingEntity.getItemInHand(hand);
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD))) {
+				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof IShieldItem shieldItem && !shieldItem.getBlockingType().canCrouchBlock())) {
 					return var1;
 				}
 			}
