@@ -8,7 +8,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
-import net.alexandra.atlas.atlas_combat.util.BlockingType;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
