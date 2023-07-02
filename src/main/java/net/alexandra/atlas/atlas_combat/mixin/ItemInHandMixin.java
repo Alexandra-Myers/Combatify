@@ -39,8 +39,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	private ItemStack itemStack;
 	@Unique
 	private float f;
-	@Unique
-	private AbstractClientPlayer abstractClientPlayer;
 	HudRenderingCategory hudRenderingCategory = CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class);
 
 	@Shadow
@@ -53,11 +51,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
-
-
-	@Shadow
-	@Final
-	private ItemRenderer itemRenderer;
 
 	//This works, trust us
 	@ModifyVariable(method = "tick", slice = @Slice(

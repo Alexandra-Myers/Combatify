@@ -71,7 +71,6 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		int j = this.screenHeight / 2 - 7 + 16;
 		int k = this.screenWidth / 2 - 8;
 		Options options = this.minecraft.options;
@@ -106,6 +105,7 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
+		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		int n = this.screenHeight - 20;
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT) {
