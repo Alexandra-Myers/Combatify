@@ -100,6 +100,7 @@ public abstract class GuiMixin extends GuiComponent {
 			ci.cancel();
 			return;
 		}
+		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		int n = this.screenHeight - 20;
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT) {
