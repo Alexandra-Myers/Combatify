@@ -99,6 +99,7 @@ public abstract class GuiMixin extends GuiComponent {
 			ci.cancel();
 			return;
 		}
+		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 		int n = this.screenHeight - 20;
 		int o = i + 91 + 6;

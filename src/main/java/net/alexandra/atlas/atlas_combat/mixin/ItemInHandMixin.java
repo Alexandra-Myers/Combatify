@@ -70,7 +70,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		LivingEntityExtensions livingEntityExtensions = ((LivingEntityExtensions)abstractClientPlayer);
 		this.humanoidArm = humanoidArm;
 		if (AtlasCombat.CONFIG.swordBlocking()) {
-			if (abstractClientPlayer.getUsedItemHand() == interactionHand && livingEntityExtensions.getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD)) {
+			if (abstractClientPlayer.getUsedItemHand() == interactionHand && livingEntityExtensions.getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().isToolBlocker()) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform2(poseStack, humanoidArm);
@@ -85,15 +85,15 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			}
 		}
 	}
-	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
-	private void injectFishing(PoseStack poseStack) {
+	@Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0))
+	private void injectFishing(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
 		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		if(((IOptions) minecraft.options).fishingRodLegacy().get() && itemStack.getItem() instanceof FishingRodItem || itemStack.getItem() instanceof FoodOnAStickItem<?>) {
-			poseStack.pushPose();
 			poseStack.translate(q * 0.08f, 0.1f, -0.33f);
 			poseStack.scale(0.95f, 1f, 1f);
-		} else {
-			poseStack.pushPose();
+		} else if(((IOptions) minecraft.options).fishingRodLegacy().get()) {
+			poseStack.scale(0.95f, 1f, 1f);
+			poseStack.mulPose(Vector3f.YP.rotationDegrees(q * 0.5F));
 		}
 	}
 	@Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"), locals = LocalCapture.CAPTURE_FAILSOFT)
@@ -122,7 +122,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
-		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().equals(BlockingType.SWORD)) {
+		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().isToolBlocker()) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();
