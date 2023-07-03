@@ -225,7 +225,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		} else if ((thisLivingEntity.isOnGround() && thisLivingEntity.isCrouching() && this.hasEnabledShieldOnCrouch() || thisLivingEntity.isPassenger()) && this.hasEnabledShieldOnCrouch()) {
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = thisLivingEntity.getItemInHand(hand);
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
+				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof IShieldItem shieldItem && !shieldItem.getBlockingType().canCrouchBlock())) {
 					return var1;
 				}
 			}
