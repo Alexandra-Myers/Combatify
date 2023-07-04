@@ -154,7 +154,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			invulnerableTime = 0;
 		}
 
-		if (source.is(DamageTypes.MAGIC) && AtlasCombat.CONFIG.magicHasIFrames()) {
+		if (source.is(DamageTypes.MAGIC) && !AtlasCombat.CONFIG.magicHasIFrames()) {
 			invulnerableTime = 0;
 		}
 		return invulnerableTime;
