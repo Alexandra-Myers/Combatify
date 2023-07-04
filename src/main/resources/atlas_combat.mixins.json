@@ -9,7 +9,6 @@
     "AttackDamageMobEffectMixin",
     "AttributeInstanceMixin",
     "AttributeModifierMixin",
-    "AttributesMixin",
     "AxeItemMixin",
     "BowItemMixin",
     "DamageEnchantmentMixin",
