@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions, PiercingItem, WeaponWithType {
+public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, PiercingItem, WeaponWithType {
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public final Tier tier;
 	public LongSwordItem(Tier tier, Properties properties) {
@@ -95,12 +95,6 @@ public class LongSwordItem extends TieredItem implements ConfigOnlyItem, Vanisha
 	@Override
 	public void setStackSize(int stackSize) {
 		this.maxStackSize = stackSize;
-	}
-
-	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		destroyWithoutConfig(stack);
-		super.inventoryTick(stack, world, entity, slot, selected);
 	}
 
 	@Override

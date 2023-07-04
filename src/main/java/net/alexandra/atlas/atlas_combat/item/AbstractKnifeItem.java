@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnlyItem, Vanishable, ItemExtensions, WeaponWithType {
+public abstract class AbstractKnifeItem extends TieredItem implements Vanishable, ItemExtensions, WeaponWithType {
 	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public AbstractKnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -82,12 +82,6 @@ public abstract class AbstractKnifeItem extends TieredItem implements ConfigOnly
 	@Override
 	public double getAttackDamage(Player player) {
 		return getWeaponType().getDamage(this.getTier()) + 2.0;
-	}
-
-	@Override
-	public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-		destroyWithoutConfig(stack);
-		super.inventoryTick(stack, world, entity, slot, selected);
 	}
 
 	@Override
