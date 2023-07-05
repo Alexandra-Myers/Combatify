@@ -19,7 +19,7 @@ abstract class GameRendererMixin implements ResourceManagerReloadListener/*, Aut
     @ModifyExpressionValue(method = "pick(F)V", at = @At(value = "CONSTANT", args = "doubleValue=3.0"))
     private double getActualAttackRange0(double original) {
         if (this.minecraft.player != null) {
-            return ((PlayerExtensions)minecraft.player).getAttackRange(this.minecraft.player, original - 0.5);
+            return ((PlayerExtensions)minecraft.player).getAttackRange();
         }
         return original - 0.5;
     }
@@ -30,7 +30,7 @@ abstract class GameRendererMixin implements ResourceManagerReloadListener/*, Aut
 		d -= 0.5;
 		d *= d;
         if (this.minecraft.player != null) {
-            return ((PlayerExtensions)minecraft.player).getSquaredAttackRange(this.minecraft.player, d);
+            return ((PlayerExtensions)minecraft.player).getSquaredAttackRange();
         }
         return d;
     }

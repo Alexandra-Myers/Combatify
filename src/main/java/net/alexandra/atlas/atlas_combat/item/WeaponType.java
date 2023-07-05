@@ -23,7 +23,6 @@ public enum WeaponType {
     public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
     public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
-	public static final UUID BASE_BLOCK_REACH_UUID = UUID.fromString("7f6fa63f-0fbd-4fa8-9acc-69c45c8f68ed");
 
     WeaponType() {
     }
@@ -32,15 +31,11 @@ public enum WeaponType {
         float var3 = this.getSpeed(var1);
         float var4 = this.getDamage(var1);
         float var5 = this.getReach();
-		float var6 = this.getBlockReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
 		var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F && AtlasCombat.CONFIG.attackReach()) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-		if (var6 != 0.0F && AtlasCombat.CONFIG.blockReach()) {
-			var2.put(NewAttributes.BLOCK_REACH, new AttributeModifier(BASE_BLOCK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
-		}
 
 
     }
@@ -149,15 +144,6 @@ public enum WeaponType {
 			default -> 0.0F;
 		};
     }
-
-	public float getBlockReach() {
-		return switch (this) {
-			case PICKAXE, SWORD, AXE -> 1.5F;
-			case SHOVEL -> 1.0F;
-			case LONGSWORD, HOE, TRIDENT -> 2.0F;
-			default -> 0.0F;
-		};
-	}
 	public static float min(float f, float j) {
 		return Math.max(f, j);
 	}

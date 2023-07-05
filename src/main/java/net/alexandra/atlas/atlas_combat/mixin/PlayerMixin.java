@@ -80,7 +80,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		player.getAttribute(NewAttributes.BLOCK_REACH).setBaseValue(!AtlasCombat.CONFIG.bedrockBlockReach() ? 0 : 2);
 		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(0);
 		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(!AtlasCombat.CONFIG.fistDamage() ? 2 : 1);
 	}
@@ -91,8 +90,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(NewAttributes.BLOCK_REACH, !AtlasCombat.CONFIG.bedrockBlockReach() ? 0.0 : 2.0)
-			.add(NewAttributes.ATTACK_REACH);
+		return original.add(NewAttributes.ATTACK_REACH);
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
@@ -158,7 +156,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
-		currentAttackReach = (float) this.getAttackRange(player, 2.5);
+		currentAttackReach = (float) this.getAttackRange();
 		return 1.0F;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
@@ -217,7 +215,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			player.swing(InteractionHand.MAIN_HAND);
 			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
 			if (var1 > 0.0F && this.checkSweepAttack()) {
-				float var2 = (float) this.getAttackRange(player, 2.5);
+				float var2 = (float) this.getAttackRange();
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
@@ -314,32 +312,20 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public double getAttackRange(LivingEntity entity, double baseAttackRange) {
+	public double getAttackRange() {
 		@Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
-		int var2 = 0;
-		baseAttackRange = AtlasCombat.CONFIG.attackReach() ? baseAttackRange : Mth.ceil(baseAttackRange);
-		float var3 = getAttackStrengthScale(baseValue);
-		if (var3 > 1.95F && !player.isCrouching()) {
-			var2 = 1;
+		int chargedBonus = 0;
+		double baseAttackRange = AtlasCombat.CONFIG.attackReach() ? 2.5 : Mth.ceil(2.5);
+		float strengthScale = getAttackStrengthScale(baseValue);
+		if (strengthScale > 1.95F && !player.isCrouching()) {
+			chargedBonus = 1;
 		}
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + var2) : baseAttackRange + var2;
+		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
 	}
 
 	@Override
-	public double getSquaredAttackRange(LivingEntity entity, double sqBaseAttackRange) {
-		final var attackRange = getAttackRange(entity, Math.sqrt(sqBaseAttackRange));
-		return attackRange * attackRange;
-	}
-
-	@Override
-	public double getReach(LivingEntity entity, double baseAttackRange) {
-		@Nullable final var attackRange = entity.getAttribute(NewAttributes.BLOCK_REACH);
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue()) : baseAttackRange;
-	}
-
-	@Override
-	public double getSquaredReach(LivingEntity entity, double sqBaseAttackRange) {
-		final var attackRange = getReach(entity, Math.sqrt(sqBaseAttackRange));
+	public double getSquaredAttackRange() {
+		final var attackRange = getAttackRange();
 		return attackRange * attackRange;
 	}
 

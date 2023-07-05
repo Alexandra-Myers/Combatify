@@ -1,7 +1,6 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
@@ -80,7 +79,7 @@ public abstract class GuiMixin {
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
-			bl = minecraft.crosshairPickEntity.distanceTo(minecraft.player) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
+			bl = minecraft.crosshairPickEntity.distanceTo(minecraft.player) <= ((PlayerExtensions)minecraft.player).getAttackRange();
 			bl &= this.minecraft.crosshairPickEntity.isAlive();
 		}
 		if (bl) {
@@ -117,7 +116,7 @@ public abstract class GuiMixin {
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && g >= maxIndicator) {
-			bl = minecraft.crosshairPickEntity.distanceTo(minecraft.player) <= ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 2.5);
+			bl = minecraft.crosshairPickEntity.distanceTo(minecraft.player) <= ((PlayerExtensions)minecraft.player).getAttackRange();
 			bl &= this.minecraft.crosshairPickEntity.isAlive();
 		}
 		if (bl) {

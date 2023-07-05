@@ -71,9 +71,6 @@ public abstract class ItemStackMixin implements IItemStack {
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
 						d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + (attackReach ? 2.5 : 3);
 						bl = true;
-					} else if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID) {
-						d += player.getAttribute(NewAttributes.BLOCK_REACH).getBaseValue() + 6.0;
-						bl = true;
 					} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
 						d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
 					}
@@ -89,7 +86,7 @@ public abstract class ItemStackMixin implements IItemStack {
 					e = d;
 				}
 
-				if (attributeModifier.getId() == WeaponType.BASE_BLOCK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || bl) {
+				if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || bl) {
 					list.add(
 							Component.literal(" ")
 									.append(

@@ -39,9 +39,9 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 			require = 2, allow = 2, constant = { @Constant(floatValue = 5.0F), @Constant(floatValue = 4.5F) })
 	private float getActualReachDistance(final float reachDistance) {
 		if (minecraft.player != null) {
-			return (float) ((PlayerExtensions)minecraft.player).getAttackRange(minecraft.player, 4.5F);
+			return (float) ((PlayerExtensions)minecraft.player).getAttackRange();
 		}
-		return 4.5F;
+		return 2.5F;
 	}
 
 	@Inject(method = "hasFarPickRange", at = @At(value = "RETURN"), cancellable = true)

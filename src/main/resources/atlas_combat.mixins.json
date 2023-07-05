@@ -34,7 +34,6 @@
     "PotionItemMixin",
     "ProjectileMixin",
     "RamTargetMixin",
-    "ScreenHandlerMixin",
     "ServerGameInteractPacketMixin",
     "ServerGamePacketMixin",
     "ServerPlayerGameModeMixin",

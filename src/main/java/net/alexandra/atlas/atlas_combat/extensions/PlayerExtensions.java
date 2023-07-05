@@ -1,6 +1,5 @@
 package net.alexandra.atlas.atlas_combat.extensions;
 
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 
 public interface PlayerExtensions {
@@ -15,12 +14,9 @@ public interface PlayerExtensions {
 	}
 	boolean getMissedAttackRecovery();
 	int getAttackStrengthStartValue();
-	double getReach(final LivingEntity entity, final double baseAttackRange);
+	double getAttackRange();
 
-	double getSquaredReach(final LivingEntity entity, final double sqBaseAttackRange);
-	double getAttackRange(final LivingEntity entity, final double baseAttackRange);
-
-	double getSquaredAttackRange(final LivingEntity entity, final double sqBaseAttackRange);
+	double getSquaredAttackRange();
 
     void attackAir();
 }

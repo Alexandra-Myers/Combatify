@@ -9,8 +9,6 @@ import io.wispforest.owo.config.annotation.*;
 public class AtlasConfigModel {
 	@SectionHeader("Booleans")
 	public boolean toolsAreWeapons = false;
-	@RestartRequired
-	public boolean bedrockBlockReach = false;
 	public boolean refinedCoyoteTime = false;
 	public boolean midairKB = false;
 	public boolean fishingHookKB = false;
@@ -25,8 +23,6 @@ public class AtlasConfigModel {
 	public boolean configOnlyWeapons = false;
 	@RestartRequired
 	public boolean axeReachBuff = false;
-	@RestartRequired
-	public boolean blockReach = true;
 	@RestartRequired
 	public boolean attackReach = true;
 	@RestartRequired

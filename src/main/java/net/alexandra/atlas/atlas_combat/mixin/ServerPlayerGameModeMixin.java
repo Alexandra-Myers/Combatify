@@ -18,6 +18,6 @@ public class ServerPlayerGameModeMixin {
 	@ModifyExpressionValue(method = "handleBlockBreakAction",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualReachDistance(double original) {
-		return ((PlayerExtensions)player).getSquaredReach(player, original);
+		return ((PlayerExtensions)player).getSquaredAttackRange();
 	}
 }
