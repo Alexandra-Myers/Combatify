@@ -290,7 +290,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				int i = (getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
 				int j = 25 - i;
 				float f = amount * (float)(j - (j * piercingLevel));
-				if(j == 0 && piercingLevel > 0) {
+				if(j <= 0 && piercingLevel > 0) {
 					f = (float) (amount * piercingLevel);
 				}
 				float g = amount;
