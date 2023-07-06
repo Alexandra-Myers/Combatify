@@ -80,7 +80,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(0);
+		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(2.5);
 		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(!AtlasCombat.CONFIG.fistDamage() ? 2 : 1);
 	}
 
@@ -156,7 +156,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
-		currentAttackReach = (float) this.getAttackRange();
+		currentAttackReach = (float) this.getAttackRange(1.0F);
 		return 1.0F;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
@@ -215,7 +215,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			player.swing(InteractionHand.MAIN_HAND);
 			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
 			if (var1 > 0.0F && this.checkSweepAttack()) {
-				float var2 = (float) this.getAttackRange();
+				float var2 = (float) this.getAttackRange(1.0F);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
@@ -312,11 +312,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public double getAttackRange() {
+	public double getAttackRange(float baseTime) {
 		@Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
 		int chargedBonus = 0;
-		double baseAttackRange = AtlasCombat.CONFIG.attackReach() ? 2.5 : Mth.ceil(2.5);
-		float strengthScale = getAttackStrengthScale(baseValue);
+		double baseAttackRange = AtlasCombat.CONFIG.attackReach() ? 0 : 0.5;
+		float strengthScale = getAttackStrengthScale(baseTime);
 		if (strengthScale > 1.95F && !player.isCrouching()) {
 			chargedBonus = 1;
 		}
@@ -324,8 +324,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public double getSquaredAttackRange() {
-		final var attackRange = getAttackRange();
+	public double getSquaredAttackRange(float baseTime) {
+		final var attackRange = getAttackRange(baseTime);
 		return attackRange * attackRange;
 	}
 

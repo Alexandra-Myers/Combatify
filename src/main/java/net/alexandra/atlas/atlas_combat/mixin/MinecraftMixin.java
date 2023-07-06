@@ -82,7 +82,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
 		assert player != null;
-		if(crosshairPickEntity != null && hitResult != null && (this.hitResult).distanceTo(this.crosshairPickEntity) <= ((PlayerExtensions)player).getAttackRange()) {
+		if(crosshairPickEntity != null && hitResult != null && (this.hitResult).distanceTo(this.crosshairPickEntity) <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
 			lastPickedEntity = crosshairPickEntity;
 		}
 		if (screen != null) {
@@ -155,7 +155,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
 	public void redirectAttack(MultiPlayerGameMode instance, Player player, Entity entity) {
-		if (player.distanceTo(entity) <= ((PlayerExtensions)player).getAttackRange()) {
+		if (entity.distanceTo(player) <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
 			instance.attack(player, entity);
 		} else {
 			((IPlayerGameMode)instance).swingInAir(player);
@@ -168,7 +168,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer player) {
 		assert gameMode != null;
-		EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange());
+		EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
 		if(result != null && AtlasCombat.CONFIG.refinedCoyoteTime()) {
 			if(!(result.getEntity() instanceof Player)) {
 				if (result.getEntity() instanceof Guardian
@@ -181,9 +181,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 					|| result.getEntity() instanceof Bat
 					|| result.getEntity() instanceof AbstractFish
 					|| result.getEntity() instanceof Rabbit) {
-					result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange());
+					result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
 				} else {
-					result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange());
+					result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(0.0F));
 				}
 				if(result != null) {
 					this.gameMode.attack(player, result.getEntity());
@@ -205,7 +205,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			assert level != null;
 			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
 			assert player != null;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange());
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {
 				crosshairPickEntity = entity;

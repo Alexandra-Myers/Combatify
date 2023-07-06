@@ -5,6 +5,7 @@
   "plugin": "net.alexandra.atlas.atlas_combat.mixin.MixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AABBMixin",
     "AnvilMenuMixin",
     "AttackDamageMobEffectMixin",
     "AttributeInstanceMixin",
@@ -36,7 +37,6 @@
     "RamTargetMixin",
     "ServerGameInteractPacketMixin",
     "ServerGamePacketMixin",
-    "ServerPlayerGameModeMixin",
     "ServerPlayerMixin",
     "ShieldItemMixin",
     "ShovelItemMixin",

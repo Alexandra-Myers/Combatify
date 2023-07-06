@@ -76,7 +76,17 @@ public enum WeaponType {
 					return var2 + min(AtlasCombat.CONFIG.axeAttackDamage(), 0) + 1.0F;
 				}
 			}
-			case LONGSWORD, HOE -> {
+			case LONGSWORD -> {
+				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
+					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
+						return var1 == Tiers.NETHERITE ? min(AtlasCombat.CONFIG.netheriteLongswordAttackDamage(), 0) + modifier : min(AtlasCombat.CONFIG.netheriteLongswordAttackDamage(), 0) + var2 - 4 + modifier;
+					}
+
+					return min(AtlasCombat.CONFIG.baseLongswordAttackDamage(), 0) + modifier;
+				}
+				return min(AtlasCombat.CONFIG.ironDiaLongswordAttackDamage(), 0) + modifier;
+			}
+			case HOE -> {
 				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
 						return var1 == Tiers.NETHERITE ? min(AtlasCombat.CONFIG.netheriteHoeAttackDamage(), 0) + modifier : min(AtlasCombat.CONFIG.netheriteHoeAttackDamage(), 0) + var2 - 4 + modifier;
@@ -103,7 +113,10 @@ public enum WeaponType {
 			case KNIFE -> {
 				return AtlasCombat.CONFIG.knifeAttackSpeed();
 			}
-			case LONGSWORD, SWORD -> {
+			case LONGSWORD -> {
+				return AtlasCombat.CONFIG.longswordAttackSpeed();
+			}
+			case SWORD -> {
 				return AtlasCombat.CONFIG.swordAttackSpeed();
 			}
 			case AXE, SHOVEL -> {
@@ -137,11 +150,13 @@ public enum WeaponType {
 
     public float getReach() {
 		return switch (this) {
-			case KNIFE -> -0.5F;
-			case SWORD -> 0.5F;
-			case LONGSWORD, HOE, TRIDENT -> 1.0F;
-			case AXE -> !AtlasCombat.CONFIG.axeReachBuff() ? 0.0F : 0.5F;
-			default -> 0.0F;
+			case KNIFE -> AtlasCombat.CONFIG.knifeAttackReach();
+			case SWORD -> AtlasCombat.CONFIG.swordAttackReach();
+			case LONGSWORD -> AtlasCombat.CONFIG.longswordAttackReach();
+			case HOE -> AtlasCombat.CONFIG.hoeAttackReach();
+			case TRIDENT -> AtlasCombat.CONFIG.tridentAttackReach();
+			case AXE -> AtlasCombat.CONFIG.axeAttackReach();
+			default -> AtlasCombat.CONFIG.defaultAttackReach();
 		};
     }
 	public static float min(float f, float j) {

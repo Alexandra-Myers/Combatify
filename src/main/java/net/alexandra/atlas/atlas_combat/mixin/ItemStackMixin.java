@@ -69,7 +69,7 @@ public abstract class ItemStackMixin implements IItemStack {
 						d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
 						bl = true;
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-						d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + (attackReach ? 2.5 : 3);
+						d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + (attackReach ? 0 : 0.5);
 						bl = true;
 					} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
 						d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();

@@ -77,8 +77,6 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 			if(oppositeStack.isEmpty()) {
 				user.startUsingItem(hand);
 				return InteractionResultHolder.consume(itemStack);
-			} else {
-				return InteractionResultHolder.fail(itemStack);
 			}
 		}
 		return super.use(world,user,hand);
@@ -150,7 +148,6 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 				bl.set(true);
 			}
 
-			instance.hurtCurrentlyUsedShield(g.get());
 			amount.set(amount.get() - g.get());
 		}
 	}

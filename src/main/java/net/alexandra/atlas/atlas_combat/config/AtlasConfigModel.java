@@ -17,12 +17,11 @@ public class AtlasConfigModel {
 	public boolean swordBlocking = false;
 	public boolean sprintCritsEnabled = true;
 	public boolean saturationHealing = false;
+	public boolean projectilesHaveIFrames = false;
 	public boolean magicHasIFrames = true;
 	public boolean autoAttackAllowed = true;
 	@RestartRequired
 	public boolean configOnlyWeapons = false;
-	@RestartRequired
-	public boolean axeReachBuff = false;
 	@RestartRequired
 	public boolean attackReach = true;
 	@RestartRequired
@@ -65,6 +64,15 @@ public class AtlasConfigModel {
 	public float knifeAttackDamage = 0;
 	@RestartRequired
 	@RangeConstraint(min = 0, max = 1000)
+	public float baseLongswordAttackDamage = 0;
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
+	public float ironDiaLongswordAttackDamage = 1;
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
+	public float netheriteLongswordAttackDamage = 2;
+	@RestartRequired
+	@RangeConstraint(min = 0, max = 1000)
 	public float baseHoeAttackDamage = 0;
 	@RestartRequired
 	@RangeConstraint(min = 0, max = 1000)
@@ -75,6 +83,9 @@ public class AtlasConfigModel {
 	@RestartRequired
 	@RangeConstraint(min = 0, max = 1000)
 	public float tridentAttackDamage = 5;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 7.5)
+	public float longswordAttackSpeed = 0.5F;
 	@RestartRequired
 	@RangeConstraint(min = -1, max = 7.5)
 	public float swordAttackSpeed = 0.5F;
@@ -114,6 +125,27 @@ public class AtlasConfigModel {
 	@RestartRequired
 	@RangeConstraint(min = -1, max = 7.5)
 	public float fastestToolAttackSpeed = 1F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float swordAttackReach = 0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float axeAttackReach = 0F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float hoeAttackReach = 1;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float longswordAttackReach = 1;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float knifeAttackReach = -0.5F;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float tridentAttackReach = 1;
+	@RestartRequired
+	@RangeConstraint(min = -1, max = 100)
+	public float defaultAttackReach = 0F;
 	public static class UseDurations {
 	}
 	public static class Cooldowns {

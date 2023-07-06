@@ -14,9 +14,9 @@ public interface PlayerExtensions {
 	}
 	boolean getMissedAttackRecovery();
 	int getAttackStrengthStartValue();
-	double getAttackRange();
+	double getAttackRange(float baseTime);
 
-	double getSquaredAttackRange();
+	double getSquaredAttackRange(float baseTime);
 
     void attackAir();
 }

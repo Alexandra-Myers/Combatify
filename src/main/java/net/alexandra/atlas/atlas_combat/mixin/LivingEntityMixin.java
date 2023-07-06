@@ -150,7 +150,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			invulnerableTime = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
 		}
 
-		if (source.is(DamageTypeTags.IS_PROJECTILE)) {
+		if (source.is(DamageTypeTags.IS_PROJECTILE) && !AtlasCombat.CONFIG.projectilesHaveIFrames()) {
 			invulnerableTime = 0;
 		}
 
@@ -290,6 +290,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				int i = (getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
 				int j = 25 - i;
 				float f = amount * (float)(j - (j * piercingLevel));
+				if(j == 0 && piercingLevel > 0) {
+					f = (float) (amount * piercingLevel);
+				}
 				float g = amount;
 				amount = Math.max(f / 25.0F, 0.0F);
 				float h = g - amount;
