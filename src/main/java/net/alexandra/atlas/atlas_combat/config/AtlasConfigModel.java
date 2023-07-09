@@ -23,6 +23,10 @@ public class AtlasConfigModel {
 	@RestartRequired
 	public boolean configOnlyWeapons = false;
 	@RestartRequired
+	public boolean piercer = false;
+	@RestartRequired
+	public boolean defender = false;
+	@RestartRequired
 	public boolean attackReach = true;
 	@RestartRequired
 	public boolean attackSpeed = true;
@@ -139,7 +143,7 @@ public class AtlasConfigModel {
 	public float longswordAttackReach = 1;
 	@RestartRequired
 	@RangeConstraint(min = -1, max = 100)
-	public float knifeAttackReach = -0.5F;
+	public float knifeAttackReach = 0F;
 	@RestartRequired
 	@RangeConstraint(min = -1, max = 100)
 	public float tridentAttackReach = 1;

@@ -2,6 +2,8 @@ package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
+import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.util.BlockingType;
 import net.minecraft.ChatFormatting;
@@ -13,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,6 +24,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+
+import static net.alexandra.atlas.atlas_combat.enchantment.DefendingEnchantment.DEFENDER;
 
 @Mixin(ShieldItem.class)
 public class ShieldItemMixin extends Item implements IShieldItem {
@@ -49,7 +54,11 @@ public class ShieldItemMixin extends Item implements IShieldItem {
 
 	@Override
     public float getShieldBlockDamageValue(ItemStack itemStack) {
-        return itemStack.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
+		float f = itemStack.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
+		if(AtlasCombat.CONFIG.defender()) {
+			f += EnchantmentHelper.getItemEnchantmentLevel(DEFENDER, itemStack);
+		}
+        return f;
     }
 
 	@Override

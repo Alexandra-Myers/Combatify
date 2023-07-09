@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,6 +31,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+
+import static net.alexandra.atlas.atlas_combat.enchantment.DefendingEnchantment.DEFENDER;
 
 @Mixin(SwordItem.class)
 public class SwordItemMixin extends TieredItem implements ItemExtensions, IShieldItem, ISwordItem, DefaultedItemExtensions, WeaponWithType {
@@ -127,7 +130,10 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		float strengthIncrease = var2.getAttackDamageBonus() <= 1.0F ? -1F : 0.0F;
 		strengthIncrease += AtlasCombat.CONFIG.swordProtectionEfficacy();
 		strengthIncrease = Math.max(strengthIncrease, -3);
-		return 0.5F + (strengthIncrease * 0.125F);
+		if(AtlasCombat.CONFIG.defender()) {
+			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DEFENDER, itemStack);
+		}
+		return Math.min(0.5F + (strengthIncrease * 0.125F), 1);
 	}
 
 	@Override

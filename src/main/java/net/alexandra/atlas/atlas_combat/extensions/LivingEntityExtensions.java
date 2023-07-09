@@ -14,7 +14,9 @@ public interface LivingEntityExtensions {
 
 	boolean hasEnabledShieldOnCrouch();
 
-    void setEnemy(Entity enemy);
+	void setPiercingNegation(double negation);
+
+	void setEnemy(Entity enemy);
 
 	void newKnockback(double strength, double x, double z);
 

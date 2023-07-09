@@ -1,6 +1,8 @@
 package net.alexandra.atlas.atlas_combat;
 
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
+import net.alexandra.atlas.atlas_combat.enchantment.DefendingEnchantment;
+import net.alexandra.atlas.atlas_combat.enchantment.PiercingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.ItemRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -45,6 +47,12 @@ public class AtlasCombat implements ModInitializer {
 			ItemRegistry.registerWeapons();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(NETHERITE_SWORD, WOODEN_KNIFE, STONE_KNIFE, IRON_KNIFE, GOLD_KNIFE, DIAMOND_KNIFE, NETHERITE_KNIFE, WOODEN_LONGSWORD, STONE_LONGSWORD, IRON_LONGSWORD, GOLD_LONGSWORD, DIAMOND_LONGSWORD, NETHERITE_LONGSWORD));
+		}
+		if(CONFIG.piercer()) {
+			PiercingEnchantment.registerEnchants();
+		}
+		if(CONFIG.defender()) {
+			DefendingEnchantment.registerEnchants();
 		}
 		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 

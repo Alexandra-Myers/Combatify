@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.IItemStack;
+import net.alexandra.atlas.atlas_combat.extensions.PiercingItem;
 import net.alexandra.atlas.atlas_combat.item.NewAttributes;
 import net.alexandra.atlas.atlas_combat.item.WeaponType;
 import net.minecraft.ChatFormatting;
@@ -24,6 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.text.DecimalFormat;
 import java.util.*;
+
+import static net.alexandra.atlas.atlas_combat.enchantment.PiercingEnchantment.PIERCER;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements IItemStack {
@@ -118,6 +121,26 @@ public abstract class ItemStackMixin implements IItemStack {
 									.withStyle(ChatFormatting.RED)
 					);
 				}
+			}
+			double piercingLevel = 0;
+			if(AtlasCombat.CONFIG.piercer()) {
+				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PIERCER, (ItemStack) (Object) this) * 0.1;
+			}
+			if(getItem() instanceof PiercingItem item) {
+				piercingLevel += item.getPiercingLevel();
+			}
+			if (piercingLevel > 0) {
+				list.add(
+					Component.literal(" ")
+						.append(
+							Component.translatable(
+								"attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(),
+								ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
+								Component.translatable("attribute.name.generic.longsword_piercing")
+							)
+						)
+						.withStyle(ChatFormatting.DARK_GREEN)
+				);
 			}
 		}
 		return true;

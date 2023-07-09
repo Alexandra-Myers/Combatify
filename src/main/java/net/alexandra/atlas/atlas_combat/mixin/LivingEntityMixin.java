@@ -8,12 +8,14 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.*;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -40,6 +42,8 @@ import java.util.Objects;
 
 @Mixin(value = LivingEntity.class, priority = 1400)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
+	@Unique
+	private double piercingNegation;
 
 	public LivingEntityMixin(EntityType<?> entityType, Level level) {
 		super(entityType, level);
@@ -86,8 +90,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double x2 = this.getX() - target.getX();
 		double z2 = this.getZ() - target.getZ();
 		Item blockingItem = ((LivingEntityExtensions)target).getBlockingItem().getItem();
-		if (((LivingEntity)(Object)this).getMainHandItem().getItem() instanceof AxeItem && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canBeDisabled()) {
+		double piercingLevel = 0;
+		Item item = ((LivingEntity)(Object)this).getMainHandItem().getItem();
+		if (item instanceof PiercingItem piercingItem) {
+			piercingLevel += piercingItem.getPiercingLevel();
+		}
+		if (AtlasCombat.CONFIG.piercer()) {
+			piercingLevel += CustomEnchantmentHelper.getPierce((LivingEntity) (Object) this) * 0.1;
+		}
+		boolean bl = item instanceof AxeItem || piercingLevel > 0;
+		if (bl && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canBeDisabled()) {
+			if (piercingLevel > 0) {
+				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
+			}
 			float damage = 1.6F + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * 0.5F;
+			if(AtlasCombat.CONFIG.defender()) {
+				damage -= CustomEnchantmentHelper.getDefense(target) * 0.5F;
+			}
 			if(target instanceof PlayerExtensions player) {
 				player.customShieldInteractions(damage, blockingItem);
 			}
@@ -102,25 +121,55 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		newKnockback(0.5, x, z);
 		ci.cancel();
 	}
+	@Override
+	public void setPiercingNegation(double negation) {
+		piercingNegation = negation;
+	}
 	@Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
 	public void addPiercing(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
-		if(source.getEntity() instanceof LivingEntity livingEntity) {
+		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+			double d = 0;
 			if(item instanceof PiercingItem piercingItem) {
-				double d = piercingItem.getPiercingLevel();
+				d += piercingItem.getPiercingLevel();
+			}
+			if(AtlasCombat.CONFIG.piercer()) {
+				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
+			}
+			d -= piercingNegation;
+			d = Math.max(0, d);
+			piercingNegation = 0;
+			if(d > 0){
 				cir.setReturnValue(getNewDamageAfterArmorAbsorb(source, f, d));
 			}
 		}
 	}
 	@Inject(method = "getDamageAfterMagicAbsorb", at = @At(value = "HEAD"), cancellable = true)
 	public void addPiercing1(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
-		if(source.getEntity() instanceof LivingEntity livingEntity) {
+		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+			double d = 0;
 			if(item instanceof PiercingItem piercingItem) {
-				double d = piercingItem.getPiercingLevel();
+				d += piercingItem.getPiercingLevel();
+			}
+			if(AtlasCombat.CONFIG.piercer()) {
+				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
+			}
+			d -= piercingNegation;
+			d = Math.max(0, d);
+			piercingNegation = 0;
+			if(d > 0){
 				cir.setReturnValue(getNewDamageAfterMagicAbsorb(source, f, d));
 			}
 		}
+	}
+	@SafeVarargs
+	public final boolean isSourceAnyOf(DamageSource source, ResourceKey<DamageType>... damageTypes) {
+		boolean bl = false;
+		for(ResourceKey<DamageType> damageType : damageTypes) {
+			bl |= source.is(damageType);
+		}
+		return bl;
 	}
 	@ModifyConstant(method = "handleDamageEvent", constant = @Constant(intValue = 20, ordinal = 0))
 	private int syncInvulnerability(int x) {
