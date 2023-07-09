@@ -13,7 +13,7 @@ public class PiercingEnchantment extends Enchantment implements CustomEnchantmen
 	public static final Enchantment PIERCER = EnchantmentRegistry.registerEnchant(new ResourceLocation(AtlasCombat.MOD_ID, "piercer"), new PiercingEnchantment());
 
 	public PiercingEnchantment() {
-		super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
 	}
 
 	@Override

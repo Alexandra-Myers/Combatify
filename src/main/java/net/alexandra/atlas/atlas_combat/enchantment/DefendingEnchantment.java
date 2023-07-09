@@ -14,7 +14,7 @@ public class DefendingEnchantment extends Enchantment implements CustomEnchantme
 	public static final Enchantment DEFENDER = EnchantmentRegistry.registerEnchant(new ResourceLocation(AtlasCombat.MOD_ID, "defender"), new DefendingEnchantment());
 
 	public DefendingEnchantment() {
-		super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
+		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
 	}
 
 	@Override
