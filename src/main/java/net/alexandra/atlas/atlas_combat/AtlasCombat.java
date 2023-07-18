@@ -5,12 +5,15 @@ import net.alexandra.atlas.atlas_combat.enchantment.DefendingEnchantment;
 import net.alexandra.atlas.atlas_combat.enchantment.PiercingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.ItemRegistry;
+import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
+import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -30,9 +33,12 @@ public class AtlasCombat implements ModInitializer {
 	public static Player player;
 	public static final String MOD_ID = "atlas_combat";
 	public static final AtlasConfig CONFIG = AtlasConfig.createAndLoad();
+	public static ResourceLocation modDetectionNetworkChannel = id("networking");
+	public NetworkingHandler networkingHandler;
 
 	@Override
 	public void onInitialize() {
+		networkingHandler = new NetworkingHandler();
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
 			@Override
 			protected @NotNull Projectile getProjectile(Level world, Position position, ItemStack stack) {
@@ -62,6 +68,10 @@ public class AtlasCombat implements ModInitializer {
 			} else if(item == Items.POTION) {
 				((ItemExtensions) item).setStackSize(16);
 			}
+			((ItemExtensions) item).modifyAttributeModifiers();
 		}
+	}
+	public static ResourceLocation id(String path) {
+		return new ResourceLocation(MOD_ID, path);
 	}
 }

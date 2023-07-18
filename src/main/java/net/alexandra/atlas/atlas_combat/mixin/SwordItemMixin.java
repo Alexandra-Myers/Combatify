@@ -27,7 +27,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -56,11 +55,12 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 		}
 		super.appendHoverText(stack, world, tooltip, context);
 	}
-	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
-	public void test(Tier tier, int i, float f, Properties properties, CallbackInfo ci) {
+	@Override
+	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(this.getTier(), var3);
-		((DefaultedItemExtensions)this).setDefaultModifiers(var3.build());
+		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
 
 	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)

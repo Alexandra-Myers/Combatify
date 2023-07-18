@@ -1,16 +1,16 @@
 package net.alexandra.atlas.atlas_combat.enchantment;
 
-import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.CustomEnchantment;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
+import static net.alexandra.atlas.atlas_combat.AtlasCombat.id;
+
 public class PiercingEnchantment extends Enchantment implements CustomEnchantment {
-	public static final Enchantment PIERCER = EnchantmentRegistry.registerEnchant(new ResourceLocation(AtlasCombat.MOD_ID, "piercer"), new PiercingEnchantment());
+	public static final Enchantment PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), new PiercingEnchantment());
 
 	public PiercingEnchantment() {
 		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});

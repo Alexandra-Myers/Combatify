@@ -14,9 +14,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TridentItem.class)
 public class TridentItemMixin extends Item implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
@@ -28,12 +25,12 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 	public TridentItemMixin(Item.Properties properties) {
 		super(properties);
 	}
-
-	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
-	public void test(Properties properties, CallbackInfo ci) {
+	@Override
+	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
-		((DefaultedItemExtensions)this).setDefaultModifiers(var3.build());
+		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
 	@Override
 	public double getAttackReach(Player player) {

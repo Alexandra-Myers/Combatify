@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat;
 
 import com.mojang.serialization.Codec;
 import net.alexandra.atlas.atlas_combat.config.ShieldIndicatorStatus;
+import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.OptionInstance;
 
@@ -22,8 +23,10 @@ public class AtlasClient implements ClientModInitializer {
 			value -> {
 			}
 	);
+	public ClientNetworkingHandler clientNetworkingHandler;
 
 	@Override
 	public void onInitializeClient() {
+		clientNetworkingHandler = new ClientNetworkingHandler();
 	}
 }

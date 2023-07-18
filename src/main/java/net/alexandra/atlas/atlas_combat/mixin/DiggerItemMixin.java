@@ -35,20 +35,19 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	public DiggerItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
-
-	@Inject(method = "<init>", at = @At(value = "TAIL"),remap = false)
-	public void test(float f, float g, Tier tier, TagKey<?> tagKey, Properties properties, CallbackInfo ci) {
+	@Override
+	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-
 		type = getWeaponType();
 		type.addCombatAttributes(this.getTier(), var3);
-		((DefaultedItemExtensions)this).setDefaultModifiers(var3.build());
+		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
 	@Redirect(method = "hurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
-		if(allToolsAreWeapons || bl) {
+		if (allToolsAreWeapons || bl) {
 			amount -= 1;
 		}
 		instance.hurtAndBreak(amount, entity, breakCallback);

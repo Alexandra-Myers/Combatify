@@ -2,6 +2,7 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.alexandra.atlas.atlas_combat.extensions.DefaultedItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PiercingItem;
 import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
@@ -23,8 +24,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, PiercingItem, WeaponWithType {
-	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, PiercingItem, WeaponWithType, DefaultedItemExtensions {
+	private Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public final Tier tier;
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -32,6 +33,13 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 		getWeaponType().addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
 		this.tier = tier;
+	}
+	@Override
+	public void modifyAttributeModifiers() {
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
+		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		this.setDefaultModifiers(output);
 	}
 
 	@Override
@@ -105,5 +113,15 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	@Override
 	public WeaponType getWeaponType() {
 		return WeaponType.LONGSWORD;
+	}
+
+	@Override
+	public Multimap<Attribute, AttributeModifier> getDefaultModifiers() {
+		return defaultModifiers;
+	}
+
+	@Override
+	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+		defaultModifiers = modifiers;
 	}
 }

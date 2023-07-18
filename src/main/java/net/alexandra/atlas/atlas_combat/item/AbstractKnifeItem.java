@@ -2,11 +2,11 @@ package net.alexandra.atlas.atlas_combat.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.alexandra.atlas.atlas_combat.extensions.DefaultedItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -17,13 +17,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public abstract class AbstractKnifeItem extends TieredItem implements Vanishable, ItemExtensions, WeaponWithType {
-	private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+public abstract class AbstractKnifeItem extends TieredItem implements Vanishable, ItemExtensions, WeaponWithType, DefaultedItemExtensions {
+	private Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public AbstractKnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(this.getTier(), var3);
 		defaultModifiers = var3.build();
+	}
+	@Override
+	public void modifyAttributeModifiers() {
+		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
+		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		this.setDefaultModifiers(output);
 	}
 
 	@Override
@@ -64,6 +71,17 @@ public abstract class AbstractKnifeItem extends TieredItem implements Vanishable
 	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
 		return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
+
+	@Override
+	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+		defaultModifiers = modifiers;
+	}
+
+	@Override
+	public Multimap<Attribute, AttributeModifier> getDefaultModifiers() {
+		return defaultModifiers;
+	}
+
 	@Override
 	public double getAttackReach(Player player) {
 		float var2 = 0.0F;
