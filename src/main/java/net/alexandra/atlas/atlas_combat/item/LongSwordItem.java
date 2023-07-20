@@ -6,11 +6,8 @@ import net.alexandra.atlas.atlas_combat.extensions.DefaultedItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.extensions.PiercingItem;
 import net.alexandra.atlas.atlas_combat.extensions.WeaponWithType;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -20,9 +17,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, PiercingItem, WeaponWithType, DefaultedItemExtensions {
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
@@ -77,7 +72,7 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	}
 
 	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+	public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
 		return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
 	@Override

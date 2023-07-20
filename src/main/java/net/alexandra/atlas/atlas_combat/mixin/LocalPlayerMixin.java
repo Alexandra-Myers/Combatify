@@ -52,6 +52,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
 					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
+						assert minecraft.gameMode != null;
 						minecraft.gameMode.releaseUsingItem(thisPlayer);
 						startedUsingItem = false;
 					}

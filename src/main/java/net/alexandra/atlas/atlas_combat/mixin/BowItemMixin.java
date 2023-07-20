@@ -26,7 +26,7 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 	public float releaseUsing(float constant, @Local(ordinal = 1) final int time) {
 		return configUncertainty * getFatigueForTime(time);
 	}
-	@Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I", ordinal = 1), cancellable = true)
+	@Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I", ordinal = 1))
 	public void releaseUsing1(ItemStack itemStack, Level level, LivingEntity livingEntity, int i, CallbackInfo ci, @Local(ordinal = 0) final AbstractArrow abstractArrow, @Local(ordinal = 1) final int time) {
 		if(getFatigueForTime(time) > 0.5F)
 			abstractArrow.setCritArrow(false);

@@ -3,6 +3,7 @@ package net.alexandra.atlas.atlas_combat.config;
 import io.wispforest.owo.config.Option;
 import io.wispforest.owo.config.annotation.*;
 
+@SuppressWarnings("unused")
 @Sync(Option.SyncMode.OVERRIDE_CLIENT)
 @Modmenu(modId = "atlas_combat")
 @Config(name = "atlas-combat-config", wrapperName = "AtlasConfig")
@@ -14,6 +15,7 @@ public class AtlasConfigModel {
 	public boolean fishingHookKB = false;
 	public boolean fistDamage = false;
 	public boolean swordBlocking = false;
+	public boolean shieldOnlyWhenCharged = false;
 	public boolean sprintCritsEnabled = true;
 	public boolean saturationHealing = false;
 	public boolean projectilesHaveIFrames = false;
@@ -47,6 +49,12 @@ public class AtlasConfigModel {
 	@RangeConstraint(min = 1, max = 1000)
 	public int snowballItemCooldown = 4;
 	@SectionHeader("Floats")
+	@RangeConstraint(min = 0, max = 10)
+	public float shieldDisableTime = 1.6F;
+	@RangeConstraint(min = 0, max = 10)
+	public float cleavingDisableTime = 0.5F;
+	@RangeConstraint(min = 0, max = 10)
+	public float defenderDisableReduction = 0.5F;
 	@RangeConstraint(min = 0, max = 40)
 	public float snowballDamage = 0.0F;
 	@RangeConstraint(min = 0, max = 40)

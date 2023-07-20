@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 @Mixin(Options.class)
 public abstract class OptionsMixin implements IOptions {
 
@@ -63,7 +65,7 @@ public abstract class OptionsMixin implements IOptions {
 	private final OptionInstance<Double> attackIndicatorValue = new OptionInstance<>(
 			"options.attackIndicatorValue",
 			OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorValue.tooltip")),
-			(optionText, value) -> value == 2.0 ? genericValueLabel(optionText, Component.translatable("options.attackIndicatorValue.default")) : IOptions.doubleValueLabel(optionText, (Double) value),
+			(optionText, value) -> value == 2.0 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorValue.default"))) : IOptions.doubleValueLabel(optionText, value),
 			new OptionInstance.IntRange(1, 20).xmap(sliderValue -> (double)sliderValue / 10.0, value -> (int)(value * 10.0)),
 			Codec.doubleRange(0.1, 2.0),
 			2.0,

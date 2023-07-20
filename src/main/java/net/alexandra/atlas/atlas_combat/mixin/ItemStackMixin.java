@@ -65,17 +65,17 @@ public abstract class ItemStackMixin implements IItemStack {
 				boolean bl = false;
 				if (player != null) {
 					if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID) {
-						d += player.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
+						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getBaseValue();
 						d += EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, player.getMobType());
 						bl = true;
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID) {
-						d += player.getAttribute(Attributes.ATTACK_SPEED).getBaseValue() - 1.5;
+						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).getBaseValue() - 1.5;
 						bl = true;
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-						d += player.getAttribute(NewAttributes.ATTACK_REACH).getBaseValue() + (attackReach ? 0 : 0.5);
+						d += Objects.requireNonNull(player.getAttribute(NewAttributes.ATTACK_REACH)).getBaseValue() + (attackReach ? 0 : 0.5);
 						bl = true;
 					} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
-						d += player.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getBaseValue();
+						d += Objects.requireNonNull(player.getAttribute(Attributes.KNOCKBACK_RESISTANCE)).getBaseValue();
 					}
 				}
 

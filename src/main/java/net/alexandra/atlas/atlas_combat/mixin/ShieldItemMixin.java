@@ -3,7 +3,6 @@ package net.alexandra.atlas.atlas_combat.mixin;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
-import net.alexandra.atlas.atlas_combat.enchantment.CustomEnchantmentHelper;
 import net.alexandra.atlas.atlas_combat.extensions.IShieldItem;
 import net.alexandra.atlas.atlas_combat.util.BlockingType;
 import net.minecraft.ChatFormatting;

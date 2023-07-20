@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -69,7 +70,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	}
 
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		if(AtlasCombat.CONFIG.swordBlocking() && hand != InteractionHand.OFF_HAND) {
 			strengthTimer = 0;
 			ItemStack itemStack = user.getItemInHand(hand);
@@ -86,7 +87,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	}
 
 	@Override
-	public UseAnim getUseAnimation(ItemStack stack) {
+	public @NotNull UseAnim getUseAnimation(ItemStack stack) {
 		return UseAnim.BLOCK;
 	}
 

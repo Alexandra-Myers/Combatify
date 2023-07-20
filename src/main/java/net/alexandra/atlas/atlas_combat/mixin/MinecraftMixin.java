@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.minecraft.client.Minecraft;
@@ -11,6 +12,7 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
@@ -438,6 +440,20 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 			}
 		}
+	}
+	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
+	public InteractionResult addRequirement(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, @Local ItemStack stack) {
+		if(AtlasCombat.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < 1.95F && stack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge()) {
+			return InteractionResult.PASS;
+		}
+		return instance.useItemOn(localPlayer, interactionHand, blockHitResult);
+	}
+	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItem(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"))
+	public InteractionResult addRequirement1(MultiPlayerGameMode instance, Player player, InteractionHand interactionHand, @Local ItemStack stack) {
+		if(AtlasCombat.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && stack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge()) {
+			return InteractionResult.PASS;
+		}
+		return instance.useItem(player, interactionHand);
 	}
 	@Override
 	public void initiateAttack() {

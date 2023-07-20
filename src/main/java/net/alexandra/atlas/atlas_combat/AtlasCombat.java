@@ -5,7 +5,6 @@ import net.alexandra.atlas.atlas_combat.enchantment.DefendingEnchantment;
 import net.alexandra.atlas.atlas_combat.enchantment.PiercingEnchantment;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
 import net.alexandra.atlas.atlas_combat.item.ItemRegistry;
-import net.alexandra.atlas.atlas_combat.networking.ClientNetworkingHandler;
 import net.alexandra.atlas.atlas_combat.networking.NetworkingHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;

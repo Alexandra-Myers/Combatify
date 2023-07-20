@@ -5,11 +5,12 @@ import net.minecraft.resources.ResourceLocation;
 public class BlockingType {
 	private final ResourceLocation name;
 	public static final BlockingType SWORD = new BlockingType("sword").setToolBlocker(true).setDisablement(false);
-	public static final BlockingType SHIELD = new BlockingType("shield").setCrouchable(true).setBlockHit(false);
+	public static final BlockingType SHIELD = new BlockingType("shield").setCrouchable(true).setBlockHit(false).setRequireFullCharge(true);
 	private boolean canBeDisabled = true;
 	private boolean canCrouchBlock = false;
 	private boolean isToolBlocker = false;
 	private boolean canBlockHit = true;
+	private boolean requireFullCharge = false;
 	public boolean canCrouchBlock() {
 		return canCrouchBlock;
 	}
@@ -39,8 +40,15 @@ public class BlockingType {
 		canBeDisabled = canDisable;
 		return this;
 	}
+	public boolean requireFullCharge() {
+		return requireFullCharge;
+	}
+	public BlockingType setRequireFullCharge(boolean needsFullCharge) {
+		requireFullCharge = needsFullCharge;
+		return this;
+	}
 
-	protected BlockingType(String name) {
+	public BlockingType(String name) {
 		this.name = new ResourceLocation("atlas_combat", name);
 	}
 

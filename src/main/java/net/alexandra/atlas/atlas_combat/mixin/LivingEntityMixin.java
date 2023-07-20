@@ -103,9 +103,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (piercingLevel > 0) {
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
 			}
-			float damage = 1.6F + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * 0.5F;
+			float damage = AtlasCombat.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * AtlasCombat.CONFIG.cleavingDisableTime();
 			if(AtlasCombat.CONFIG.defender()) {
-				damage -= CustomEnchantmentHelper.getDefense(target) * 0.5F;
+				damage -= CustomEnchantmentHelper.getDefense(target) * AtlasCombat.CONFIG.defenderDisableReduction();
 			}
 			if(target instanceof PlayerExtensions player) {
 				player.customShieldInteractions(damage, blockingItem);
@@ -182,10 +182,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
 	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
-		Entity entity = null;
 		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
 			if(this.getBlockingItem().getItem() instanceof IShieldItem shieldItem) {
-				shieldItem.block(instance, entity, this.getBlockingItem(), source, amount, f, g, bl);
+				shieldItem.block(instance, null, this.getBlockingItem(), source, amount, f, g, bl);
 			}
 		}
 		return false;

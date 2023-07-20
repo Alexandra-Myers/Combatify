@@ -80,8 +80,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		player.getAttribute(NewAttributes.ATTACK_REACH).setBaseValue(2.5);
-		player.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(!AtlasCombat.CONFIG.fistDamage() ? 2 : 1);
+		Objects.requireNonNull(player.getAttribute(NewAttributes.ATTACK_REACH)).setBaseValue(2.5);
+		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(!AtlasCombat.CONFIG.fistDamage() ? 2 : 1);
 	}
 
 	@ModifyConstant(method = "createAttributes", constant = @Constant(doubleValue = 1.0))
@@ -229,7 +229,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void resetAttackStrengthTicker(boolean hit) {
 		this.missedAttackRecovery = !hit;
 		if(!AtlasCombat.CONFIG.attackSpeed()) {
-			if(getAttribute(Attributes.ATTACK_SPEED).getValue() - 1.5 >= 10) {
+			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 10) {
 				return;
 			} else if(attackSpeedsMaxed()) {
 				return;
@@ -244,7 +244,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
-		float f = (float)(getAttribute(Attributes.ATTACK_SPEED).getValue()) - 1.5F;
+		float f = (float)(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue()) - 1.5F;
 		f = Mth.clamp(f, 0.1F, 1024.0F);
 		cir.setReturnValue(1.0F / f * 20.0F + 0.5F);
 	}

@@ -16,6 +16,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractKnifeItem extends TieredItem implements Vanishable, ItemExtensions, WeaponWithType, DefaultedItemExtensions {
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
@@ -68,7 +69,7 @@ public abstract class AbstractKnifeItem extends TieredItem implements Vanishable
 	}
 
 	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+	public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
 		return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
 

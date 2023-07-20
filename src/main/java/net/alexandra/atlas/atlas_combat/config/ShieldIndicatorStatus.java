@@ -4,6 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -31,7 +32,7 @@ public enum ShieldIndicatorStatus implements OptionEnum {
 	}
 
 	@Override
-	public String getKey() {
+	public @NotNull String getKey() {
 		return this.key;
 	}
 

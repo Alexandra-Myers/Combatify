@@ -46,6 +46,8 @@ public abstract class GuiMixin {
 		Options options = this.minecraft.options;
 		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
 		if (options.getCameraType().isFirstPerson()) {
+			assert minecraft.gameMode != null;
+			assert minecraft.player != null;
 			if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
 				int j = this.screenHeight / 2 - 7 + 16;
 				int k = this.screenWidth / 2 - 8;
@@ -63,6 +65,7 @@ public abstract class GuiMixin {
 	public void renderCrosshair1(GuiGraphics guiGraphics, CallbackInfo ci) {
 		boolean isShieldCooldown = isShieldOnCooldown();
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
+		assert minecraft.player != null;
 		if(var7 && isShieldCooldown) {
 			ci.cancel();
 			return;
@@ -95,6 +98,7 @@ public abstract class GuiMixin {
 	private void renderHotbar(float f, GuiGraphics guiGraphics, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
 		boolean isShieldCooldown = isShieldOnCooldown();
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
+		assert minecraft.player != null;
 		if(var7 && isShieldCooldown) {
 			RenderSystem.disableBlend();
 			ci.cancel();
@@ -135,6 +139,7 @@ public abstract class GuiMixin {
 	private void renderHotbar1(float f, GuiGraphics guiGraphics, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
 		int n = this.screenHeight - 20;
 		int o = i + 91 + 6;
+		assert minecraft.player != null;
 		if (humanoidArm == HumanoidArm.RIGHT) {
 			o = i - 91 - 22;
 		}
@@ -147,6 +152,7 @@ public abstract class GuiMixin {
 		}
 	}
 	public boolean isShieldOnCooldown() {
+		assert minecraft.player != null;
 		ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
 		ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
 		boolean offHandShieldCooldown = offHandStack.getItem() instanceof IShieldItem && this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem());

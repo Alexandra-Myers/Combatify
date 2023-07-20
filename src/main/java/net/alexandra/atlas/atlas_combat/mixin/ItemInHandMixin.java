@@ -4,14 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
-import net.alexandra.atlas.atlas_combat.util.BlockingType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -111,6 +107,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
 	private void modifyBowCode1(PoseStack instance, float x, float y, float z) {
+		assert minecraft.player != null;
 		float r = (float)itemStack.getUseDuration() - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
 		float l = r / 20.0F;
 		l = (l * l + l * 2.0F) / 3.0F;
@@ -125,6 +122,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
+		assert minecraft.player != null;
 		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().isToolBlocker()) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);

@@ -12,6 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
+
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
 
@@ -43,7 +45,7 @@ public abstract class ItemMixin implements ItemExtensions {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
 			cir.setReturnValue(AtlasCombat.CONFIG.stewUseDuration());
 		}else if (stack.getItem().isEdible()) {
-			cir.setReturnValue(((Item) (Object)this).getFoodProperties().isFastFood() ? 16 : 32);
+			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
 		} else {
 			cir.setReturnValue(0);
 		}

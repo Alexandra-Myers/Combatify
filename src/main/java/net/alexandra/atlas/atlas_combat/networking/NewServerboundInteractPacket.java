@@ -5,12 +5,13 @@ import net.alexandra.atlas.atlas_combat.extensions.IHandler;
 import net.alexandra.atlas.atlas_combat.extensions.IServerboundInteractPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import org.jetbrains.annotations.NotNull;
 
 public class NewServerboundInteractPacket extends ServerboundInteractPacket implements IServerboundInteractPacket {
 	public static final ServerboundInteractPacket.Action MISS_ATTACK_ACTION = new ServerboundInteractPacket.Action() {
 		final ServerboundInteractPacket.ActionType type = ClassTinkerers.getEnum(ServerboundInteractPacket.ActionType.class, "MISS_ATTACK");
 		@Override
-		public ServerboundInteractPacket.ActionType getType() {
+		public @NotNull ServerboundInteractPacket.ActionType getType() {
 			return type;
 		}
 
