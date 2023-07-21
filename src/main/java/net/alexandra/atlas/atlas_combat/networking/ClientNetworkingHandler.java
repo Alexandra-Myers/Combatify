@@ -5,26 +5,22 @@ import io.wispforest.owo.config.Option;
 import io.wispforest.owo.ops.TextOps;
 import net.alexandra.atlas.atlas_combat.config.AtlasConfig;
 import net.alexandra.atlas.atlas_combat.extensions.ItemExtensions;
-import net.alexandra.atlas.atlas_combat.mixin.OwoOptionAccessor;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static io.wispforest.owo.Owo.PREFIX;
 import static net.alexandra.atlas.atlas_combat.AtlasCombat.*;
 
+@SuppressWarnings("unused")
 public class ClientNetworkingHandler {
-	@SuppressWarnings("unchecked")
 	public ClientNetworkingHandler() {
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
 		});
