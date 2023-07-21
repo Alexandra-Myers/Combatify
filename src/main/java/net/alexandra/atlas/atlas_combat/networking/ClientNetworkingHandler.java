@@ -29,45 +29,11 @@ public class ClientNetworkingHandler {
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
-			boolean bl = Objects.requireNonNull(handler.getServerData()).version.getString().equals("Combat Test 8c");
-			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel) && !bl) {
+			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
 				handler.getConnection().disconnect(Component.literal("Atlas Combat needs to be installed on the server to join with this client"));
 				return;
 			}
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
-
-			if (bl) {
-				for (Option<Boolean> option : getBooleansFromInstance(CONFIG)) {
-					FriendlyByteBuf buf = PacketByteBufs.create();
-					buf.writeBoolean(option.defaultValue());
-					OwoOptionAccessor<Boolean> accessor = OwoOptionAccessor.class.cast(option);
-					Boolean ret = accessor.readFromBuffer(buf);
-					if(ret != null) {
-						createErrorFromOptionNonDefault(option, handler);
-						return;
-					}
-				}
-				for (Option<Integer> option : getIntegersFromInstance(CONFIG)) {
-					FriendlyByteBuf buf = PacketByteBufs.create();
-					buf.writeInt(option.defaultValue());
-					OwoOptionAccessor<Integer> accessor = OwoOptionAccessor.class.cast(option);
-					Integer ret = accessor.readFromBuffer(buf);
-					if(ret != null) {
-						createErrorFromOptionNonDefault(option, handler);
-						return;
-					}
-				}
-				for (Option<Float> option : getFloatsFromInstance(CONFIG)) {
-					FriendlyByteBuf buf = PacketByteBufs.create();
-					buf.writeFloat(option.defaultValue());
-					OwoOptionAccessor<Float> accessor = OwoOptionAccessor.class.cast(option);
-					Float ret = accessor.readFromBuffer(buf);
-					if(ret != null) {
-						createErrorFromOptionNonDefault(option, handler);
-						return;
-					}
-				}
-			}
 
 			for(Item item : items) {
 				((ItemExtensions) item).modifyAttributeModifiers();
