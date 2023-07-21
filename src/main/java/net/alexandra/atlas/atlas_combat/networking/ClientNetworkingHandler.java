@@ -29,7 +29,7 @@ public class ClientNetworkingHandler {
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
-			boolean bl = Objects.requireNonNull(handler.getServerData()).protocol == 803;
+			boolean bl = Objects.requireNonNull(handler.getServerData()).version.getString().equals("Combat Test 8c");
 			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel) && !bl) {
 				handler.getConnection().disconnect(Component.literal("Atlas Combat needs to be installed on the server to join with this client"));
 				return;

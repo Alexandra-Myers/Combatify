@@ -23,6 +23,7 @@ import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
@@ -122,7 +123,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
-		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !(((LivingEntityExtensions)player).getBlockingItem().getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
+		Item blockingItem = ((LivingEntityExtensions)player).getBlockingItem().getItem();
+		boolean bl = AtlasCombat.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
+		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock()) || bl) {
 			instance.releaseUsingItem(player);
 		}
 	}
