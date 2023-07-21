@@ -1,6 +1,7 @@
 package net.alexandra.atlas.atlas_combat.mixin;
 
 import com.mojang.authlib.GameProfile;
+import net.alexandra.atlas.atlas_combat.AtlasCombat;
 import net.alexandra.atlas.atlas_combat.extensions.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -42,7 +43,10 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			for (InteractionHand interactionHand : InteractionHand.values()) {
 				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
 					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock() && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
+
+					Item blockingItem = itemStack.getItem();
+					boolean bl = AtlasCombat.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
+					if (!itemStack.isEmpty() && itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock() && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
 							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);

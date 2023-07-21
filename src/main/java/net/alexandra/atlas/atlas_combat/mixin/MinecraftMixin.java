@@ -125,9 +125,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
 		Item blockingItem = ((LivingEntityExtensions)player).getBlockingItem().getItem();
 		boolean bl = AtlasCombat.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
-		if(bl)
-			instance.releaseUsingItem(player);
-		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
+		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock()) || bl) {
 			instance.releaseUsingItem(player);
 		}
 	}
