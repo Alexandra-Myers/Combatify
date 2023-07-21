@@ -78,6 +78,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
 
+	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
 		return !this.getBlockingItem().isEmpty();
@@ -283,7 +284,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		} else if ((thisLivingEntity.onGround() && thisLivingEntity.isCrouching() && this.hasEnabledShieldOnCrouch() || thisLivingEntity.isPassenger()) && this.hasEnabledShieldOnCrouch()) {
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = thisLivingEntity.getItemInHand(hand);
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof IShieldItem shieldItem && !shieldItem.getBlockingType().canCrouchBlock())) {
+				Item blockingItem = var1.getItem();
+				boolean bl = AtlasCombat.CONFIG.shieldOnlyWhenCharged() && thisLivingEntity instanceof Player player && player.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
+				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && !(var1.getItem() instanceof IShieldItem shieldItem && !shieldItem.getBlockingType().canCrouchBlock()) && !bl) {
 					return var1;
 				}
 			}

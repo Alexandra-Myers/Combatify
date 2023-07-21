@@ -44,7 +44,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
 					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();
 
-					Item blockingItem = itemStack.getItem();
+					Item blockingItem = getItemInHand(interactionHand).getItem();
 					boolean bl = AtlasCombat.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
 					if (!itemStack.isEmpty() && itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock() && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
