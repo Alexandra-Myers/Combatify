@@ -27,8 +27,9 @@ public abstract class ServerGamePacketMixin {
 	}
 
 	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))
-	public double redirectCheck(AABB instance, Vec3 vec3) {
-		return ((AABBExtensions)instance).getNearestPointTo(vec3).distanceToSqr(vec3);
+	public double redirectCheck(AABB instance, Vec3 old) {
+		Vec3 vec3 = player.getEyePosition(0.0F);
+		return vec3.distanceToSqr(((AABBExtensions)instance).getNearestPointTo(vec3));
 	}
 	@ModifyExpressionValue(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))

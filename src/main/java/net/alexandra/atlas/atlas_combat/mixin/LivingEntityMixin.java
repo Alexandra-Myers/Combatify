@@ -196,7 +196,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		enemy = entity2;
 		int invulnerableTime = 10;
 		if (entity2 instanceof Player player) {
-			invulnerableTime = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
+			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
+			invulnerableTime = base >= 4 ? base - 1 : base;
 		}
 
 		if (source.is(DamageTypeTags.IS_PROJECTILE) && !AtlasCombat.CONFIG.projectilesHaveIFrames()) {
