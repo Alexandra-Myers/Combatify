@@ -162,7 +162,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void redirectAttack(MultiPlayerGameMode instance, Player player, Entity entity) {
 		Vec3 vec3 = player.getEyePosition(0.0F);
 		Vec3 vec31 = ((AABBExtensions)entity.getBoundingBox()).getNearestPointTo(vec3);
-		double dist = vec3.distanceToSqr(vec31);
+		double dist = vec3.distanceTo(vec31);
 		if (dist <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
 			instance.attack(player, entity);
 		} else {

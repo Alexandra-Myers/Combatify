@@ -85,7 +85,7 @@ public abstract class GuiMixin {
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
 			Vec3 vec3 = minecraft.player.getEyePosition(0.0F);
 			Vec3 vec31 = ((AABBExtensions)this.minecraft.crosshairPickEntity.getBoundingBox()).getNearestPointTo(vec3);
-			double dist = vec3.distanceToSqr(vec31);
+			double dist = vec3.distanceTo(vec31);
 			bl = dist <= ((PlayerExtensions)minecraft.player).getAttackRange(0.0F);
 			bl &= this.minecraft.crosshairPickEntity.isAlive();
 		}
@@ -126,7 +126,7 @@ public abstract class GuiMixin {
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && g >= maxIndicator) {
 			Vec3 vec3 = minecraft.player.getEyePosition(0.0F);
 			Vec3 vec31 = ((AABBExtensions)this.minecraft.crosshairPickEntity.getBoundingBox()).getNearestPointTo(vec3);
-			double dist = vec3.distanceToSqr(vec31);
+			double dist = vec3.distanceTo(vec31);
 			bl = dist <= ((PlayerExtensions)minecraft.player).getAttackRange(0.0F);
 			bl &= this.minecraft.crosshairPickEntity.isAlive();
 		}
