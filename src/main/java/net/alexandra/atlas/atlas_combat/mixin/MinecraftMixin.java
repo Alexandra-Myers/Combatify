@@ -160,7 +160,10 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
 	public void redirectAttack(MultiPlayerGameMode instance, Player player, Entity entity) {
-		if (entity.distanceTo(player) <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
+		Vec3 vec3 = player.getEyePosition(0.0F);
+		Vec3 vec31 = ((AABBExtensions)entity.getBoundingBox()).getNearestPointTo(vec3);
+		double dist = vec3.distanceToSqr(vec31);
+		if (dist <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
 			instance.attack(player, entity);
 		} else {
 			((IPlayerGameMode)instance).swingInAir(player);
