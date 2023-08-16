@@ -1,6 +1,0 @@
-{
-  "parent": "item/handheld",
-  "textures": {
-    "layer0": "atlas_combat:item/golden_knife"
-  }
-}

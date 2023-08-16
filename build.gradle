@@ -8,7 +8,7 @@ version = project.version
 group = project.maven_group
 
 loom {
-	accessWidenerPath = file("src/main/resources/atlas_combat.accesswidener")
+	accessWidenerPath = file("src/main/resources/combat_enhanced.accesswidener")
 }
 
 repositories {
@@ -63,7 +63,7 @@ configurations.all {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/atlas_combat.accesswidener")
+	accessWidenerPath = file("src/main/resources/combat_enhanced.accesswidener")
 }
 
 processResources {

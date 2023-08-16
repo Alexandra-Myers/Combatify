@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "atlas_combat",
+	"id": "combat_enhanced",
 	"version": "${version}",
 
-	"name": "Atlas Combat",
+	"name": "Combat Enhanced",
 	"description": "A mod library and standalone mod that adds features from the combat test snapshots",
 	"authors": [
 		"Alexandra",
@@ -11,18 +11,24 @@
 	],
     "contact": {},
     "license": "GPL-3.0",
-	"icon": "assets/atlas_combat/icon.png",
+	"icon": "assets/combat_enhanced/icon.png",
 
 	"environment": "*",
 	"entrypoints": {
-		"main": ["net.alexandra.atlas.atlas_combat.AtlasCombat"],
-		"client": ["net.alexandra.atlas.atlas_combat.AtlasClient"],
-		"mm:early_risers": ["net.alexandra.atlas.atlas_combat.EarlyRiser"]
+		"main": [
+      "net.atlas.combat_enhanced.CombatEnhanced"
+    ],
+		"client": [
+      "net.atlas.combat_enhanced.CombatEnhancedClient"
+    ],
+		"mm:early_risers": [
+      "net.atlas.combat_enhanced.EarlyRiser"
+    ]
 	},
 	"mixins": [
-		"atlas_combat.mixins.json"
+		"combat_enhanced.mixins.json"
 	],
-  "accessWidener": "atlas_combat.accesswidener",
+  "accessWidener": "combat_enhanced.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.14.21",
 		"minecraft": ">=1.20",
