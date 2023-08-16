@@ -1,4 +1,4 @@
-![Atlas Combat](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Header.webp)
+![Combatify](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Header.webp)
 
 ***
 
@@ -28,13 +28,13 @@
 2. Attack speed alterations
     - Charged hits (200%) give 1 extra block of reach
         - You won't get the reach bonus while sneaking
-    - Weak attacks no longer exist, and you’re forced to wait for weapons to charge to 100% to hit
+    - Weak attacks no longer exist and you’re forced to wait for weapons to charge to 100% to hit
     - Missing only puts a 4 tick delay until the next attack regardless of weapon.
-    - Invulnerability time is 10 ticks unless the attacker's weapon's attack speed is faster
-    - The attack timer only resets by performing an attack, no longer affected by switching items
+    - Invulnerability time is 10 ticks unless attacker's weapon's attack speed is faster
+    - The attack timer only resets by performing an attack, no longer unaffected by switching items
 
 3. Added "Auto-Attack" performed by holding left click
-    - Auto attacks are 1 tick slower from optimal fast-hit timing
+    - Auto attacks are 1 tick slower from optimal fast hit timing
 
 4. Reintroduced upwards knockback when hitting players in the air
 
@@ -44,15 +44,15 @@
     - Players can now crit and sprint hit at the same time
     - Weapon enchantments are now included in the base damage when calculating crits and potion effects
 
-7. Sweeping-Edge alterations
-    - Sweep-attacks exist with sweeping enchantment only
-    - Nerfed Sweeping-Edge enchantment to 25/33/37.5% percent (was 50/66/75%)
-
+7. Sweeping Edge alterations
+    - Sweep attacks exists with sweeping enchantment only
+    - Nerfed Sweeping Edge enchantment to 25/33/37.5% percent (was 50/66/75%)
+ 
 8. Shield alterations
     - Shields protect up to 5 damage for melee attacks, 100% against projectiles
     - Bannered shields protect up to 10 damage for melee attacks
-    - Axes disable shields for 1.6 seconds by default
-    - Shields activate when sneaking, and you can hit opponents while sneak shielding
+    - Axes disable shields for 1.6 seconds by default)
+    - Shields activate when sneaking and you can hit opponents while sneak shielding
     - Option to disable the use-shield-on-crouch in accessibility menu
     - Shields protective arc decreased to 100 degrees
     - Shields now add a 50% knockback resistance when active
@@ -69,7 +69,7 @@
 11. Strength I/II now adds +20%/+40% (was +3/+6 damage)
 
 12. Tridents with impaling now deal enchantment damage to all mobs that are in water or rain
-
+ 
 
 ### Projectiles
 1. Projectiles don't trigger invulnerability ticks
@@ -80,14 +80,14 @@
 
 4. Trident alterations
     - Tridents can be shot from dispensers
-    - Tridents with Loyalty which fall into the void will return to their owner
+    - Tridents with Loyalty that fall into the void will return to its owner
 
 5. Snowball alterations
     - Snowballs now stack to 64
-    - Snowballs and eggs have a 4-tick cooldown
+    - Snowballs and eggs have a 4 tick cooldown
     - Snowballs are not rendered the first 2 ticks (hack to prevent screen flickering)
     - Made it possible to hit players with snowballs
-
+ 
 
 ### Hunger System
 1. Eating gets reset when you get hit
@@ -98,30 +98,30 @@
 
 4. Natural healing now drains food points directly with a 50% chance to not consume a food point. Saturation is not used when healing damage, and is only relevant as a "pause" until food drains (as originally intended)
 
-5. Liquid food (stews, honey, milk, potions) can now be consumed in 20 ticks
+6. Liquid food (stews, honey, milk, potions) can now be consumed in 20 ticks
 
-6. Healing potions heal 6 points per level, and harming potions harm 6 points per level (4 previously)
-
-***
-
-![Atlas Combat Exclusive Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Exclusive.webp)
+7. Healing potions heal 6 points per level and harming potions harm 6 points per level (4 previously)
 
 ***
 
-1. Block Reach: Weapon and Tool specific reach used for mining. This can be disabled in the config, and the default reach used can be set to match Bedrock Edition.
+![Combatify Exclusive Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Exclusive.webp)
 
-2. Sword Blocking: Config option that defines whether swords should be able to block.
+***
 
-3. Midair KB: Config option that defines if you should be able to knock opponents further into the air.
+1. Sword Blocking: Config option that defines whether or not swords should be able to block.
 
-4. Fishing Rod KB: Config option that brings back the 1.8 Fishing Rods in a revised form.
+2. Midair KB: Config option that defines if you should be able to knock opponents further into the air.
 
-5. Coyote Time V2: Config option that brings back the Coyote Time from CTS 5 but with changes to make it more acceptable.
+3. Fishing Rod KB: Config option that brings back the 1.8 Fishing Rods in a revised form.
+
+4. Coyote Time V2: Config option that brings back the Coyote Time from CTS 5 but with changes to make it more acceptable.
  
 
-6. Buffed Axe Reach: Config option that raises axe reach to 3 instead of 2.5 to make it more viable.
+5. Buffed Axe Reach: Config option that raises axe reach to 3 instead of 2.5 to make it more viable.
 
-7. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
+6. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
+
+7. Fast Healing: Config option that restores the 1.11 Saturation Fast Healing.
 
 ***
 
