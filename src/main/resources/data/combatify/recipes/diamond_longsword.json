@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " X",
+    " X",
+    " #"
+  ],
+  "key": {
+    "#": {
+      "item": "combatify:diamond_knife"
+    },
+    "X": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "combatify:diamond_longsword"
+  }
+}

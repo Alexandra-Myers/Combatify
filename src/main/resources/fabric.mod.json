@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "combat_enhanced",
+	"id": "combatify",
 	"version": "${version}",
 
-	"name": "Combat Enhanced",
+	"name": "Combatify",
 	"description": "A mod library and standalone mod that adds features from the combat test snapshots",
 	"authors": [
 		"Alexandra",
@@ -11,24 +11,24 @@
 	],
     "contact": {},
     "license": "GPL-3.0",
-	"icon": "assets/combat_enhanced/icon.png",
+	"icon": "assets/combatify/icon.png",
 
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-      "net.atlas.combat_enhanced.CombatEnhanced"
+      "net.atlas.combatify.Combatify"
     ],
 		"client": [
-      "net.atlas.combat_enhanced.CombatEnhancedClient"
+      "net.atlas.combatify.CombatifyClient"
     ],
 		"mm:early_risers": [
-      "net.atlas.combat_enhanced.EarlyRiser"
+      "net.atlas.combatify.EarlyRiser"
     ]
 	},
 	"mixins": [
-		"combat_enhanced.mixins.json"
+		"combatify.mixins.json"
 	],
-  "accessWidener": "combat_enhanced.accesswidener",
+  "accessWidener": "combatify.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.14.21",
 		"minecraft": ">=1.20",

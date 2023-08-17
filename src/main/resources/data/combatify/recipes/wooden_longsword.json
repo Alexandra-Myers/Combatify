@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " X",
+    " X",
+    " #"
+  ],
+  "key": {
+    "#": {
+      "item": "combatify:wooden_knife"
+    },
+    "X": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "combatify:wooden_longsword"
+  }
+}

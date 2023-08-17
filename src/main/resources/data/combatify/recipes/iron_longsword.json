@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " X",
+    " X",
+    " #"
+  ],
+  "key": {
+    "#": {
+      "item": "combatify:iron_knife"
+    },
+    "X": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "combatify:iron_longsword"
+  }
+}
