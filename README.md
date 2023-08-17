@@ -1,4 +1,4 @@
-![Atlas Combat](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Header.webp)
+![Combatify](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Header.webp)
 
 ***
 
@@ -24,7 +24,6 @@
 
 ### Attacks and Basic Combat Changes
 1. Attack speed, reach, damage are different for different weapons
-
 2. Attack speed alterations
     - Charged hits (200%) give 1 extra block of reach
         - You won't get the reach bonus while sneaking
@@ -39,7 +38,6 @@
 4. Reintroduced upwards knockback when hitting players in the air
 
 5. Changed the swing animation to emphasize the rhythm of the attacks
-
 6. Critical Hit alterations
     - Players can now crit and sprint hit at the same time
     - Weapon enchantments are now included in the base damage when calculating crits and potion effects
@@ -58,14 +56,11 @@
     - Shields now add a 50% knockback resistance when active
     - Shields protect against 100% explosion damage
     - Shields are now instant
-
 9. New axe-exclusive enchantment: Cleaving
     - Cleaving enchantment disables shields for 0.5 more seconds per level, maximum level 3
     - Cleaving enchantment gives axes (+2/+3/+4) extra damage
     - Axes now get Cleaving instead of Sharpness from enchantment table
-
 10. Axes and Hoes now take 1 durability for attacking
-
 11. Strength I/II now adds +20%/+40% (was +3/+6 damage)
 
 12. Tridents with impaling now deal enchantment damage to all mobs that are in water or rain
@@ -73,9 +68,7 @@
 
 ### Projectiles
 1. Projectiles don't trigger invulnerability ticks
-
 2. Arrow uncertainty value decreased from 1.0 to 0.25
-
 3. Instantaneous effects on tipped arrows are now scaled by 1/8, just like the duration of other effects
 
 4. Trident alterations
@@ -91,9 +84,7 @@
 
 ### Hunger System
 1. Eating gets reset when you get hit
-
 2. Natural healing works down to 6 food points, previously 18
-
 3. Natural healing is faster (every 2 seconds, was 4)
 
 4. Natural healing now drains food points directly with a 50% chance to not consume a food point. Saturation is not used when healing damage, and is only relevant as a "pause" until food drains (as originally intended)
@@ -104,24 +95,21 @@
 
 ***
 
-![Atlas Combat Exclusive Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Exclusive.webp)
+![Combatify Exclusive Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Exclusive.webp)
 
 ***
 
-1. Block Reach: Weapon and Tool specific reach used for mining. This can be disabled in the config, and the default reach used can be set to match Bedrock Edition.
+1. Sword Blocking: Config option that defines whether swords should be able to block.
 
-2. Sword Blocking: Config option that defines whether swords should be able to block.
+2. Midair KB: Config option that defines if you should be able to knock opponents further into the air.
 
-3. Midair KB: Config option that defines if you should be able to knock opponents further into the air.
+3. Fishing Rod KB: Config option that brings back the 1.8 Fishing Rods in a revised form.
 
-4. Fishing Rod KB: Config option that brings back the 1.8 Fishing Rods in a revised form.
+4. Coyote Time V2: Config option that brings back the Coyote Time from CTS 5 but with changes to make it more acceptable.
 
-5. Coyote Time V2: Config option that brings back the Coyote Time from CTS 5 but with changes to make it more acceptable.
- 
+5. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
 
-6. Buffed Axe Reach: Config option that raises axe reach to 3 instead of 2.5 to make it more viable.
-
-7. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
+6. Fast Healing: Config option that restores the 1.11 Saturation Fast Healing.
 
 ***
 
