@@ -17,6 +17,7 @@
     "EffectsMixin",
     "EggItemMixin",
     "EggMixin",
+    "EnchantCommandMixin",
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
     "EnchantmentsMixin",

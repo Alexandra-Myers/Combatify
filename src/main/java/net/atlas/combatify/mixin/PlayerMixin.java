@@ -8,6 +8,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.CombatifyConfig;
 import net.atlas.combatify.item.NewAttributes;
+import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.util.UtilClass;
 import net.atlas.combatify.extensions.*;
 import net.minecraft.core.particles.ParticleTypes;
@@ -149,8 +150,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(bl)
 			((LivingEntityExtensions)livingEntity).setEnemy(player);
 		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
-			EnchantmentHelper helper = new EnchantmentHelper();
-			attackDamageBonus.set(((IEnchantmentHelper)helper).getDamageBonus(player.getMainHandItem(), livingEntity));
+			attackDamageBonus.set(CustomEnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity));
 		}
 		attackDamage.set((float) ((IAttributeInstance) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE))).calculateValue(attackDamageBonus.get()));
 	}

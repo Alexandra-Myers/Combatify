@@ -1,6 +1,6 @@
 package net.atlas.combatify.mixin;
 
-import net.atlas.combatify.extensions.IEnchantmentHelper;
+import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.IThrownTrident;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.sounds.SoundEvents;
@@ -8,7 +8,6 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -75,8 +74,7 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements IThrow
 	}
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getDamageBonus(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/MobType;)F"))
 	public float dealtDamage(ItemStack p_44834_, MobType p_44835_) {
-		EnchantmentHelper helper = new EnchantmentHelper();
-		return ((IEnchantmentHelper)helper).getDamageBonus(this.tridentItem, livingEntity);
+		return CustomEnchantmentHelper.getDamageBonus(this.tridentItem, livingEntity);
 	}
 
 }
