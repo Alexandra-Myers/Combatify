@@ -70,44 +70,24 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+		ItemStack itemStack = user.getItemInHand(hand);
 		if(Combatify.CONFIG.swordBlocking() && hand != InteractionHand.OFF_HAND) {
 			strengthTimer = 0;
-			ItemStack itemStack = user.getItemInHand(hand);
 			ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
-			if(user.isSprinting()) {
-				user.setSprinting(false);
-			}
 			if(oppositeStack.isEmpty()) {
+				if(user.isSprinting()) {
+					user.setSprinting(false);
+				}
 				user.startUsingItem(hand);
 				return InteractionResultHolder.consume(itemStack);
 			}
 		}
-		return super.use(world,user,hand);
+		return InteractionResultHolder.pass(itemStack);
 	}
 
 	@Override
 	public @NotNull UseAnim getUseAnimation(ItemStack stack) {
 		return UseAnim.BLOCK;
-	}
-
-	@Override
-	public double getAttackReach(Player player) {
-		float var2 = 0.0F;
-		float var3 = player.getAttackStrengthScale(1.0F);
-		if (var3 > 1.95F && !player.isCrouching()) {
-			var2 = 1.0F;
-		}
-		return getWeaponType().getReach() + 2.5 + var2;
-	}
-
-	@Override
-	public double getAttackSpeed(Player player) {
-		return getWeaponType().getSpeed(this.getTier()) + 4.0;
-	}
-
-	@Override
-	public double getAttackDamage(Player player) {
-		return getWeaponType().getDamage(this.getTier()) + 2.0;
 	}
 
 	@Override
@@ -166,20 +146,6 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public void addStrengthTimer() {
 		++strengthTimer;
-	}
-	@Override
-	public void subStrengthTimer() {
-		--strengthTimer;
-	}
-
-	@Override
-	public int getStrengthTimer() {
-		return strengthTimer;
-	}
-
-	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultModifiers() {
-		return defaultModifiers;
 	}
 
 	@Override

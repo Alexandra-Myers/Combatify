@@ -15,6 +15,7 @@ import java.util.Arrays;
 @Mixin(AccessibilityOptionsScreen.class)
 public class AccessibilityOptionsMixin {
 
+	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "options", at = @At("RETURN"))
 	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0) Options options) {
 		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());

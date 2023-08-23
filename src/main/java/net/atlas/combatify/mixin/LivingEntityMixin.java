@@ -57,8 +57,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public boolean interrupted = false;
 
 	@Unique
-	public Entity enemy;
-	@Unique
 	LivingEntity thisEntity = LivingEntity.class.cast(this);
 	@Unique
 	InteractionHand interruptedHand = InteractionHand.MAIN_HAND;
@@ -188,10 +186,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	private int syncInvulnerability(int x) {
 		return 10;
 	}
-	@Override
-	public void setEnemy(Entity enemy) {
-		this.enemy = enemy;
-	}
 
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
 	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
@@ -205,7 +199,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@ModifyConstant(method = "hurt", constant = @Constant(intValue = 20, ordinal = 0))
 	public int changeIFrames(int constant, @Local(ordinal = 0) final DamageSource source, @Local(ordinal = 0) final float amount) {
 		Entity entity2 = source.getEntity();
-		enemy = entity2;
 		int invulnerableTime = 10;
 		if (entity2 instanceof Player player) {
 			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
@@ -224,7 +217,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
-		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && Combatify.CONFIG.eatingInterruption()) {
+		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption()) {
 			interruptedHand = thisEntity.getUsedItemHand();
 			thisEntity.stopUsingItem();
 			interrupted = true;

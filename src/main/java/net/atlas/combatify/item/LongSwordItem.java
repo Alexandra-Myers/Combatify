@@ -75,25 +75,6 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
 		return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
-	@Override
-	public double getAttackReach(Player player) {
-		float var2 = 0.0F;
-		float var3 = player.getAttackStrengthScale(1.0F);
-		if (var3 > 1.95F && !player.isCrouching()) {
-			var2 = 1.0F;
-		}
-		return getWeaponType().getReach() + 2.5 + var2;
-	}
-
-	@Override
-	public double getAttackSpeed(Player player) {
-		return getWeaponType().getSpeed(this.getTier()) + 4.0;
-	}
-
-	@Override
-	public double getAttackDamage(Player player) {
-		return getWeaponType().getDamage(this.getTier()) + 2.0;
-	}
 
 	@Override
 	public void setStackSize(int stackSize) {
@@ -108,11 +89,6 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	@Override
 	public WeaponType getWeaponType() {
 		return WeaponType.LONGSWORD;
-	}
-
-	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultModifiers() {
-		return defaultModifiers;
 	}
 
 	@Override

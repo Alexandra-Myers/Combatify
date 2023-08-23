@@ -11,18 +11,4 @@ public interface IMinecraft {
 
 	void startUseItem(InteractionHand hand);
 	EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance);
-
-    @Nullable
-    EntityHitResult findEntity(Player player, float partialTicks, double blockReachDistance);
-
-    @Nullable
-    EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance);
-
-	@Nullable
-	EntityHitResult findEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier);
-
-	@Nullable
-	EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier);
-
-	void initiateAttack();
 }

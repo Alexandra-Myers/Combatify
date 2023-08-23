@@ -10,7 +10,6 @@ import net.atlas.combatify.item.WeaponType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -48,32 +47,10 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 		}
 		instance.hurtAndBreak(amount, entity, breakCallback);
 	}
-	@Override
-	public double getAttackReach(Player player) {
-		float var2 = 0.0F;
-		float var3 = player.getAttackStrengthScale(1.0F);
-		if (var3 > 1.95F && !player.isCrouching()) {
-			var2 = 1.0F;
-		}
-		return type.getReach() + 2.5 + var2;
-	}
-	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultModifiers() {
-		return defaultModifiers;
-	}
+
 	@Override
 	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
-	}
-
-	@Override
-	public double getAttackSpeed(Player player) {
-		return type.getSpeed(this.getTier()) + 4.0;
-	}
-
-	@Override
-	public double getAttackDamage(Player player) {
-		return type.getDamage(this.getTier()) + 2.0;
 	}
 
 	@Override

@@ -9,8 +9,6 @@ public interface IOptions {
 	OptionInstance<Boolean> shieldCrouch();
 	OptionInstance<Boolean> rhythmicAttacks();
 
-    OptionInstance<Boolean> swordBlockStyle();
-
 	OptionInstance<Boolean> protIndicator();
 
 	OptionInstance<Boolean> fishingRodLegacy();

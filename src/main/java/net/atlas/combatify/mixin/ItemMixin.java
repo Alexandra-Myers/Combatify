@@ -2,7 +2,6 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowlFoodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,24 +16,6 @@ import java.util.Objects;
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
 
-	@Override
-	public double getAttackReach(Player player) {
-		float var2 = 0.0F;
-		float var3 = player.getAttackStrengthScale(1.0F);
-		if (var3 > 1.95F && !player.isCrouching()) {
-			var2 = 1.0F;
-		}
-		return 2.5 + var2;
-	}
-
-	@Override
-	public double getAttackSpeed(Player player) {
-		return 4.0;
-	}
-	@Override
-	public double getAttackDamage(Player player) {
-		return 2.0;
-	}
 	@Override
 	public void setStackSize(int stackSize) {
 		((Item) (Object)this).maxStackSize = stackSize;

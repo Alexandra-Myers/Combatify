@@ -177,34 +177,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer player) {
 		assert gameMode != null;
-		EntityHitResult result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
-		if(result != null && Combatify.CONFIG.refinedCoyoteTime()) {
-			if(!(result.getEntity() instanceof Player)) {
-				if (result.getEntity() instanceof Guardian
-					|| result.getEntity() instanceof Cat
-					|| result.getEntity() instanceof Vex
-					|| (result.getEntity() instanceof LivingEntity entity && entity.isBaby())
-					|| result.getEntity() instanceof Fox
-					|| result.getEntity() instanceof Frog
-					|| result.getEntity() instanceof Bee
-					|| result.getEntity() instanceof Bat
-					|| result.getEntity() instanceof AbstractFish
-					|| result.getEntity() instanceof Rabbit) {
-					result = findEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
-				} else {
-					result = findNormalEntity(player, 1.0F, ((PlayerExtensions) player).getAttackRange(0.0F));
-				}
-				if(result != null) {
-					this.gameMode.attack(player, result.getEntity());
-				} else {
-					((IPlayerGameMode)gameMode).swingInAir(player);
-				}
-			} else {
-				((IPlayerGameMode)gameMode).swingInAir(player);
-			}
-		} else {
-			((IPlayerGameMode)gameMode).swingInAir(player);
-		}
+		((IPlayerGameMode)gameMode).swingInAir(player);
 	}
 	@Override
 	public final HitResult redirectResult(HitResult instance) {
@@ -220,7 +193,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				crosshairPickEntity = entity;
 				hitResult = rayTraceResult;
 				return hitResult;
-			}else {
+			} else {
 				return instance;
 			}
 
@@ -263,176 +236,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 				&& e instanceof LivingEntity)
 		);
 	}
-	@Nullable
-	@Override
-	public EntityHitResult findEntity(Player player, float partialTicks, double blockReachDistance) {
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
-		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
-
-		for (double i = -1.0; i <= 1.0; i += 0.1) {
-			for (double j = -1.0; j <= 1.0; j += 0.1) {
-				for (double k = -1.0; k <= 1.0; k += 0.1) {
-					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level(),
-							player,
-							from,
-							to,
-							new AABB(from, to.add(i, j, k)),
-							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
-									&& e.isPickable()
-									&& e instanceof LivingEntity)
-					);
-					if(entityHitResult != null) {
-						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
-						if(bl3
-								|| entityHitResult.getEntity() instanceof Guardian
-								|| entityHitResult.getEntity() instanceof Cat
-								|| entityHitResult.getEntity() instanceof Vex
-								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
-								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
-								|| entityHitResult.getEntity() instanceof Bee
-								|| entityHitResult.getEntity() instanceof Bat
-								|| entityHitResult.getEntity() instanceof AbstractFish
-								|| entityHitResult.getEntity() instanceof Rabbit) {
-							return entityHitResult;
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-	@Nullable
-	@Override
-	public EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance) {
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
-		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
-
-		for (double i = -0.5; i <= 0.5; i += 0.1) {
-			for (double j = -0.5; j <= 0.5; j += 0.1) {
-				for (double k = -0.5; k <= 0.5; k += 0.1) {
-					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level(),
-							player,
-							from,
-							to,
-							new AABB(from, to.add(i, j, k)),
-							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
-									&& e.isPickable()
-									&& e instanceof LivingEntity)
-					);
-					if(entityHitResult != null) {
-						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
-						if(bl3
-								|| entityHitResult.getEntity() instanceof Guardian
-								|| entityHitResult.getEntity() instanceof Cat
-								|| entityHitResult.getEntity() instanceof Vex
-								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
-								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
-								|| entityHitResult.getEntity() instanceof Bee
-								|| entityHitResult.getEntity() instanceof Bat
-								|| entityHitResult.getEntity() instanceof AbstractFish
-								|| entityHitResult.getEntity() instanceof Rabbit) {
-							return entityHitResult;
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-	@Nullable
-	@Override
-	public EntityHitResult findEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier) {
-		if(strengthMultiplier <= 50) {
-			strengthMultiplier = 50;
-		}
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
-		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
-
-		for (double i = -1.0; i <= 1.0; i += 0.1) {
-			for (double j = -1.0; j <= 1.0; j += 0.1) {
-				for (double k = -1.0; k <= 1.0; k += 0.1) {
-					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level(),
-							player,
-							from,
-							to,
-							new AABB(from, to.add(i * (strengthMultiplier / 100F), j * (strengthMultiplier / 100F), k * (strengthMultiplier / 100F))),
-							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
-									&& e.isPickable()
-									&& e instanceof LivingEntity)
-					);
-					if(entityHitResult != null) {
-						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
-						if(bl3
-								|| entityHitResult.getEntity() instanceof Guardian
-								|| entityHitResult.getEntity() instanceof Cat
-								|| entityHitResult.getEntity() instanceof Vex
-								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
-								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
-								|| entityHitResult.getEntity() instanceof Bee
-								|| entityHitResult.getEntity() instanceof Bat
-								|| entityHitResult.getEntity() instanceof AbstractFish
-								|| entityHitResult.getEntity() instanceof Rabbit) {
-							return entityHitResult;
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-	@Nullable
-	@Override
-	public EntityHitResult findNormalEntity(Player player, float partialTicks, double blockReachDistance, int strengthMultiplier) {
-		if(strengthMultiplier <= 50) {
-			strengthMultiplier = 50;
-		}
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
-		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
-
-		for (double i = -0.5; i <= 0.5; i += 0.1) {
-			for (double j = -0.5; j <= 0.5; j += 0.1) {
-				for (double k = -0.5; k <= 0.5; k += 0.1) {
-					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-							player.level(),
-							player,
-							from,
-							to,
-							new AABB(from, to.add(i * (strengthMultiplier / 100F), j * (strengthMultiplier / 100F), k * (strengthMultiplier / 100F))),
-							EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
-									&& e.isPickable()
-									&& e instanceof LivingEntity)
-					);
-					if(entityHitResult != null) {
-						boolean bl3 = entityHitResult.getEntity() == lastPickedEntity;
-						if(bl3
-								|| entityHitResult.getEntity() instanceof Guardian
-								|| entityHitResult.getEntity() instanceof Cat
-								|| entityHitResult.getEntity() instanceof Vex
-								|| (entityHitResult.getEntity() instanceof LivingEntity entity && entity.isBaby())
-								|| entityHitResult.getEntity() instanceof Fox
-								|| entityHitResult.getEntity() instanceof Frog
-								|| entityHitResult.getEntity() instanceof Bee
-								|| entityHitResult.getEntity() instanceof Bat
-								|| entityHitResult.getEntity() instanceof AbstractFish
-								|| entityHitResult.getEntity() instanceof Rabbit) {
-							return entityHitResult;
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
@@ -461,9 +264,5 @@ public abstract class MinecraftMixin implements IMinecraft {
 			return InteractionResult.PASS;
 		}
 		return instance.useItem(player, interactionHand);
-	}
-	@Override
-	public void initiateAttack() {
-		startAttack();
 	}
 }

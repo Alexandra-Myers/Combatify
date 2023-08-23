@@ -10,7 +10,6 @@ import io.wispforest.owo.config.annotation.*;
 public class CombatifyConfigModel {
 	@SectionHeader("Booleans")
 	public boolean toolsAreWeapons = false;
-	public boolean refinedCoyoteTime = false;
 	public boolean midairKB = false;
 	public boolean fishingHookKB = false;
 	public boolean fistDamage = false;
@@ -19,6 +18,7 @@ public class CombatifyConfigModel {
 	public boolean sprintCritsEnabled = true;
 	public boolean saturationHealing = false;
 	public boolean fastHealing = false;
+	public boolean oldSprintFoodRequirement = false;
 	public boolean projectilesHaveIFrames = false;
 	public boolean magicHasIFrames = true;
 	public boolean autoAttackAllowed = true;
@@ -119,7 +119,7 @@ public class CombatifyConfigModel {
 	@RangeConstraint(min = -1, max = 100)
 	public float longswordAttackReach = 1;
 	@RangeConstraint(min = -1, max = 100)
-	public float knifeAttackReach = 0F;
+	public float knifeAttackReach = 0.25F;
 	@RangeConstraint(min = -1, max = 100)
 	public float tridentAttackReach = 1;
 	@RangeConstraint(min = -1, max = 100)

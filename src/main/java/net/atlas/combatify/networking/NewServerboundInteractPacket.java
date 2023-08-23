@@ -2,12 +2,11 @@ package net.atlas.combatify.networking;
 
 import com.chocohead.mm.api.ClassTinkerers;
 import net.atlas.combatify.extensions.IHandler;
-import net.atlas.combatify.extensions.IServerboundInteractPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import org.jetbrains.annotations.NotNull;
 
-public class NewServerboundInteractPacket extends ServerboundInteractPacket implements IServerboundInteractPacket {
+public class NewServerboundInteractPacket extends ServerboundInteractPacket {
 	public static final ServerboundInteractPacket.Action MISS_ATTACK_ACTION = new ServerboundInteractPacket.Action() {
 		final ServerboundInteractPacket.ActionType type = ClassTinkerers.getEnum(ServerboundInteractPacket.ActionType.class, "MISS_ATTACK");
 		@Override

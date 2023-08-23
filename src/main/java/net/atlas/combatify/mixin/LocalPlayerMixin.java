@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
@@ -64,6 +65,12 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			}
 		}
 	}
+
+	@ModifyExpressionValue(method = "hasEnoughFoodToStartSprinting", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
+	public float modifyFoodRequirement(float original) {
+		return Combatify.CONFIG.oldSprintFoodRequirement() ? -1.0F : original;
+	}
+
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
 		MiscCategory miscCategory = CookeyMod.getInstance().getConfig().getCategory(MiscCategory.class);

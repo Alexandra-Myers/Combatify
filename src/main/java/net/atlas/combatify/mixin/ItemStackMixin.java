@@ -3,7 +3,6 @@ package net.atlas.combatify.mixin;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.IItemStack;
 import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
@@ -16,7 +15,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,7 +26,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements IItemStack {
+public abstract class ItemStackMixin {
 
 	@Unique
 	List<Component> list;
@@ -143,11 +141,6 @@ public abstract class ItemStackMixin implements IItemStack {
 			}
 		}
 		return true;
-	}
-	@Override
-	public int getEnchantmentLevel(Enchantment enchantment) {
-		Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments((ItemStack) (Object) this);
-		return map.get(enchantment);
 	}
 }
 

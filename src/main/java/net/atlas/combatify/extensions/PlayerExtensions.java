@@ -7,7 +7,9 @@ public interface PlayerExtensions {
 
 	void resetAttackStrengthTicker(boolean var1);
 
-	default boolean customShieldInteractions(float damage, Item item) {return false;}
+	default boolean customShieldInteractions(float damage, Item item) {
+		return false;
+	}
 
 	default boolean hasEnabledShieldOnCrouch() {
 		return false;

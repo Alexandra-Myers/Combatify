@@ -1,7 +1,6 @@
 package net.atlas.combatify.extensions;
 
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 public interface LivingEntityExtensions {
@@ -15,8 +14,6 @@ public interface LivingEntityExtensions {
 	boolean hasEnabledShieldOnCrouch();
 
 	void setPiercingNegation(double negation);
-
-	void setEnemy(Entity enemy);
 
 	void newKnockback(double strength, double x, double z);
 

@@ -147,11 +147,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) LocalFloatRef attackDamageBonus) {
 		LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
 		boolean bl = livingEntity != null;
-		if(bl)
-			((LivingEntityExtensions)livingEntity).setEnemy(player);
-		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl) {
+		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl)
 			attackDamageBonus.set(CustomEnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity));
-		}
 		attackDamage.set((float) ((IAttributeInstance) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE))).calculateValue(attackDamageBonus.get()));
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
@@ -213,13 +210,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void attackAir() {
 		if (this.isAttackAvailable(baseValue)) {
 			player.swing(InteractionHand.MAIN_HAND);
-			float var1 = (float)((ItemExtensions)player.getItemInHand(InteractionHand.MAIN_HAND).getItem()).getAttackDamage(player);
-			if (var1 > 0.0F && this.checkSweepAttack()) {
+			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
+			if (attackDamage > 0.0F && this.checkSweepAttack()) {
 				float var2 = (float) this.getAttackRange(1.0F);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
-				betterSweepAttack(var9, var2, var1, null);
+				betterSweepAttack(var9, var2, attackDamage, null);
 			}
 
 			this.resetAttackStrengthTicker(false);

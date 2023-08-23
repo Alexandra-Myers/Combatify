@@ -50,14 +50,17 @@ public abstract class GuiMixin {
 			assert minecraft.gameMode != null;
 			assert minecraft.player != null;
 			if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
-				int j = this.screenHeight / 2 - 7 + 16;
-				int k = this.screenWidth / 2 - 8;
-				boolean isShieldCooldown = isShieldOnCooldown();
-				boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
-				if (var7 && isShieldCooldown) {
-					guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 52, 112, 16, 16);
-				} else if (var7 && this.minecraft.player.isBlocking()) {
-					guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 36, 112, 16, 16);
+				boolean bl = options.renderDebug && !options.hideGui && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)options.reducedDebugInfo().get();
+				if (!bl) {
+					int j = this.screenHeight / 2 - 7 + 16;
+					int k = this.screenWidth / 2 - 8;
+					boolean isShieldCooldown = isShieldOnCooldown();
+					boolean var7 = ((IOptions) this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
+					if (var7 && isShieldCooldown) {
+						guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 52, 112, 16, 16);
+					} else if (var7 && this.minecraft.player.isBlocking()) {
+						guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 36, 112, 16, 16);
+					}
 				}
 			}
 		}
@@ -96,6 +99,7 @@ public abstract class GuiMixin {
 			guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 36, 94, 16, 4);
 			guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 52, 94, l, 4);
 		}
+		RenderSystem.defaultBlendFunc();
 		ci.cancel();
 	}
 	@Inject(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
