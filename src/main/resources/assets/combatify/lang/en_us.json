@@ -47,7 +47,7 @@
   "text.config.combatify-config.option.autoAttackAllowed": "Option for servers which will prevent using auto-attack on client",
   "text.config.combatify-config.option.bowMomentumDamage": "Bow damage is influenced by the arrow momentum",
   "text.config.combatify-config.option.configOnlyWeapons": "Adds Knives and Longswords with their own respective stats and abilities.",
-  "text.config.combatify-config.option.piercer": "Adds enchantment Piercer, which allows for disabling of shields, as well as adding 10% armor piercing. Incompat with Cleaving.",
+  "text.config.combatify-config.option.piercer": "Adds enchantment Piercer, which allows for disabling of shields, as well as adding 10% armor piercing. Incompat with Damage Enchantments.",
   "text.config.combatify-config.option.defender": "Adds enchantment Defender, which decreases shield disable time by 0.5s, and increases protection for shields and swords.",
   "text.config.combatify-config.option.attackReach": "Attack Reach Enabled",
   "text.config.combatify-config.option.attackSpeed": "If disabled and your tool is maxed attack speed, will prevent attacks from resetting. If all speed configs are maxed out, will also apply to every other item, and your fists.",
