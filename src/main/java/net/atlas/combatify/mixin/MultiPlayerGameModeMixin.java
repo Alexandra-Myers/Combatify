@@ -3,7 +3,6 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.extensions.IPlayerGameMode;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.networking.NewServerboundInteractPacket;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -17,9 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
-	@Shadow
-	@Final
-	private Minecraft minecraft;
 
 	@Shadow
 	protected abstract void ensureHasSentCarriedItem();
@@ -45,9 +41,8 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset2(LocalPlayer instance) {
-		if(getPlayerMode() == GameType.ADVENTURE) {
+		if(getPlayerMode() == GameType.ADVENTURE)
 			return;
-		}
 		((PlayerExtensions)instance).resetAttackStrengthTicker(true);
 	}
 

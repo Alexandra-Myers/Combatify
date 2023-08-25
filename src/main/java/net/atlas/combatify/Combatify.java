@@ -6,6 +6,7 @@ import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.combatify.util.ArrayListExtensions;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.UUID;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
@@ -33,6 +35,7 @@ public class Combatify implements ModInitializer {
 	public static final CombatifyConfig CONFIG = CombatifyConfig.createAndLoad();
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
+	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 
 	@Override
 	public void onInitialize() {

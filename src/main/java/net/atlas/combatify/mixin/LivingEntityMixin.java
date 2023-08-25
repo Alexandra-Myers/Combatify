@@ -53,13 +53,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	boolean isParry = false;
 	@Unique
 	public int isParryTicker = 0;
-	@Unique
-	public boolean interrupted = false;
 
 	@Unique
 	LivingEntity thisEntity = LivingEntity.class.cast(this);
-	@Unique
-	InteractionHand interruptedHand = InteractionHand.MAIN_HAND;
 
 	@Shadow
 	public abstract double getAttributeValue(Attribute attribute);
@@ -80,13 +76,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
 
-	@Inject(method = "tick", at = @At(value = "HEAD"))
-	public void resetEat(CallbackInfo ci) {
-		if(interrupted) {
-			thisEntity.startUsingItem(interruptedHand);
-			interrupted = false;
-		}
-	}
+	@Shadow
+	protected int useItemRemaining;
 
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
@@ -218,9 +209,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption()) {
-			interruptedHand = thisEntity.getUsedItemHand();
-			thisEntity.stopUsingItem();
-			interrupted = true;
+			useItemRemaining = 0;
 		}
 	}
 	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "floatValue=10.0F", ordinal = 0))
