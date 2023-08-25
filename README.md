@@ -10,7 +10,7 @@
 
 ***
 
-**This mod is a port of Mojang's Combat Test 8c to modern versions of MC, with an aim to be as accurate as possible without compromising any usability for the user.**
+**This mod is a port of Mojang's Combat Test 8c to modern versions of MC, with an aim to be as accurate as possible without compromising any usability for the user**
 
 **This mod completely overhauls the current combat system in favor of CTS, with customizability for servers and clients so that you can get the best experience possible.**
 
