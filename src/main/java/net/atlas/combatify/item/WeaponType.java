@@ -36,8 +36,6 @@ public enum WeaponType {
         if (var5 != 0.0F && Combatify.CONFIG.attackReach()) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
-
-
     }
 
 	public float getDamage(Tier var1) {
@@ -159,6 +157,18 @@ public enum WeaponType {
 			default -> Combatify.CONFIG.defaultAttackReach();
 		};
     }
+
+	public double getChargedReach() {
+		return switch (this) {
+			case KNIFE -> Combatify.CONFIG.knifeChargedReach();
+			case SWORD -> Combatify.CONFIG.swordChargedReach();
+			case LONGSWORD -> Combatify.CONFIG.longswordChargedReach();
+			case HOE -> Combatify.CONFIG.hoeChargedReach();
+			case TRIDENT -> Combatify.CONFIG.tridentChargedReach();
+			case AXE -> Combatify.CONFIG.axeChargedReach();
+			default -> Combatify.CONFIG.defaultChargedReach();
+		};
+	}
 	public static float min(float f, float j) {
 		return Math.max(f, j);
 	}

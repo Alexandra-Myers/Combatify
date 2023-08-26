@@ -98,5 +98,12 @@
   "text.config.combatify-config.option.longswordAttackReach": "Longsword Reach Offset",
   "text.config.combatify-config.option.knifeAttackReach": "Knife Reach Offset",
   "text.config.combatify-config.option.tridentAttackReach": "Trident Reach Offset",
-  "text.config.combatify-config.option.defaultAttackReach": "Default Tool Reach Offset"
+  "text.config.combatify-config.option.defaultAttackReach": "Default Tool Reach Offset",
+  "text.config.combatify-config.option.swordChargedReach": "Sword Charged Reach Offset",
+  "text.config.combatify-config.option.axeChargedReach": "Axe Charged Reach Offset",
+  "text.config.combatify-config.option.hoeChargedReach": "Hoe Charged Reach Offset",
+  "text.config.combatify-config.option.longswordChargedReach": "Longsword Charged Reach Offset",
+  "text.config.combatify-config.option.knifeChargedReach": "Knife Charged Reach Offset",
+  "text.config.combatify-config.option.tridentChargedReach": "Trident Charged Reach Offset",
+  "text.config.combatify-config.option.defaultChargedReach": "Default Tool Charged Reach Offset"
 }

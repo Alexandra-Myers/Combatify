@@ -32,4 +32,9 @@ public abstract class ItemMixin implements ItemExtensions {
 		}
 	}
 
+	@Override
+	public double getChargedAttackBonus() {
+		return Combatify.CONFIG.defaultChargedReach();
+	}
+
 }

@@ -124,6 +124,20 @@ public class CombatifyConfigModel {
 	public float tridentAttackReach = 1;
 	@RangeConstraint(min = -1, max = 100)
 	public float defaultAttackReach = 0F;
+	@RangeConstraint(min = 0, max = 10)
+	public float swordChargedReach = 1F;
+	@RangeConstraint(min = 0, max = 10)
+	public float axeChargedReach = 1F;
+	@RangeConstraint(min = 0, max = 10)
+	public float hoeChargedReach = 1F;
+	@RangeConstraint(min = 0, max = 10)
+	public float longswordChargedReach = 1F;
+	@RangeConstraint(min = 0, max = 10)
+	public float knifeChargedReach = 1F;
+	@RangeConstraint(min = 0, max = 10)
+	public float tridentChargedReach = 1F;
+	@RangeConstraint(min = 0, max = 10)
+	public float defaultChargedReach = 1F;
 	public static class UseDurations {
 	}
 	public static class Cooldowns {

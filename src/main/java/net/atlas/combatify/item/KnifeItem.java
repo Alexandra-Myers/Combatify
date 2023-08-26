@@ -2,6 +2,7 @@ package net.atlas.combatify.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
@@ -23,13 +24,13 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 	public KnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(this.getTier(), var3);
+		getWeaponType().addCombatAttributes(getTier(), var3);
 		defaultModifiers = var3.build();
 	}
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
+		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
 		this.setDefaultModifiers(output);
 	}
@@ -86,5 +87,10 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 	@Override
 	public void setStackSize(int stackSize) {
 		this.maxStackSize = stackSize;
+	}
+
+	@Override
+	public double getChargedAttackBonus() {
+		return getWeaponType().getChargedReach();
 	}
 }

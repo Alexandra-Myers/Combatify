@@ -22,9 +22,6 @@ import java.util.function.Consumer;
 
 @Mixin(DiggerItem.class)
 public abstract class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
-	@Mutable
-	@Final
-	private WeaponType type;
 	@Shadow
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public DiggerItemMixin(Tier tier, Properties properties) {
@@ -33,8 +30,7 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		type = getWeaponType();
-		type.addCombatAttributes(this.getTier(), var3);
+		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
 		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
@@ -61,5 +57,10 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	@Override
 	public WeaponType getWeaponType() {
 		return WeaponType.PICKAXE;
+	}
+
+	@Override
+	public double getChargedAttackBonus() {
+		return getWeaponType().getChargedReach();
 	}
 }

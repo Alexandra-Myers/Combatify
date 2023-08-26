@@ -46,4 +46,9 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 	public WeaponType getWeaponType() {
 		return WeaponType.TRIDENT;
 	}
+
+	@Override
+	public double getChargedAttackBonus() {
+		return getWeaponType().getChargedReach();
+	}
 }

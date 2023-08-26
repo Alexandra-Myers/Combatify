@@ -2,6 +2,7 @@ package net.atlas.combatify.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.PiercingItem;
@@ -21,18 +22,16 @@ import org.jetbrains.annotations.NotNull;
 
 public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, PiercingItem, WeaponWithType, DefaultedItemExtensions {
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
-	public final Tier tier;
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(this.getTier(), var3);
+		getWeaponType().addCombatAttributes(getTier(), var3);
 		defaultModifiers = var3.build();
-		this.tier = tier;
 	}
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
+		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
 		this.setDefaultModifiers(output);
 	}
@@ -82,8 +81,13 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	}
 
 	@Override
+	public double getChargedAttackBonus() {
+		return getWeaponType().getChargedReach();
+	}
+
+	@Override
 	public double getPiercingLevel() {
-		return tier == Tiers.NETHERITE || tier.getLevel() >= 4 ? 0.2 : tier == Tiers.GOLD || tier == Tiers.WOOD || tier == Tiers.STONE || tier.getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (tier.getLevel() - 1));
+		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.2 : getTier() == Tiers.GOLD || getTier() == Tiers.WOOD || getTier() == Tiers.STONE || getTier().getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (getTier().getLevel() - 1));
 	}
 
 	@Override

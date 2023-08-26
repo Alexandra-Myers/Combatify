@@ -58,14 +58,14 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(this.getTier(), var3);
+		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
 		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
 
 	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)
 	public void getDamage(CallbackInfoReturnable<Float> cir) {
-		cir.setReturnValue(getWeaponType().getDamage(this.getTier()));
+		cir.setReturnValue(getWeaponType().getDamage(getTier()));
 	}
 
 	@Override
@@ -156,5 +156,10 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	@Override
 	public WeaponType getWeaponType() {
 		return WeaponType.SWORD;
+	}
+
+	@Override
+	public double getChargedAttackBonus() {
+		return getWeaponType().getChargedReach();
 	}
 }

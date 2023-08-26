@@ -311,11 +311,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public double getAttackRange(float baseTime) {
 		@Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
-		int chargedBonus = 0;
+		double chargedBonus = 0;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
 		float strengthScale = getAttackStrengthScale(baseTime);
 		if (strengthScale > 1.95F && !player.isCrouching()) {
-			chargedBonus = 1;
+			chargedBonus = ((ItemExtensions) getItemInHand(InteractionHand.MAIN_HAND).getItem()).getChargedAttackBonus();
 		}
 		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
 	}
