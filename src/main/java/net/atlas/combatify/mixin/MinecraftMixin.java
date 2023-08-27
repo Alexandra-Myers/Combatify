@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -81,6 +82,10 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 	@Shadow
 	public abstract void startUseItem();
+
+	@Shadow
+	@Final
+	public MouseHandler mouseHandler;
 
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
@@ -239,12 +244,15 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
+		assert hitResult != null;
+		redirectResult(hitResult);
+		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
 		if (missTime <= 0) {
 			assert this.player != null;
 			if (!this.player.isUsingItem()) {
-				if (bl && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
+				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
 					this.retainAttack = false;
-				} else if (bl && ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && ((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) {
+				} else if (bl1 && ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack) {
 					this.startAttack();
 					ci.cancel();
 				}
