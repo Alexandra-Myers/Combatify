@@ -49,24 +49,27 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
 
+	@Unique
+	public boolean shouldInit = true;
+
 	public ServerPlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
-	}
-	@Inject(method = "<init>", at = @At(value = "RETURN"))
-	public void schedule(MinecraftServer minecraftServer, ServerLevel serverLevel, GameProfile gameProfile, CallbackInfo ci) {
-		scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
-			@Override
-			public void run() {
-				Entity camera = getCamera();
-				if (camera != null) {
-					adjustHitResults(pickResult(camera));
-				}
-			}
-		}, 0, 10);
 	}
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void addShieldCrouch(CallbackInfo ci) {
+		if (shouldInit && Combatify.unmoddedPlayers.contains(getUUID())) {
+			scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
+				@Override
+				public void run() {
+					Entity camera = getCamera();
+					if (camera != null) {
+						adjustHitResults(pickResult(camera));
+					}
+				}
+			}, 0, 10);
+			shouldInit = false;
+		}
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
 			swing(InteractionHand.MAIN_HAND);
