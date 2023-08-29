@@ -31,10 +31,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin {
 
+	private boolean retainAttack;
+
 	@Shadow
 	public abstract Entity getCamera();
 
-	public Vec3[] oldCameraEyePos = new Vec3[2];
+	@Shadow
+	public abstract void swing(InteractionHand interactionHand);
+
+	public Vec3[] oldCameraEyePos = new Vec3[9];
 	public Vec3[] oldCameraViewVectors = new Vec3[9];
 
 	@Unique
@@ -47,7 +52,17 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void addShieldCrouch(CallbackInfo ci) {
 		Entity camera = getCamera();
+		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack) {
+			swing(InteractionHand.MAIN_HAND);
+		}
 		if (camera != null) {
+			oldCameraEyePos[8] = oldCameraEyePos[7];
+			oldCameraEyePos[7] = oldCameraEyePos[6];
+			oldCameraEyePos[6] = oldCameraEyePos[5];
+			oldCameraEyePos[5] = oldCameraEyePos[4];
+			oldCameraEyePos[4] = oldCameraEyePos[3];
+			oldCameraEyePos[3] = oldCameraEyePos[2];
+			oldCameraEyePos[2] = oldCameraEyePos[1];
 			oldCameraEyePos[1] = oldCameraEyePos[0];
 			oldCameraEyePos[0] = camera.getEyePosition(1);
 			oldCameraViewVectors[8] = oldCameraViewVectors[7];
@@ -96,7 +111,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 					oldCameraViewVectors[0] = viewVector;
 					Vec3 basedOffPos = eyePosition;
 					Vec3 basedOffVect = viewVector;
-					for (int i = 0; i < 2; i++) {
+					for (int i = 0; i < 9; i++) {
 						for (int j = 0; j < 9; j++) {
 							if (hitResult.getType() == HitResult.Type.MISS) {
 								Vec3 oldEyePos = oldCameraEyePos[i];
@@ -126,7 +141,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(camera, eyePosition, vec32, aABB, (entityx) ->
 						!entityx.isSpectator() && entityx.isPickable(), e);
 					boolean baseResultWorked = true;
-					for (int j = 0; j < 2; j++) {
+					for (int j = 0; j < 9; j++) {
 						for (int i = 0; i < 9; i++) {
 							if (entityHitResult == null) {
 								baseResultWorked = false;
@@ -186,8 +201,18 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		return camera.level().clip(new ClipContext(eyePos, vectorEnd, ClipContext.Block.OUTLINE, bl ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, this));
 	}
 	public void handleInteract(Entity entity, boolean hit, Vec3 eyePos) {
-		if(!isAttackAvailable(1.0F))
-			return;
+		if(!isAttackAvailable(0.0F)) {
+			float var1 = this.player.getAttackStrengthScale(0.0F);
+			if (var1 < 0.8F) {
+				return;
+			}
+
+			if (var1 < 1.0F) {
+				retainAttack = true;
+				return;
+			}
+		}
+		retainAttack = false;
 		final ServerLevel serverLevel = this.player.serverLevel();
 		this.player.resetLastActionTime();
 		if (entity != null) {
