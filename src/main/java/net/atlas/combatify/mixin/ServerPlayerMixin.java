@@ -1,13 +1,11 @@
 package net.atlas.combatify.mixin;
 
-import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
