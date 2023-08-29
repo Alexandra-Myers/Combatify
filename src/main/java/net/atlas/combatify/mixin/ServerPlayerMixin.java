@@ -52,7 +52,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void addShieldCrouch(CallbackInfo ci) {
 		Entity camera = getCamera();
-		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack) {
+		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			swing(InteractionHand.MAIN_HAND);
 		}
 		if (camera != null) {
