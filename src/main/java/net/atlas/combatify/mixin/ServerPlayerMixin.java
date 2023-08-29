@@ -67,7 +67,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
 		super.swing(hand);
 		if(Combatify.unmoddedPlayers.contains(getUUID())) {
-			if (Combatify.isPlayerAttacking.get(getUUID()) && Combatify.finalizingAttack.get(getUUID())){
+			if (Combatify.isPlayerAttacking.get(getUUID())){
 				Entity camera = getCamera();
 				if (camera != null) {
 					double d = ((PlayerExtensions) player).getAttackRange(0.0F) + 2;
@@ -118,9 +118,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 						case MISS:
 							handleInteract(player, false);
 					}
-					Combatify.finalizingAttack.put(getUUID(), true);
 				}
 			}
+			Combatify.finalizingAttack.put(getUUID(), true);
 			Combatify.isPlayerAttacking.put(getUUID(), true);
 		}
 		ci.cancel();

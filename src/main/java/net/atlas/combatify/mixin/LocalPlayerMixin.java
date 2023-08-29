@@ -8,9 +8,12 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
 import net.rizecookey.cookeymod.CookeyMod;
@@ -34,6 +37,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Shadow
 	private boolean startedUsingItem;
 
+	@Shadow
+	@Final
+	public ClientPacketListener connection;
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
@@ -64,6 +70,12 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 				}
 			}
 		}
+	}
+
+	@Override
+	public void customSwing(InteractionHand interactionHand) {
+		swing(interactionHand, false);
+		connection.send(new ServerboundSwingPacket(interactionHand));
 	}
 
 	@ModifyExpressionValue(method = "hasEnoughFoodToStartSprinting", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))

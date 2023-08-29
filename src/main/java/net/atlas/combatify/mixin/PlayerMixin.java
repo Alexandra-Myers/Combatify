@@ -11,11 +11,9 @@ import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.util.UtilClass;
 import net.atlas.combatify.extensions.*;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -218,7 +216,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void attackAir() {
 		if (this.isAttackAvailable(baseValue)) {
-			player.swing(InteractionHand.MAIN_HAND);
+			customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
 			if (attackDamage > 0.0F && this.checkSweepAttack()) {
 				float var2 = (float) this.getAttackRange(1.0F);
@@ -230,6 +228,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 			this.resetAttackStrengthTicker(false);
 		}
+	}
+	@Override
+	public void customSwing(InteractionHand interactionHand) {
+		swing(interactionHand, false);
 	}
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
