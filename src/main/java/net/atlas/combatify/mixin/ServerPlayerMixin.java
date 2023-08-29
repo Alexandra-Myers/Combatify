@@ -1,8 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.AABBExtensions;
-import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.extensions.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
@@ -38,6 +38,30 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 
 	public ServerPlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
+	}
+
+	@Inject(method = "tick", at = @At(value = "HEAD"))
+	public void addShieldCrouch(CallbackInfo ci) {
+		if(player.onGround() && Combatify.unmoddedPlayers.contains(player.getUUID())) {
+			for (InteractionHand interactionHand : InteractionHand.values()) {
+				if (player.isCrouching() && !player.isUsingItem()) {
+					ItemStack itemStack = ((LivingEntityExtensions) this.player).getBlockingItem();
+
+					Item blockingItem = getItemInHand(interactionHand).getItem();
+					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
+					if (!itemStack.isEmpty() && itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock() && player.isCrouching() && player.getItemInHand(interactionHand) == itemStack && !bl) {
+						if (!player.getCooldowns().isOnCooldown(itemStack.getItem())) {
+							player.startUsingItem(interactionHand);
+						}
+					}
+				} else if (player.isUsingItem() && !player.isCrouching()) {
+					ItemStack itemStack = this.player.getItemInHand(interactionHand);
+					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
+						player.releaseUsingItem();
+					}
+				}
+			}
+		}
 	}
 	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
@@ -74,14 +98,23 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 							hitResult = entityHitResult;
 						}
 					}
-					redirectResult(hitResult);
+					hitResult = redirectResult(hitResult);
 					Combatify.finalizingAttack.put(getUUID(), false);
 					switch (hitResult.getType()) {
 						case BLOCK:
 							this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
 							this.player.connection.ackBlockChangesUpTo(0);
 						case ENTITY:
-							handleInteract(((EntityHitResult) hitResult).getEntity(), true);
+							assert hitResult instanceof EntityHitResult;
+							Entity entity = ((EntityHitResult)hitResult).getEntity();
+							Vec3 vec31 = player.getEyePosition(0.0F);
+							Vec3 vec34 = ((AABBExtensions)entity.getBoundingBox()).getNearestPointTo(vec3);
+							double dist = vec31.distanceTo(vec34);
+							if (dist <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
+								handleInteract(entity, true);
+							} else {
+								handleInteract(player, false);
+							}
 						case MISS:
 							handleInteract(player, false);
 					}
