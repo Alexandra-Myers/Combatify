@@ -39,11 +39,6 @@ public class NetworkingHandler {
 				return InteractionResult.FAIL;
 			return InteractionResult.PASS;
 		});
-		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, entity, hitResult) -> {
-			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()))
-				return InteractionResult.FAIL;
-			return InteractionResult.PASS;
-		});
 		UseBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, hitResult) -> {
 			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
