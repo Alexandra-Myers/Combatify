@@ -23,9 +23,11 @@ public class NetworkingHandler {
 		ServerPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(server, player, handler, buf, responseSender) -> {
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
-			Timer timer = scheduleHitResult.get(handler.getPlayer().getUUID());
-			timer.cancel();
-			timer.purge();
+			if (unmoddedPlayers.contains(handler.player.getUUID())) {
+				Timer timer = scheduleHitResult.get(handler.getPlayer().getUUID());
+				timer.cancel();
+				timer.purge();
+			}
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
