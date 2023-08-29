@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
-public abstract class ServerPlayerMixin extends PlayerMixin {
+public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
 
 	private boolean retainAttack;
 
@@ -39,7 +39,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	@Shadow
 	public abstract void swing(InteractionHand interactionHand);
 
-	public HitResult[] oldHitResults = new HitResult[4];
+	public HitResult[] oldHitResults = new HitResult[12];
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -50,14 +50,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void addShieldCrouch(CallbackInfo ci) {
-		Entity camera = getCamera();
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			swing(InteractionHand.MAIN_HAND);
-		}
-		if (camera != null && Combatify.unmoddedPlayers.contains(player.getUUID())) {
-			oldHitResults[2] = oldHitResults[1];
-			oldHitResults[1] = oldHitResults[0];
-			oldHitResults[0] = pickResult(camera);
 		}
 		if(player.onGround() && Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			for (InteractionHand interactionHand : InteractionHand.values()) {
@@ -88,7 +82,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 				HitResult hitResult = null;
 				Entity camera = getCamera();
 				if (camera != null)
-					oldHitResults[3] = pickResult(camera);
+					oldHitResults[11] = pickResult(camera);
 				for (HitResult hitResultToChoose : oldHitResults) {
 					if(hitResultToChoose == null)
 						continue;
@@ -183,6 +177,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		}
 		return instance;
 	}
+	@Override
 	public HitResult pickResult(Entity camera) {
 		double d = ((PlayerExtensions) player).getAttackRange(0.0F) + 2;
 		HitResult hitResult = camera.pick(d, 1, false);
@@ -230,5 +225,19 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 				&& e.isPickable()
 				&& e instanceof LivingEntity)
 		);
+	}
+	@Override
+	public void adjustHitResults(HitResult newValue) {
+		oldHitResults[10] = oldHitResults[9];
+		oldHitResults[9] = oldHitResults[8];
+		oldHitResults[8] = oldHitResults[7];
+		oldHitResults[7] = oldHitResults[6];
+		oldHitResults[6] = oldHitResults[5];
+		oldHitResults[5] = oldHitResults[4];
+		oldHitResults[4] = oldHitResults[3];
+		oldHitResults[3] = oldHitResults[2];
+		oldHitResults[2] = oldHitResults[1];
+		oldHitResults[1] = oldHitResults[0];
+		oldHitResults[0] = newValue;
 	}
 }

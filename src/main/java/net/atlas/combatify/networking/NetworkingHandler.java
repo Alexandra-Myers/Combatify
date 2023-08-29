@@ -1,12 +1,18 @@
 package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -15,6 +21,11 @@ public class NetworkingHandler {
 	public NetworkingHandler() {
 
 		ServerPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(server, player, handler, buf, responseSender) -> {
+		});
+		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
+			Timer timer = scheduleHitResult.get(handler.getPlayer().getUUID());
+			timer.cancel();
+			timer.purge();
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
@@ -26,6 +37,18 @@ public class NetworkingHandler {
 				Combatify.unmoddedPlayers.add(handler.player.getUUID());
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
+				scheduleHitResult.put(handler.player.getUUID(), new Timer());
+				scheduleHitResult.get(handler.player.getUUID()).schedule(new TimerTask() {
+					@Override
+					public void run() {
+						ServerPlayer player = handler.player;
+						if (player != null) {
+							Entity camera = player.getCamera();
+							ServerPlayerExtensions serverPlayer = ((ServerPlayerExtensions) player);
+							serverPlayer.adjustHitResults(serverPlayer.pickResult(camera));
+						}
+					}
+				}, 0, 10);
 				return;
 			}
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
