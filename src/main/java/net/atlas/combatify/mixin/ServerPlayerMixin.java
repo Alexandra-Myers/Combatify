@@ -1,11 +1,13 @@
 package net.atlas.combatify.mixin;
 
+import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -17,7 +19,6 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +28,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.TimerTask;
+
+import static net.atlas.combatify.Combatify.scheduleHitResult;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
@@ -47,10 +52,22 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public ServerPlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
+	@Inject(method = "<init>", at = @At(value = "RETURN"))
+	public void schedule(MinecraftServer minecraftServer, ServerLevel serverLevel, GameProfile gameProfile, CallbackInfo ci) {
+		scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
+			@Override
+			public void run() {
+				Entity camera = player.getCamera();
+				ServerPlayerExtensions serverPlayer = ((ServerPlayerExtensions) player);
+				serverPlayer.adjustHitResults(serverPlayer.pickResult(camera));
+			}
+		}, 0, 10);
+	}
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void addShieldCrouch(CallbackInfo ci) {
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
+			retainAttack = false;
 			swing(InteractionHand.MAIN_HAND);
 		}
 		if(player.onGround() && Combatify.unmoddedPlayers.contains(player.getUUID())) {
@@ -101,12 +118,15 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 					Combatify.finalizingAttack.put(getUUID(), false);
 					switch (hitResult.getType()) {
 						case BLOCK:
-							this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
-							this.player.connection.ackBlockChangesUpTo(0);
+							if (hitResult instanceof BlockHitResult) {
+								this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
+								this.player.connection.ackBlockChangesUpTo(0);
+							}
 						case ENTITY:
-							assert hitResult instanceof EntityHitResult;
-							Entity entity = ((EntityHitResult) hitResult).getEntity();
-							handleInteract(entity, true);
+							if (hitResult instanceof EntityHitResult) {
+								Entity entity = ((EntityHitResult) hitResult).getEntity();
+								handleInteract(entity, true);
+							}
 						case MISS:
 							handleInteract(player, false);
 					}
@@ -129,7 +149,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				return;
 			}
 		}
-		retainAttack = false;
 		final ServerLevel serverLevel = this.player.serverLevel();
 		this.player.resetLastActionTime();
 		if (entity != null) {

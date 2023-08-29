@@ -40,17 +40,6 @@ public class NetworkingHandler {
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
 				scheduleHitResult.put(handler.player.getUUID(), new Timer());
-				scheduleHitResult.get(handler.player.getUUID()).schedule(new TimerTask() {
-					@Override
-					public void run() {
-						ServerPlayer player = handler.player;
-						if (player != null) {
-							Entity camera = player.getCamera();
-							ServerPlayerExtensions serverPlayer = ((ServerPlayerExtensions) player);
-							serverPlayer.adjustHitResults(serverPlayer.pickResult(camera));
-						}
-					}
-				}, 0, 10);
 				return;
 			}
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
