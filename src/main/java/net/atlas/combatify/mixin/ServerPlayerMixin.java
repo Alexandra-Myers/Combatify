@@ -28,6 +28,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin {
 
@@ -38,9 +40,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 
 	@Shadow
 	public abstract void swing(InteractionHand interactionHand);
-
-	public Vec3[] oldCameraEyePos = new Vec3[9];
-	public Vec3[] oldCameraViewVectors = new Vec3[9];
+	public HitResult[] oldHitResults = new HitResult[3];
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -56,24 +56,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 			swing(InteractionHand.MAIN_HAND);
 		}
 		if (camera != null && Combatify.unmoddedPlayers.contains(player.getUUID())) {
-			oldCameraEyePos[8] = oldCameraEyePos[7];
-			oldCameraEyePos[7] = oldCameraEyePos[6];
-			oldCameraEyePos[6] = oldCameraEyePos[5];
-			oldCameraEyePos[5] = oldCameraEyePos[4];
-			oldCameraEyePos[4] = oldCameraEyePos[3];
-			oldCameraEyePos[3] = oldCameraEyePos[2];
-			oldCameraEyePos[2] = oldCameraEyePos[1];
-			oldCameraEyePos[1] = oldCameraEyePos[0];
-			oldCameraEyePos[0] = camera.getEyePosition(1);
-			oldCameraViewVectors[8] = oldCameraViewVectors[7];
-			oldCameraViewVectors[7] = oldCameraViewVectors[6];
-			oldCameraViewVectors[6] = oldCameraViewVectors[5];
-			oldCameraViewVectors[5] = oldCameraViewVectors[4];
-			oldCameraViewVectors[4] = oldCameraViewVectors[3];
-			oldCameraViewVectors[3] = oldCameraViewVectors[2];
-			oldCameraViewVectors[2] = oldCameraViewVectors[1];
-			oldCameraViewVectors[1] = oldCameraViewVectors[0];
-			oldCameraViewVectors[0] = camera.getViewVector(1);
+			oldHitResults[2] = oldHitResults[1];
+			oldHitResults[1] = oldHitResults[0];
+			oldHitResults[0] = pickResult(camera);
 		}
 		if(player.onGround() && Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			for (InteractionHand interactionHand : InteractionHand.values()) {
@@ -100,95 +85,19 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
 		super.swing(hand);
 		if(Combatify.unmoddedPlayers.contains(getUUID())) {
-			if (Combatify.isPlayerAttacking.get(getUUID())){
-				Entity camera = getCamera();
-				if (camera != null) {
-					double d = ((PlayerExtensions) player).getAttackRange(0.0F) + 2;
-					HitResult hitResult = camera.pick(d, 1, false);
-					Vec3 eyePosition = camera.getEyePosition(1.0F);
-					oldCameraEyePos[0] = eyePosition;
-					Vec3 viewVector = camera.getViewVector(1.0F);
-					oldCameraViewVectors[0] = viewVector;
-					Vec3 basedOffPos = eyePosition;
-					Vec3 basedOffVect = viewVector;
-					for (int i = 0; i < 9; i++) {
-						for (int j = 0; j < 9; j++) {
-							if (hitResult.getType() == HitResult.Type.MISS) {
-								Vec3 oldEyePos = oldCameraEyePos[i];
-								Vec3 oldVector = oldCameraViewVectors[j];
-								if(oldVector == null || oldEyePos == null)
-									continue;
-								hitResult = pickFromCamera(d, false, camera, oldEyePos, oldVector);
-								if (hitResult.getType() != HitResult.Type.MISS) {
-									basedOffPos = oldEyePos;
-									basedOffVect = oldVector;
-								}
-							}
-						}
-					}
-					boolean bl = false;
-					double e = d;
-					if (d > ((PlayerExtensions) player).getAttackRange(0.0F)) {
-						bl = true;
-					}
-
-					e *= e;
-					if (hitResult != null) {
-						e = hitResult.getLocation().distanceToSqr(eyePosition);
-					}
-					Vec3 vec32 = eyePosition.add(viewVector.x * d, viewVector.y * d, viewVector.z * d);
-					AABB aABB = camera.getBoundingBox().expandTowards(viewVector.scale(d)).inflate(1.0, 1.0, 1.0);
-					EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(camera, eyePosition, vec32, aABB, (entityx) ->
-						!entityx.isSpectator() && entityx.isPickable(), e);
-					boolean baseResultWorked = true;
-					for (int j = 0; j < 9; j++) {
-						for (int i = 0; i < 9; i++) {
-							if (entityHitResult == null) {
-								baseResultWorked = false;
-								Vec3 oldVector = oldCameraViewVectors[i];
-								Vec3 oldEyePos = oldCameraEyePos[j];
-								if(oldVector == null || oldEyePos == null)
-									continue;
-								vec32 = oldEyePos.add(oldVector.x * d, oldVector.y * d, oldVector.z * d);
-								aABB = camera.getBoundingBox().expandTowards(oldVector.scale(d)).inflate(1.0, 1.0, 1.0);
-								entityHitResult = ProjectileUtil.getEntityHitResult(camera, oldEyePos, vec32, aABB, (entityx) ->
-									!entityx.isSpectator() && entityx.isPickable(), e);
-								if(entityHitResult != null) {
-									basedOffPos = oldEyePos;
-									basedOffVect = oldVector;
-									break;
-								}
-							} else {
-								if (baseResultWorked) {
-									basedOffPos = eyePosition;
-									basedOffVect = viewVector;
-								}
-								break;
-							}
-						}
-					}
-					if (entityHitResult != null) {
-						Vec3 vec33 = entityHitResult.getLocation();
-						double h = eyePosition.distanceToSqr(vec33);
-						if (bl && h > ((PlayerExtensions) player).getSquaredAttackRange(0.0F)) {
-							hitResult = BlockHitResult.miss(vec33, Direction.getNearest(viewVector.x, viewVector.y, viewVector.z), BlockPos.containing(vec33));
-						} else if (h < e || hitResult == null) {
-							hitResult = entityHitResult;
-						}
-					}
-					hitResult = redirectResult(hitResult, basedOffPos, basedOffVect);
-					Combatify.finalizingAttack.put(getUUID(), false);
-					switch (hitResult.getType()) {
-						case BLOCK:
-							this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
-							this.player.connection.ackBlockChangesUpTo(0);
-						case ENTITY:
-							assert hitResult instanceof EntityHitResult;
-							Entity entity = ((EntityHitResult)hitResult).getEntity();
-							handleInteract(entity, true, basedOffPos);
-						case MISS:
-							handleInteract(player, false, basedOffPos);
-					}
+			if (Combatify.isPlayerAttacking.get(getUUID())) {
+				HitResult hitResult = oldHitResults[2];
+				Combatify.finalizingAttack.put(getUUID(), false);
+				switch (hitResult.getType()) {
+					case BLOCK:
+						this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
+						this.player.connection.ackBlockChangesUpTo(0);
+					case ENTITY:
+						assert hitResult instanceof EntityHitResult;
+						Entity entity = ((EntityHitResult) hitResult).getEntity();
+						handleInteract(entity, true);
+					case MISS:
+						handleInteract(player, false);
 				}
 			}
 			Combatify.finalizingAttack.put(getUUID(), true);
@@ -200,7 +109,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		Vec3 vectorEnd = eyePos.add(viewVect.x * d, viewVect.y * d, viewVect.z * d);
 		return camera.level().clip(new ClipContext(eyePos, vectorEnd, ClipContext.Block.OUTLINE, bl ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, this));
 	}
-	public void handleInteract(Entity entity, boolean hit, Vec3 eyePos) {
+	public void handleInteract(Entity entity, boolean hit) {
 		if(!isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
@@ -226,6 +135,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 			}
 
 			AABB aABB = entity.getBoundingBox();
+			Vec3 eyePos = player.getEyePosition(0.0F);
 			if (eyePos.distanceToSqr(((AABBExtensions)aABB).getNearestPointTo(eyePos)) < d) {
 				if(hit) {
 					if (!(entity instanceof ItemEntity) && !(entity instanceof ExperienceOrb) && !(entity instanceof AbstractArrow) && entity != player) {
@@ -244,13 +154,13 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		}
 
 	}
-	public final HitResult redirectResult(HitResult instance, Vec3 from, Vec3 look) {
+	public final HitResult redirectResult(HitResult instance) {
 		if(instance.getType() == HitResult.Type.BLOCK) {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			boolean bl = !level().getBlockState(blockPos).canOcclude() && !level().getBlockState(blockPos).getBlock().hasCollision;
 			assert player != null;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, from, look, ((PlayerExtensions)player).getAttackRange(0.0F));
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
 			if (rayTraceResult != null && bl) {
 				return rayTraceResult;
 			} else {
@@ -259,8 +169,41 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		}
 		return instance;
 	}
+	public HitResult pickResult(Entity camera) {
+		double d = ((PlayerExtensions) player).getAttackRange(0.0F) + 2;
+		HitResult hitResult = camera.pick(d, 1, false);
+		Vec3 eyePosition = camera.getEyePosition(1.0F);
+		Vec3 viewVector = camera.getViewVector(1.0F);
+		boolean bl = false;
+		double e = d;
+		if (d > ((PlayerExtensions) player).getAttackRange(0.0F)) {
+			bl = true;
+		}
+
+		e *= e;
+		if (hitResult != null) {
+			e = hitResult.getLocation().distanceToSqr(eyePosition);
+		}
+		Vec3 vec32 = eyePosition.add(viewVector.x * d, viewVector.y * d, viewVector.z * d);
+		AABB aABB = camera.getBoundingBox().expandTowards(viewVector.scale(d)).inflate(1.0, 1.0, 1.0);
+		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(camera, eyePosition, vec32, aABB, (entityx) ->
+			!entityx.isSpectator() && entityx.isPickable(), e);
+		if (entityHitResult != null) {
+			Vec3 vec33 = entityHitResult.getLocation();
+			double h = eyePosition.distanceToSqr(vec33);
+			if (bl && h > ((PlayerExtensions) player).getSquaredAttackRange(0.0F)) {
+				hitResult = BlockHitResult.miss(vec33, Direction.getNearest(viewVector.x, viewVector.y, viewVector.z), BlockPos.containing(vec33));
+			} else if (h < e || hitResult == null) {
+				hitResult = entityHitResult;
+			}
+		}
+		hitResult = redirectResult(hitResult);
+		return hitResult;
+	}
 	@Nullable
-	public EntityHitResult rayTraceEntity(Player player, Vec3 from, Vec3 look, double blockReachDistance) {
+	public EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
+		Vec3 from = getEyePosition(partialTicks);
+		Vec3 look = getViewVector(partialTicks);
 		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
 
 		return ProjectileUtil.getEntityHitResult(
