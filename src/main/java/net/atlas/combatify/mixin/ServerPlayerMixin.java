@@ -99,10 +99,14 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 					for (int i = 0; i < 2; i++) {
 						for (int j = 0; j < 9; j++) {
 							if (hitResult.getType() == HitResult.Type.MISS) {
-								hitResult = pickFromCamera(d, false, camera, oldCameraEyePos[i], oldCameraViewVectors[j]);
+								Vec3 oldEyePos = oldCameraEyePos[i];
+								Vec3 oldVector = oldCameraViewVectors[j];
+								if(oldVector == null || oldEyePos == null)
+									continue;
+								hitResult = pickFromCamera(d, false, camera, oldEyePos, oldVector);
 								if (hitResult.getType() != HitResult.Type.MISS) {
-									basedOffPos = oldCameraEyePos[i];
-									basedOffVect = oldCameraViewVectors[j];
+									basedOffPos = oldEyePos;
+									basedOffVect = oldVector;
 								}
 							}
 						}
@@ -128,6 +132,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 								baseResultWorked = false;
 								Vec3 oldVector = oldCameraViewVectors[i];
 								Vec3 oldEyePos = oldCameraEyePos[j];
+								if(oldVector == null || oldEyePos == null)
+									continue;
 								vec32 = oldEyePos.add(oldVector.x * d, oldVector.y * d, oldVector.z * d);
 								aABB = camera.getBoundingBox().expandTowards(oldVector.scale(d)).inflate(1.0, 1.0, 1.0);
 								entityHitResult = ProjectileUtil.getEntityHitResult(camera, oldEyePos, vec32, aABB, (entityx) ->
