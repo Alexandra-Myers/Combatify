@@ -18,6 +18,7 @@ public class CombatifyConfigModel {
 	public boolean sprintCritsEnabled = true;
 	public boolean saturationHealing = false;
 	public boolean fastHealing = false;
+	public boolean letVanillaConnect = false;
 	public boolean oldSprintFoodRequirement = false;
 	public boolean projectilesHaveIFrames = false;
 	public boolean magicHasIFrames = true;

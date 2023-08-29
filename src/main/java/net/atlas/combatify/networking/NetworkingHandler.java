@@ -17,13 +17,19 @@ public class NetworkingHandler {
 		ServerPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(server, player, handler, buf, responseSender) -> {
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
-			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer();
+			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, modDetectionNetworkChannel)) {
-				if(bl)
+				if(bl) {
 					handler.player.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
+					return;
+				}
 				Combatify.unmoddedPlayers.add(handler.player.getUUID());
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
+			} else if (unmoddedPlayers.contains(handler.player.getUUID())) {
+				unmoddedPlayers.remove(handler.player.getUUID());
+				isPlayerAttacking.remove(handler.player.getUUID());
+				finalizingAttack.remove(handler.player.getUUID());
 			}
 		});
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {

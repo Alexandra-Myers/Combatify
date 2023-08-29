@@ -41,6 +41,7 @@
   "text.config.combatify-config.option.sprintCritsEnabled": "Can crit while sprinting",
   "text.config.combatify-config.option.saturationHealing": "Healing relies on saturation as a buffer, rather than just taking hunger",
   "text.config.combatify-config.option.fastHealing": "Allows for fast healing like in 1.11+ when you have high saturation",
+  "text.config.combatify-config.option.letVanillaConnect": "Option for servers which allows vanilla clients to connect",
   "text.config.combatify-config.option.oldSprintFoodRequirement": "Allows you to sprint until your hunger is empty like in CTS 5",
   "text.config.combatify-config.option.projectilesHaveIFrames": "Determines if projectile damage sources have I-Frames",
   "text.config.combatify-config.option.magicHasIFrames": "Determines if magic damage sources have I-Frames",
