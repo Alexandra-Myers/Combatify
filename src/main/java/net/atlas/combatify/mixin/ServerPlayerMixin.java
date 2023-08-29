@@ -57,9 +57,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
 			@Override
 			public void run() {
-				Entity camera = player.getCamera();
-				ServerPlayerExtensions serverPlayer = ((ServerPlayerExtensions) player);
-				serverPlayer.adjustHitResults(serverPlayer.pickResult(camera));
+				Entity camera = getCamera();
+				if (camera != null) {
+					adjustHitResults(pickResult(camera));
+				}
 			}
 		}, 0, 10);
 	}
