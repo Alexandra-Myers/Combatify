@@ -28,8 +28,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin {
 
@@ -104,10 +102,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 			Combatify.isPlayerAttacking.put(getUUID(), true);
 		}
 		ci.cancel();
-	}
-	public HitResult pickFromCamera(double d, boolean bl, Entity camera, Vec3 eyePos, Vec3 viewVect) {
-		Vec3 vectorEnd = eyePos.add(viewVect.x * d, viewVect.y * d, viewVect.z * d);
-		return camera.level().clip(new ClipContext(eyePos, vectorEnd, ClipContext.Block.OUTLINE, bl ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, this));
 	}
 	public void handleInteract(Entity entity, boolean hit) {
 		if(!isAttackAvailable(0.0F)) {
