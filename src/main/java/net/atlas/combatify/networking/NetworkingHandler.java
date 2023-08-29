@@ -26,7 +26,9 @@ public class NetworkingHandler {
 				Combatify.unmoddedPlayers.add(handler.player.getUUID());
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
-			} else if (unmoddedPlayers.contains(handler.player.getUUID())) {
+				return;
+			}
+			if (unmoddedPlayers.contains(handler.player.getUUID())) {
 				unmoddedPlayers.remove(handler.player.getUUID());
 				isPlayerAttacking.remove(handler.player.getUUID());
 				finalizingAttack.remove(handler.player.getUUID());
