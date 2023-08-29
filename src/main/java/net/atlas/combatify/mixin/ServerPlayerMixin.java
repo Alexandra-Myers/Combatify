@@ -55,7 +55,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			swing(InteractionHand.MAIN_HAND);
 		}
-		if (camera != null) {
+		if (camera != null && Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			oldCameraEyePos[8] = oldCameraEyePos[7];
 			oldCameraEyePos[7] = oldCameraEyePos[6];
 			oldCameraEyePos[6] = oldCameraEyePos[5];
