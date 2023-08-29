@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(ClientboundUpdateAttributesPacket.class)
@@ -19,12 +20,17 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 
 	@Override
 	public void changeAttributes(ServerPlayer reciever) {
-		attributes.forEach(attributeSnapshot -> {
-			if(attributeSnapshot.getAttribute() == Attributes.ATTACK_SPEED && Combatify.unmoddedPlayers.contains(reciever.getUUID())) {
-				int index = attributes.indexOf(attributeSnapshot);
-				attributes.remove(attributeSnapshot);
+		List<Integer> indexes = new ArrayList<>();
+		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
+			if (attributeSnapshot.getAttribute() == Attributes.ATTACK_SPEED && Combatify.unmoddedPlayers.contains(reciever.getUUID())) {
+				indexes.add(attributes.indexOf(attributeSnapshot));
+			}
+		}
+		if (!indexes.isEmpty()) {
+			for (Integer index : indexes) {
+				ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot = attributes.remove(index.intValue());
 				attributes.add(index, new ClientboundUpdateAttributesPacket.AttributeSnapshot(attributeSnapshot.getAttribute(), attributeSnapshot.getBase() - 1.5, attributeSnapshot.getModifiers()));
 			}
-		});
+		}
 	}
 }
