@@ -38,7 +38,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 
 	@Shadow
 	public abstract void swing(InteractionHand interactionHand);
-	public HitResult[] oldHitResults = new HitResult[3];
+
+	public HitResult[] oldHitResults = new HitResult[4];
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -84,18 +85,37 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 		super.swing(hand);
 		if(Combatify.unmoddedPlayers.contains(getUUID())) {
 			if (Combatify.isPlayerAttacking.get(getUUID())) {
-				HitResult hitResult = oldHitResults[2];
-				Combatify.finalizingAttack.put(getUUID(), false);
-				switch (hitResult.getType()) {
-					case BLOCK:
-						this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
-						this.player.connection.ackBlockChangesUpTo(0);
-					case ENTITY:
-						assert hitResult instanceof EntityHitResult;
-						Entity entity = ((EntityHitResult) hitResult).getEntity();
-						handleInteract(entity, true);
-					case MISS:
-						handleInteract(player, false);
+				HitResult hitResult = null;
+				Entity camera = getCamera();
+				if (camera != null)
+					oldHitResults[3] = pickResult(camera);
+				for (HitResult hitResultToChoose : oldHitResults) {
+					if(hitResultToChoose == null)
+						continue;
+					if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
+						hitResult = hitResultToChoose;
+						break;
+					}
+					if (hitResultToChoose.getType() == HitResult.Type.BLOCK) {
+						hitResult = hitResultToChoose;
+					}
+					if (hitResultToChoose.getType() == HitResult.Type.MISS && hitResult == null) {
+						hitResult = hitResultToChoose;
+					}
+				}
+				if (hitResult != null) {
+					Combatify.finalizingAttack.put(getUUID(), false);
+					switch (hitResult.getType()) {
+						case BLOCK:
+							this.player.gameMode.handleBlockBreakAction(((BlockHitResult) hitResult).getBlockPos(), ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, ((BlockHitResult) hitResult).getDirection(), this.player.level().getMaxBuildHeight(), 0);
+							this.player.connection.ackBlockChangesUpTo(0);
+						case ENTITY:
+							assert hitResult instanceof EntityHitResult;
+							Entity entity = ((EntityHitResult) hitResult).getEntity();
+							handleInteract(entity, true);
+						case MISS:
+							handleInteract(player, false);
+					}
 				}
 			}
 			Combatify.finalizingAttack.put(getUUID(), true);
