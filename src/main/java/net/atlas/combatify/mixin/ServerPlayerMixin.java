@@ -55,7 +55,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
-	public void addShieldCrouch(CallbackInfo ci) {
+	public void hitreg(CallbackInfo ci) {
 		if (shouldInit && Combatify.unmoddedPlayers.contains(getUUID())) {
 			scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
 				@Override
@@ -71,26 +71,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
 			swing(InteractionHand.MAIN_HAND);
-		}
-		if(player.onGround() && Combatify.unmoddedPlayers.contains(player.getUUID())) {
-			for (InteractionHand interactionHand : InteractionHand.values()) {
-				if (player.isCrouching() && !player.isUsingItem()) {
-					ItemStack itemStack = ((LivingEntityExtensions) this.player).getBlockingItem();
-
-					Item blockingItem = getItemInHand(interactionHand).getItem();
-					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock() && player.isCrouching() && player.getItemInHand(interactionHand) == itemStack && !bl) {
-						if (!player.getCooldowns().isOnCooldown(itemStack.getItem())) {
-							player.startUsingItem(interactionHand);
-						}
-					}
-				} else if (player.isUsingItem() && !player.isCrouching()) {
-					ItemStack itemStack = this.player.getItemInHand(interactionHand);
-					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
-						player.releaseUsingItem();
-					}
-				}
-			}
 		}
 	}
 	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
