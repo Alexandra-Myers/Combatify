@@ -90,10 +90,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin {
 						case MISS:
 							handleInteract(player, false);
 					}
+					Combatify.finalizingAttack.put(getUUID(), true);
 				}
 			}
 			Combatify.isPlayerAttacking.put(getUUID(), true);
-			Combatify.finalizingAttack.put(getUUID(), true);
 		}
 		ci.cancel();
 	}
