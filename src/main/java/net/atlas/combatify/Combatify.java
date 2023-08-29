@@ -24,7 +24,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
@@ -36,6 +38,8 @@ public class Combatify implements ModInitializer {
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
+	public static Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
+	public static Map<UUID, Boolean> finalizingAttack = new HashMap<>();
 
 	@Override
 	public void onInitialize() {

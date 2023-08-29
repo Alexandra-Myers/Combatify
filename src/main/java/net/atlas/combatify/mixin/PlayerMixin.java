@@ -11,9 +11,11 @@ import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.util.UtilClass;
 import net.atlas.combatify.extensions.*;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -23,6 +25,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -92,6 +95,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
 		return original.add(NewAttributes.ATTACK_REACH);
+	}
+	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
+	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
+		if(Combatify.unmoddedPlayers.contains(player.getUUID())) {
+			Combatify.isPlayerAttacking.put(player.getUUID(), false);
+		}
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {

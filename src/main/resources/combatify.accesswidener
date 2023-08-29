@@ -43,3 +43,4 @@ accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket$A
 accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket$ActionType
 accessible method net/minecraft/network/protocol/game/ServerboundInteractPacket <init> (IZLnet/minecraft/network/protocol/game/ServerboundInteractPacket$Action;)V
 accessible class net/minecraft/resources/ResourceLocation$Dummy
+accessible field net/minecraft/server/network/ServerGamePacketListenerImpl LOGGER Lorg/slf4j/Logger;
