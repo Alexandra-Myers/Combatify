@@ -33,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.TimerTask;
 
 import static net.atlas.combatify.Combatify.scheduleHitResult;
