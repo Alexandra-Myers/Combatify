@@ -33,6 +33,7 @@ public class CombatifyConfigModel {
 	public boolean attackSpeed = true;
 	public boolean ctsAttackBalancing = true;
 	public boolean eatingInterruption = true;
+	public boolean improvedMiscEntityAttacks = false;
 	@SectionHeader("Integers")
 	@RangeConstraint(min = -3, max = 4)
 	public int swordProtectionEfficacy = 0;

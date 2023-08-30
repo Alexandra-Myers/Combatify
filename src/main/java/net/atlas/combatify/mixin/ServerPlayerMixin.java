@@ -150,9 +150,13 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		ci.cancel();
 	}
 	public void handleInteract(Entity entity, boolean hit) {
-		if(!isAttackAvailable(0.0F)) {
+		if (retainAttack) {
+			return;
+		}
+		if (!isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
+				resetAttackStrengthTicker(!getMissedAttackRecovery());
 				return;
 			}
 

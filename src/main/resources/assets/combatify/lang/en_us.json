@@ -54,6 +54,7 @@
   "text.config.combatify-config.option.attackSpeed": "If disabled and your tool is maxed attack speed, will prevent attacks from resetting. If all speed configs are maxed out, will also apply to every other item, and your fists.",
   "text.config.combatify-config.option.ctsAttackBalancing": "Determines whether or not weapons will deal less damage than they do in 1.9",
   "text.config.combatify-config.option.eatingInterruption": "Eating Interruption Enabled",
+  "text.config.combatify-config.option.improvedMiscEntityAttacks": "Makes End Crystals, Paintings, and Item Frames trigger missed attack recovery so 100% charge is not needed to hit again.",
   "text.config.combatify-config.option.maxWaitForPacketResponse": "Ticks to wait before disconnecting from server",
   "text.config.combatify-config.option.swordProtectionEfficacy": "Modifies the strength of sword blocking by intervals of 0.125",
   "text.config.combatify-config.option.potionUseDuration": "Potion Use Duration",
