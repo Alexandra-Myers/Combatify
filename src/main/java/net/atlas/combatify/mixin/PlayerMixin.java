@@ -252,12 +252,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
-		float f = (float)(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue()) - 1.5F;
+		float f = (float)(getAttributeValue(Attributes.ATTACK_SPEED)) - 1.5F;
 		f = Mth.clamp(f, 0.1F, 1024.0F);
 		cir.setReturnValue(1.0F / f * 20.0F + 0.5F);
 	}
 
-	@Inject(method = "getAttackStrengthScale", at = @At(value = "RETURN"), cancellable = true)
+	@Inject(method = "getAttackStrengthScale", at = @At(value = "HEAD"), cancellable = true)
 	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
 		if (this.attackStrengthStartValue == 0) {
 			cir.setReturnValue(2.0F);

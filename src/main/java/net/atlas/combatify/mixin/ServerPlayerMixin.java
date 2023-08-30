@@ -15,11 +15,12 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.TimerTask;
 
 import static net.atlas.combatify.Combatify.scheduleHitResult;
@@ -42,7 +44,11 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Shadow
 	public abstract void swing(InteractionHand interactionHand);
 
-	public HitResult[] oldHitResults = new HitResult[12];
+	@Shadow
+	@Final
+	private static Logger LOGGER;
+	public ArrayList<HitResult> oldHitResults = new ArrayList<>();
+	public int maxCount = 101;
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -65,7 +71,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						adjustHitResults(pickResult(camera));
 					}
 				}
-			}, 0, 10);
+			}, 0, 1);
 			shouldInit = false;
 		}
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
@@ -80,8 +86,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			if (Combatify.isPlayerAttacking.get(getUUID())) {
 				HitResult hitResult = null;
 				Entity camera = getCamera();
-				if (camera != null)
-					oldHitResults[11] = pickResult(camera);
+				if (camera != null) {
+					oldHitResults.set(0, pickResult(camera));
+				}
 				for (HitResult hitResultToChoose : oldHitResults) {
 					if(hitResultToChoose == null)
 						continue;
@@ -229,16 +236,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 	@Override
 	public void adjustHitResults(HitResult newValue) {
-		oldHitResults[10] = oldHitResults[9];
-		oldHitResults[9] = oldHitResults[8];
-		oldHitResults[8] = oldHitResults[7];
-		oldHitResults[7] = oldHitResults[6];
-		oldHitResults[6] = oldHitResults[5];
-		oldHitResults[5] = oldHitResults[4];
-		oldHitResults[4] = oldHitResults[3];
-		oldHitResults[3] = oldHitResults[2];
-		oldHitResults[2] = oldHitResults[1];
-		oldHitResults[1] = oldHitResults[0];
-		oldHitResults[0] = newValue;
+		oldHitResults.add(1, newValue);
+		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) > maxCount);
+		LOGGER.info("Adjusted results");
 	}
 }
