@@ -81,7 +81,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						adjustHitResults(pickResult(camera));
 					}
 				}
-			}, 0, 1);
+			}, 0, 5);
 			shouldInit = false;
 		}
 		tickTimer++;
@@ -263,16 +263,13 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (awaitingResponse)
 			responseTimer++;
 		if (!awaitingResponse && responseTimer > 0) {
-			pastPings.add(Mth.ceil(responseTimer / 2.0f));
+			pastPings.add(Mth.ceil(responseTimer * 2.5));
 			pastPings.removeIf(pastPing -> pastPings.indexOf(pastPing) > 5);
 			responseTimer = 0;
-			int averagePing = 0;
-			for (Integer ping : pastPings) {
-				assert ping != null;
-				averagePing += ping;
-			}
-			averagePing /= pastPings.size();
-			currentAveragePing = averagePing + 25;
+			int averagePing;
+			int index = Mth.floor(pastPings.size() * 0.5);
+			averagePing = pastPings.get(index);
+			currentAveragePing = Math.max(averagePing, 25);
 		}
 		if (oldHitResults.size() > 1)
 			oldHitResults.add(1, newValue);
