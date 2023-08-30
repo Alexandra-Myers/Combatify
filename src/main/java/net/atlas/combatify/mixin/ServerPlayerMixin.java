@@ -271,14 +271,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			responseTimer++;
 		if (!awaitingResponse && responseTimer > 0) {
 			double mul = 2.5;
-			mul /= 3;
-			mul *= 2;
 			pastPings.add(0, Mth.ceil(responseTimer * mul));
 			pastPings.removeIf(pastPing -> pastPings.indexOf(pastPing) > 5);
 			responseTimer = 0;
 			Collections.sort(pastPings);
 			int averagePing = pastPings.get(2);
-			currentAveragePing = Mth.clamp(averagePing, 25, 100);
+			currentAveragePing = Mth.clamp(averagePing, 25, 200);
 		}
 		if (oldHitResults.size() > 1)
 			oldHitResults.add(1, newValue);
