@@ -236,7 +236,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 	@Override
 	public void adjustHitResults(HitResult newValue) {
-		oldHitResults.add(1, newValue);
+		if (oldHitResults.size() > 1)
+			oldHitResults.add(1, newValue);
+		else
+			oldHitResults.add(newValue);
 		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) > maxCount);
 		LOGGER.info("Adjusted results");
 	}
