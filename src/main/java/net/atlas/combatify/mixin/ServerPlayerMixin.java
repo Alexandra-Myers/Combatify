@@ -49,7 +49,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Final
 	private static Logger LOGGER;
 	public ArrayList<HitResult> oldHitResults = new ArrayList<>();
-	public int maxCount = 201;
+	public int maxCount = 101;
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
