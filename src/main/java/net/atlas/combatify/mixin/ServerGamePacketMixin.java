@@ -5,8 +5,10 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundPongPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
@@ -23,8 +25,10 @@ public abstract class ServerGamePacketMixin {
 	public ServerPlayer player;
 	@Unique Entity targetEntity;
 
-	@Inject(method = "handleInteract", at = @At(value = "HEAD"))
+	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
+		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
+			ci.cancel();
 		Combatify.player = player;
 	}
 
@@ -41,6 +45,7 @@ public abstract class ServerGamePacketMixin {
 		Vec3 vec3 = player.getEyePosition(0.0F);
 		return vec3.distanceToSqr(((AABBExtensions)instance).getNearestPointTo(vec3));
 	}
+	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange(double original, @Local(ordinal = 0) Entity entity) {
@@ -60,6 +65,12 @@ public abstract class ServerGamePacketMixin {
 	@Inject(method = "handleInteract", at = @At("HEAD"))
 	private void handleInteract(ServerboundInteractPacket packet, CallbackInfo ci) {
 		targetEntity = packet.getTarget(player.serverLevel());
+	}
+	@Inject(method = "handlePong", at = @At(value = "HEAD"))
+	public void getPing(ServerboundPongPacket serverboundPongPacket, CallbackInfo ci) {
+		if (serverboundPongPacket.getId() == 3492 && Combatify.unmoddedPlayers.contains(player.getUUID()) && ((ServerPlayerExtensions)player).isAwaitingResponse()) {
+			((ServerPlayerExtensions) player).setAwaitingResponse(false);
+		}
 	}
 
 }

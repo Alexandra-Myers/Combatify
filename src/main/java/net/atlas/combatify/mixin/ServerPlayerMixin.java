@@ -6,10 +6,12 @@ import net.atlas.combatify.util.CombatUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundPingPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -48,8 +50,14 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Shadow
 	@Final
 	private static Logger LOGGER;
+	@Shadow
+	public ServerGamePacketListenerImpl connection;
 	public ArrayList<HitResult> oldHitResults = new ArrayList<>();
-	public int maxCount = 101;
+	public ArrayList<Integer> pastPings = new ArrayList<>();
+	public boolean awaitingResponse = false;
+	public int responseTimer = 0;
+	public int tickTimer = 4;
+	public int currentAveragePing = 0;
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -75,6 +83,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				}
 			}, 0, 1);
 			shouldInit = false;
+		}
+		tickTimer++;
+		if(tickTimer >= 5 && Combatify.unmoddedPlayers.contains(getUUID()) && !awaitingResponse) {
+			tickTimer = 0;
+			connection.send(new ClientboundPingPacket(3492));
+			awaitingResponse = true;
 		}
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
@@ -246,11 +260,35 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 	@Override
 	public void adjustHitResults(HitResult newValue) {
+		if (awaitingResponse)
+			responseTimer++;
+		if (!awaitingResponse && responseTimer > 0) {
+			pastPings.add(Mth.ceil(responseTimer / 2.0f));
+			pastPings.removeIf(pastPing -> pastPings.indexOf(pastPing) > 5);
+			responseTimer = 0;
+			int averagePing = 0;
+			for (Integer ping : pastPings) {
+				assert ping != null;
+				averagePing += ping;
+			}
+			averagePing /= pastPings.size();
+			currentAveragePing = averagePing + 25;
+		}
 		if (oldHitResults.size() > 1)
 			oldHitResults.add(1, newValue);
 		else
 			oldHitResults.add(newValue);
-		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) > maxCount);
+		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) > currentAveragePing + 1);
 		LOGGER.info("Adjusted results");
+	}
+
+	@Override
+	public void setAwaitingResponse(boolean awaitingResponse) {
+		this.awaitingResponse = awaitingResponse;
+	}
+
+	@Override
+	public boolean isAwaitingResponse() {
+		return awaitingResponse;
 	}
 }
