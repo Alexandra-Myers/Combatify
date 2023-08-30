@@ -2,6 +2,7 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.CombatUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -48,7 +49,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Final
 	private static Logger LOGGER;
 	public ArrayList<HitResult> oldHitResults = new ArrayList<>();
-	public int maxCount = 101;
+	public int maxCount = 201;
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -62,6 +63,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void hitreg(CallbackInfo ci) {
+		CombatUtil.setPosition((ServerPlayer)(Object)this);
 		if (shouldInit && Combatify.unmoddedPlayers.contains(getUUID())) {
 			scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
 				@Override
@@ -152,7 +154,15 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 
 			AABB aABB = entity.getBoundingBox();
 			Vec3 eyePos = player.getEyePosition(0.0F);
-			if (eyePos.distanceToSqr(((AABBExtensions)aABB).getNearestPointTo(eyePos)) < d) {
+			double dist = eyePos.distanceToSqr(((AABBExtensions)aABB).getNearestPointTo(eyePos));
+			if (entity instanceof ServerPlayer target) {
+				if (CombatUtil.allowReach(player, target)) {
+					dist = 0;
+				} else {
+					dist = Integer.MAX_VALUE;
+				}
+			}
+			if (dist < d) {
 				if(hit) {
 					if (!(entity instanceof ItemEntity) && !(entity instanceof ExperienceOrb) && !(entity instanceof AbstractArrow) && entity != player) {
 						ItemStack itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);

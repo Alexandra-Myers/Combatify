@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.util.CombatUtil;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerGamePacketMixin {
 	@Shadow
 	public ServerPlayer player;
+	@Unique Entity targetEntity;
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"))
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
@@ -28,6 +30,14 @@ public abstract class ServerGamePacketMixin {
 
 	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))
 	public double redirectCheck(AABB instance, Vec3 old) {
+		if (targetEntity instanceof ServerPlayer target) {
+			if (CombatUtil.allowReach(player, target)) {
+				return 0;
+			} else {
+				return Integer.MAX_VALUE;
+			}
+		}
+		// If target is not a player do vanilla code
 		Vec3 vec3 = player.getEyePosition(0.0F);
 		return vec3.distanceToSqr(((AABBExtensions)instance).getNearestPointTo(vec3));
 	}
@@ -39,6 +49,17 @@ public abstract class ServerGamePacketMixin {
 		if(!player.hasLineOfSight(entity)) {
 			d = 6.25;
 		}
+
 		return d;
 	}
+	/**
+	 *  Credits to <a href="https://github.com/Blumbo/CTS-AntiCheat/tree/master">Blumbo's CTS Anti-Cheat</a>, integrated into Combatify from there <br>
+	 *  <h4>Licensed under MIT</h4> <br>
+	 *  Stores the target for use later.
+	 */
+	@Inject(method = "handleInteract", at = @At("HEAD"))
+	private void handleInteract(ServerboundInteractPacket packet, CallbackInfo ci) {
+		targetEntity = packet.getTarget(player.serverLevel());
+	}
+
 }
