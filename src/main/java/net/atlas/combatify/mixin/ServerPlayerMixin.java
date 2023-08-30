@@ -32,6 +32,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.TimerTask;
 
 import static net.atlas.combatify.Combatify.scheduleHitResult;
@@ -73,6 +75,11 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public void hitreg(CallbackInfo ci) {
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
 		if (shouldInit && Combatify.unmoddedPlayers.contains(getUUID())) {
+			pastPings.add(0);
+			pastPings.add(0);
+			pastPings.add(0);
+			pastPings.add(0);
+			pastPings.add(0);
 			scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
 				@Override
 				public void run() {
@@ -263,11 +270,15 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (awaitingResponse)
 			responseTimer++;
 		if (!awaitingResponse && responseTimer > 0) {
-			pastPings.add(Mth.ceil(responseTimer * 2.5));
+			double mul = 2.5;
+			mul /= 3;
+			mul *= 2;
+			pastPings.add(0, Mth.ceil(responseTimer * mul));
 			pastPings.removeIf(pastPing -> pastPings.indexOf(pastPing) > 5);
 			responseTimer = 0;
+			Collections.sort(pastPings);
 			int averagePing = pastPings.get(2);
-			currentAveragePing = Math.max(averagePing, 25);
+			currentAveragePing = Mth.clamp(averagePing, 25, 100);
 		}
 		if (oldHitResults.size() > 1)
 			oldHitResults.add(1, newValue);
