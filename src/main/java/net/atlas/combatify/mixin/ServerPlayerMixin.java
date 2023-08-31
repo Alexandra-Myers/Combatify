@@ -298,7 +298,11 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			oldHitResults.add(1, newValue);
 		else
 			oldHitResults.add(newValue);
-		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) > currentAveragePing + 1);
+		oldHitResults.removeIf(hitResult -> {
+			if(oldHitResults.indexOf(hitResult) > currentAveragePing + 1)
+				hitResultToRotationMap.remove(hitResult);
+			return oldHitResults.indexOf(hitResult) > currentAveragePing + 1;
+		});
 		Float[] rotations = new Float[2];
 		rotations[0] = getYHeadRot() % 360;
 		rotations[1] = getXRot() % 360;
