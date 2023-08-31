@@ -86,11 +86,7 @@ public abstract class GuiMixin {
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && f >= maxIndicator) {
-			Vec3 vec3 = minecraft.player.getEyePosition(0.0F);
-			Vec3 vec31 = ((AABBExtensions)this.minecraft.crosshairPickEntity.getBoundingBox()).getNearestPointTo(vec3);
-			double dist = vec3.distanceTo(vec31);
-			bl = dist <= ((PlayerExtensions)minecraft.player).getAttackRange(0.0F);
-			bl &= this.minecraft.crosshairPickEntity.isAlive();
+			bl = this.minecraft.crosshairPickEntity.isAlive();
 		}
 		if (bl) {
 			guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 68, 94, 16, 16);

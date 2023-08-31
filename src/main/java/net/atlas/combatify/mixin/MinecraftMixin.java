@@ -17,11 +17,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ambient.Bat;
-import net.minecraft.world.entity.animal.*;
-import net.minecraft.world.entity.animal.frog.Frog;
-import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
@@ -73,9 +68,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Shadow
 	public int missTime;
 
-	@Unique
-	Entity lastPickedEntity = null;
-
 	@Shadow
 	@Nullable
 	public Screen screen;
@@ -90,9 +82,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
 		assert player != null;
-		if(crosshairPickEntity != null && hitResult != null && (this.hitResult).distanceTo(this.crosshairPickEntity) <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
-			lastPickedEntity = crosshairPickEntity;
-		}
 		if (screen != null) {
 			this.retainAttack = false;
 		}
@@ -162,17 +151,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		this.retainAttack = false;
-	}
-	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
-	public void redirectAttack(MultiPlayerGameMode instance, Player player, Entity entity) {
-		Vec3 vec3 = player.getEyePosition(0.0F);
-		Vec3 vec31 = ((AABBExtensions)entity.getBoundingBox()).getNearestPointTo(vec3);
-		double dist = vec3.distanceTo(vec31);
-		if (dist <= ((PlayerExtensions)player).getAttackRange(0.0F)) {
-			instance.attack(player, entity);
-		} else {
-			((IPlayerGameMode)instance).swingInAir(player);
-		}
 	}
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))

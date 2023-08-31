@@ -32,9 +32,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.TimerTask;
+import java.util.*;
 
 import static net.atlas.combatify.Combatify.scheduleHitResult;
 
@@ -48,13 +46,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 
 	@Shadow
 	public abstract void swing(InteractionHand interactionHand);
-
-	@Shadow
-	@Final
-	private static Logger LOGGER;
 	@Shadow
 	public ServerGamePacketListenerImpl connection;
 	public ArrayList<HitResult> oldHitResults = new ArrayList<>();
+	public Map<HitResult, Float[]> hitResultToRotationMap = new HashMap<>();
 	public ArrayList<Integer> pastPings = new ArrayList<>();
 	public boolean awaitingResponse = false;
 	public int responseTimer = 0;
@@ -115,6 +110,17 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				for (HitResult hitResultToChoose : oldHitResults) {
 					if(hitResultToChoose == null)
 						continue;
+					Float[] rotations = null;
+					if (hitResultToRotationMap.containsKey(hitResultToChoose))
+						rotations = hitResultToRotationMap.get(hitResultToChoose);
+					float xRot = getXRot() % 360;
+					float yRot = getYHeadRot() % 360;
+					if(rotations != null) {
+						float xDiff = Math.abs(xRot - rotations[1]);
+						float yDiff = Math.abs(yRot - rotations[0]);
+						if(xDiff > 20 || yDiff > 20)
+							continue;
+					}
 					if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
 						hitResult = hitResultToChoose;
 						break;
@@ -293,7 +299,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		else
 			oldHitResults.add(newValue);
 		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) > currentAveragePing + 1);
-		LOGGER.info("Adjusted results");
+		Float[] rotations = new Float[2];
+		rotations[0] = getYHeadRot() % 360;
+		rotations[1] = getXRot() % 360;
+		hitResultToRotationMap.put(newValue, rotations);
 	}
 
 	@Override

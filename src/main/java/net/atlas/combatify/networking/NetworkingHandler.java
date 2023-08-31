@@ -1,18 +1,15 @@
 package net.atlas.combatify.networking;
 
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -40,6 +37,7 @@ public class NetworkingHandler {
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
 				scheduleHitResult.put(handler.player.getUUID(), new Timer());
+				LogUtils.getLogger().info("Unmodded player joined: " + handler.player.getUUID());
 				return;
 			}
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
