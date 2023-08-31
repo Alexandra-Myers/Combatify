@@ -28,8 +28,8 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
 			if (attributeSnapshot.getAttribute() == Attributes.ATTACK_SPEED && Combatify.unmoddedPlayers.contains(reciever.getUUID())) {
 				double speed = calculateValue(attributeSnapshot.getBase(), attributeSnapshot.getModifiers(), attributeSnapshot.getAttribute());
-				for (double newSpeed = speed - 1.5F; newSpeed > 0; newSpeed -= 0.001F) {
-					if ((int) (vanillaMath(newSpeed + 1.5F)) == CTSMath(speed - 1.5F) * 2) {
+				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
+					if (vanillaMath(newSpeed) == CTSMath(speed) * 2) {
 						if (newSpeed - 2.5 != 0)
 							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Calculated client modifier", newSpeed - 2.5, AttributeModifier.Operation.ADDITION));
 						break;
@@ -81,9 +81,9 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		d = 1.0 / d * 20.0 + 0.5;
 		return (int) (d);
 	}
-	private static float vanillaMath(double attackSpeed) {
-		double d = attackSpeed - 1.5F;
-		d = 1.0F / d * 20.0F;
-		return (float) (d);
+	private static int vanillaMath(double attackSpeed) {
+		double d = attackSpeed;
+		d = 1.0 / d * 20.0;
+		return (int) (d);
 	}
 }
