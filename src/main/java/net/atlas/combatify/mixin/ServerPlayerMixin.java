@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
@@ -150,16 +151,22 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 	public void handleInteract(Entity entity, boolean hit) {
 		if (retainAttack) {
+			if(hit)
+				this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 			return;
 		}
 		if (!isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
+				if(hit)
+					this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 				resetAttackStrengthTicker(!getMissedAttackRecovery());
 				return;
 			}
 
 			if (var1 < 1.0F) {
+				if(hit)
+					this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 				retainAttack = true;
 				return;
 			}
