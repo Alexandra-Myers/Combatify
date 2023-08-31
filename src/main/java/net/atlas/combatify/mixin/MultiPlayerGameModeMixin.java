@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.networking.NewServerboundInteractPacket;
@@ -7,6 +9,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Final;
@@ -51,8 +55,12 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	}
 
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
-	public void redirectReset(Player instance) {
-		((PlayerExtensions)instance).resetAttackStrengthTicker(true);
+	public void redirectReset(Player instance, @Local(ordinal = 0) Entity target) {
+		boolean isMiscTarget = target.getType().equals(EntityType.END_CRYSTAL)
+			|| target.getType().equals(EntityType.ITEM_FRAME)
+			|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
+			|| target.getType().equals(EntityType.PAINTING);
+		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset2(LocalPlayer instance) {
