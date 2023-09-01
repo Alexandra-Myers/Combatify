@@ -2,13 +2,17 @@ package net.atlas.combatify.networking;
 
 import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.phys.HitResult;
 
+import java.util.Map;
 import java.util.Timer;
 
 import static net.atlas.combatify.Combatify.*;
@@ -47,8 +51,28 @@ public class NetworkingHandler {
 			}
 		});
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
-			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()))
-				return InteractionResult.FAIL;
+			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
+				Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
+				((ServerPlayerExtensions) serverPlayer).getPresentResult();
+				for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).getOldHitResults()) {
+					if(hitResultToChoose == null)
+						continue;
+					Float[] rotations = null;
+					if (hitResultToRotationMap.containsKey(hitResultToChoose))
+						rotations = hitResultToRotationMap.get(hitResultToChoose);
+					float xRot = serverPlayer.getXRot() % 360;
+					float yRot = serverPlayer.getYHeadRot() % 360;
+					if(rotations != null) {
+						float xDiff = Math.abs(xRot - rotations[1]);
+						float yDiff = Math.abs(yRot - rotations[0]);
+						if(xDiff > 20 || yDiff > 20)
+							continue;
+					}
+					if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
+						return InteractionResult.FAIL;
+					}
+				}
+			}
 			return InteractionResult.PASS;
 		});
 		UseBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, hitResult) -> {

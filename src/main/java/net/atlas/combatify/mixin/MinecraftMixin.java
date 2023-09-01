@@ -170,7 +170,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 			assert level != null;
 			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
 			assert player != null;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getAttackRange(0.0F));
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getCurrentAttackReach(0.0F));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {
 				crosshairPickEntity = entity;

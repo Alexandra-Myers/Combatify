@@ -110,7 +110,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction();
 			}
 			if(target instanceof PlayerExtensions player) {
-				player.customShieldInteractions(damage, blockingItem);
+				player.ctsShieldDisable(damage, blockingItem);
 			}
 		}
 		if(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().isToolBlocker()) {

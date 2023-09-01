@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
@@ -39,12 +40,13 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@Final
 	private Minecraft minecraft;
 
-	@ModifyConstant(
+	@SuppressWarnings("unused")
+	@ModifyExpressionValue(
 		method = "getPickRange",
-		require = 2, allow = 2, constant = { @Constant(floatValue = 5.0F), @Constant(floatValue = 4.5F) })
+		require = 2, allow = 2, at = { @At(value = "CONSTANT", args = "floatValue=5.0F"), @At(value = "CONSTANT", args = "floatValue=4.5F") })
 	private float getActualReachDistance(final float reachDistance) {
 		if (minecraft.player != null) {
-			return (float) ((PlayerExtensions)minecraft.player).getAttackRange(0.0F) + 2;
+			return (float) ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F) + 2;
 		}
 		return 4.5F;
 	}

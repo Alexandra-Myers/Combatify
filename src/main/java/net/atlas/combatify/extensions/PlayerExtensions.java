@@ -10,7 +10,7 @@ public interface PlayerExtensions {
 
 	void resetAttackStrengthTicker(boolean var1);
 
-	default boolean customShieldInteractions(float damage, Item item) {
+	default boolean ctsShieldDisable(float damage, Item item) {
 		return false;
 	}
 
@@ -19,9 +19,9 @@ public interface PlayerExtensions {
 	}
 	boolean getMissedAttackRecovery();
 	int getAttackStrengthStartValue();
-	double getAttackRange(float baseTime);
+	double getCurrentAttackReach(float baseTime);
 
-	double getSquaredAttackRange(float baseTime);
+	double getSquaredCurrentAttackReach(float baseTime);
 
     void attackAir();
 }

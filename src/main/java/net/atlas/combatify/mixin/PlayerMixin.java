@@ -132,7 +132,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public boolean customShieldInteractions(float damage, Item item) {
+	public boolean ctsShieldDisable(float damage, Item item) {
 		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
 		player.stopUsingItem();
 		player.level().broadcastEntityEvent(player, (byte)30);
@@ -169,7 +169,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
-		currentAttackReach = (float) this.getAttackRange(1.0F);
+		currentAttackReach = (float) this.getCurrentAttackReach(1.0F);
 		return 1.0F;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
@@ -228,7 +228,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
 			if (attackDamage > 0.0F && this.checkSweepAttack()) {
-				float var2 = (float) this.getAttackRange(1.0F);
+				float var2 = (float) this.getCurrentAttackReach(1.0F);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
@@ -329,7 +329,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public double getAttackRange(float baseTime) {
+	public double getCurrentAttackReach(float baseTime) {
 		@Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
 		double chargedBonus = 0;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
@@ -341,8 +341,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public double getSquaredAttackRange(float baseTime) {
-		final var attackRange = getAttackRange(baseTime);
+	public double getSquaredCurrentAttackReach(float baseTime) {
+		final var attackRange = getCurrentAttackReach(baseTime);
 		return attackRange * attackRange;
 	}
 

@@ -39,6 +39,7 @@
     "PotionItemMixin",
     "ProjectileMixin",
     "RamTargetMixin",
+    "ReachEntityAttributesMixin",
     "ResourceLocationMixin",
     "ServerEntityMixin",
     "ServerGameInteractPacketMixin",

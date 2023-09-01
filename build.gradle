@@ -34,6 +34,12 @@ repositories {
 		url = uri("https://repsy.io/mvn/enderzombi102/mc")
 	}
 	maven { url 'https://maven.wispforest.io' }
+	maven {
+		url "https://maven.jamieswhiteshirt.com/libs-release"
+		content {
+			includeGroup "com.jamieswhiteshirt"
+		}
+	}
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -50,6 +56,7 @@ dependencies {
 	modApi("com.terraformersmc:modmenu:7.1.0")
 	include(implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:0.2.0-beta.8")))
 	annotationProcessor(modImplementation("io.wispforest:owo-lib:${project.owo_version}"))
+	include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:2.4.0")
 
 	// include this if you don't want force your users to install owo
 	// sentinel will warn them and give the option to download it automatically

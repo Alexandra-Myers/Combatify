@@ -26,7 +26,7 @@ public class CombatUtil {
      */
     public static boolean allowReach(ServerPlayer attacker, ServerPlayer target) {
         Vec3 eyePosition = attacker.getEyePosition(0);
-        double reach = ((PlayerExtensions)attacker).getAttackRange(1F);
+        double reach = ((PlayerExtensions)attacker).getCurrentAttackReach(1F);
         if (!attacker.hasLineOfSight(target)) reach = 2.5;
         reach *= reach;
 

@@ -49,7 +49,7 @@ public abstract class ServerGamePacketMixin {
 	@ModifyExpressionValue(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange(double original, @Local(ordinal = 0) Entity entity) {
-		double d = ((PlayerExtensions)player).getAttackRange(1.0F) + 1;
+		double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
 		d *= d;
 		if(!player.hasLineOfSight(entity)) {
 			d = 6.25;
