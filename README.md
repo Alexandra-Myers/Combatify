@@ -105,11 +105,9 @@
 
 3. Fishing Rod KB: Config option that brings back the 1.8 Fishing Rods in a revised form.
 
-4. Coyote Time V2: Config option that brings back the Coyote Time from CTS 5 but with changes to make it more acceptable.
+4. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
 
-5. Saturation Healing: Config option that restores the 1.9 Saturation Healing, making saturation act as a buffer until you lose hunger when healing. This does NOT bring back the Saturation Healing from 1.11 which speeds up healing with high saturation.
-
-6. Fast Healing: Config option that restores the 1.11 Saturation Fast Healing.
+5. Fast Healing: Config option that restores the 1.11 Saturation Fast Healing.
 
 ***
 
