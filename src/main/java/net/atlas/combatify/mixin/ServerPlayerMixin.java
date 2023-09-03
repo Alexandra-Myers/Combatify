@@ -80,7 +80,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						adjustHitResults(pickResult(camera));
 					}
 				}
-			}, 0, 5);
+			}, 0, 1);
 			shouldInit = false;
 		}
 		tickTimer++;
@@ -270,8 +270,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (awaitingResponse)
 			responseTimer++;
 		if (!awaitingResponse && responseTimer > 0) {
-			double mul = 2.5;
-			pastPings.add(0, Mth.ceil(responseTimer * mul));
+			pastPings.add(0, Mth.ceil(responseTimer * 0.5));
 			pastPings.removeIf(pastPing -> pastPings.indexOf(pastPing) > 5);
 			responseTimer = 0;
 			Collections.sort(pastPings);

@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -190,11 +191,16 @@ public class NetworkingHandler {
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
 			ITEMS = new ItemConfig();
+
+			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
+
+			for(Item item : items) {
+				((ItemExtensions) item).modifyAttributeModifiers();
+			}
 			for(Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
-				((ItemExtensions) item).modifyAttributeModifiers();
 			}
 		});
 	}
