@@ -1,7 +1,9 @@
 package net.atlas.combatify.item;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -27,51 +29,72 @@ public enum WeaponType {
     WeaponType() {
     }
 
-    public void addCombatAttributes(Tier var1, ImmutableMultimap.Builder<Attribute, AttributeModifier> var2) {
-        float var3 = this.getSpeed(var1);
-        float var4 = this.getDamage(var1);
-        float var5 = this.getReach();
-        var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
+    public void addCombatAttributes(Tier tier, ImmutableMultimap.Builder<Attribute, AttributeModifier> attributeModifiers) {
+        double speed = this.getSpeed(tier);
+        double damage = this.getDamage(tier);
+        double reach = this.getReach();
+        attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
 		if (!Combatify.CONFIG.instaAttack())
-			var2.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
-        if (var5 != 0.0F && Combatify.CONFIG.attackReach()) {
-            var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
+			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
+        if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
+            attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
         }
     }
+	public void addCombatAttributes(Tier tier, ArrayListMultimap<Attribute, AttributeModifier> attributeModifiers) {
+		double speed = this.getSpeed(tier);
+		double damage = this.getDamage(tier);
+		double reach = this.getReach();
+		attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
+		if (!Combatify.CONFIG.instaAttack())
+			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
+		if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
+			attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
+		}
+	}
 
-	public float getDamage(Tier var1) {
+	public double getDamage(Tier tier) {
 		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;
-		float var2 = var1.getAttackDamageBonus() + modifier;
-		boolean isNotTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
+		double damageBonus = tier.getAttackDamageBonus() + modifier;
+		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && damageBonus != (Combatify.CONFIG.fistDamage() ? 1 : 0);
 		boolean isCTSNotT1 = isNotTier1 && Combatify.CONFIG.ctsAttackBalancing();
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.damageOffset != null) {
+				if (isCTSNotT1) {
+					return damageBonus + configurableWeaponData.damageOffset;
+				} else {
+					return damageBonus + configurableWeaponData.damageOffset + 1.0;
+				}
+			}
+		}
 		switch (this) {
 			case KNIFE, PICKAXE -> {
 				if (isCTSNotT1) {
-					return var2;
+					return damageBonus;
 				} else {
-					return var2 + 1.0F;
+					return damageBonus + 1.0;
 				}
 			}
 			case SWORD -> {
 				if (isCTSNotT1) {
-					return var2 + 1.0F;
+					return damageBonus + 1.0;
 				} else {
-					return var2 + 2.0F;
+					return damageBonus + 2.0;
 				}
 			}
 			case AXE -> {
-				if(!Combatify.CONFIG.ctsAttackBalancing()) {
-					return !isNotTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
+				if (!Combatify.CONFIG.ctsAttackBalancing()) {
+					return !isNotTier1 ? tier == Tiers.NETHERITE ? 10 : 9 : 7;
 				} else if (isCTSNotT1) {
-					return var2 + 2;
+					return damageBonus + 2;
 				} else {
-					return var2 + 3.0F;
+					return damageBonus + 3.0;
 				}
 			}
 			case LONGSWORD, HOE -> {
-				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
-					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return var1 == Tiers.NETHERITE ? 2 + modifier : 2 + var2 - 4 + modifier;
+				if (tier != Tiers.IRON && tier != Tiers.DIAMOND) {
+					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4) {
+						return tier == Tiers.NETHERITE ? 2 + modifier : 2 + damageBonus - 4 + modifier;
 					}
 
 					return modifier;
@@ -79,55 +102,79 @@ public enum WeaponType {
 				return 1 + modifier;
 			}
 			case SHOVEL -> {
-				return var2;
+				return damageBonus;
 			}
 			case TRIDENT -> {
 				return 5 + modifier + (Combatify.CONFIG.ctsAttackBalancing() ? 0 : 2);
 			}
 			default -> {
-				return 0.0F + modifier;
+				return 0.0 + modifier;
 			}
 		}
     }
 
-    public float getSpeed(Tier var1) {
+    public double getSpeed(Tier tier) {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.speed != null) {
+				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed();
+			}
+		}
 		switch (this) {
 			case KNIFE -> {
-				return 1.0F;
+				return 1.0;
 			}
 			case LONGSWORD, SWORD -> {
-				return 0.5F;
+				return 0.5;
 			}
 			case AXE, SHOVEL, TRIDENT -> {
-				return -0.5F;
+				return -0.5;
 			}
 			case HOE -> {
-				if (var1 == Tiers.WOOD) {
-					return -0.5F;
-				} else if (var1 == Tiers.IRON) {
-					return 0.5F;
-				} else if (var1 == Tiers.DIAMOND || var1 == Tiers.GOLD) {
-					return 1.0F;
+				if (tier == Tiers.WOOD) {
+					return -0.5;
+				} else if (tier == Tiers.IRON) {
+					return 0.5;
+				} else if (tier == Tiers.DIAMOND || tier == Tiers.GOLD) {
+					return 1.0;
 				} else {
-					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return 1.0F;
+					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4) {
+						return 1.0;
 					}
 
-					return 0F;
+					return 0;
 				}
 			}
 			default -> {
-				return 0.0F;
+				return 0.0;
 			}
 		}
     }
 
-    public float getReach() {
+    public double getReach() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.reach != null) {
+				return configurableWeaponData.reach - 2.5;
+			}
+		}
 		return switch (this) {
-			case KNIFE -> 0.25F;
-			case SWORD -> 0.5F;
-			case LONGSWORD, HOE, TRIDENT -> 1F;
-			default -> 0F;
+			case KNIFE -> 0.25;
+			case SWORD -> 0.5;
+			case LONGSWORD, HOE, TRIDENT -> 1;
+			default -> 0;
 		};
     }
+	public double getChargedReach() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.chargedReach != null) {
+				return configurableWeaponData.chargedReach;
+			}
+		}
+		return 1.0;
+	}
+	public static WeaponType fromID(String id) {
+		return valueOf(id);
+	}
 }

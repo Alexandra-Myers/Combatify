@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.world.item.BowlFoodItem;
 import net.minecraft.world.item.Item;
@@ -32,4 +33,19 @@ public abstract class ItemMixin implements ItemExtensions {
 		}
 	}
 
+	@Override
+	public double getChargedAttackBonus() {
+		Item item = Item.class.cast(this);
+		double chargedBonus = 1.0;
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.type != null)
+				if (Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type))
+					if (Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach != null)
+						chargedBonus = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach;
+			if (configurableItemData.chargedReach != null)
+				chargedBonus = configurableItemData.chargedReach;
+		}
+		return chargedBonus;
+	}
 }

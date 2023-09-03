@@ -12,5 +12,8 @@
       "name": "minecraft:potion",
       "stack_size": 16
     }
+  ],
+  "weapon_types": [
+
   ]
 }

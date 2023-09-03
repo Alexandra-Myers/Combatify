@@ -6,11 +6,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.CombatifyConfig;
-import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
-import net.atlas.combatify.util.UtilClass;
 import net.atlas.combatify.extensions.*;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -339,12 +336,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		float strengthScale = getAttackStrengthScale(baseTime);
 		if (strengthScale > 1.95F && !player.isCrouching()) {
 			Item item = getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = 1.0F;
-			if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-				if (configurableItemData.chargedReach != null)
-					chargedBonus = configurableItemData.chargedReach;
-			}
+			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
 		}
 		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
 	}

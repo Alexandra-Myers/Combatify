@@ -3,6 +3,7 @@ package net.atlas.combatify.item;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
@@ -81,11 +82,28 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 
 	@Override
 	public WeaponType getWeaponType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+			if (type != null)
+				return type;
+		}
 		return WeaponType.KNIFE;
 	}
 
 	@Override
 	public void setStackSize(int stackSize) {
 		this.maxStackSize = stackSize;
+	}
+
+	@Override
+	public double getChargedAttackBonus() {
+		Item item = this;
+		double chargedBonus = getWeaponType().getChargedReach();
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.chargedReach != null)
+				chargedBonus = configurableItemData.chargedReach;
+		}
+		return chargedBonus;
 	}
 }

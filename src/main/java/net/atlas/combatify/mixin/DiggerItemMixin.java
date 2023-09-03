@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
@@ -11,9 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -56,6 +55,22 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 
 	@Override
 	public WeaponType getWeaponType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+			if (type != null)
+				return type;
+		}
 		return WeaponType.PICKAXE;
+	}
+	@Override
+	public double getChargedAttackBonus() {
+		Item item = this;
+		double chargedBonus = getWeaponType().getChargedReach();
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.chargedReach != null)
+				chargedBonus = configurableItemData.chargedReach;
+		}
+		return chargedBonus;
 	}
 }

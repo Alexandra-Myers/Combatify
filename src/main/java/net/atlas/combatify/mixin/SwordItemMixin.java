@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
@@ -65,7 +66,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)
 	public void getDamage(CallbackInfoReturnable<Float> cir) {
-		cir.setReturnValue(getWeaponType().getDamage(getTier()));
+		cir.setReturnValue((float) getWeaponType().getDamage(getTier()));
 	}
 
 	@Override
@@ -155,6 +156,22 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 
 	@Override
 	public WeaponType getWeaponType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+			if (type != null)
+				return type;
+		}
 		return WeaponType.SWORD;
+	}
+	@Override
+	public double getChargedAttackBonus() {
+		Item item = this;
+		double chargedBonus = getWeaponType().getChargedReach();
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.chargedReach != null)
+				chargedBonus = configurableItemData.chargedReach;
+		}
+		return chargedBonus;
 	}
 }

@@ -1,17 +1,21 @@
 package net.atlas.combatify.config;
 
+import net.atlas.combatify.item.WeaponType;
+
 public class ConfigurableItemData {
 	public final Double damage;
 	public final Double speed;
 	public final Double reach;
 	public final Double chargedReach;
 	public final Integer stackSize;
-	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize) {
+	public final WeaponType type;
+	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, WeaponType weaponType) {
 		damage = clamp(attackDamage, 0, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
 		this.chargedReach = clamp(chargedReach, 0, 10);
 		this.stackSize = clamp(stackSize, 1, 64);
+		type = weaponType;
 	}
 	public static Integer clamp(Integer i, int j, int k) {
 		if (i == null)
