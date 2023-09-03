@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
@@ -146,6 +147,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
 		if(!isAttackAvailable(baseValue)) ci.cancel();
+		LogUtils.getLogger().info("Attack Reach: " + getCurrentAttackReach(0));
 	}
 	@Inject(method = "attack", at = @At(value = "TAIL"))
 	public void resetTicker(Entity target, CallbackInfo ci) {
@@ -224,6 +226,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void attackAir() {
 		if (this.isAttackAvailable(baseValue)) {
+			LogUtils.getLogger().info("Attack Reach: " + getCurrentAttackReach(0));
 			customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
 			if (attackDamage > 0.0F && this.checkSweepAttack()) {
