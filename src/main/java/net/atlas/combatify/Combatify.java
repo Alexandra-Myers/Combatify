@@ -68,11 +68,6 @@ public class Combatify implements ModInitializer {
 		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 		for(Item item : items) {
-//			if(item == Items.SNOWBALL || item == Items.EGG) {
-//				((ItemExtensions) item).setStackSize(64);
-//			} else if(item == Items.POTION) {
-//				((ItemExtensions) item).setStackSize(16);
-//			}
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
 	}
