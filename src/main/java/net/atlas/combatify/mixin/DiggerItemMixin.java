@@ -58,9 +58,4 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	public WeaponType getWeaponType() {
 		return WeaponType.PICKAXE;
 	}
-
-	@Override
-	public double getChargedAttackBonus() {
-		return getWeaponType().getChargedReach();
-	}
 }

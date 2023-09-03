@@ -8,5 +8,7 @@ public interface ItemExtensions {
 
 	void setStackSize(int stackSize);
 
-	double getChargedAttackBonus();
+	default double getChargedAttackBonus() {
+		return 1.0F;
+	}
 }

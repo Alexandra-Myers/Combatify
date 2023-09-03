@@ -32,7 +32,8 @@ public enum WeaponType {
         float var4 = this.getDamage(var1);
         float var5 = this.getReach();
         var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", var4, AttributeModifier.Operation.ADDITION));
-		var2.put(NewAttributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
+		if (!Combatify.CONFIG.instaAttack())
+			var2.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", var3, AttributeModifier.Operation.ADDITION));
         if (var5 != 0.0F && Combatify.CONFIG.attackReach()) {
             var2.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", var5, AttributeModifier.Operation.ADDITION));
         }
@@ -44,14 +45,7 @@ public enum WeaponType {
 		boolean isNotTier1 = var1 != Tiers.WOOD && var1 != Tiers.GOLD && var2 != 0;
 		boolean isCTSNotT1 = isNotTier1 && Combatify.CONFIG.ctsAttackBalancing();
 		switch (this) {
-			case KNIFE -> {
-				if (isCTSNotT1) {
-					return var2 + min(Combatify.CONFIG.knifeAttackDamage(), 0);
-				} else {
-					return var2 + min(Combatify.CONFIG.knifeAttackDamage(), 0) + 1.0F;
-				}
-			}
-			case PICKAXE -> {
+			case KNIFE, PICKAXE -> {
 				if (isCTSNotT1) {
 					return var2;
 				} else {
@@ -60,45 +54,35 @@ public enum WeaponType {
 			}
 			case SWORD -> {
 				if (isCTSNotT1) {
-					return var2 + min(Combatify.CONFIG.swordAttackDamage(), 0);
+					return var2 + 1.0F;
 				} else {
-					return var2 + min(Combatify.CONFIG.swordAttackDamage(), 0) + 1.0F;
+					return var2 + 2.0F;
 				}
 			}
 			case AXE -> {
 				if(!Combatify.CONFIG.ctsAttackBalancing()) {
 					return !isNotTier1 ? var1 == Tiers.NETHERITE ? 10 : 9 : 7;
 				} else if (isCTSNotT1) {
-					return var2 + min(Combatify.CONFIG.axeAttackDamage(), 0);
+					return var2 + 2;
 				} else {
-					return var2 + min(Combatify.CONFIG.axeAttackDamage(), 0) + 1.0F;
+					return var2 + 3.0F;
 				}
 			}
-			case LONGSWORD -> {
+			case LONGSWORD, HOE -> {
 				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return var1 == Tiers.NETHERITE ? min(Combatify.CONFIG.netheriteLongswordAttackDamage(), 0) + modifier : min(Combatify.CONFIG.netheriteLongswordAttackDamage(), 0) + var2 - 4 + modifier;
+						return var1 == Tiers.NETHERITE ? 2 + modifier : 2 + var2 - 4 + modifier;
 					}
 
-					return min(Combatify.CONFIG.baseLongswordAttackDamage(), 0) + modifier;
+					return modifier;
 				}
-				return min(Combatify.CONFIG.ironDiaLongswordAttackDamage(), 0) + modifier;
-			}
-			case HOE -> {
-				if (var1 != Tiers.IRON && var1 != Tiers.DIAMOND) {
-					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return var1 == Tiers.NETHERITE ? min(Combatify.CONFIG.netheriteHoeAttackDamage(), 0) + modifier : min(Combatify.CONFIG.netheriteHoeAttackDamage(), 0) + var2 - 4 + modifier;
-					}
-
-					return min(Combatify.CONFIG.baseHoeAttackDamage(), 0) + modifier;
-				}
-				return min(Combatify.CONFIG.ironDiaHoeAttackDamage(), 0) + modifier;
+				return 1 + modifier;
 			}
 			case SHOVEL -> {
 				return var2;
 			}
 			case TRIDENT -> {
-				return min(Combatify.CONFIG.tridentAttackDamage(), 0) + modifier + (Combatify.CONFIG.ctsAttackBalancing() ? 0 : 1);
+				return 5 + modifier + (Combatify.CONFIG.ctsAttackBalancing() ? 0 : 2);
 			}
 			default -> {
 				return 0.0F + modifier;
@@ -109,67 +93,41 @@ public enum WeaponType {
     public float getSpeed(Tier var1) {
 		switch (this) {
 			case KNIFE -> {
-				return Combatify.CONFIG.knifeAttackSpeed();
+				return 1.0F;
 			}
-			case LONGSWORD -> {
-				return Combatify.CONFIG.longswordAttackSpeed();
+			case LONGSWORD, SWORD -> {
+				return 0.5F;
 			}
-			case SWORD -> {
-				return Combatify.CONFIG.swordAttackSpeed();
-			}
-			case AXE, SHOVEL -> {
-				return Combatify.CONFIG.axeAttackSpeed();
-			}
-			case TRIDENT -> {
-				return Combatify.CONFIG.tridentAttackSpeed();
+			case AXE, SHOVEL, TRIDENT -> {
+				return -0.5F;
 			}
 			case HOE -> {
 				if (var1 == Tiers.WOOD) {
-					return Combatify.CONFIG.woodenHoeAttackSpeed();
+					return -0.5F;
 				} else if (var1 == Tiers.IRON) {
-					return Combatify.CONFIG.ironHoeAttackSpeed();
-				} else if (var1 == Tiers.DIAMOND) {
-					return Combatify.CONFIG.goldDiaNethHoeAttackSpeed();
-				} else if (var1 == Tiers.GOLD) {
-					return Combatify.CONFIG.goldDiaNethHoeAttackSpeed();
+					return 0.5F;
+				} else if (var1 == Tiers.DIAMOND || var1 == Tiers.GOLD) {
+					return 1.0F;
 				} else {
 					if (var1 == Tiers.NETHERITE || var1.getLevel() >= 4) {
-						return Combatify.CONFIG.goldDiaNethHoeAttackSpeed();
+						return 1.0F;
 					}
 
-					return Combatify.CONFIG.stoneHoeAttackSpeed();
+					return 0F;
 				}
 			}
 			default -> {
-				return Combatify.CONFIG.defaultAttackSpeed();
+				return 0.0F;
 			}
 		}
     }
 
     public float getReach() {
 		return switch (this) {
-			case KNIFE -> Combatify.CONFIG.knifeAttackReach();
-			case SWORD -> Combatify.CONFIG.swordAttackReach();
-			case LONGSWORD -> Combatify.CONFIG.longswordAttackReach();
-			case HOE -> Combatify.CONFIG.hoeAttackReach();
-			case TRIDENT -> Combatify.CONFIG.tridentAttackReach();
-			case AXE -> Combatify.CONFIG.axeAttackReach();
-			default -> Combatify.CONFIG.defaultAttackReach();
+			case KNIFE -> 0.25F;
+			case SWORD -> 0.5F;
+			case LONGSWORD, HOE, TRIDENT -> 1F;
+			default -> 0F;
 		};
     }
-
-	public double getChargedReach() {
-		return switch (this) {
-			case KNIFE -> Combatify.CONFIG.knifeChargedReach();
-			case SWORD -> Combatify.CONFIG.swordChargedReach();
-			case LONGSWORD -> Combatify.CONFIG.longswordChargedReach();
-			case HOE -> Combatify.CONFIG.hoeChargedReach();
-			case TRIDENT -> Combatify.CONFIG.tridentChargedReach();
-			case AXE -> Combatify.CONFIG.axeChargedReach();
-			default -> Combatify.CONFIG.defaultChargedReach();
-		};
-	}
-	public static float min(float f, float j) {
-		return Math.max(f, j);
-	}
 }

@@ -12,4 +12,18 @@ public class UtilClass<T> {
 		}
 		return bl;
 	}
+	public static boolean isAnyNull(Object... objects) {
+		boolean bl = false;
+		for (Object object : objects) {
+			bl |= object == null;
+		}
+		return bl;
+	}
+	public static boolean isAnyNonNull(Object... objects) {
+		boolean bl = false;
+		for (Object object : objects) {
+			bl |= object != null;
+		}
+		return bl;
+	}
 }

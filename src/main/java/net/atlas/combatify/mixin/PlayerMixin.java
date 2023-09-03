@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.CombatifyConfig;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.util.UtilClass;
@@ -87,15 +88,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
 		Objects.requireNonNull(player.getAttribute(NewAttributes.ATTACK_REACH)).setBaseValue(2.5);
 		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(!Combatify.CONFIG.fistDamage() ? 2 : 1);
+		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 	}
 
-	@ModifyConstant(method = "createAttributes", constant = @Constant(doubleValue = 1.0))
+	@ModifyExpressionValue(method = "createAttributes", at = @At(value = "CONSTANT", args = "doubleValue=1.0"))
 	private static double changeAttack(double constant) {
-		return !Combatify.CONFIG.fistDamage() ? 2 : 1;
+		return !Combatify.CONFIG.fistDamage() ? 1 + constant : constant;
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(NewAttributes.ATTACK_REACH);
+		return original.add(NewAttributes.ATTACK_REACH).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 	}
 	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
 	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
@@ -245,12 +247,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
 		this.missedAttackRecovery = !hit;
-		if(!Combatify.CONFIG.attackSpeed()) {
-			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 10) {
-				return;
-			} else if(attackSpeedsMaxed()) {
+		if (!Combatify.CONFIG.attackSpeed()) {
+			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 20) {
 				return;
 			}
+		}
+		if (Combatify.CONFIG.instaAttack()) {
+			return;
 		}
 		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * 2;
 		if (var2 > this.attackStrengthTicker) {
@@ -335,7 +338,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
 		float strengthScale = getAttackStrengthScale(baseTime);
 		if (strengthScale > 1.95F && !player.isCrouching()) {
-			chargedBonus = ((ItemExtensions) getItemInHand(InteractionHand.MAIN_HAND).getItem()).getChargedAttackBonus();
+			Item item = getItemInHand(InteractionHand.MAIN_HAND).getItem();
+			chargedBonus = 1.0F;
+			if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+				if (configurableItemData.chargedReach != null)
+					chargedBonus = configurableItemData.chargedReach;
+			}
 		}
 		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
 	}
@@ -354,10 +363,5 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public int getAttackStrengthStartValue() {
 		return attackStrengthStartValue;
-	}
-	public boolean attackSpeedsMaxed() {
-		CombatifyConfig c = Combatify.CONFIG;
-		UtilClass<Float> util = new UtilClass<>();
-		return util.compare(7.5F, c.swordAttackSpeed(), c.axeAttackSpeed(), c.woodenHoeAttackSpeed(), c.stoneHoeAttackSpeed(), c.ironHoeAttackSpeed(), c.goldDiaNethHoeAttackSpeed(), c.defaultAttackSpeed(), c.tridentAttackSpeed(), c.fastToolAttackSpeed(), c.fastestToolAttackSpeed(), c.slowToolAttackSpeed(), c.slowestToolAttackSpeed());
 	}
 }

@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "name": "minecraft:snowball",
+      "stack_size": 64
+    },
+    {
+      "name": "minecraft:egg",
+      "stack_size": 64
+    },
+    {
+      "name": "minecraft:potion",
+      "stack_size": 16
+    }
+  ]
+}

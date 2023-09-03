@@ -25,16 +25,11 @@ public abstract class ItemMixin implements ItemExtensions {
 	public void getUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
 			cir.setReturnValue(Combatify.CONFIG.stewUseDuration());
-		}else if (stack.getItem().isEdible()) {
+		} else if (stack.getItem().isEdible()) {
 			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
 		} else {
 			cir.setReturnValue(0);
 		}
-	}
-
-	@Override
-	public double getChargedAttackBonus() {
-		return Combatify.CONFIG.defaultChargedReach();
 	}
 
 }

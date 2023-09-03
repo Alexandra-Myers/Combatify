@@ -81,11 +81,6 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	}
 
 	@Override
-	public double getChargedAttackBonus() {
-		return getWeaponType().getChargedReach();
-	}
-
-	@Override
 	public double getPiercingLevel() {
 		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.2 : getTier() == Tiers.GOLD || getTier() == Tiers.WOOD || getTier() == Tiers.STONE || getTier().getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (getTier().getLevel() - 1));
 	}

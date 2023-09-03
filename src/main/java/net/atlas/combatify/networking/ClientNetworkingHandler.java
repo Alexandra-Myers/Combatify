@@ -3,8 +3,13 @@ package net.atlas.combatify.networking;
 import io.wispforest.owo.Owo;
 import io.wispforest.owo.config.Option;
 import io.wispforest.owo.ops.TextOps;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.CombatifyConfig;
+import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.util.UtilClass;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.ChatFormatting;
@@ -23,6 +28,15 @@ import static net.atlas.combatify.Combatify.*;
 public class ClientNetworkingHandler {
 	public ClientNetworkingHandler() {
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
+			ITEMS.loadFromNetwork(buf);
+
+			for (Item item : ITEMS.configuredItems.keySet()) {
+				if (ITEMS.configuredItems.containsKey(item)) {
+					ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+					if (configurableItemData.stackSize != null)
+						((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+				}
+			}
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
 			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
@@ -33,6 +47,14 @@ public class ClientNetworkingHandler {
 
 			for(Item item : items) {
 				((ItemExtensions) item).modifyAttributeModifiers();
+			}
+		});
+		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
+			ITEMS = new ItemConfig();
+			for(Item item : ITEMS.configuredItems.keySet()) {
+				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+				if (configurableItemData.stackSize != null)
+					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}
 		});
 	}

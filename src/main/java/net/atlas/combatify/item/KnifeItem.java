@@ -88,9 +88,4 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 	public void setStackSize(int stackSize) {
 		this.maxStackSize = stackSize;
 	}
-
-	@Override
-	public double getChargedAttackBonus() {
-		return getWeaponType().getChargedReach();
-	}
 }

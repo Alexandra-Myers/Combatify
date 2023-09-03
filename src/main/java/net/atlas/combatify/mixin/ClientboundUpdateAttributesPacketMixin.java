@@ -38,14 +38,13 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				indexes.add(attributes.indexOf(attributeSnapshot));
 			}
 		}
-		if (!indexes.isEmpty()) {
+		if (!indexes.isEmpty())
 			for (Integer index : indexes) {
 				AttributeModifier modifierToSend = modifierMap.get(index);
 				Collection<AttributeModifier> newModifiers = Collections.singletonList(modifierToSend);
 				ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot = attributes.remove(index.intValue());
 				attributes.add(index, new ClientboundUpdateAttributesPacket.AttributeSnapshot(attributeSnapshot.getAttribute(), attributeSnapshot.getBase() - 1.5, newModifiers));
 			}
-		}
 	}
 	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Attribute attribute) {
 		double attributeInstanceBaseValue = baseValue;

@@ -31,6 +31,7 @@ public class CombatifyConfigModel {
 	public boolean defender = false;
 	public boolean attackReach = true;
 	public boolean attackSpeed = true;
+	public boolean instaAttack = false;
 	public boolean ctsAttackBalancing = true;
 	public boolean eatingInterruption = true;
 	public boolean improvedMiscEntityAttacks = false;
@@ -64,82 +65,16 @@ public class CombatifyConfigModel {
 	public float eggDamage = 0.0F;
 	@RangeConstraint(min = 0, max = 4)
 	public float bowUncertainty = 0.25F;
-	@RangeConstraint(min = 0, max = 1000)
-	public float swordAttackDamage = 1;
-	@RangeConstraint(min = 0, max = 1000)
-	public float axeAttackDamage = 2;
-	@RangeConstraint(min = 0, max = 1000)
-	public float knifeAttackDamage = 0;
-	@RangeConstraint(min = 0, max = 1000)
-	public float baseLongswordAttackDamage = 0;
-	@RangeConstraint(min = 0, max = 1000)
-	public float ironDiaLongswordAttackDamage = 1;
-	@RangeConstraint(min = 0, max = 1000)
-	public float netheriteLongswordAttackDamage = 2;
-	@RangeConstraint(min = 0, max = 1000)
-	public float baseHoeAttackDamage = 0;
-	@RangeConstraint(min = 0, max = 1000)
-	public float ironDiaHoeAttackDamage = 1;
-	@RangeConstraint(min = 0, max = 1000)
-	public float netheriteHoeAttackDamage = 2;
-	@RangeConstraint(min = 0, max = 1000)
-	public float tridentAttackDamage = 5;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float longswordAttackSpeed = 0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float swordAttackSpeed = 0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float axeAttackSpeed = -0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float woodenHoeAttackSpeed = -0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float stoneHoeAttackSpeed = 0;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float ironHoeAttackSpeed = 0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float goldDiaNethHoeAttackSpeed = 1;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float knifeAttackSpeed = 1;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float tridentAttackSpeed = -0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
-	public float defaultAttackSpeed = 0F;
-	@RangeConstraint(min = -1, max = 7.5)
+	@RangeConstraint(min = 2.5, max = 20)
+	public float baseHandAttackSpeed = 2.5F;
+	@RangeConstraint(min = -1, max = 17.5F)
 	public float slowestToolAttackSpeed = -1F;
-	@RangeConstraint(min = -1, max = 7.5)
+	@RangeConstraint(min = -1, max = 17.5F)
 	public float slowToolAttackSpeed = -0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
+	@RangeConstraint(min = -1, max = 17.5F)
 	public float fastToolAttackSpeed = 0.5F;
-	@RangeConstraint(min = -1, max = 7.5)
+	@RangeConstraint(min = -1, max = 17.5F)
 	public float fastestToolAttackSpeed = 1F;
-	@RangeConstraint(min = -1, max = 100)
-	public float swordAttackReach = 0.5F;
-	@RangeConstraint(min = -1, max = 100)
-	public float axeAttackReach = 0F;
-	@RangeConstraint(min = -1, max = 100)
-	public float hoeAttackReach = 1;
-	@RangeConstraint(min = -1, max = 100)
-	public float longswordAttackReach = 1;
-	@RangeConstraint(min = -1, max = 100)
-	public float knifeAttackReach = 0.25F;
-	@RangeConstraint(min = -1, max = 100)
-	public float tridentAttackReach = 1;
-	@RangeConstraint(min = -1, max = 100)
-	public float defaultAttackReach = 0F;
-	@RangeConstraint(min = 0, max = 10)
-	public float swordChargedReach = 1F;
-	@RangeConstraint(min = 0, max = 10)
-	public float axeChargedReach = 1F;
-	@RangeConstraint(min = 0, max = 10)
-	public float hoeChargedReach = 1F;
-	@RangeConstraint(min = 0, max = 10)
-	public float longswordChargedReach = 1F;
-	@RangeConstraint(min = 0, max = 10)
-	public float knifeChargedReach = 1F;
-	@RangeConstraint(min = 0, max = 10)
-	public float tridentChargedReach = 1F;
-	@RangeConstraint(min = 0, max = 10)
-	public float defaultChargedReach = 1F;
 	public static class UseDurations {
 	}
 	public static class Cooldowns {

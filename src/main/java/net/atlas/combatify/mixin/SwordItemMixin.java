@@ -157,9 +157,4 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, IShiel
 	public WeaponType getWeaponType() {
 		return WeaponType.SWORD;
 	}
-
-	@Override
-	public double getChargedAttackBonus() {
-		return getWeaponType().getChargedReach();
-	}
 }

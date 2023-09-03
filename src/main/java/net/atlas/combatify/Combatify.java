@@ -1,6 +1,7 @@
 package net.atlas.combatify;
 
 import net.atlas.combatify.config.CombatifyConfig;
+import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -32,6 +33,7 @@ public class Combatify implements ModInitializer {
 	public static Player player;
 	public static final String MOD_ID = "combatify";
 	public static final CombatifyConfig CONFIG = CombatifyConfig.createAndLoad();
+	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
@@ -66,11 +68,11 @@ public class Combatify implements ModInitializer {
 		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 		for(Item item : items) {
-			if(item == Items.SNOWBALL || item == Items.EGG) {
-				((ItemExtensions) item).setStackSize(64);
-			} else if(item == Items.POTION) {
-				((ItemExtensions) item).setStackSize(16);
-			}
+//			if(item == Items.SNOWBALL || item == Items.EGG) {
+//				((ItemExtensions) item).setStackSize(64);
+//			} else if(item == Items.POTION) {
+//				((ItemExtensions) item).setStackSize(16);
+//			}
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
 	}
