@@ -28,27 +28,30 @@ public class ClientNetworkingHandler {
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
 			ITEMS.loadFromNetwork(buf);
 
-			for (Item item : ITEMS.configuredItems.keySet()) {
-				if (ITEMS.configuredItems.containsKey(item)) {
-					ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
-					if (configurableItemData.stackSize != null)
-						((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
-				}
-			}
-		});
-		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
-			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
-				handler.getConnection().disconnect(Component.literal("Combatify needs to be installed on the server to join with this client"));
-				return;
-			}
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 			for(Item item : items) {
 				((ItemExtensions) item).modifyAttributeModifiers();
 			}
+			for (Item item : ITEMS.configuredItems.keySet()) {
+				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+				if (configurableItemData.stackSize != null)
+					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+			}
+		});
+		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
+			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
+				handler.getConnection().disconnect(Component.literal("Combatify needs to be installed on the server to join with this client"));
+			}
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
 			ITEMS = new ItemConfig();
+
+			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
+
+			for(Item item : items) {
+				((ItemExtensions) item).modifyAttributeModifiers();
+			}
 			for(Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
