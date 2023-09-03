@@ -2,6 +2,7 @@ package net.atlas.combatify.item;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMultimap;
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -155,6 +156,7 @@ public enum WeaponType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.reach != null) {
+				LogUtils.getLogger().info("Reach: " + (configurableWeaponData.reach - 2.5) + "Weapon Type: " + this.name());
 				return configurableWeaponData.reach - 2.5;
 			}
 		}

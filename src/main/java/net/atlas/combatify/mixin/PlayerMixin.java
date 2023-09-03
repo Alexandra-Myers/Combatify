@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
