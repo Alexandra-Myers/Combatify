@@ -194,6 +194,7 @@ public class NetworkingHandler {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+				((ItemExtensions) item).modifyAttributeModifiers();
 			}
 		});
 	}
