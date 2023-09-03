@@ -2,6 +2,7 @@ package net.atlas.combatify.config;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.item.WeaponType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -113,6 +114,7 @@ public class ItemConfig {
 						if (jsonObject.has("charged_reach"))
 							chargedReach = getDouble(jsonObject, "charged_reach");
 						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach);
+						LogUtils.getLogger().info("Reach: " + (reach == null ? -10 : reach));
 						configuredWeapons.put(type, configurableWeaponData);
 					} else
 						throw new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file.");
