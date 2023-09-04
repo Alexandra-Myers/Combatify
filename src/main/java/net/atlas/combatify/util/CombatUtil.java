@@ -1,5 +1,6 @@
 package net.atlas.combatify.util;
 
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +17,7 @@ public class CombatUtil {
     /**
      * The amount of ticks players' previous locations are saved for <br>
      * A somewhat good rule for the optimal amount of ticks is ceiling(x/50ms) + 2 <br>
-     * Where x is the highest ping (in milliseconds) the anticheat takes into account. <br>
+     * Where x is the highest ping (in milliseconds) the anti-cheat takes into account. <br>
      * E.g. if the highest "accepted" ping is 151ms-200ms this number would be 6, for 251-300ms it would be 8 etc.
      */
     public static int savedLocationTicks = 9;
@@ -27,6 +28,8 @@ public class CombatUtil {
     public static boolean allowReach(ServerPlayer attacker, ServerPlayer target) {
         Vec3 eyePosition = attacker.getEyePosition(0);
         double reach = ((PlayerExtensions)attacker).getCurrentAttackReach(1F);
+		if (!Combatify.unmoddedPlayers.contains(attacker.getUUID()))
+			reach += 1;
         if (!attacker.hasLineOfSight(target)) reach = 2.5;
         reach *= reach;
 
