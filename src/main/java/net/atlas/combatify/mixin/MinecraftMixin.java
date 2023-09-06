@@ -225,12 +225,13 @@ public abstract class MinecraftMixin implements IMinecraft {
 		assert hitResult != null;
 		redirectResult(hitResult);
 		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
+		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
 		if (missTime <= 0) {
 			assert this.player != null;
 			if (!this.player.isUsingItem()) {
 				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
 					this.retainAttack = false;
-				} else if (bl1 && ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack) {
+				} else if (bl1 && ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && bl2) {
 					this.startAttack();
 					ci.cancel();
 				}
