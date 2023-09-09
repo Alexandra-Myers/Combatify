@@ -229,34 +229,34 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Override
 	public void newKnockback(double strength, double x, double z) {
-		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack var8 = this.getBlockingItem();
-		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + ((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		double knockbackRes = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack blockingItem = this.getBlockingItem();
+		if (!blockingItem.isEmpty()) {
+			knockbackRes = Math.min(1.0, knockbackRes + ((IShieldItem)blockingItem.getItem()).getShieldKnockbackResistanceValue(blockingItem));
 		}
 
-		strength = strength * (1.0 - var6);
+		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
 			this.hasImpulse = true;
-			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(x, 0.0, z)).normalize().scale(strength);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, this.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, var9.y + strength * 0.5), var9.z / 2.0 - var10.z);
+			Vec3 delta = this.getDeltaMovement();
+			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
+			this.setDeltaMovement(delta.x / 2.0 - diff.x, this.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
 	}
 	@Override
 	public void projectileKnockback(double strength, double x, double z) {
-		double var6 = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack var8 = this.getBlockingItem();
-		if (!var8.isEmpty()) {
-			var6 = Math.min(1.0, var6 + ((IShieldItem)var8.getItem()).getShieldKnockbackResistanceValue(var8));
+		double knockbackRes = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+		ItemStack blockingItem = this.getBlockingItem();
+		if (!blockingItem.isEmpty()) {
+			knockbackRes = Math.min(1.0, knockbackRes + ((IShieldItem)blockingItem.getItem()).getShieldKnockbackResistanceValue(blockingItem));
 		}
 
-		strength = strength * (1.0 - var6);
+		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
 			this.hasImpulse = true;
-			Vec3 var9 = this.getDeltaMovement();
-			Vec3 var10 = (new Vec3(x, 0.0, z)).normalize().scale(strength);
-			this.setDeltaMovement(var9.x / 2.0 - var10.x, Math.min(0.4, strength * 0.75), var9.z / 2.0 - var10.z);
+			Vec3 delta = this.getDeltaMovement();
+			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
+			this.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
 	}
 
