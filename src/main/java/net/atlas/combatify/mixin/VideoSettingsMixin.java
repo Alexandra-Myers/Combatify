@@ -1,11 +1,10 @@
 package net.atlas.combatify.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.combatify.extensions.IOptions;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.util.ArrayListExtensions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.VideoSettingsScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,15 +13,21 @@ import java.util.Arrays;
 
 @Mixin(VideoSettingsScreen.class)
 public class VideoSettingsMixin {
-	@ModifyReturnValue(method = "options", at = @At("RETURN"))
-	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0) Options options) {
-		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());
-		int i = optionInstance.indexOf(options.attackIndicator());
+	@ModifyExpressionValue(
+		method = "init",
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/screens/VideoSettingsScreen;options(Lnet/minecraft/client/Options;)[Lnet/minecraft/client/OptionInstance;"
+		)
+	)
+	private OptionInstance<?>[] addOptions(OptionInstance<?>[] optionInstances) {
+		var optionInstance = new ArrayListExtensions<>(Arrays.stream(optionInstances).toList());
+		int i = optionInstance.indexOf(Minecraft.getInstance().options.attackIndicator());
 
-		optionInstance.add(i + 1, ((IOptions)options).shieldIndicator());
-		optionInstance.addAll(((IOptions)options).attackIndicatorValue(),
-			((IOptions)options).rhythmicAttacks(),
-			((IOptions)options).fishingRodLegacy());
+		optionInstance.add(i + 1, CombatifyClient.shieldIndicator);
+		optionInstance.addAll(CombatifyClient.attackIndicatorValue,
+			CombatifyClient.rhythmicAttacks,
+			CombatifyClient.fishingRodLegacy);
 
 		return optionInstance.toArray(new OptionInstance[0]);
 	}

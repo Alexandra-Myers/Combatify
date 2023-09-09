@@ -156,7 +156,6 @@ public enum WeaponType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.reach != null) {
-				LogUtils.getLogger().info("Reach: " + (configurableWeaponData.reach - 2.5) + "Weapon Type: " + this.name());
 				return configurableWeaponData.reach - 2.5;
 			}
 		}

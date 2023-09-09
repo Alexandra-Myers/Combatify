@@ -65,33 +65,17 @@ public class ItemConfig {
 			if (items instanceof JsonArray itemArray) {
 				itemArray.asList().forEach(jsonElement -> {
 					if (jsonElement instanceof JsonObject jsonObject) {
-						Item item = itemFromJson(jsonObject);
-						Double damage = null;
-						Double speed = null;
-						Double reach = null;
-						Double chargedReach = null;
-						Integer stack_size = null;
-						WeaponType type = null;
-						if (jsonObject.has("damage"))
-							damage = getDouble(jsonObject, "damage");
-						if (jsonObject.has("speed"))
-							speed = getDouble(jsonObject, "speed");
-						if (jsonObject.has("reach"))
-							reach = getDouble(jsonObject, "reach");
-						if (jsonObject.has("charged_reach"))
-							chargedReach = getDouble(jsonObject, "charged_reach");
-						if (jsonObject.has("stack_size"))
-							stack_size = getInt(jsonObject, "stack_size");
-						if (jsonObject.has("weapon_type")) {
-							String weapon_type = getString(jsonObject, "weapon_type");
-							weapon_type = weapon_type.toUpperCase(Locale.ROOT);
-							switch (weapon_type) {
-								case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weapon_type);
-								default -> throw new JsonSyntaxException("The specified weapon type does not exist!");
-							}
+						if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) {
+							itemsWithConfig.asList().forEach(
+								itemName -> {
+									Item item = itemFromName(itemName.getAsString());
+									parseItemConfig(item, jsonObject);
+								}
+							);
+						} else {
+							Item item = itemFromJson(jsonObject);
+							parseItemConfig(item, jsonObject);
 						}
-						ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, type);
-						configuredItems.put(item, configurableItemData);
 					} else
 						throw new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file.");
 				});
@@ -137,6 +121,9 @@ public class ItemConfig {
 
 	public static Item itemFromJson(JsonObject jsonObject) {
 		String string = GsonHelper.getAsString(jsonObject, "name");
+		return itemFromName(string);
+	}
+	public static Item itemFromName(String string) {
 		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElseThrow(() -> new JsonSyntaxException("Unknown item '" + string + "'"));
 		if (item == Items.AIR) {
 			throw new JsonSyntaxException("You can't configure an empty item!");
@@ -196,6 +183,37 @@ public class ItemConfig {
 				chargedReach = null;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach);
 		});
+	}
+
+	public void parseItemConfig(Item item, JsonObject jsonObject) {
+		Double damage = null;
+		Double speed = null;
+		Double reach = null;
+		Double chargedReach = null;
+		Integer stack_size = null;
+		WeaponType type = null;
+		if (jsonObject.has("damage"))
+			damage = getDouble(jsonObject, "damage");
+		if (jsonObject.has("speed"))
+			speed = getDouble(jsonObject, "speed");
+		if (jsonObject.has("reach"))
+			reach = getDouble(jsonObject, "reach");
+		if (jsonObject.has("charged_reach"))
+			chargedReach = getDouble(jsonObject, "charged_reach");
+		if (jsonObject.has("stack_size"))
+			stack_size = getInt(jsonObject, "stack_size");
+		if (jsonObject.has("weapon_type")) {
+			String weapon_type = getString(jsonObject, "weapon_type");
+			weapon_type = weapon_type.toUpperCase(Locale.ROOT);
+			switch (weapon_type) {
+				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" ->
+					type = WeaponType.fromID(weapon_type);
+				default ->
+					throw new JsonSyntaxException("The specified weapon type does not exist!");
+			}
+		}
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, type);
+		configuredItems.put(item, configurableItemData);
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
