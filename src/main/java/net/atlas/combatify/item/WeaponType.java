@@ -2,7 +2,6 @@ package net.atlas.combatify.item;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMultimap;
-import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.minecraft.world.entity.ai.attributes.Attribute;

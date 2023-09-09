@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.Arrays;
 
+@SuppressWarnings("unused")
 @Mixin(VideoSettingsScreen.class)
 public class VideoSettingsMixin {
 	@ModifyExpressionValue(
