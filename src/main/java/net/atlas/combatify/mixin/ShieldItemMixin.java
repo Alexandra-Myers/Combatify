@@ -1,23 +1,14 @@
 package net.atlas.combatify.mixin;
 
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.IShieldItem;
+import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.BlockingType;
-import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(ShieldItem.class)
-public class ShieldItemMixin extends Item implements IShieldItem {
+public class ShieldItemMixin extends Item implements ItemExtensions {
 
 
     public ShieldItemMixin(Properties properties) {
@@ -38,49 +29,44 @@ public class ShieldItemMixin extends Item implements IShieldItem {
     public void appendText(ItemStack itemStack, Level level, List<Component> list, TooltipFlag tooltipFlag, CallbackInfo ci)
     {
         BannerItem.appendHoverTextFromBannerBlockEntityTag(itemStack, list);
-        float f = getShieldBlockDamageValue(itemStack);
-        double g = getShieldKnockbackResistanceValue(itemStack);
-        list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
+        float f = getBlockingType().getShieldBlockDamageValue(itemStack);
+        double g = getBlockingType().getShieldKnockbackResistanceValue(itemStack);
+		if(!getBlockingType().isPercentage())
+        	list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
+		else
+			list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
         list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 		ci.cancel();
     }
 
 	@Override
-    public double getShieldKnockbackResistanceValue(ItemStack itemStack) {
-        return itemStack.getTagElement("BlockEntityTag") != null ? 0.8 : 0.5;
-    }
+	public void setStackSize(int stackSize) {
+		maxStackSize = stackSize;
+	}
 
 	@Override
-    public float getShieldBlockDamageValue(ItemStack itemStack) {
-		float f = itemStack.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
-		if(Combatify.CONFIG.defender()) {
-			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, itemStack);
+	public double getChargedAttackBonus() {
+		double chargedBonus = 1.0;
+		if(Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.type != null)
+				if (Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type))
+					if (Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach != null)
+						chargedBonus = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach;
+			if (configurableItemData.chargedReach != null)
+				chargedBonus = configurableItemData.chargedReach;
 		}
-        return f;
-    }
-
-	@Override
-	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if (instance instanceof Player player && player.getCooldowns().isOnCooldown(blockingItem.getItem()))
-			return;
-		float blockStrength = this.getShieldBlockDamageValue(blockingItem);
-		g.set(Math.min(blockStrength, amount.get()));
-		if (!source.is(DamageTypeTags.IS_PROJECTILE) && !source.is(DamageTypeTags.IS_EXPLOSION)) {
-			entity = source.getDirectEntity();
-			if (entity instanceof LivingEntity) {
-				instance.blockUsingShield((LivingEntity) entity);
-			}
-		} else {
-			g.set(amount.get());
-		}
-
-		instance.hurtCurrentlyUsedShield(g.get());
-		amount.set(amount.get() - g.get());
-		bl.set(true);
+		return chargedBonus;
 	}
 
 	@Override
 	public BlockingType getBlockingType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.blockingType != null) {
+				return configurableItemData.blockingType;
+			}
+		}
 		return BlockingType.SHIELD;
 	}
 }

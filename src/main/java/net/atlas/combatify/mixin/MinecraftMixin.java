@@ -94,7 +94,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public boolean allowBlockHitting(boolean original) {
 		if (!original) return false;
 		assert player != null;
-		boolean bl = !(player.getUseItem().getItem() instanceof IShieldItem shieldItem && !shieldItem.getBlockingType().canBlockHit());
+		ItemExtensions item = ((ItemExtensions) player.getUseItem().getItem());
+		boolean bl = item.getBlockingType().canBlockHit() && !item.getBlockingType().isEmpty();
 		if(bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
 			assert hitResult != null;
 			if (hitResult.getType() == HitResult.Type.BLOCK) {
@@ -106,7 +107,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 2))
 	public void checkIfCrouch(CallbackInfo ci) {
 		assert player != null;
-		if(((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching()) {
+		ItemExtensions item = (ItemExtensions) ((LivingEntityExtensions)player).getBlockingItem().getItem();
+		if(((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
 			while(options.keyUse.consumeClick()) {
 				startUseItem();
 			}
@@ -118,8 +120,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
 		Item blockingItem = ((LivingEntityExtensions)player).getBlockingItem().getItem();
-		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
-		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !(blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock()) || bl) {
+		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
+		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl) {
 			instance.releaseUsingItem(player);
 		}
 	}
@@ -240,14 +242,14 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
 	public InteractionResult addRequirement(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, @Local ItemStack stack) {
-		if(Combatify.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < 1.95F && stack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge()) {
+		if(Combatify.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
 			return InteractionResult.PASS;
 		}
 		return instance.useItemOn(localPlayer, interactionHand, blockHitResult);
 	}
 	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItem(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"))
 	public InteractionResult addRequirement1(MultiPlayerGameMode instance, Player player, InteractionHand interactionHand, @Local ItemStack stack) {
-		if(Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < 1.95F && stack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge()) {
+		if(Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
 			return InteractionResult.PASS;
 		}
 		return instance.useItem(player, interactionHand);

@@ -8,6 +8,7 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.ArrayListExtensions;
+import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -40,6 +41,7 @@ public class Combatify implements ModInitializer {
 	public static Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static Map<UUID, Boolean> finalizingAttack = new HashMap<>();
 	public static Map<UUID, Timer> scheduleHitResult = new HashMap<>();
+	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 
 	@Override
 	public void onInitialize() {
@@ -70,6 +72,7 @@ public class Combatify implements ModInitializer {
 		for(Item item : items) {
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
+		BlockingType.init();
 	}
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);

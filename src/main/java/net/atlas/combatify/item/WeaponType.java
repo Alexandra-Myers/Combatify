@@ -60,10 +60,14 @@ public enum WeaponType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.damageOffset != null) {
-				if (isCTSNotT1) {
-					return damageBonus + configurableWeaponData.damageOffset;
+				if (configurableWeaponData.tierable) {
+					if (isCTSNotT1) {
+						return damageBonus + configurableWeaponData.damageOffset;
+					} else {
+						return damageBonus + configurableWeaponData.damageOffset + 1.0;
+					}
 				} else {
-					return damageBonus + configurableWeaponData.damageOffset + 1.0;
+					return modifier + configurableWeaponData.damageOffset;
 				}
 			}
 		}
@@ -84,7 +88,7 @@ public enum WeaponType {
 			}
 			case AXE -> {
 				if (!Combatify.CONFIG.ctsAttackBalancing()) {
-					return !isNotTier1 ? tier == Tiers.NETHERITE ? 10 : 9 : 7;
+					return (!isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
 				} else if (isCTSNotT1) {
 					return damageBonus + 2;
 				} else {

@@ -12,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
@@ -51,9 +50,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
 					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();
 
-					Item blockingItem = getItemInHand(interactionHand).getItem();
-					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < 1.95F && blockingItem instanceof IShieldItem shieldItem && shieldItem.getBlockingType().requireFullCharge();
-					if (!itemStack.isEmpty() && itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock() && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
+					Item blockingItem = itemStack.getItem();
+					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
+					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
 							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
@@ -62,7 +61,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 				} else if ((thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
 
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
-					if (!itemStack.isEmpty() && (itemStack.getItem() instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock())) {
+					ItemExtensions item = (ItemExtensions) itemStack.getItem();
+					if (!itemStack.isEmpty() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
 						assert minecraft.gameMode != null;
 						minecraft.gameMode.releaseUsingItem(thisPlayer);
 						startedUsingItem = false;
@@ -101,7 +101,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		Item item = ((LivingEntityExtensions) thisPlayer).getBlockingItem().getItem();
 		if(thisPlayer.getCooldowns().isOnCooldown(item)) {
 			instance.tick(b, v);
-		} else if(item instanceof IShieldItem shieldItem && shieldItem.getBlockingType().canCrouchBlock()&& !thisPlayer.getCooldowns().isOnCooldown(item)) {
+		} else if(((ItemExtensions) item).getBlockingType().canCrouchBlock() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
 			if(v < 1.0F) {
 				v = 1.0F;
 			}

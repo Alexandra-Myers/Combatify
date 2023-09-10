@@ -2,55 +2,48 @@ package net.atlas.combatify.mixin;
 
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.text.DecimalFormat;
 import java.util.*;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
-
-	@Unique
-	List<Component> list;
-	@Unique
-	Player player;
-	@Unique
-	Multimap<Attribute, AttributeModifier> multimap;
-	@Unique
-	EquipmentSlot equipmentSlot;
 	@Shadow
 	public abstract Item getItem();
 	@Shadow
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
-	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
-	public void extractLines(Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, List<Component> list, MutableComponent mutablecomponent, int j, EquipmentSlot[] var6, int var7, int var8, EquipmentSlot equipmentslot, Multimap<Attribute, AttributeModifier> multimap) {
-		this.list = list;
-		this.player = player;
-		this.multimap = multimap;
-		this.equipmentSlot = equipmentslot;
-	}
 
 	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"))
-	public boolean preventOutcome(boolean original) {
+	public boolean preventOutcome(boolean original, @Local(ordinal = 0) Player player, @Local(ordinal = 0) List<Component> list, @Local(ordinal = 0) Multimap<Attribute, AttributeModifier> multimap, @Local(ordinal = 0) EquipmentSlot equipmentSlot) {
 		if (!original) {
 			boolean attackReach = Combatify.CONFIG.attackReach();
 			list.add(CommonComponents.EMPTY);
@@ -141,6 +134,60 @@ public abstract class ItemStackMixin {
 			}
 		}
 		return true;
+	}
+	@ModifyReturnValue(method = "useOn", at = @At(value = "RETURN"))
+	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0) UseOnContext useOnContext) {
+		InteractionResultHolder<ItemStack> holder = null;
+		Item item = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand()).getItem();
+		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original == InteractionResult.PASS) {
+			holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
+		}
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
+				Objects.requireNonNull(useOnContext.getPlayer()).getCooldowns().addCooldown(item, configurableItemData.cooldown);
+			}
+		}
+		if (holder != null) {
+			return holder.getResult();
+		}
+		return original;
+	}
+	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
+	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
+		InteractionResultHolder<ItemStack> holder = null;
+		Item item = player.getItemInHand(hand).getItem();
+		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {
+			holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
+		}
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
+				player.getCooldowns().addCooldown(item, configurableItemData.cooldown);
+			}
+		}
+		if (holder != null) {
+			return holder;
+		}
+		return original;
+	}
+	@Inject(method = "releaseUsing", at = @At(value = "TAIL"))
+	public void addCooldown(Level level, LivingEntity livingEntity, int i, CallbackInfo ci) {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(getItem());
+			if (configurableItemData.cooldown != null && configurableItemData.cooldownAfter && livingEntity instanceof Player player) {
+				player.getCooldowns().addCooldown(getItem(), configurableItemData.cooldown);
+			}
+		}
+	}
+	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))
+	public UseAnim addBlockAnim(UseAnim original) {
+		if (original == UseAnim.NONE) {
+			if (!((ItemExtensions)getItem()).getBlockingType().isEmpty()) {
+				return UseAnim.BLOCK;
+			}
+		}
+		return original;
 	}
 }
 

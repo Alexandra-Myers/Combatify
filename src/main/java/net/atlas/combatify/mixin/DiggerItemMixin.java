@@ -8,6 +8,7 @@ import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -72,5 +73,16 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 				chargedBonus = configurableItemData.chargedReach;
 		}
 		return chargedBonus;
+	}
+
+	@Override
+	public BlockingType getBlockingType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.blockingType != null) {
+				return configurableItemData.blockingType;
+			}
+		}
+		return BlockingType.EMPTY;
 	}
 }

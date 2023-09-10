@@ -1,5 +1,7 @@
 package net.atlas.combatify.extensions;
 
+import net.atlas.combatify.util.BlockingType;
+
 public interface ItemExtensions {
 
 	default void modifyAttributeModifiers() {
@@ -10,4 +12,5 @@ public interface ItemExtensions {
 
 	double getChargedAttackBonus();
 
+    BlockingType getBlockingType();
 }

@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.BowlFoodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -29,6 +30,13 @@ public abstract class ItemMixin implements ItemExtensions {
 		} else if (stack.getItem().isEdible()) {
 			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
 		} else {
+			if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(Item.class.cast(this))) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(Item.class.cast(this));
+				if (configurableItemData.blockingType != null) {
+					cir.setReturnValue(72000);
+					return;
+				}
+			}
 			cir.setReturnValue(0);
 		}
 	}
@@ -47,5 +55,16 @@ public abstract class ItemMixin implements ItemExtensions {
 				chargedBonus = configurableItemData.chargedReach;
 		}
 		return chargedBonus;
+	}
+
+	@Override
+	public BlockingType getBlockingType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(Item.class.cast(this))) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(Item.class.cast(this));
+			if (configurableItemData.blockingType != null) {
+				return configurableItemData.blockingType;
+			}
+		}
+		return BlockingType.EMPTY;
 	}
 }

@@ -8,6 +8,7 @@ import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.extensions.WeaponWithType;
+import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -105,6 +106,17 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 				chargedBonus = configurableItemData.chargedReach;
 		}
 		return chargedBonus;
+	}
+
+	@Override
+	public BlockingType getBlockingType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.blockingType != null) {
+				return configurableItemData.blockingType;
+			}
+		}
+		return BlockingType.EMPTY;
 	}
 
 	@Override

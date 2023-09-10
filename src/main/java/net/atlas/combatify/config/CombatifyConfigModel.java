@@ -48,10 +48,8 @@ public class CombatifyConfigModel {
 	public int stewUseDuration = 20;
 	@RangeConstraint(min = 1, max = 1000)
 	public int instantHealthBonus = 6;
-	@RangeConstraint(min = 1, max = 1000)
-	public int eggItemCooldown = 4;
-	@RangeConstraint(min = 1, max = 1000)
-	public int snowballItemCooldown = 4;
+	@RangeConstraint(min = 1, max = 200)
+	public int shieldChargePercentage = 195;
 	@SectionHeader("Floats")
 	@RangeConstraint(min = 0, max = 10)
 	public float shieldDisableTime = 1.6F;

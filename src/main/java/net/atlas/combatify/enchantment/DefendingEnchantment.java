@@ -1,7 +1,7 @@
 package net.atlas.combatify.enchantment;
 
 import net.atlas.combatify.extensions.CustomEnchantment;
-import net.atlas.combatify.extensions.IShieldItem;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -28,7 +28,7 @@ public class DefendingEnchantment extends Enchantment implements CustomEnchantme
 
 	@Override
 	public boolean canEnchant(ItemStack stack) {
-		return stack.getItem() instanceof IShieldItem;
+		return stack.getItem() instanceof ItemExtensions;
 	}
 
 	@Override

@@ -104,9 +104,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
-		if(player.getUseItem().getItem() instanceof SwordItem swordItem) {
-			((ISwordItem)swordItem).addStrengthTimer();
-		}
 		--instance.attackStrengthTicker;
 		setIsParryTicker(getIsParryTicker() + 1);
 		if(getIsParryTicker() >= 40) {
@@ -117,7 +114,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
-		return this.useItem.getItem() instanceof IShieldItem || original;
+		return !((ItemExtensions)useItem.getItem()).getBlockingType().isEmpty() || original;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))

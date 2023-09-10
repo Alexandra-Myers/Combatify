@@ -7,6 +7,7 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
+import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -105,5 +106,16 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 				chargedBonus = configurableItemData.chargedReach;
 		}
 		return chargedBonus;
+	}
+
+	@Override
+	public BlockingType getBlockingType() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.blockingType != null) {
+				return configurableItemData.blockingType;
+			}
+		}
+		return BlockingType.EMPTY;
 	}
 }
