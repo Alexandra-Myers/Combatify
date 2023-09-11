@@ -266,6 +266,35 @@ public class ItemConfig {
 	}
 
 	public void loadFromNetwork(FriendlyByteBuf buf) {
+		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readResourceLocation, buf1 -> {
+			try {
+				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
+				Constructor<?> constructor = clazz.getConstructor(String.class);
+				ResourceLocation name = buf1.readResourceLocation();
+				Object object = constructor.newInstance(name.toString());
+				if (object instanceof BlockingType blockingType) {
+					blockingType.setDisablement(buf1.readBoolean());
+					blockingType.setBlockHit(buf1.readBoolean());
+					blockingType.setCrouchable(buf1.readBoolean());
+					blockingType.setKbMechanics(buf1.readBoolean());
+					blockingType.setPercentage(buf1.readBoolean());
+					blockingType.setToolBlocker(buf1.readBoolean());
+					blockingType.setRequireFullCharge(buf1.readBoolean());
+					blockingType.setSwordBlocking(buf1.readBoolean());
+					Combatify.registerBlockingType(blockingType);
+					return blockingType;
+				} else {
+					CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
+					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
+					crashReportCategory.setDetail("Class", clazz.getName());
+					crashReportCategory.setDetail("Type Name", name);
+					throw new ReportedException(report);
+				}
+			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+					 ClassNotFoundException | NoSuchMethodException e) {
+				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
+			}
+		});
 		configuredItems = buf.readMap(buf12 -> buf12.readById(BuiltInRegistries.ITEM), buf1 -> {
 			Double damage = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -321,38 +350,21 @@ public class ItemConfig {
 				chargedReach = null;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
 		});
-		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readResourceLocation, buf1 -> {
-			try {
-				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
-				Constructor<?> constructor = clazz.getConstructor(String.class);
-				ResourceLocation name = buf1.readResourceLocation();
-				Object object = constructor.newInstance(name.toString());
-				if (object instanceof BlockingType blockingType) {
-					blockingType.setDisablement(buf1.readBoolean());
-					blockingType.setBlockHit(buf1.readBoolean());
-					blockingType.setCrouchable(buf1.readBoolean());
-					blockingType.setKbMechanics(buf1.readBoolean());
-					blockingType.setPercentage(buf1.readBoolean());
-					blockingType.setToolBlocker(buf1.readBoolean());
-					blockingType.setRequireFullCharge(buf1.readBoolean());
-					blockingType.setSwordBlocking(buf1.readBoolean());
-					Combatify.registerBlockingType(blockingType);
-					return blockingType;
-				} else {
-					CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
-					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
-					crashReportCategory.setDetail("Class", clazz.getName());
-					crashReportCategory.setDetail("Type Name", name);
-					throw new ReportedException(report);
-				}
-			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-					 ClassNotFoundException | NoSuchMethodException e) {
-				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
-			}
-		});
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
+		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeResourceLocation, (buf1, blockingType) -> {
+			buf1.writeUtf(blockingType.getClass().getName());
+			buf1.writeResourceLocation(blockingType.getName());
+			buf1.writeBoolean(blockingType.canBeDisabled());
+			buf1.writeBoolean(blockingType.canBlockHit());
+			buf1.writeBoolean(blockingType.canCrouchBlock());
+			buf1.writeBoolean(blockingType.defaultKbMechanics());
+			buf1.writeBoolean(blockingType.isPercentage());
+			buf1.writeBoolean(blockingType.isToolBlocker());
+			buf1.writeBoolean(blockingType.requireFullCharge());
+			buf1.writeBoolean(blockingType.requiresSwordBlocking());
+		});
 		buf.writeMap(configuredItems, (buf1, item) -> buf1.writeId(BuiltInRegistries.ITEM, item), (buf12, configurableItemData) -> {
 			buf12.writeDouble(configurableItemData.damage == null ? -100 : configurableItemData.damage);
 			buf12.writeDouble(configurableItemData.speed == null ? -10 : configurableItemData.speed);
@@ -374,18 +386,6 @@ public class ItemConfig {
 			buf12.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
 			buf12.writeBoolean(configurableWeaponData.tierable);
 			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName().toString());
-		});
-		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeResourceLocation, (buf1, blockingType) -> {
-			buf1.writeUtf(blockingType.getClass().getName());
-			buf1.writeResourceLocation(blockingType.getName());
-			buf1.writeBoolean(blockingType.canBeDisabled());
-			buf1.writeBoolean(blockingType.canBlockHit());
-			buf1.writeBoolean(blockingType.canCrouchBlock());
-			buf1.writeBoolean(blockingType.defaultKbMechanics());
-			buf1.writeBoolean(blockingType.isPercentage());
-			buf1.writeBoolean(blockingType.isToolBlocker());
-			buf1.writeBoolean(blockingType.requireFullCharge());
-			buf1.writeBoolean(blockingType.requiresSwordBlocking());
 		});
 	}
 
