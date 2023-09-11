@@ -1,12 +1,16 @@
-![Combatify](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Header.webp)
+![Combatify](https://www.bisecthosting.com/images/CF/Combatify/BH_C_header.webp)
 
 ***
 
-[![Get a Bisect Hosting Server with 25% off using code atlasdev!](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Promo.webp)](https://bisecthosting.com/atlasdev)
+[![Get a Bisect Hosting Server with 25% off using code atlasdev!](https://www.bisecthosting.com/images/CF/Combatify/BH_C_promo.webp)](https://bisecthosting.com/atlasdev)
 
 ***
 
-![Description](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Description.webp)
+[![Atlas Support Discord](https://www.bisecthosting.com/images/CF/Combatify/BH_C_support.webp)](https://discord.gg/WanSPUmRDG)
+
+***
+
+![Description](https://www.bisecthosting.com/images/CF/Combatify/BH_C_description.webp)
 
 ***
 
@@ -18,7 +22,7 @@
 
 ***
 
-![CTS 8c Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Features.webp)
+![CTS 8c Features](https://www.bisecthosting.com/images/CF/Combatify/BH_C_features.webp)
 
 ***
 
@@ -95,7 +99,7 @@
 
 ***
 
-![Combatify Exclusive Features](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Exclusive.webp)
+![Combatify Exclusive Features](https://www.bisecthosting.com/images/CF/Combatify/BH_C_exclusive.webp)
 
 ***
 
@@ -111,8 +115,7 @@
 
 ***
 
-[![Get a Bisect Hosting Server with 25% off using code atlasdev!](https://www.bisecthosting.com/images/CF/Atlas_Combat/BH_Atlas_Combat_Promo.webp)](https://bisecthosting.com/atlasdev)
-
+[![Get a Bisect Hosting Server with 25% off using code atlasdev!](https://www.bisecthosting.com/images/CF/Combatify/BH_C_promo.webp)](https://bisecthosting.com/atlasdev)
 ***
 
 ## License
