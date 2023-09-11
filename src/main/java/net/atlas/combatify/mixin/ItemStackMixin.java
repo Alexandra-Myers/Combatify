@@ -47,15 +47,17 @@ public abstract class ItemStackMixin {
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
-		if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
-			float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
-			double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
-			if(!item.getBlockingType().isPercentage())
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-			else
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-			if (g > 0.0) {
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+		if (!item.getBlockingType().isEmpty()) {
+			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+				float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
+				double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
+				if (!item.getBlockingType().isPercentage())
+					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
+				else
+					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
+				if (g > 0.0) {
+					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+				}
 			}
 		}
 	}
