@@ -4,23 +4,19 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.extensions.*;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
 
 @Mixin(SwordItem.class)
 public class SwordItemMixin extends TieredItem implements ItemExtensions, DefaultedItemExtensions, WeaponWithType {
@@ -31,21 +27,6 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 		super(tier, properties);
 	}
 
-	@Override
-	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-		if(Combatify.CONFIG.swordBlocking()) {
-			float f = getBlockingType().getShieldBlockDamageValue(stack);
-			double g = getBlockingType().getShieldKnockbackResistanceValue(stack);
-			if(!getBlockingType().isPercentage())
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-			else
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-			if (g > 0.0) {
-				tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-			}
-		}
-		super.appendHoverText(stack, world, tooltip, context);
-	}
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
@@ -72,7 +53,13 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 				return configurableItemData.blockingType;
 			}
 		}
-		return BlockingType.SWORD;
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+			if (configurableWeaponData.blockingType != null) {
+				return configurableWeaponData.blockingType;
+			}
+		}
+		return Combatify.registeredTypes.get(new ResourceLocation("sword"));
 	}
 
 	@Override

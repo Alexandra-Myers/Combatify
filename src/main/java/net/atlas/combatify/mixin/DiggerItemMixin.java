@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
@@ -77,12 +78,18 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 
 	@Override
 	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		return BlockingType.EMPTY;
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+			if (configurableWeaponData.blockingType != null) {
+				return configurableWeaponData.blockingType;
+			}
+		}
+		return Combatify.EMPTY;
 	}
 }

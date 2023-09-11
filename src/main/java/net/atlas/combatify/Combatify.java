@@ -7,8 +7,7 @@ import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.networking.NetworkingHandler;
-import net.atlas.combatify.util.ArrayListExtensions;
-import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -38,10 +37,14 @@ public class Combatify implements ModInitializer {
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
-	public static Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
-	public static Map<UUID, Boolean> finalizingAttack = new HashMap<>();
-	public static Map<UUID, Timer> scheduleHitResult = new HashMap<>();
+	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
+	public static final Map<UUID, Boolean> finalizingAttack = new HashMap<>();
+	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
+	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
+	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
+	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
+	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
 	@Override
 	public void onInitialize() {
@@ -72,7 +75,10 @@ public class Combatify implements ModInitializer {
 		for(Item item : items) {
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
-		BlockingType.init();
+	}
+	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
+		Combatify.registeredTypes.put(blockingType.getName(), blockingType);
+		return blockingType;
 	}
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);

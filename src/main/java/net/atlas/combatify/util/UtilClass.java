@@ -1,6 +1,11 @@
 package net.atlas.combatify.util;
 
 public class UtilClass<T> {
+	public static Thread renderingThread = new Thread() {
+		public void run() {
+			super.run();
+		}
+	};
 	public UtilClass() {
 
 	}

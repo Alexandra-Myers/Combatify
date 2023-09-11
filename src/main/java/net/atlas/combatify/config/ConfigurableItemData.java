@@ -13,7 +13,9 @@ public class ConfigurableItemData {
 	public final Boolean cooldownAfter;
 	public final WeaponType type;
 	public final BlockingType blockingType;
-	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType) {
+	public final Double blockStrength;
+	public final Double blockKbRes;
+	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes) {
 		damage = clamp(attackDamage, -10, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
@@ -23,6 +25,8 @@ public class ConfigurableItemData {
 		this.cooldownAfter = cooldownAfter;
 		type = weaponType;
 		this.blockingType = blockingType;
+		this.blockStrength = clamp(blockStrength, 0, 1000);
+		this.blockKbRes = clamp(blockKbRes, 0, 1);
 	}
 	public static Integer clamp(Integer i, int j, int k) {
 		if (i == null)

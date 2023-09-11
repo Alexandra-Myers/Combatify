@@ -2,41 +2,17 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.BlockingType;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.List;
 
 @Mixin(ShieldItem.class)
 public class ShieldItemMixin extends Item implements ItemExtensions {
-
-
     public ShieldItemMixin(Properties properties) {
         super(properties);
-    }
-
-
-    @Inject(method = "appendHoverText", at = @At("HEAD"),cancellable = true)
-    public void appendText(ItemStack itemStack, Level level, List<Component> list, TooltipFlag tooltipFlag, CallbackInfo ci)
-    {
-        BannerItem.appendHoverTextFromBannerBlockEntityTag(itemStack, list);
-        float f = getBlockingType().getShieldBlockDamageValue(itemStack);
-        double g = getBlockingType().getShieldKnockbackResistanceValue(itemStack);
-		if(!getBlockingType().isPercentage())
-        	list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-		else
-			list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-        list.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-		ci.cancel();
     }
 
 	@Override
@@ -66,7 +42,13 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
+			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
+				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
+				if (configurableWeaponData.blockingType != null) {
+					return configurableWeaponData.blockingType;
+				}
+			}
 		}
-		return BlockingType.SHIELD;
+		return Combatify.registeredTypes.get(new ResourceLocation("shield"));
 	}
 }

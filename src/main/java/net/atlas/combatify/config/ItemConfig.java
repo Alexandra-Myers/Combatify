@@ -6,6 +6,9 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +20,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -63,6 +68,17 @@ public class ItemConfig {
 			if (!itemsJsonObject.has("weapon_types"))
 				itemsJsonObject.add("weapon_types", new JsonArray());
 			JsonElement weapons = itemsJsonObject.get("weapon_types");
+			if (!itemsJsonObject.has("blocking_types"))
+				itemsJsonObject.add("blocking_types", new JsonArray());
+			JsonElement defenders = itemsJsonObject.get("blocking_types");
+			if (defenders instanceof JsonArray typeArray) {
+				typeArray.asList().forEach(jsonElement -> {
+					if (jsonElement instanceof JsonObject jsonObject) {
+						parseBlockingType(jsonObject);
+					} else
+						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Blocking Types"));
+				});
+			}
 			if (items instanceof JsonArray itemArray) {
 				itemArray.asList().forEach(jsonElement -> {
 					if (jsonElement instanceof JsonObject jsonObject) {
@@ -78,7 +94,7 @@ public class ItemConfig {
 							parseItemConfig(item, jsonObject);
 						}
 					} else
-						throw new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file.");
+						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
 				});
 			}
 			if (weapons instanceof JsonArray typeArray) {
@@ -89,9 +105,10 @@ public class ItemConfig {
 						Double speed = null;
 						Double reach = null;
 						Double chargedReach = null;
+						BlockingType blockingType = null;
 						Boolean tierable = getBoolean(jsonObject, "tierable");
 						if (!jsonObject.has("tierable"))
-							throw new JsonSyntaxException("The JSON must contain the boolean 'tierable' if a weapon type is defined!");
+							throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean `tierable` if a weapon type is defined!"), "Configuring Weapon Types"));
 						if (jsonObject.has("damage_offset"))
 							damageOffset = getDouble(jsonObject, "damage_offset");
 						if (jsonObject.has("speed"))
@@ -100,10 +117,23 @@ public class ItemConfig {
 							reach = getDouble(jsonObject, "reach");
 						if (jsonObject.has("charged_reach"))
 							chargedReach = getDouble(jsonObject, "charged_reach");
-						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable);
+						if (jsonObject.has("blocking_type")) {
+							String blocking_type = getString(jsonObject, "blocking_type");
+							blocking_type = blocking_type.toLowerCase(Locale.ROOT);
+							ResourceLocation resourceLocation = ResourceLocation.tryParse(blocking_type);
+							if (!Combatify.registeredTypes.containsKey(resourceLocation)) {
+								CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
+								CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+								crashReportCategory.setDetail("Type name", blocking_type);
+								crashReportCategory.setDetail("Json Object", jsonObject);
+								throw new ReportedException(report);
+							}
+							blockingType = Combatify.registeredTypes.get(resourceLocation);
+						}
+						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType);
 						configuredWeapons.put(type, configurableWeaponData);
 					} else
-						throw new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file.");
+						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
 				});
 			}
 		} catch (IOException | IllegalStateException e) {
@@ -111,18 +141,18 @@ public class ItemConfig {
 		}
 	}
 
-	public String getString(JsonObject element, String name) {
+	public static String getString(JsonObject element, String name) {
 		return element.get(name).getAsString();
 	}
 
-	public Integer getInt(JsonObject element, String name) {
+	public static Integer getInt(JsonObject element, String name) {
 		return element.get(name).getAsInt();
 	}
 
-	public Double getDouble(JsonObject element, String name) {
+	public static Double getDouble(JsonObject element, String name) {
 		return element.get(name).getAsDouble();
 	}
-	public Boolean getBoolean(JsonObject element, String name) {
+	public static Boolean getBoolean(JsonObject element, String name) {
 		return element.get(name).getAsBoolean();
 	}
 
@@ -133,7 +163,7 @@ public class ItemConfig {
 	public static Item itemFromName(String string) {
 		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElseThrow(() -> new JsonSyntaxException("Unknown item '" + string + "'"));
 		if (item == Items.AIR) {
-			throw new JsonSyntaxException("You can't configure an empty item!");
+			throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("You can't configure an empty item!"), "Configuring Items"));
 		} else {
 			return item;
 		}
@@ -144,8 +174,95 @@ public class ItemConfig {
 		weapon_type = weapon_type.toUpperCase(Locale.ROOT);
 		return switch (weapon_type) {
 			case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> WeaponType.fromID(weapon_type);
-			default -> throw new JsonSyntaxException("The specified weapon type does not exist!");
+			default -> {
+				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Getting Weapon Type");
+				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+				crashReportCategory.setDetail("Type name", weapon_type);
+				crashReportCategory.setDetail("Json Object", jsonObject);
+				throw new ReportedException(report);
+			}
 		};
+	}
+
+	public static void parseBlockingType(JsonObject jsonObject) {
+		String blocking_type = GsonHelper.getAsString(jsonObject, "name");
+		blocking_type = blocking_type.toLowerCase(Locale.ROOT);
+		if (blocking_type.equals("empty") || blocking_type.equals("blank"))
+			return;
+		ResourceLocation resourceLocation = ResourceLocation.tryParse(blocking_type);
+		if (!Combatify.registeredTypes.containsKey(resourceLocation) || jsonObject.has("class")) {
+			if (jsonObject.has("class") && jsonObject.get("class") instanceof JsonPrimitive jsonPrimitive && jsonPrimitive.isString()) {
+				try {
+					Class<?> clazz = BlockingType.class.getClassLoader().loadClass(jsonPrimitive.getAsString());
+					Constructor<?> constructor = clazz.getConstructor(String.class);
+					Object object = constructor.newInstance(blocking_type);
+					if (object instanceof BlockingType blockingType) {
+						if (jsonObject.has("require_full_charge"))
+							blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
+						if (jsonObject.has("is_tool"))
+							blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
+						if (jsonObject.has("is_percentage"))
+							blockingType.setPercentage(getBoolean(jsonObject, "is_percentage"));
+						if (jsonObject.has("can_block_hit"))
+							blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
+						if (jsonObject.has("can_crouch_block"))
+							blockingType.setCrouchable(getBoolean(jsonObject, "can_crouch_block"));
+						if (jsonObject.has("can_be_disabled"))
+							blockingType.setDisablement(getBoolean(jsonObject, "can_be_disabled"));
+						if (jsonObject.has("default_kb_mechanics"))
+							blockingType.setKbMechanics(getBoolean(jsonObject, "default_kb_mechanics"));
+						if (jsonObject.has("requires_sword_blocking"))
+							blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
+						Combatify.registerBlockingType(blockingType);
+						return;
+					} else {
+						CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified class is not an instance of BlockingType!"), "Creating Blocking Type");
+						CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
+						crashReportCategory.setDetail("Class", clazz.getName());
+						crashReportCategory.setDetail("Type Name", blocking_type);
+						crashReportCategory.setDetail("Json Object", jsonObject);
+						throw new ReportedException(report);
+					}
+				} catch (ClassNotFoundException | NoSuchMethodException e) {
+					CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified class does not exist, or otherwise lacks a constructor with a String parameter", e), "Creating Blocking Type");
+					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
+					crashReportCategory.setDetail("Class", getString(jsonObject, "class"));
+					crashReportCategory.setDetail("Type Name", blocking_type);
+					crashReportCategory.setDetail("Json Object", jsonObject);
+					throw new ReportedException(report);
+				} catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+					CrashReport report = CrashReport.forThrowable(new RuntimeException(e), "Creating Blocking Type");
+					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
+					crashReportCategory.setDetail("Class", getString(jsonObject, "class"));
+					crashReportCategory.setDetail("Type Name", blocking_type);
+					crashReportCategory.setDetail("Json Object", jsonObject);
+					throw new ReportedException(report);
+				}
+			} else {
+				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("You cannot create a blocking type without a class!"), "Creating Blocking Type");
+				CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
+				crashReportCategory.setDetail("Type Name", blocking_type);
+				crashReportCategory.setDetail("Json Object", jsonObject);
+				throw new ReportedException(report);
+			}
+		}
+		BlockingType blockingType = Combatify.registeredTypes.get(resourceLocation);
+		if (jsonObject.has("require_full_charge"))
+			blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
+		if (jsonObject.has("is_tool"))
+			blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
+		if (jsonObject.has("is_percentage"))
+			blockingType.setPercentage(getBoolean(jsonObject, "is_percentage"));
+		if (jsonObject.has("can_block_hit"))
+			blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
+		if (jsonObject.has("can_crouch_block"))
+			blockingType.setCrouchable(getBoolean(jsonObject, "can_crouch_block"));
+		if (jsonObject.has("can_be_disabled"))
+			blockingType.setDisablement(getBoolean(jsonObject, "can_be_disabled"));
+		if (jsonObject.has("default_kb_mechanics"))
+			blockingType.setKbMechanics(getBoolean(jsonObject, "default_kb_mechanics"));
+		if (jsonObject.has("requires_sword_blocking"))
+			blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
 	}
 
 	public void loadFromNetwork(FriendlyByteBuf buf) {
@@ -163,7 +280,9 @@ public class ItemConfig {
 			WeaponType type = null;
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(ResourceLocation.tryParse(blockingType));
-			if(damage == -10)
+			Double blockStrength = buf1.readDouble();
+			Double blockKbRes = buf1.readDouble();
+			if(damage == -100)
 				damage = null;
 			if(speed == -10)
 				speed = null;
@@ -175,10 +294,14 @@ public class ItemConfig {
 				stackSize = null;
 			if(cooldown == -10)
 				cooldown = null;
+			if(blockStrength == -10)
+				blockStrength = null;
+			if(blockKbRes == -10)
+				blockKbRes = null;
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -186,6 +309,8 @@ public class ItemConfig {
 			Double reach = buf1.readDouble();
 			Double chargedReach = buf1.readDouble();
 			Boolean tierable = buf1.readBoolean();
+			String blockingType = buf1.readUtf();
+			BlockingType bType = Combatify.registeredTypes.get(ResourceLocation.tryParse(blockingType));
 			if(damageOffset == -10)
 				damageOffset = null;
 			if(speed == -10)
@@ -194,13 +319,42 @@ public class ItemConfig {
 				reach = null;
 			if(chargedReach == -10)
 				chargedReach = null;
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable);
+			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
+		});
+		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readResourceLocation, buf1 -> {
+			try {
+				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
+				Constructor<?> constructor = clazz.getConstructor(String.class);
+				ResourceLocation name = buf1.readResourceLocation();
+				Object object = constructor.newInstance(name.toString());
+				if (object instanceof BlockingType blockingType) {
+					blockingType.setDisablement(buf1.readBoolean());
+					blockingType.setBlockHit(buf1.readBoolean());
+					blockingType.setCrouchable(buf1.readBoolean());
+					blockingType.setKbMechanics(buf1.readBoolean());
+					blockingType.setPercentage(buf1.readBoolean());
+					blockingType.setToolBlocker(buf1.readBoolean());
+					blockingType.setRequireFullCharge(buf1.readBoolean());
+					blockingType.setSwordBlocking(buf1.readBoolean());
+					Combatify.registerBlockingType(blockingType);
+					return blockingType;
+				} else {
+					CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
+					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
+					crashReportCategory.setDetail("Class", clazz.getName());
+					crashReportCategory.setDetail("Type Name", name);
+					throw new ReportedException(report);
+				}
+			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+					 ClassNotFoundException | NoSuchMethodException e) {
+				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
+			}
 		});
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
 		buf.writeMap(configuredItems, (buf1, item) -> buf1.writeId(BuiltInRegistries.ITEM, item), (buf12, configurableItemData) -> {
-			buf12.writeDouble(configurableItemData.damage == null ? -10 : configurableItemData.damage);
+			buf12.writeDouble(configurableItemData.damage == null ? -100 : configurableItemData.damage);
 			buf12.writeDouble(configurableItemData.speed == null ? -10 : configurableItemData.speed);
 			buf12.writeDouble(configurableItemData.reach == null ? -10 : configurableItemData.reach);
 			buf12.writeDouble(configurableItemData.chargedReach == null ? -10 : configurableItemData.chargedReach);
@@ -210,6 +364,8 @@ public class ItemConfig {
 				buf12.writeBoolean(configurableItemData.cooldownAfter);
 			buf12.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name());
 			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName().toString());
+			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
+			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -217,6 +373,19 @@ public class ItemConfig {
 			buf12.writeDouble(configurableWeaponData.reach == null ? -10 : configurableWeaponData.reach);
 			buf12.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
 			buf12.writeBoolean(configurableWeaponData.tierable);
+			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName().toString());
+		});
+		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeResourceLocation, (buf1, blockingType) -> {
+			buf1.writeUtf(blockingType.getClass().getName());
+			buf1.writeResourceLocation(blockingType.getName());
+			buf1.writeBoolean(blockingType.canBeDisabled());
+			buf1.writeBoolean(blockingType.canBlockHit());
+			buf1.writeBoolean(blockingType.canCrouchBlock());
+			buf1.writeBoolean(blockingType.defaultKbMechanics());
+			buf1.writeBoolean(blockingType.isPercentage());
+			buf1.writeBoolean(blockingType.isToolBlocker());
+			buf1.writeBoolean(blockingType.requireFullCharge());
+			buf1.writeBoolean(blockingType.requiresSwordBlocking());
 		});
 	}
 
@@ -230,6 +399,8 @@ public class ItemConfig {
 		Boolean cooldownAfterUse = null;
 		WeaponType type = null;
 		BlockingType blockingType = null;
+		Double blockStrength = null;
+		Double blockKbRes = null;
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
 		if (jsonObject.has("speed"))
@@ -248,24 +419,38 @@ public class ItemConfig {
 			switch (weapon_type) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" ->
 					type = WeaponType.fromID(weapon_type);
-				default ->
-					throw new JsonSyntaxException("The specified weapon type does not exist!");
+				default -> {
+					CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Applying Item Weapon Type");
+					CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+					crashReportCategory.setDetail("Type name", weapon_type);
+					crashReportCategory.setDetail("Json Object", jsonObject);
+					throw new ReportedException(report);
+				}
 			}
 		}
 		if (jsonObject.has("blocking_type")) {
 			String blocking_type = getString(jsonObject, "blocking_type");
 			blocking_type = blocking_type.toLowerCase(Locale.ROOT);
 			ResourceLocation resourceLocation = ResourceLocation.tryParse(blocking_type);
-			if (!Combatify.registeredTypes.containsKey(resourceLocation))
-				throw new JsonSyntaxException("The specified blocking type does not exist!");
+			if (!Combatify.registeredTypes.containsKey(resourceLocation)) {
+				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
+				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+				crashReportCategory.setDetail("Type name", blocking_type);
+				crashReportCategory.setDetail("Json Object", jsonObject);
+				throw new ReportedException(report);
+			}
 			blockingType = Combatify.registeredTypes.get(resourceLocation);
 		}
 		if (cooldown != null) {
 			if (!jsonObject.has("cooldown_after"))
-				throw new JsonSyntaxException("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!");
+				throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!"), "Applying Item Cooldown"));
 			cooldownAfterUse = getBoolean(jsonObject, "cooldown_after");
 		}
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType);
+		if (jsonObject.has("damage_protection"))
+			blockStrength = getDouble(jsonObject, "damage_protection");
+		if (jsonObject.has("block_knockback_resistance"))
+			blockKbRes = getDouble(jsonObject, "block_knockback_resistance");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes);
 		configuredItems.put(item, configurableItemData);
 	}
 }
