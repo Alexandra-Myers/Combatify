@@ -52,14 +52,13 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 					Item blockingItem = itemStack.getItem();
 					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
+					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.onGround() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
 							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 						}
 					}
 				} else if ((thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
-
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
 					ItemExtensions item = (ItemExtensions) itemStack.getItem();
 					if (!itemStack.isEmpty() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
@@ -99,9 +98,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
 	private void isShieldCrouching(Input instance, boolean b, float v) {
 		Item item = ((LivingEntityExtensions) thisPlayer).getBlockingItem().getItem();
-		if(thisPlayer.getCooldowns().isOnCooldown(item)) {
+		if (thisPlayer.getCooldowns().isOnCooldown(item)) {
 			instance.tick(b, v);
-		} else if(((ItemExtensions) item).getBlockingType().canCrouchBlock() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
+		} else if(((ItemExtensions) item).getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
 			if(v < 1.0F) {
 				v = 1.0F;
 			}
