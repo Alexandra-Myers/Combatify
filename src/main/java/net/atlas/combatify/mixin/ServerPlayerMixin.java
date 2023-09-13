@@ -30,6 +30,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static net.atlas.combatify.Combatify.scheduleHitResult;
 
@@ -45,8 +47,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public abstract void swing(InteractionHand interactionHand);
 	@Shadow
 	public ServerGamePacketListenerImpl connection;
-	public ArrayList<HitResult> oldHitResults = new ArrayList<>();
-	public Map<HitResult, Float[]> hitResultToRotationMap = new HashMap<>();
+	public CopyOnWriteArrayList<HitResult> oldHitResults = new CopyOnWriteArrayList<>();
+	public Map<HitResult, Float[]> hitResultToRotationMap = new ConcurrentHashMap<>();
 	public ArrayList<Integer> pastPings = new ArrayList<>();
 	public boolean awaitingResponse = false;
 	public int responseTimer = 0;
@@ -303,7 +305,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 
 	@Override
-	public ArrayList<HitResult> getOldHitResults() {
+	public CopyOnWriteArrayList<HitResult> getOldHitResults() {
 		return oldHitResults;
 	}
 

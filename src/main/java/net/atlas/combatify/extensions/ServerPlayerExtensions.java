@@ -3,8 +3,8 @@ package net.atlas.combatify.extensions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.HitResult;
 
-import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface ServerPlayerExtensions {
 	HitResult pickResult(Entity camera);
@@ -15,7 +15,7 @@ public interface ServerPlayerExtensions {
 
 	boolean isAwaitingResponse();
 
-    ArrayList<HitResult> getOldHitResults();
+    CopyOnWriteArrayList<HitResult> getOldHitResults();
 
 	boolean isRetainingAttack();
 
