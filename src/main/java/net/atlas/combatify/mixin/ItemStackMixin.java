@@ -44,6 +44,9 @@ public abstract class ItemStackMixin {
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
+	@Shadow
+	public abstract boolean isEnchanted();
+
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
@@ -173,6 +176,12 @@ public abstract class ItemStackMixin {
 		}
 		return original;
 	}
+
+	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
+	public boolean addEnchantability(boolean original) {
+		return (!((ItemExtensions)getItem()).getBlockingType().isEmpty() && !isEnchanted()) || original;
+	}
+
 	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
 	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
 		InteractionResultHolder<ItemStack> holder = null;

@@ -311,6 +311,7 @@ public class ItemConfig {
 			BlockingType bType = Combatify.registeredTypes.get(ResourceLocation.tryParse(blockingType));
 			Double blockStrength = buf1.readDouble();
 			Double blockKbRes = buf1.readDouble();
+			Integer enchantlevel = buf1.readInt();
 			if(damage == -100)
 				damage = null;
 			if(speed == -10)
@@ -330,7 +331,7 @@ public class ItemConfig {
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -378,6 +379,7 @@ public class ItemConfig {
 			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName().toString());
 			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
 			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
+			buf12.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -401,6 +403,7 @@ public class ItemConfig {
 		BlockingType blockingType = null;
 		Double blockStrength = null;
 		Double blockKbRes = null;
+		Integer enchantment_level = null;
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
 		if (jsonObject.has("speed"))
@@ -450,7 +453,9 @@ public class ItemConfig {
 			blockStrength = getDouble(jsonObject, "damage_protection");
 		if (jsonObject.has("block_knockback_resistance"))
 			blockKbRes = getDouble(jsonObject, "block_knockback_resistance");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes);
+		if (jsonObject.has("enchantment_level"))
+			cooldown = getInt(jsonObject, "enchantment_level");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level);
 		configuredItems.put(item, configurableItemData);
 	}
 }

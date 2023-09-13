@@ -28,7 +28,7 @@ public class DefendingEnchantment extends Enchantment implements CustomEnchantme
 
 	@Override
 	public boolean canEnchant(ItemStack stack) {
-		return stack.getItem() instanceof ItemExtensions;
+		return !((ItemExtensions) stack.getItem()).getBlockingType().isEmpty();
 	}
 
 	@Override

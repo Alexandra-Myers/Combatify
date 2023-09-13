@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.atlas.combatify.extensions.Tierable;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -57,7 +58,9 @@ public class TestBlockingType extends BlockingType {
 				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F);
 			}
 		}
-		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE;
+		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
+		if (stack.getItem() instanceof Tierable tierable)
+			var2 = tierable.getTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		if(Combatify.CONFIG.defender()) {
@@ -73,7 +76,9 @@ public class TestBlockingType extends BlockingType {
 				return configurableItemData.blockKbRes;
 			}
 		}
-		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE;
+		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
+		if (stack.getItem() instanceof Tierable tierable)
+			var2 = tierable.getTier();
 		if (var2.getLevel() >= 4)
 			return 0.5;
 		return 0.25;

@@ -26,6 +26,8 @@ public class CombatifyConfigModel {
 	@RestartRequired
 	public boolean configOnlyWeapons = false;
 	@RestartRequired
+	public boolean tieredShields = false;
+	@RestartRequired
 	public boolean piercer = false;
 	@RestartRequired
 	public boolean defender = false;

@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
   "pattern": [
     " X",
     " X",
@@ -15,5 +16,6 @@
   },
   "result": {
     "item": "combatify:iron_longsword"
-  }
+  },
+  "show_notification": true
 }

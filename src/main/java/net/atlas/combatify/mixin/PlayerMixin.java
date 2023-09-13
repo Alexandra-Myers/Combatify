@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.NewAttributes;
+import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
 import net.minecraft.core.particles.ParticleTypes;
@@ -130,6 +131,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public boolean ctsShieldDisable(float damage, Item item) {
 		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
+		if (item instanceof TieredShieldItem)
+			for (TieredShieldItem tieredShieldItem : Combatify.shields)
+				if (item != tieredShieldItem)
+					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
 		player.stopUsingItem();
 		player.level().broadcastEntityEvent(player, (byte)30);
 		return true;

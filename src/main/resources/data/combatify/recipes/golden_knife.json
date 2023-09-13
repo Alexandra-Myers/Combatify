@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "equipment",
   "pattern": [
     " X",
     " #"
@@ -14,5 +15,6 @@
   },
   "result": {
     "item": "combatify:golden_knife"
-  }
+  },
+  "show_notification": true
 }
