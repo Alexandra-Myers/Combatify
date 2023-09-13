@@ -17,7 +17,11 @@ public interface ServerPlayerExtensions {
 
     ArrayList<HitResult> getOldHitResults();
 
-	Map<HitResult, Float[]> getHitResultToRotationMap();
+	boolean isRetainingAttack();
+
+	void setRetainAttack(boolean retain);
+
+    Map<HitResult, Float[]> getHitResultToRotationMap();
 
 	void getPresentResult();
 }

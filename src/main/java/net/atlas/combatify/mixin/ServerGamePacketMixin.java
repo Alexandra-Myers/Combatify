@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundPongPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -30,6 +31,25 @@ public abstract class ServerGamePacketMixin {
 		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
 			ci.cancel();
 		Combatify.player = player;
+		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
+			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
+				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
+				ci.cancel();
+			}
+			if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
+				float var1 = player.getAttackStrengthScale(0.0F);
+				if (var1 < 0.8F) {
+					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
+					((PlayerExtensions) player).resetAttackStrengthTicker(!((PlayerExtensions) player).getMissedAttackRecovery());
+					ci.cancel();
+				}
+
+				if (var1 < 1.0F) {
+					((ServerPlayerExtensions) player).setRetainAttack(true);
+					ci.cancel();
+				}
+			}
+		}
 	}
 
 	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))

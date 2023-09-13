@@ -308,6 +308,16 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 
 	@Override
+	public boolean isRetainingAttack() {
+		return retainAttack;
+	}
+
+	@Override
+	public void setRetainAttack(boolean retain) {
+		retainAttack = retain;
+	}
+
+	@Override
 	public Map<HitResult, Float[]> getHitResultToRotationMap() {
 		return hitResultToRotationMap;
 	}
