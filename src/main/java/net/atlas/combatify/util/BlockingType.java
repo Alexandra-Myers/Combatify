@@ -2,8 +2,6 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import net.atlas.combatify.Combatify;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -15,10 +13,12 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 import static net.atlas.combatify.Combatify.EMPTY;
 
 public abstract class BlockingType {
-	private final ResourceLocation name;
+	private final String name;
 	private boolean canBeDisabled = true;
 	private boolean canCrouchBlock = true;
 	private boolean isToolBlocker = false;
@@ -86,15 +86,28 @@ public abstract class BlockingType {
 	}
 
 	public BlockingType(String name) {
-		this.name = new ResourceLocation(name);
+		this.name = name;
 	}
 	public boolean isEmpty() {
 		return this == EMPTY;
 	}
 
-	public ResourceLocation getName() {
+	public String getName() {
 		return name;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof BlockingType that)) return false;
+		return canBeDisabled == that.canBeDisabled && canCrouchBlock == that.canCrouchBlock && isToolBlocker() == that.isToolBlocker() && isPercentage() == that.isPercentage() && canBlockHit == that.canBlockHit && requiresSwordBlocking == that.requiresSwordBlocking && requireFullCharge == that.requireFullCharge && defaultKbMechanics == that.defaultKbMechanics && Objects.equals(getName(), that.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getName(), canBeDisabled, canCrouchBlock, isToolBlocker(), isPercentage(), canBlockHit, requiresSwordBlocking, requireFullCharge, defaultKbMechanics);
+	}
+
 	public abstract void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl);
 	public abstract float getShieldBlockDamageValue(ItemStack stack);
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);

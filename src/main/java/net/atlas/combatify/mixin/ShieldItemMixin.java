@@ -5,7 +5,6 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.BlockingType;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -49,6 +48,6 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 				}
 			}
 		}
-		return Combatify.registeredTypes.get(new ResourceLocation("shield"));
+		return Combatify.registeredTypes.get("shield");
 	}
 }

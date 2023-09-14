@@ -90,6 +90,6 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 				}
 			}
 		}
-		return Combatify.registeredTypes.get(new ResourceLocation("new_shield"));
+		return Combatify.registeredTypes.get("new_shield");
 	}
 }

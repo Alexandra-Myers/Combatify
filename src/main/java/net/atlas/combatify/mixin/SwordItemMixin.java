@@ -8,7 +8,6 @@ import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.extensions.*;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
@@ -59,7 +58,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 				return configurableWeaponData.blockingType;
 			}
 		}
-		return Combatify.registeredTypes.get(new ResourceLocation("sword"));
+		return Combatify.registeredTypes.get("sword");
 	}
 
 	@Override

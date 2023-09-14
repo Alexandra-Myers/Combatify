@@ -1,7 +1,6 @@
 package net.atlas.combatify.networking;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
@@ -15,6 +14,8 @@ import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.impl.util.log.Log;
+import net.fabricmc.loader.impl.util.log.LogCategory;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -26,7 +27,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.phys.HitResult;
@@ -58,7 +58,7 @@ public class NetworkingHandler {
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
 				scheduleHitResult.put(handler.player.getUUID(), new Timer());
-				LogUtils.getLogger().info("Unmodded player joined: " + handler.player.getUUID());
+				Log.info(LogCategory.GENERAL, "Unmodded player joined: " + handler.player.getUUID());
 				return;
 			}
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
@@ -67,8 +67,10 @@ public class NetworkingHandler {
 				finalizingAttack.remove(handler.player.getUUID());
 			}
 			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+			Log.info(LogCategory.GENERAL, "Saving config details to buffer.");
 			ITEMS.saveToNetwork(buf);
 			ServerPlayNetworking.send(handler.player, modDetectionNetworkChannel, buf);
+			Log.info(LogCategory.GENERAL, "Config packet sent to client.");
 		});
 		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
 			Item item = stack.getItem();

@@ -6,6 +6,8 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.impl.util.log.Log;
+import net.fabricmc.loader.impl.util.log.LogCategory;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -120,15 +122,14 @@ public class ItemConfig {
 						if (jsonObject.has("blocking_type")) {
 							String blocking_type = getString(jsonObject, "blocking_type");
 							blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-							ResourceLocation resourceLocation = ResourceLocation.tryParse(blocking_type);
-							if (!Combatify.registeredTypes.containsKey(resourceLocation)) {
+							if (!Combatify.registeredTypes.containsKey(blocking_type)) {
 								CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
 								CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
 								crashReportCategory.setDetail("Type name", blocking_type);
 								crashReportCategory.setDetail("Json Object", jsonObject);
 								throw new ReportedException(report);
 							}
-							blockingType = Combatify.registeredTypes.get(resourceLocation);
+							blockingType = Combatify.registeredTypes.get(blocking_type);
 						}
 						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType);
 						configuredWeapons.put(type, configurableWeaponData);
@@ -160,6 +161,7 @@ public class ItemConfig {
 		String string = GsonHelper.getAsString(jsonObject, "name");
 		return itemFromName(string);
 	}
+
 	public static Item itemFromName(String string) {
 		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElseThrow(() -> new JsonSyntaxException("Unknown item '" + string + "'"));
 		if (item == Items.AIR) {
@@ -189,8 +191,7 @@ public class ItemConfig {
 		blocking_type = blocking_type.toLowerCase(Locale.ROOT);
 		if (blocking_type.equals("empty") || blocking_type.equals("blank"))
 			return;
-		ResourceLocation resourceLocation = ResourceLocation.tryParse(blocking_type);
-		if (!Combatify.registeredTypes.containsKey(resourceLocation) || jsonObject.has("class")) {
+		if (!Combatify.registeredTypes.containsKey(blocking_type) || jsonObject.has("class")) {
 			if (jsonObject.has("class") && jsonObject.get("class") instanceof JsonPrimitive jsonPrimitive && jsonPrimitive.isString()) {
 				try {
 					Class<?> clazz = BlockingType.class.getClassLoader().loadClass(jsonPrimitive.getAsString());
@@ -246,7 +247,7 @@ public class ItemConfig {
 				throw new ReportedException(report);
 			}
 		}
-		BlockingType blockingType = Combatify.registeredTypes.get(resourceLocation);
+		BlockingType blockingType = Combatify.registeredTypes.get(blocking_type);
 		if (jsonObject.has("require_full_charge"))
 			blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
 		if (jsonObject.has("is_tool"))
@@ -266,13 +267,18 @@ public class ItemConfig {
 	}
 
 	public void loadFromNetwork(FriendlyByteBuf buf) {
-		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readResourceLocation, buf1 -> {
+		Log.info(LogCategory.GENERAL, "Loading config details from buffer.");
+		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
 			try {
 				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
+				Log.info(LogCategory.GENERAL, "Successfully loaded class.");
 				Constructor<?> constructor = clazz.getConstructor(String.class);
-				ResourceLocation name = buf1.readResourceLocation();
-				Object object = constructor.newInstance(name.toString());
+				Log.info(LogCategory.GENERAL, "Successfully loaded constructor.");
+				String name = buf1.readUtf();
+				Object object = constructor.newInstance(name);
+				Log.info(LogCategory.GENERAL, "Successfully created object.");
 				if (object instanceof BlockingType blockingType) {
+					Log.info(LogCategory.GENERAL, "Object is a blocking type.");
 					blockingType.setDisablement(buf1.readBoolean());
 					blockingType.setBlockHit(buf1.readBoolean());
 					blockingType.setCrouchable(buf1.readBoolean());
@@ -295,6 +301,7 @@ public class ItemConfig {
 				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
 			}
 		});
+		Log.info(LogCategory.GENERAL, "Loaded blocking types from buffer.");
 		configuredItems = buf.readMap(buf12 -> buf12.readById(BuiltInRegistries.ITEM), buf1 -> {
 			Double damage = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -308,7 +315,8 @@ public class ItemConfig {
 			String weaponType = buf1.readUtf();
 			WeaponType type = null;
 			String blockingType = buf1.readUtf();
-			BlockingType bType = Combatify.registeredTypes.get(ResourceLocation.tryParse(blockingType));
+			BlockingType bType = Combatify.registeredTypes.get(blockingType);
+			Log.info(LogCategory.GENERAL, "Loaded blocking type for item.");
 			Double blockStrength = buf1.readDouble();
 			Double blockKbRes = buf1.readDouble();
 			Integer enchantlevel = buf1.readInt();
@@ -333,6 +341,7 @@ public class ItemConfig {
 			}
 			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel);
 		});
+		Log.info(LogCategory.GENERAL, "Loaded Item Data from buffer.");
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -340,7 +349,8 @@ public class ItemConfig {
 			Double chargedReach = buf1.readDouble();
 			Boolean tierable = buf1.readBoolean();
 			String blockingType = buf1.readUtf();
-			BlockingType bType = Combatify.registeredTypes.get(ResourceLocation.tryParse(blockingType));
+			BlockingType bType = Combatify.registeredTypes.get(blockingType);
+			Log.info(LogCategory.GENERAL, "Loaded blocking type for weapon type.");
 			if(damageOffset == -10)
 				damageOffset = null;
 			if(speed == -10)
@@ -351,12 +361,13 @@ public class ItemConfig {
 				chargedReach = null;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
 		});
+		Log.info(LogCategory.GENERAL, "Loaded weapon types from buffer.");
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
-		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeResourceLocation, (buf1, blockingType) -> {
+		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeUtf, (buf1, blockingType) -> {
 			buf1.writeUtf(blockingType.getClass().getName());
-			buf1.writeResourceLocation(blockingType.getName());
+			buf1.writeUtf(blockingType.getName());
 			buf1.writeBoolean(blockingType.canBeDisabled());
 			buf1.writeBoolean(blockingType.canBlockHit());
 			buf1.writeBoolean(blockingType.canCrouchBlock());
@@ -376,7 +387,7 @@ public class ItemConfig {
 			if(configurableItemData.cooldown != null)
 				buf12.writeBoolean(configurableItemData.cooldownAfter);
 			buf12.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name());
-			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName().toString());
+			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName());
 			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
 			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
 			buf12.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
@@ -387,7 +398,7 @@ public class ItemConfig {
 			buf12.writeDouble(configurableWeaponData.reach == null ? -10 : configurableWeaponData.reach);
 			buf12.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
 			buf12.writeBoolean(configurableWeaponData.tierable);
-			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName().toString());
+			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
 		});
 	}
 
@@ -434,15 +445,14 @@ public class ItemConfig {
 		if (jsonObject.has("blocking_type")) {
 			String blocking_type = getString(jsonObject, "blocking_type");
 			blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-			ResourceLocation resourceLocation = ResourceLocation.tryParse(blocking_type);
-			if (!Combatify.registeredTypes.containsKey(resourceLocation)) {
+			if (!Combatify.registeredTypes.containsKey(blocking_type)) {
 				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
-				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+				CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
 				crashReportCategory.setDetail("Type name", blocking_type);
 				crashReportCategory.setDetail("Json Object", jsonObject);
 				throw new ReportedException(report);
 			}
-			blockingType = Combatify.registeredTypes.get(resourceLocation);
+			blockingType = Combatify.registeredTypes.get(blocking_type);
 		}
 		if (cooldown != null) {
 			if (!jsonObject.has("cooldown_after"))
