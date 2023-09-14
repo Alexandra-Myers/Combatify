@@ -2,12 +2,11 @@ package net.atlas.combatify.config;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.impl.util.log.Log;
-import net.fabricmc.loader.impl.util.log.LogCategory;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -267,18 +266,18 @@ public class ItemConfig {
 	}
 
 	public void loadFromNetwork(FriendlyByteBuf buf) {
-		Log.info(LogCategory.GENERAL, "Loading config details from buffer.");
+		LogUtils.getLogger().info("Loading config details from buffer.");
 		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
 			try {
 				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
-				Log.info(LogCategory.GENERAL, "Successfully loaded class.");
+				LogUtils.getLogger().info("Successfully loaded class.");
 				Constructor<?> constructor = clazz.getConstructor(String.class);
-				Log.info(LogCategory.GENERAL, "Successfully loaded constructor.");
+				LogUtils.getLogger().info("Successfully loaded constructor.");
 				String name = buf1.readUtf();
 				Object object = constructor.newInstance(name);
-				Log.info(LogCategory.GENERAL, "Successfully created object.");
+				LogUtils.getLogger().info("Successfully created object.");
 				if (object instanceof BlockingType blockingType) {
-					Log.info(LogCategory.GENERAL, "Object is a blocking type.");
+					LogUtils.getLogger().info("Object is a blocking type.");
 					blockingType.setDisablement(buf1.readBoolean());
 					blockingType.setBlockHit(buf1.readBoolean());
 					blockingType.setCrouchable(buf1.readBoolean());
@@ -301,7 +300,7 @@ public class ItemConfig {
 				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
 			}
 		});
-		Log.info(LogCategory.GENERAL, "Loaded blocking types from buffer.");
+		LogUtils.getLogger().info("Loaded blocking types from buffer.");
 		configuredItems = buf.readMap(buf12 -> buf12.readById(BuiltInRegistries.ITEM), buf1 -> {
 			Double damage = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -316,7 +315,7 @@ public class ItemConfig {
 			WeaponType type = null;
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Log.info(LogCategory.GENERAL, "Loaded blocking type for item.");
+			LogUtils.getLogger().info("Loaded blocking type for item.");
 			Double blockStrength = buf1.readDouble();
 			Double blockKbRes = buf1.readDouble();
 			Integer enchantlevel = buf1.readInt();
@@ -341,7 +340,7 @@ public class ItemConfig {
 			}
 			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel);
 		});
-		Log.info(LogCategory.GENERAL, "Loaded Item Data from buffer.");
+		LogUtils.getLogger().info("Loaded Item Data from buffer.");
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -350,7 +349,7 @@ public class ItemConfig {
 			Boolean tierable = buf1.readBoolean();
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Log.info(LogCategory.GENERAL, "Loaded blocking type for weapon type.");
+			LogUtils.getLogger().info("Loaded blocking type for weapon type.");
 			if(damageOffset == -10)
 				damageOffset = null;
 			if(speed == -10)
@@ -361,7 +360,7 @@ public class ItemConfig {
 				chargedReach = null;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
 		});
-		Log.info(LogCategory.GENERAL, "Loaded weapon types from buffer.");
+		LogUtils.getLogger().info("Loaded weapon types from buffer.");
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
