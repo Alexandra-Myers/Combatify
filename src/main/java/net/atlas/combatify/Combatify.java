@@ -45,7 +45,7 @@ public class Combatify implements ModInitializer {
 	public static final Map<UUID, Boolean> finalizingAttack = new HashMap<>();
 	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
-	public static final Logger LOGGER = LoggerContext.getContext().getLogger("combatify");
+	public static final Logger LOGGER = new LoggerContext("combatify").getLogger("combatify-debug");
 	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
 	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
