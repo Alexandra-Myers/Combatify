@@ -463,7 +463,7 @@ public class ItemConfig {
 		if (jsonObject.has("block_knockback_resistance"))
 			blockKbRes = getDouble(jsonObject, "block_knockback_resistance");
 		if (jsonObject.has("enchantment_level"))
-			cooldown = getInt(jsonObject, "enchantment_level");
+			enchantment_level = getInt(jsonObject, "enchantment_level");
 		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level);
 		configuredItems.put(item, configurableItemData);
 	}
