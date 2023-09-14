@@ -48,11 +48,11 @@ public class CombatifyClient implements ClientModInitializer {
 			value -> {
 			}
 	);
-	public ClientNetworkingHandler clientNetworkingHandler;
 
 	@Override
 	public void onInitializeClient() {
-		clientNetworkingHandler = new ClientNetworkingHandler();
+		Combatify.LOGGER.info("Client init started.");
+		ClientNetworkingHandler.init();
 		if (Combatify.CONFIG.tieredShields()) {
 			EntityModelLayerRegistry.registerModelLayer(WOODEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);

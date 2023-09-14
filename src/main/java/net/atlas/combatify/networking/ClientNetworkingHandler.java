@@ -3,6 +3,7 @@ package net.atlas.combatify.networking;
 import io.wispforest.owo.Owo;
 import io.wispforest.owo.config.Option;
 import io.wispforest.owo.ops.TextOps;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.CombatifyConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
@@ -24,15 +25,17 @@ import static net.atlas.combatify.Combatify.*;
 
 @SuppressWarnings("unused")
 public class ClientNetworkingHandler {
-	public ClientNetworkingHandler() {
+	private ClientNetworkingHandler() {
+	}
+	public static void init() {
 		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
+			Combatify.LOGGER.info("Loading config details from buffer.");
 			ITEMS.loadFromNetwork(buf);
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
-			for(Item item : items) {
+			for(Item item : items)
 				((ItemExtensions) item).modifyAttributeModifiers();
-			}
 			for (Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
@@ -40,23 +43,22 @@ public class ClientNetworkingHandler {
 			}
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
-			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
+			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel))
 				handler.getConnection().disconnect(Component.literal("Combatify needs to be installed on the server to join with this client"));
-			}
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
 			ITEMS = new ItemConfig();
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
-			for(Item item : items) {
+			for(Item item : items)
 				((ItemExtensions) item).modifyAttributeModifiers();
-			}
 			for(Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}
+			Combatify.LOGGER.info("Loaded items config.");
 		});
 	}
 	@SuppressWarnings("unchecked")

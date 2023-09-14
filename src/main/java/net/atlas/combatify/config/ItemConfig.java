@@ -265,18 +265,13 @@ public class ItemConfig {
 	}
 
 	public void loadFromNetwork(FriendlyByteBuf buf) {
-		Combatify.LOGGER.info("Loading config details from buffer.");
 		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
 			try {
 				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
-				Combatify.LOGGER.info("Successfully loaded class.");
 				Constructor<?> constructor = clazz.getConstructor(String.class);
-				Combatify.LOGGER.info("Successfully loaded constructor.");
 				String name = buf1.readUtf();
 				Object object = constructor.newInstance(name);
-				Combatify.LOGGER.info("Successfully created object.");
 				if (object instanceof BlockingType blockingType) {
-					Combatify.LOGGER.info("Object is a blocking type.");
 					blockingType.setDisablement(buf1.readBoolean());
 					blockingType.setBlockHit(buf1.readBoolean());
 					blockingType.setCrouchable(buf1.readBoolean());
@@ -299,7 +294,6 @@ public class ItemConfig {
 				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
 			}
 		});
-		Combatify.LOGGER.info("Loaded blocking types from buffer.");
 		configuredItems = buf.readMap(buf12 -> buf12.readById(BuiltInRegistries.ITEM), buf1 -> {
 			Double damage = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -314,7 +308,6 @@ public class ItemConfig {
 			WeaponType type = null;
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Combatify.LOGGER.info("Loaded blocking type for item.");
 			Double blockStrength = buf1.readDouble();
 			Double blockKbRes = buf1.readDouble();
 			Integer enchantlevel = buf1.readInt();
@@ -339,7 +332,6 @@ public class ItemConfig {
 			}
 			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel);
 		});
-		Combatify.LOGGER.info("Loaded Item Data from buffer.");
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
 			Double speed = buf1.readDouble();
@@ -348,7 +340,6 @@ public class ItemConfig {
 			Boolean tierable = buf1.readBoolean();
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Combatify.LOGGER.info("Loaded blocking type for weapon type.");
 			if(damageOffset == -10)
 				damageOffset = null;
 			if(speed == -10)
@@ -359,7 +350,6 @@ public class ItemConfig {
 				chargedReach = null;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
 		});
-		Combatify.LOGGER.info("Loaded weapon types from buffer.");
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
