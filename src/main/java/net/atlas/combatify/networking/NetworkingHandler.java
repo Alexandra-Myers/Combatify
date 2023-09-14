@@ -12,11 +12,14 @@ import net.atlas.combatify.item.WeaponType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -64,9 +67,7 @@ public class NetworkingHandler {
 				isPlayerAttacking.remove(handler.player.getUUID());
 				finalizingAttack.remove(handler.player.getUUID());
 			}
-			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-			ITEMS.saveToNetwork(buf);
-			ServerPlayNetworking.send(handler.player, modDetectionNetworkChannel, buf);
+			ServerPlayNetworking.send(handler.player, new ItemConfigPacket(ITEMS));
 			Combatify.LOGGER.info("Config packet sent to client.");
 		});
 		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
@@ -203,5 +204,35 @@ public class NetworkingHandler {
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}
 		});
+	}
+	public record ItemConfigPacket(ItemConfig config) implements FabricPacket {
+		public static final PacketType<ItemConfigPacket> TYPE = PacketType.create(Combatify.id("item_config"), ItemConfigPacket::new);
+
+		public ItemConfigPacket(FriendlyByteBuf buf) {
+			this(ITEMS.loadFromNetwork(buf));
+		}
+
+		/**
+		 * Writes the contents of this packet to the buffer.
+		 *
+		 * @param buf the output buffer
+		 */
+		@Override
+		public void write(FriendlyByteBuf buf) {
+			ITEMS.saveToNetwork(buf);
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public PacketType<?> getType() {
+			return TYPE;
+		}
 	}
 }

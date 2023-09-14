@@ -264,7 +264,7 @@ public class ItemConfig {
 			blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
 	}
 
-	public void loadFromNetwork(FriendlyByteBuf buf) {
+	public ItemConfig loadFromNetwork(FriendlyByteBuf buf) {
 		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
 			try {
 				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
@@ -350,6 +350,7 @@ public class ItemConfig {
 				chargedReach = null;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
 		});
+		return this;
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {

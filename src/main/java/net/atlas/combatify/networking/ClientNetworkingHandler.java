@@ -11,8 +11,10 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -28,9 +30,8 @@ public class ClientNetworkingHandler {
 	private ClientNetworkingHandler() {
 	}
 	public static void init() {
-		ClientPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(client, handler, buf, responseSender) -> {
-			Combatify.LOGGER.info("Loading config details from buffer.");
-			ITEMS.loadFromNetwork(buf);
+		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.ItemConfigPacket.TYPE, (packet, player, responseSender) -> {
+			LOGGER.info("Loading config details from buffer.");
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
