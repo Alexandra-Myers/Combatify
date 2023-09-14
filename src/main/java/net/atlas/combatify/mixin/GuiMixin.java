@@ -163,7 +163,7 @@ public abstract class GuiMixin {
 		ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
 		ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
 		boolean offHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem()) && !((ItemExtensions)offHandStack.getItem()).getBlockingType().isEmpty();
-		boolean mainHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem()) && !((ItemExtensions)offHandStack.getItem()).getBlockingType().isEmpty();
+		boolean mainHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem()) && !((ItemExtensions)mainHandStack.getItem()).getBlockingType().isEmpty();
 		return offHandShieldCooldown || mainHandShieldCooldown;
 	}
 }

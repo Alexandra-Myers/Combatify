@@ -14,8 +14,6 @@ import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.impl.util.log.Log;
-import net.fabricmc.loader.impl.util.log.LogCategory;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -58,7 +56,7 @@ public class NetworkingHandler {
 				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
 				scheduleHitResult.put(handler.player.getUUID(), new Timer());
-				Log.info(LogCategory.GENERAL, "Unmodded player joined: " + handler.player.getUUID());
+				Combatify.LOGGER.info("Unmodded player joined: " + handler.player.getUUID());
 				return;
 			}
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
@@ -67,10 +65,10 @@ public class NetworkingHandler {
 				finalizingAttack.remove(handler.player.getUUID());
 			}
 			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-			Log.info(LogCategory.GENERAL, "Saving config details to buffer.");
+			Combatify.LOGGER.info("Saving config details to buffer.");
 			ITEMS.saveToNetwork(buf);
 			ServerPlayNetworking.send(handler.player, modDetectionNetworkChannel, buf);
-			Log.info(LogCategory.GENERAL, "Config packet sent to client.");
+			Combatify.LOGGER.info("Config packet sent to client.");
 		});
 		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
 			Item item = stack.getItem();
