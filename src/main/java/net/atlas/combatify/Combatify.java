@@ -1,5 +1,6 @@
 package net.atlas.combatify;
 
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.config.CombatifyConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
@@ -24,9 +25,9 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -45,7 +46,7 @@ public class Combatify implements ModInitializer {
 	public static final Map<UUID, Boolean> finalizingAttack = new HashMap<>();
 	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
-	public static final Logger LOGGER = new LoggerContext("combatify").getLogger("combatify-debug");
+	public static final Logger LOGGER = LoggerFactory.getLogger("combatify");
 	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
 	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));

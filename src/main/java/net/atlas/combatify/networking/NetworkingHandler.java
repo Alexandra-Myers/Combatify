@@ -65,7 +65,6 @@ public class NetworkingHandler {
 				finalizingAttack.remove(handler.player.getUUID());
 			}
 			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-			Combatify.LOGGER.info("Saving config details to buffer.");
 			ITEMS.saveToNetwork(buf);
 			ServerPlayNetworking.send(handler.player, modDetectionNetworkChannel, buf);
 			Combatify.LOGGER.info("Config packet sent to client.");
