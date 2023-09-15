@@ -37,9 +37,8 @@ public class ShieldBlockingType extends BlockingType {
 				hurt = true;
 				instance.blockUsingShield((LivingEntity) entity);
 			}
-		} else {
+		} else
 			g.set(amount.get());
-		}
 
 		if (!hurt)
 			instance.hurtCurrentlyUsedShield(g.get());

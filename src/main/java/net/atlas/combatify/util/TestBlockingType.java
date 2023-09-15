@@ -30,23 +30,20 @@ public class TestBlockingType extends BlockingType {
 
 	@Override
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		boolean hurt = false;
+		float actualStrength = this.getShieldBlockDamageValue(blockingItem);
+		g.set(amount.get() * actualStrength);
 		if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_PROJECTILE)) {
 			g.set(amount.get());
 		} else {
-			float actualStrength = this.getShieldBlockDamageValue(blockingItem);
-			g.set(amount.get() * actualStrength);
 			entity = source.getDirectEntity();
 			if (entity instanceof LivingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());
-				hurt = true;
 				instance.blockUsingShield((LivingEntity) entity);
 			}
 			bl.set(true);
 		}
 
-		if (!hurt)
-			instance.hurtCurrentlyUsedShield(g.get());
+		instance.hurtCurrentlyUsedShield(g.get());
 		amount.set(amount.get() - g.get());
 	}
 
