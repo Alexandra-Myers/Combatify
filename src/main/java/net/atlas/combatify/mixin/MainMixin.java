@@ -15,4 +15,8 @@ public class MainMixin {
 	private static void injectThread(String[] strings, CallbackInfo ci) {
 		renderingThread.setName("Render thread");
 	}
+	@Inject(method = "main", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;initGameThread(Z)V"), remap = false)
+	private static void rename(String[] strings, CallbackInfo ci) {
+		Thread.currentThread().setName("Game thread");
+	}
 }

@@ -1,6 +1,6 @@
 {
   "attribute.name.generic.attack_reach": "Attack Reach",
   "attribute.name.generic.shield_strength": "Damage Protection",
-  "attribute.name.generic.sword_block_strength": "Percentage Damage Reduction",
+  "attribute.name.generic.sword_block_strength": "Damage Reduction",
   "attribute.name.generic.longsword_piercing": "Armor Piercing"
 }
