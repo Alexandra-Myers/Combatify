@@ -113,7 +113,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
+	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/minecraftforge/common/ToolAction;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
 		return !((ItemExtensions)useItem.getItem()).getBlockingType().isEmpty() || original;
 	}
@@ -123,7 +123,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
+	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canDisableShield(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/LivingEntity;)Z"), cancellable = true)
 	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
 		ci.cancel();
 	}

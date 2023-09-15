@@ -29,7 +29,7 @@ public class CombatUtil {
         Vec3 eyePosition = attacker.getEyePosition(0);
         double reach = ((PlayerExtensions)attacker).getCurrentAttackReach(1F);
 		if (!Combatify.unmoddedPlayers.contains(attacker.getUUID()))
-			reach += 1;
+			reach += 0.25;
         if (!attacker.hasLineOfSight(target)) reach = 2.5;
         reach *= reach;
 
