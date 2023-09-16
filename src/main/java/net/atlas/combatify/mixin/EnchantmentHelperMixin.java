@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.At;
 @SuppressWarnings("unused")
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin implements CustomEnchantmentHelper {
-	@ModifyExpressionValue(method = "getAvailableEnchantmentResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentCategory;canEnchant(Lnet/minecraft/world/item/Item;)Z"))
+	@ModifyExpressionValue(method = "getAvailableEnchantmentResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;canApplyAtEnchantingTable(Lnet/minecraft/world/item/ItemStack;)Z"))
 	private static boolean redirectCanEnchant(boolean original, @Local(ordinal = 0) Enchantment currentEnchantment, @Local(ordinal = 0) ItemStack itemStack) {
 		return currentEnchantment instanceof CustomEnchantment customEnchantment && itemStack != null ? customEnchantment.isAcceptibleConditions(itemStack) : original;
 	}
 
-	@ModifyExpressionValue(method = "getEnchantmentCost", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
+	@ModifyExpressionValue(method = "getEnchantmentCost", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getEnchantmentValue()I"))
 	private static int getEnchantmentValue(int original, @Local(ordinal = 0) ItemStack stack) {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
@@ -34,7 +34,7 @@ public abstract class EnchantmentHelperMixin implements CustomEnchantmentHelper 
 		}
 		return original;
 	}
-	@ModifyExpressionValue(method = "selectEnchantment", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
+	@ModifyExpressionValue(method = "selectEnchantment", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getEnchantmentValue()I"))
 	private static int getEnchantmentValue1(int original, @Local(ordinal = 0) ItemStack stack) {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());

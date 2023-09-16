@@ -194,7 +194,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						}
 					} else {
 						player.connection.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-						ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", player.getName().getString());
+						Combatify.LOGGER.warn("Player " + player.getName().getString() + " tried to attack an invalid entity");
 					}
 				} else {
 					attackAir();

@@ -39,7 +39,7 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
-		if (Combatify.CONFIG.toolsAreWeapons() || bl) {
+		if (Combatify.CONFIG.toolsAreWeapons.get() || bl) {
 			amount -= 1;
 		}
 		instance.hurtAndBreak(amount, entity, breakCallback);

@@ -8,7 +8,6 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.PiercingItem;
-import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.minecraft.ChatFormatting;
@@ -26,6 +25,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -51,7 +51,7 @@ public abstract class ItemStackMixin {
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
 		if (!item.getBlockingType().isEmpty()) {
-			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()) {
 				float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
 				double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
 				if (!item.getBlockingType().isPercentage())
@@ -68,7 +68,7 @@ public abstract class ItemStackMixin {
 	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"))
 	public boolean preventOutcome(boolean original, @Local(ordinal = 0) Player player, @Local(ordinal = 0) List<Component> list, @Local(ordinal = 0) Multimap<Attribute, AttributeModifier> multimap, @Local(ordinal = 0) EquipmentSlot equipmentSlot) {
 		if (!original) {
-			boolean attackReach = Combatify.CONFIG.attackReach();
+			boolean attackReach = Combatify.CONFIG.attackReach.get();
 			list.add(CommonComponents.EMPTY);
 			list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
 
@@ -85,7 +85,7 @@ public abstract class ItemStackMixin {
 						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).getBaseValue() - 1.5;
 						bl = true;
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-						d += Objects.requireNonNull(player.getAttribute(NewAttributes.ATTACK_REACH)).getBaseValue() + (attackReach ? 0 : 0.5);
+						d += Objects.requireNonNull(player.getAttribute(ForgeMod.ENTITY_REACH.get())).getBaseValue() + (attackReach ? 0 : 0.5);
 						bl = true;
 					} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
 						d += Objects.requireNonNull(player.getAttribute(Attributes.KNOCKBACK_RESISTANCE)).getBaseValue();
@@ -136,7 +136,7 @@ public abstract class ItemStackMixin {
 				}
 			}
 			double piercingLevel = 0;
-			if(Combatify.CONFIG.piercer()) {
+			if(Combatify.CONFIG.piercer.get()) {
 				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER, (ItemStack) (Object) this) * 0.1;
 			}
 			if(getItem() instanceof PiercingItem item) {

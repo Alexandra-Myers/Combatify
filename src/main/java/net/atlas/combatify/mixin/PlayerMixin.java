@@ -6,7 +6,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
@@ -28,6 +27,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -84,18 +84,18 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		Objects.requireNonNull(player.getAttribute(NewAttributes.ATTACK_REACH)).setBaseValue(2.5);
-		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(!Combatify.CONFIG.fistDamage() ? 2 : 1);
-		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
+		Objects.requireNonNull(player.getAttribute(ForgeMod.ENTITY_REACH.get())).setBaseValue(2.5);
+		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(!Combatify.CONFIG.fistDamage.get() ? 2 : 1);
+		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).setBaseValue(Combatify.CONFIG.baseHandAttackSpeed.get() + 1.5);
 	}
 
 	@ModifyExpressionValue(method = "createAttributes", at = @At(value = "CONSTANT", args = "doubleValue=1.0"))
 	private static double changeAttack(double constant) {
-		return !Combatify.CONFIG.fistDamage() ? 1 + constant : constant;
+		return !Combatify.CONFIG.fistDamage.get() ? 1 + constant : constant;
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(NewAttributes.ATTACK_REACH).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
+		return original.add(ForgeMod.ENTITY_REACH.get()).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed.get() + 1.5);
 	}
 	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
 	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
@@ -156,7 +156,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				|| target.getType().equals(EntityType.ITEM_FRAME)
 				|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
 				|| target.getType().equals(EntityType.PAINTING);
-			this.resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+			this.resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks.get() || !isMiscTarget);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
@@ -189,7 +189,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			&& !player.hasEffect(MobEffects.BLINDNESS)
 			&& !player.isPassenger()
 			&& target instanceof LivingEntity;
-		if(!Combatify.CONFIG.sprintCritsEnabled()) {
+		if(!Combatify.CONFIG.sprintCritsEnabled.get()) {
 			isCrit &= !isSprinting();
 		}
 		bl3.set(isCrit || getIsParry());
@@ -246,12 +246,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
 		this.missedAttackRecovery = !hit;
-		if (!Combatify.CONFIG.attackSpeed()) {
+		if (!Combatify.CONFIG.attackSpeed.get()) {
 			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 20) {
 				return;
 			}
 		}
-		if (Combatify.CONFIG.instaAttack()) {
+		if (Combatify.CONFIG.instaAttack.get()) {
 			return;
 		}
 		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * 2;
@@ -332,9 +332,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public double getCurrentAttackReach(float baseTime) {
-		@Nullable final var attackRange = this.getAttribute(NewAttributes.ATTACK_REACH);
+		@Nullable final var attackRange = this.getAttribute(ForgeMod.ENTITY_REACH.get());
 		double chargedBonus = 0;
-		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
+		double baseAttackRange = Combatify.CONFIG.attackReach.get() ? 0 : 0.5;
 		float strengthScale = getAttackStrengthScale(baseTime);
 		if (strengthScale > 1.95F && !player.isCrouching()) {
 			Item item = getItemInHand(InteractionHand.MAIN_HAND).getItem();

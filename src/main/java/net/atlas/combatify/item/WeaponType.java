@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
+import net.minecraftforge.common.ForgeMod;
 
 import java.util.UUID;
 
@@ -34,10 +35,10 @@ public enum WeaponType {
         double damage = this.getDamage(tier);
         double reach = this.getReach();
         attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
-		if (!Combatify.CONFIG.instaAttack())
+		if (!Combatify.CONFIG.instaAttack.get())
 			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
-        if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
-            attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
+        if (reach != 0.0F && Combatify.CONFIG.attackReach.get()) {
+            attributeModifiers.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
         }
     }
 	public void addCombatAttributes(Tier tier, ArrayListMultimap<Attribute, AttributeModifier> attributeModifiers) {
@@ -45,18 +46,18 @@ public enum WeaponType {
 		double damage = this.getDamage(tier);
 		double reach = this.getReach();
 		attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
-		if (!Combatify.CONFIG.instaAttack())
+		if (!Combatify.CONFIG.instaAttack.get())
 			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
-		if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
-			attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
+		if (reach != 0.0F && Combatify.CONFIG.attackReach.get()) {
+			attributeModifiers.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
 		}
 	}
 
 	public double getDamage(Tier tier) {
-		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;
+		int modifier = Combatify.CONFIG.fistDamage.get() ? 1 : 0;
 		double damageBonus = tier.getAttackDamageBonus() + modifier;
-		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && damageBonus != (Combatify.CONFIG.fistDamage() ? 1 : 0);
-		boolean isCTSNotT1 = isNotTier1 && Combatify.CONFIG.ctsAttackBalancing();
+		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && damageBonus != (Combatify.CONFIG.fistDamage.get() ? 1 : 0);
+		boolean isCTSNotT1 = isNotTier1 && Combatify.CONFIG.ctsAttackBalancing.get();
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.damageOffset != null) {
@@ -87,7 +88,7 @@ public enum WeaponType {
 				}
 			}
 			case AXE -> {
-				if (!Combatify.CONFIG.ctsAttackBalancing()) {
+				if (!Combatify.CONFIG.ctsAttackBalancing.get()) {
 					return (!isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
 				} else if (isCTSNotT1) {
 					return damageBonus + 2;
@@ -109,7 +110,7 @@ public enum WeaponType {
 				return damageBonus;
 			}
 			case TRIDENT -> {
-				return 5 + modifier + (Combatify.CONFIG.ctsAttackBalancing() ? 0 : 2);
+				return 5 + modifier + (Combatify.CONFIG.ctsAttackBalancing.get() ? 0 : 2);
 			}
 			default -> {
 				return 0.0 + modifier;
@@ -121,7 +122,7 @@ public enum WeaponType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.speed != null) {
-				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed();
+				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed.get();
 			}
 		}
 		switch (this) {

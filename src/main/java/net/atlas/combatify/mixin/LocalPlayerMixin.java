@@ -15,8 +15,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
-import net.rizecookey.cookeymod.CookeyMod;
-import net.rizecookey.cookeymod.config.category.MiscCategory;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -51,7 +49,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();
 
 					Item blockingItem = itemStack.getItem();
-					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
+					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
 					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.onGround() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
@@ -79,16 +77,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@ModifyExpressionValue(method = "hasEnoughFoodToStartSprinting", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
 	public float modifyFoodRequirement(float original) {
-		return Combatify.CONFIG.oldSprintFoodRequirement() ? -1.0F : original;
-	}
-
-	@Override
-	public boolean isAttackAvailable(float baseTime) {
-		MiscCategory miscCategory = CookeyMod.getInstance().getConfig().getCategory(MiscCategory.class);
-		if (getAttackStrengthScale(baseTime) < 1.0F) {
-			return this.getMissedAttackRecovery() && this.getAttackStrengthStartValue() - (this.attackStrengthTicker - baseTime) > 4.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
-		}
-		return true;
+		return Combatify.CONFIG.oldSprintFoodRequirement.get() ? -1.0F : original;
 	}
     @Redirect(method="hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {

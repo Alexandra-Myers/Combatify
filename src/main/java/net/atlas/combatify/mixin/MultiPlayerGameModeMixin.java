@@ -28,7 +28,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 
 	@Shadow
 	@Final
-	public ClientPacketListener connection;
+	private ClientPacketListener connection;
 
 	@Shadow
 	private GameType localPlayerMode;
@@ -42,13 +42,13 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(
-		method = "getPickRange",
-		require = 2, allow = 2, at = { @At(value = "CONSTANT", args = "floatValue=5.0F"), @At(value = "CONSTANT", args = "floatValue=4.5F") })
-	private float getActualReachDistance(final float reachDistance) {
+		method = "getPickRange", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getBlockReach()D"))
+	private float getActualReachDistance(final float original) {
 		if (minecraft.player != null) {
-			return (float) ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F) + 2;
+			float mod = original - 2.5F;
+			return (float) ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F) + mod;
 		}
-		return 4.5F;
+		return original;
 	}
 
 	@Inject(method = "hasFarPickRange", at = @At(value = "RETURN"), cancellable = true)
@@ -62,7 +62,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 			|| target.getType().equals(EntityType.ITEM_FRAME)
 			|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
 			|| target.getType().equals(EntityType.PAINTING);
-		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks.get() || !isMiscTarget);
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset2(LocalPlayer instance) {

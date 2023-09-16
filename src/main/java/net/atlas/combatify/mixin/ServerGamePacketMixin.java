@@ -1,7 +1,5 @@
 package net.atlas.combatify.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
@@ -13,9 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -52,30 +48,19 @@ public abstract class ServerGamePacketMixin {
 		}
 	}
 
-	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))
-	public double redirectCheck(AABB instance, Vec3 old) {
-		if (targetEntity instanceof ServerPlayer target) {
-			if (CombatUtil.allowReach(player, target)) {
-				return 0;
-			} else {
-				return Integer.MAX_VALUE;
-			}
+	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;canReach(Lnet/minecraft/world/entity/Entity;D)Z"))
+	public boolean redirectCheck(ServerPlayer instance, Entity entity, double v) {
+		if (entity instanceof ServerPlayer target) {
+			return CombatUtil.allowReach(player, target);
 		}
-		// If target is not a player do vanilla code
-		Vec3 vec3 = player.getEyePosition(0.0F);
-		return vec3.distanceToSqr(((AABBExtensions)instance).getNearestPointTo(vec3));
-	}
-	@SuppressWarnings("unused")
-	@ModifyExpressionValue(method = "handleInteract",
-			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
-	public double getActualAttackRange(double original, @Local(ordinal = 0) Entity entity) {
 		double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
 		d *= d;
 		if(!player.hasLineOfSight(entity)) {
 			d = 6.25;
 		}
-
-		return d;
+		// If target is not a player do vanilla code
+		Vec3 vec3 = player.getEyePosition(0.0F);
+		return vec3.distanceToSqr(((AABBExtensions)entity.getBoundingBox()).getNearestPointTo(vec3)) < d;
 	}
 	/**
 	 *  Credits to <a href="https://github.com/Blumbo/CTS-AntiCheat/tree/master">Blumbo's CTS Anti-Cheat</a>, integrated into Combatify from there <br>

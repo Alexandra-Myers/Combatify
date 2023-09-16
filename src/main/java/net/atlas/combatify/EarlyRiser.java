@@ -3,6 +3,8 @@ package net.atlas.combatify;
 import com.chocohead.mm.Asm;
 import com.chocohead.mm.api.ClassTinkerers;
 import net.atlas.combatify.networking.NewServerboundInteractPacket;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.MappingResolver;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import java.util.function.Function;

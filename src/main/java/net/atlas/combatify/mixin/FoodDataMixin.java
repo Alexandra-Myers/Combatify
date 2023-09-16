@@ -21,13 +21,13 @@ public class FoodDataMixin {
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 18))
 	public int changeConst(int constant) {
-		if(Combatify.CONFIG.saturationHealing()) return constant;
+		if(Combatify.CONFIG.saturationHealing.get()) return constant;
 		return 7;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int changeConst2(int original) {
-		if(Combatify.CONFIG.fastHealing())
+		if(Combatify.CONFIG.fastHealing.get())
 			return original;
 		return 1000000;
 	}
@@ -39,7 +39,7 @@ public class FoodDataMixin {
 
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V",ordinal = 1))
 	public void modifyNaturalHealing(FoodData instance, float exhaustion) {
-		if(Combatify.CONFIG.saturationHealing()) {
+		if(Combatify.CONFIG.saturationHealing.get()) {
 			instance.addExhaustion(exhaustion);
 			return;
 		}

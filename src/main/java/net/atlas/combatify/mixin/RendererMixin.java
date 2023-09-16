@@ -58,7 +58,7 @@ public class RendererMixin {
 
 	@Inject(method = "onResourceManagerReload", at = @At("HEAD"))
 	private void setModelNetheriteShield(CallbackInfo ci){
-		if (Combatify.CONFIG.tieredShields()) {
+		if (Combatify.CONFIG.tieredShields.get()) {
 			this.modelWoodenShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.WOODEN_SHIELD_MODEL_LAYER));
 			this.modelIronShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.IRON_SHIELD_MODEL_LAYER));
 			this.modelGoldenShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.GOLDEN_SHIELD_MODEL_LAYER));
@@ -69,7 +69,7 @@ public class RendererMixin {
 
 	@Inject(method = "renderByItem", at = @At("HEAD"))
 	private void mainRender(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, int j, CallbackInfo ci) {
-		if (Combatify.CONFIG.tieredShields()) {
+		if (Combatify.CONFIG.tieredShields.get()) {
 			if (stack.is(TieredShieldItem.WOODEN_SHIELD)) {
 				boolean bl = stack.getTagElement("BlockEntityTag") != null;
 				poseStack.pushPose();

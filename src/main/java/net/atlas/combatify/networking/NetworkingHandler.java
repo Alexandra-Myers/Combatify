@@ -6,7 +6,6 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
-import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
@@ -15,7 +14,6 @@ import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +27,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.*;
 
@@ -47,7 +48,7 @@ public class NetworkingHandler {
 			}
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
-			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
+			boolean bl = CONFIG.configOnlyWeapons.get() || CONFIG.defender.get() || CONFIG.piercer.get() || !CONFIG.letVanillaConnect.get();
 			if(!ServerPlayNetworking.canSend(handler.player, ItemConfigPacket.TYPE)) {
 				if(bl) {
 					handler.player.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
@@ -93,15 +94,15 @@ public class NetworkingHandler {
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_SPEED, modifiers.get(index));
 					}
-					if (attributeModifiers.containsKey(NewAttributes.ATTACK_REACH)) {
+					if (attributeModifiers.containsKey(ForgeMod.ENTITY_REACH.get())) {
 						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(NewAttributes.ATTACK_REACH).stream().toList();
+						List<AttributeModifier> modifiers = attributeModifiers.get(ForgeMod.ENTITY_REACH.get()).stream().toList();
 						for (AttributeModifier modifier : modifiers)
 							if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
-								attributeModifiers.remove(NewAttributes.ATTACK_REACH, modifiers.get(index));
+								attributeModifiers.remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
 					}
 					ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
 					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE, modMap);
@@ -118,7 +119,7 @@ public class NetworkingHandler {
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
 					}
-					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
 				}
 				if (configurableItemData.speed != null) {
 					if (attributeModifiers.containsKey(Attributes.ATTACK_SPEED)) {
@@ -131,20 +132,20 @@ public class NetworkingHandler {
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_SPEED, modifiers.get(index));
 					}
-					attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
 				}
 				if (configurableItemData.reach != null) {
-					if (attributeModifiers.containsKey(NewAttributes.ATTACK_REACH)) {
+					if (attributeModifiers.containsKey(ForgeMod.ENTITY_REACH.get())) {
 						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(NewAttributes.ATTACK_REACH).stream().toList();
+						List<AttributeModifier> modifiers = attributeModifiers.get(ForgeMod.ENTITY_REACH.get()).stream().toList();
 						for (AttributeModifier modifier : modifiers)
 							if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
-								attributeModifiers.remove(NewAttributes.ATTACK_REACH, modifiers.get(index));
+								attributeModifiers.remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
 					}
-					attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
 				}
 			}
 		});
@@ -191,7 +192,7 @@ public class NetworkingHandler {
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
 			ITEMS = new ItemConfig();
 
-			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
+			IForgeRegistry<Item> items = ForgeRegistries.ITEMS;
 
 			for(Item item : items) {
 				((ItemExtensions) item).modifyAttributeModifiers();

@@ -120,7 +120,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
 		Item blockingItem = ((LivingEntityExtensions)player).getBlockingItem().getItem();
-		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
+		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
 		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || !player.onGround()) {
 			instance.releaseUsingItem(player);
 		}
@@ -227,7 +227,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 		assert hitResult != null;
 		redirectResult(hitResult);
 		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
-		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
+		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed.get()) || this.retainAttack;
 		if (missTime <= 0) {
 			assert this.player != null;
 			if (!this.player.isUsingItem()) {
@@ -242,14 +242,14 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
 	public InteractionResult addRequirement(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, @Local ItemStack stack) {
-		if(Combatify.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
+		if(Combatify.CONFIG.shieldOnlyWhenCharged.get() && localPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
 			return InteractionResult.PASS;
 		}
 		return instance.useItemOn(localPlayer, interactionHand, blockHitResult);
 	}
 	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItem(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"))
 	public InteractionResult addRequirement1(MultiPlayerGameMode instance, Player player, InteractionHand interactionHand, @Local ItemStack stack) {
-		if(Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
+		if(Combatify.CONFIG.shieldOnlyWhenCharged.get() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
 			return InteractionResult.PASS;
 		}
 		return instance.useItem(player, interactionHand);

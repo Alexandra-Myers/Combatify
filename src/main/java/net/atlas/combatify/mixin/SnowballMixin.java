@@ -14,7 +14,7 @@ public class SnowballMixin {
 
 	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public boolean redirectDamage(Entity instance, DamageSource source, float amount) {
-		return instance.hurt(source, Combatify.CONFIG.snowballDamage() + (instance instanceof Blaze ? 3 : 0));
+		return instance.hurt(source, Combatify.CONFIG.snowballDamage.get().floatValue() + (instance instanceof Blaze ? 3 : 0));
 	}
 
 }

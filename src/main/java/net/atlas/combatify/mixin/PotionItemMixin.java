@@ -13,6 +13,6 @@ public class PotionItemMixin {
 
 	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
 	public void getUseDuration(ItemStack itemStack, CallbackInfoReturnable<Integer> cir) {
-		cir.setReturnValue(Combatify.CONFIG.potionUseDuration());
+		cir.setReturnValue(Combatify.CONFIG.potionUseDuration.get());
 	}
 }

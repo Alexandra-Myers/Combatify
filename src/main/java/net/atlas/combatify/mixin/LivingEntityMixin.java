@@ -62,7 +62,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public abstract double getAttributeValue(Attribute attribute);
 
 	@Shadow
-	public abstract void hurtArmor(DamageSource damageSource, float v);
+	protected abstract void hurtArmor(DamageSource damageSource, float v);
 
 	@Shadow
 	public abstract int getArmorValue();
@@ -98,7 +98,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (item instanceof PiercingItem piercingItem) {
 			piercingLevel += piercingItem.getPiercingLevel();
 		}
-		if (Combatify.CONFIG.piercer()) {
+		if (Combatify.CONFIG.piercer.get()) {
 			piercingLevel += CustomEnchantmentHelper.getPierce((LivingEntity) (Object) this) * 0.1;
 		}
 		boolean bl = item instanceof AxeItem || piercingLevel > 0;
@@ -107,9 +107,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (piercingLevel > 0) {
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
 			}
-			float damage = Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * Combatify.CONFIG.cleavingDisableTime();
-			if(Combatify.CONFIG.defender()) {
-				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction();
+			float damage = Combatify.CONFIG.shieldDisableTime.get().floatValue() + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * Combatify.CONFIG.cleavingDisableTime.get().floatValue();
+			if(Combatify.CONFIG.defender.get()) {
+				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction.get();
 			}
 			if(target instanceof PlayerExtensions player) {
 				player.ctsShieldDisable(damage, blockingItem);
@@ -137,7 +137,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if(item instanceof PiercingItem piercingItem) {
 				d += piercingItem.getPiercingLevel();
 			}
-			if(Combatify.CONFIG.piercer()) {
+			if(Combatify.CONFIG.piercer.get()) {
 				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
 			}
 			d -= piercingNegation;
@@ -156,7 +156,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if(item instanceof PiercingItem piercingItem) {
 				d += piercingItem.getPiercingLevel();
 			}
-			if(Combatify.CONFIG.piercer()) {
+			if(Combatify.CONFIG.piercer.get()) {
 				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
 			}
 			d -= piercingNegation;
@@ -196,15 +196,15 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (entity2 instanceof Player player) {
 			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
 			invulnerableTime = base >= 4 ? base - 2 : base;
-			if(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 15 || Combatify.CONFIG.instaAttack())
+			if(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 15 || Combatify.CONFIG.instaAttack.get())
 				invulnerableTime = 5;
 		}
 
-		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames()) {
+		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames.get()) {
 			invulnerableTime = 0;
 		}
 
-		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames()) {
+		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames.get()) {
 			invulnerableTime = 0;
 		}
 		return invulnerableTime;
@@ -212,7 +212,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
-		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption()) {
+		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption.get()) {
 			useItemRemaining = thisEntity.getUseItem().getUseDuration();
 		}
 	}
@@ -222,7 +222,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
-		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB())) {
+		if ((Combatify.CONFIG.fishingHookKB.get() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB.get())) {
 			projectileKnockback(0.4, e, f);
 		} else {
 			newKnockback(0.4, e, f);
@@ -294,7 +294,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = thisLivingEntity.getItemInHand(hand);
 				Item blockingItem = var1.getItem();
-				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisLivingEntity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
+				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && thisLivingEntity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
 				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
 					return var1;
 				}

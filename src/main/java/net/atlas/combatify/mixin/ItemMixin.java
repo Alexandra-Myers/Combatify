@@ -27,7 +27,7 @@ public abstract class ItemMixin implements ItemExtensions {
 	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
 	public void getUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
-			cir.setReturnValue(Combatify.CONFIG.stewUseDuration());
+			cir.setReturnValue(Combatify.CONFIG.stewUseDuration.get());
 		} else if (stack.getItem().isEdible()) {
 			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
 		} else {

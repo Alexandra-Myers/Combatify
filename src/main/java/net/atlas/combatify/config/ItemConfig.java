@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.File;
 import java.io.FileReader;
@@ -161,7 +162,10 @@ public class ItemConfig {
 	}
 
 	public static Item itemFromName(String string) {
-		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElseThrow(() -> new JsonSyntaxException("Unknown item '" + string + "'"));
+		ResourceLocation resourceLocation = ResourceLocation.tryParse(string);
+		if(!ForgeRegistries.ITEMS.containsKey(resourceLocation))
+			throw new JsonSyntaxException("Unknown item '" + string + "'");
+		Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
 		if (item == Items.AIR) {
 			throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("You can't configure an empty item!"), "Configuring Items"));
 		} else {

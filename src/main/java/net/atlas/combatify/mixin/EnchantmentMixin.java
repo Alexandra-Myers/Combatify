@@ -22,6 +22,10 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	@Shadow
 	@Final
 	public EnchantmentCategory category;
+
+	@Shadow
+	public abstract boolean canApplyAtEnchantingTable(ItemStack stack);
+
 	@Unique
 	public Enchantment thisEnchantment = Enchantment.class.cast(this);
 
@@ -34,23 +38,23 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 
 	@Override
 	public boolean isAcceptibleConditions(ItemStack stack) {
-		if(thisEnchantment instanceof SweepingEdgeEnchantment && !Combatify.CONFIG.toolsAreWeapons()) {
-			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
+		if(thisEnchantment instanceof SweepingEdgeEnchantment && !Combatify.CONFIG.toolsAreWeapons.get()) {
+			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem()) || canApplyAtEnchantingTable(stack);
 		} else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
 			return canEnchant(stack);
 		}
 		if(thisEnchantment instanceof DamageEnchantment) {
-			return stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
+			return stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem()) || canApplyAtEnchantingTable(stack);
 		}
 		return category.canEnchant(stack.getItem());
 	}
 
 	@Override
 	public boolean isAcceptibleAnvil(ItemStack stack) {
-		if(thisEnchantment instanceof SweepingEdgeEnchantment && Combatify.CONFIG.toolsAreWeapons()) {
+		if(thisEnchantment instanceof SweepingEdgeEnchantment && Combatify.CONFIG.toolsAreWeapons.get()) {
 			return canEnchant(stack);
 		} else if(thisEnchantment instanceof SweepingEdgeEnchantment) {
-			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem());
+			return stack.getItem() instanceof AxeItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || category.canEnchant(stack.getItem()) || canApplyAtEnchantingTable(stack);
 		}
 		if(thisEnchantment instanceof DamageEnchantment) {
 			return stack.getItem() instanceof SwordItem || stack.getItem() instanceof KnifeItem || stack.getItem() instanceof LongSwordItem || canEnchant(stack);

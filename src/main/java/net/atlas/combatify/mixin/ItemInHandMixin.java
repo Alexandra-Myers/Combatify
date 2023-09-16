@@ -13,9 +13,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
-import net.rizecookey.cookeymod.CookeyMod;
-import net.rizecookey.cookeymod.config.category.AnimationsCategory;
-import net.rizecookey.cookeymod.config.category.HudRenderingCategory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,15 +32,9 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	private ItemStack itemStack;
 	@Unique
 	private float f;
-	HudRenderingCategory hudRenderingCategory = CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class);
-
-	@Shadow
-	protected abstract void applyItemArmAttackTransform(PoseStack matrices, HumanoidArm arm, float swingProgress);
 
 	@Shadow
 	protected abstract void applyItemArmTransform(PoseStack matrices, HumanoidArm arm, float equipProgress);
-
-	AnimationsCategory animationsCategory = CookeyMod.getInstance().getConfig().getCategory(AnimationsCategory.class);
 
 	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
@@ -55,8 +46,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	public float modifyArmHeight(float f) {
 		f *= 0.5;
 		f = f * f * f * 0.25F + 0.75F;
-		double offset = this.hudRenderingCategory.attackCooldownHandOffset.get();
-		return (float)((double)f * (1.0 - offset) + offset);
+		return f;
 	}
 
 	@Inject(method = "renderArmWithItem", at = @At(value = "HEAD"), cancellable = true)
@@ -68,14 +58,11 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		LivingEntityExtensions livingEntityExtensions = ((LivingEntityExtensions)abstractClientPlayer);
 
 		this.humanoidArm = humanoidArm;
-		if (Combatify.CONFIG.swordBlocking()) {
+		if (Combatify.CONFIG.swordBlocking.get()) {
 			if (abstractClientPlayer.getUsedItemHand() == interactionHand && ((ItemExtensions)livingEntityExtensions.getBlockingItem().getItem()).getBlockingType().isToolBlocker()) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform2(poseStack, humanoidArm);
-				if (animationsCategory.swingAndUseItem.get()) {
-					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
-				}
 				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
 				renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
 

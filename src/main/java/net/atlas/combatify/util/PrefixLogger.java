@@ -20,6 +20,9 @@ public class PrefixLogger {
     public void error(String message) {
         logger.error(LOG_FORMAT, prefix, message);
     }
+	public void error(String message, Object error) {
+		logger.error(LOG_FORMAT, prefix, message, error);
+	}
 
     public void warn(String message) {
         logger.warn(LOG_FORMAT, prefix, message);

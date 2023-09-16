@@ -27,20 +27,20 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public abstract class GuiMixin {
 	@Shadow
 	@Final
-	private Minecraft minecraft;
+	protected Minecraft minecraft;
 
 	@Shadow
 	protected abstract boolean canRenderCrosshairForSpectator(HitResult hitResult);
 
 	@Shadow
-	private int screenWidth;
+	protected int screenWidth;
 
 	@Shadow
-	private int screenHeight;
+	protected int screenHeight;
 
 	@Shadow
 	@Final
-	private static ResourceLocation GUI_ICONS_LOCATION;
+	protected static ResourceLocation GUI_ICONS_LOCATION;
 
 	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"))
 	private void renderCrosshair(GuiGraphics guiGraphics, CallbackInfo ci) {

@@ -62,7 +62,7 @@ public class NewShieldBlockingType extends BlockingType {
 			var2 = tierable.getTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
-		if(Combatify.CONFIG.defender()) {
+		if(Combatify.CONFIG.defender.get()) {
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 		}
 		return Math.min(0.5F + (strengthIncrease * 0.1F), 1);

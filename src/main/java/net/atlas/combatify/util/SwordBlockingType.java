@@ -62,9 +62,9 @@ public class SwordBlockingType extends BlockingType {
 		if (stack.getItem() instanceof Tierable tierable)
 			var2 = tierable.getTier();
 		float strengthIncrease = var2.getAttackDamageBonus() <= 1.0F ? -1F : 0.0F;
-		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy();
+		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy.get();
 		strengthIncrease = Math.max(strengthIncrease, -3);
-		if(Combatify.CONFIG.defender()) {
+		if(Combatify.CONFIG.defender.get()) {
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 		}
 		return Math.min(0.5F + (strengthIncrease * 0.125F), 1);
@@ -83,7 +83,7 @@ public class SwordBlockingType extends BlockingType {
 	@Override
 	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		ItemStack itemStack = user.getItemInHand(hand);
-		if(Combatify.CONFIG.swordBlocking() && hand != InteractionHand.OFF_HAND) {
+		if(Combatify.CONFIG.swordBlocking.get() && hand != InteractionHand.OFF_HAND) {
 			ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
 			if(oppositeStack.isEmpty()) {
 				if(user.isSprinting()) {

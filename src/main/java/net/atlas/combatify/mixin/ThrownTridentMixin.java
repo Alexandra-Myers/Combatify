@@ -43,7 +43,7 @@ public abstract class ThrownTridentMixin extends AbstractArrow implements IThrow
 	@Override
 	public void voidReturnLogic() {
 		ThrownTrident trident = ((ThrownTrident) (Object)this);
-		int j = trident.entityData.get(ID_LOYALTY);
+		int j = trident.getEntityData().get(ID_LOYALTY);
 		if(trident.getY() <= -65 && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();

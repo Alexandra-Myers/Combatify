@@ -19,7 +19,7 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 	}
 	@ModifyConstant(method = "releaseUsing", constant = @Constant(floatValue = 1.0F, ordinal = 0))
 	public float releaseUsing(float constant, @Local(ordinal = 1) final int time) {
-		return Combatify.CONFIG.bowUncertainty() * getFatigueForTime(time);
+		return (float) (Combatify.CONFIG.bowUncertainty.get() * getFatigueForTime(time));
 	}
 	@Inject(method = "releaseUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I", ordinal = 1))
 	public void releaseUsing1(ItemStack itemStack, Level level, LivingEntity livingEntity, int i, CallbackInfo ci, @Local(ordinal = 0) final AbstractArrow abstractArrow, @Local(ordinal = 1) final int time) {
