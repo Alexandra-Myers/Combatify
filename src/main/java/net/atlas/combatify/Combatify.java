@@ -4,13 +4,13 @@ import net.atlas.combatify.config.ConfigSynchronizer;
 import net.atlas.combatify.config.ForgeConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.atlas.combatify.enchantment.EnchantmentRegistry;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.*;
-import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Position;
@@ -36,10 +36,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.*;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -86,6 +83,18 @@ public class Combatify {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		if(CONFIG.configOnlyWeapons.get()) {
 			ItemRegistry.registerWeapons(bus);
+		}
+		if(CONFIG.tieredShields.get()) {
+			TieredShieldItem.init(bus);
+		}
+		if(CONFIG.piercer.get()) {
+			PiercingEnchantment.registerEnchants();
+		}
+		if(CONFIG.defender.get()) {
+			DefendingEnchantment.registerEnchants();
+		}
+		if(CONFIG.piercer.get() || CONFIG.defender.get()) {
+			EnchantmentRegistry.registerAllEnchants(bus);
 		}
 
 		bus.addListener(this::commonSetup);
@@ -143,20 +152,12 @@ public class Combatify {
 			}
 		});
 		if (CONFIG.configOnlyWeapons.get()) {
-			ItemRegistry.registerWeapons();
 			Event<ItemGroupEvents.ModifyEntries> evt = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
-			evt.register(entries -> entries.addAfter(NETHERITE_SWORD, ItemRegistry.WOODEN_KNIFE, ItemRegistry.STONE_KNIFE, ItemRegistry.IRON_KNIFE, ItemRegistry.GOLD_KNIFE, ItemRegistry.DIAMOND_KNIFE, ItemRegistry.NETHERITE_KNIFE, ItemRegistry.WOODEN_LONGSWORD, ItemRegistry.STONE_LONGSWORD, ItemRegistry.IRON_LONGSWORD, ItemRegistry.GOLD_LONGSWORD, ItemRegistry.DIAMOND_LONGSWORD, ItemRegistry.NETHERITE_LONGSWORD));
+			evt.register(entries -> entries.addAfter(NETHERITE_SWORD, ItemRegistry.WOODEN_KNIFE.get(), ItemRegistry.STONE_KNIFE.get(), ItemRegistry.IRON_KNIFE.get(), ItemRegistry.GOLD_KNIFE.get(), ItemRegistry.DIAMOND_KNIFE.get(), ItemRegistry.NETHERITE_KNIFE.get(), ItemRegistry.WOODEN_LONGSWORD.get(), ItemRegistry.STONE_LONGSWORD.get(), ItemRegistry.IRON_LONGSWORD.get(), ItemRegistry.GOLD_LONGSWORD.get(), ItemRegistry.DIAMOND_LONGSWORD.get(), ItemRegistry.NETHERITE_LONGSWORD.get()));
 		}
 		if (CONFIG.tieredShields.get()) {
-			TieredShieldItem.init();
 			Event<ItemGroupEvents.ModifyEntries> evt = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
-			evt.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
-		}
-		if(CONFIG.piercer.get()) {
-			PiercingEnchantment.registerEnchants();
-		}
-		if(CONFIG.defender.get()) {
-			DefendingEnchantment.registerEnchants();
+			evt.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD.get(), TieredShieldItem.IRON_SHIELD.get(), TieredShieldItem.GOLD_SHIELD.get(), TieredShieldItem.DIAMOND_SHIELD.get(), TieredShieldItem.NETHERITE_SHIELD.get()));
 		}
 		IForgeRegistry<Item> items = ForgeRegistries.ITEMS;
 

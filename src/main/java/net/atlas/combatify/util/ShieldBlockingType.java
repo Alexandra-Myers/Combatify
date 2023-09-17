@@ -56,7 +56,7 @@ public class ShieldBlockingType extends BlockingType {
 		}
 		float f = stack.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
 		if(Combatify.CONFIG.defender.get()) {
-			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
+			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), stack);
 		}
 		return f;
 	}

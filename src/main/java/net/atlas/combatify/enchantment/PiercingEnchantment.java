@@ -9,11 +9,12 @@ import net.minecraft.world.item.enchantment.DamageEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.item.enchantment.TridentImpalerEnchantment;
+import net.minecraftforge.registries.RegistryObject;
 
 import static net.atlas.combatify.Combatify.id;
 
 public class PiercingEnchantment extends Enchantment implements CustomEnchantment {
-	public static final Enchantment PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), new PiercingEnchantment());
+	public static final RegistryObject<Enchantment> PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), new PiercingEnchantment());
 
 	public PiercingEnchantment() {
 		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});

@@ -70,7 +70,7 @@ public class RendererMixin {
 	@Inject(method = "renderByItem", at = @At("HEAD"))
 	private void mainRender(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, int j, CallbackInfo ci) {
 		if (Combatify.CONFIG.tieredShields.get()) {
-			if (stack.is(TieredShieldItem.WOODEN_SHIELD)) {
+			if (stack.is(TieredShieldItem.WOODEN_SHIELD.get())) {
 				boolean bl = stack.getTagElement("BlockEntityTag") != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
@@ -85,7 +85,7 @@ public class RendererMixin {
 				}
 				poseStack.popPose();
 			}
-			if (stack.is(TieredShieldItem.IRON_SHIELD)) {
+			if (stack.is(TieredShieldItem.IRON_SHIELD.get())) {
 				boolean bl = stack.getTagElement("BlockEntityTag") != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
@@ -100,7 +100,7 @@ public class RendererMixin {
 				}
 				poseStack.popPose();
 			}
-			if (stack.is(TieredShieldItem.GOLD_SHIELD)) {
+			if (stack.is(TieredShieldItem.GOLD_SHIELD.get())) {
 				boolean bl = stack.getTagElement("BlockEntityTag") != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
@@ -115,7 +115,7 @@ public class RendererMixin {
 				}
 				poseStack.popPose();
 			}
-			if (stack.is(TieredShieldItem.DIAMOND_SHIELD)) {
+			if (stack.is(TieredShieldItem.DIAMOND_SHIELD.get())) {
 				boolean bl = stack.getTagElement("BlockEntityTag") != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
@@ -130,7 +130,7 @@ public class RendererMixin {
 				}
 				poseStack.popPose();
 			}
-			if (stack.is(TieredShieldItem.NETHERITE_SHIELD)) {
+			if (stack.is(TieredShieldItem.NETHERITE_SHIELD.get())) {
 				boolean bl = stack.getTagElement("BlockEntityTag") != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);

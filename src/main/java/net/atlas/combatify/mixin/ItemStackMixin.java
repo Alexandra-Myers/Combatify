@@ -137,7 +137,7 @@ public abstract class ItemStackMixin {
 			}
 			double piercingLevel = 0;
 			if(Combatify.CONFIG.piercer.get()) {
-				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER, (ItemStack) (Object) this) * 0.1;
+				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER.get(), (ItemStack) (Object) this) * 0.1;
 			}
 			if(getItem() instanceof PiercingItem item) {
 				piercingLevel += item.getPiercingLevel();

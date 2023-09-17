@@ -11,10 +11,10 @@ public class CustomEnchantmentHelper {
 		return EnchantmentHelper.getEnchantmentLevel(((IEnchantments)enchantments).getCleavingEnchantment(), entity);
 	}
 	public static int getPierce(LivingEntity entity) {
-		return EnchantmentHelper.getEnchantmentLevel(PiercingEnchantment.PIERCER, entity);
+		return EnchantmentHelper.getEnchantmentLevel(PiercingEnchantment.PIERCER.get(), entity);
 	}
 	public static int getDefense(LivingEntity entity) {
-		return EnchantmentHelper.getEnchantmentLevel(DefendingEnchantment.DEFENDER, entity);
+		return EnchantmentHelper.getEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), entity);
 	}
 
 }

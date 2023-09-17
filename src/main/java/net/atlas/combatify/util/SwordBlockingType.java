@@ -55,7 +55,7 @@ public class SwordBlockingType extends BlockingType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockStrength != null) {
-				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F);
+				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), stack) * 0.1F);
 			}
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
@@ -65,7 +65,7 @@ public class SwordBlockingType extends BlockingType {
 		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy.get();
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		if(Combatify.CONFIG.defender.get()) {
-			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
+			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), stack);
 		}
 		return Math.min(0.5F + (strengthIncrease * 0.125F), 1);
 	}
