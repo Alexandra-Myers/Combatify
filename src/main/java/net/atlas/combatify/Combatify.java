@@ -1,6 +1,8 @@
 package net.atlas.combatify;
 
+import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.config.ConfigSynchronizer;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ForgeConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
@@ -9,10 +11,9 @@ import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.*;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.resources.ResourceLocation;
@@ -20,15 +21,16 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -44,7 +46,6 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import static net.atlas.combatify.item.WeaponType.BASE_ATTACK_SPEED_UUID;
-import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 @Mod(Combatify.MOD_ID)
 @Mod.EventBusSubscriber(modid = Combatify.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -114,6 +115,84 @@ public class Combatify {
 				});
 			}
 		}
+		Item item = event.getItemStack().getItem();
+		if (ITEMS.configuredItems.containsKey(item) && equipmentSlot == EquipmentSlot.MAINHAND) {
+			ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+			if (configurableItemData.type != null) {
+				if (event.getModifiers().containsKey(Attributes.ATTACK_DAMAGE)) {
+					List<Integer> indexes = new ArrayList<>();
+					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_DAMAGE).stream().toList();
+					for (AttributeModifier modifier : modifiers)
+						if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							indexes.add(modifiers.indexOf(modifier));
+					if (!indexes.isEmpty())
+						for (Integer index : indexes)
+							event.getModifiers().remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
+				}
+				if (event.getModifiers().containsKey(Attributes.ATTACK_SPEED)) {
+					List<Integer> indexes = new ArrayList<>();
+					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_SPEED).stream().toList();
+					for (AttributeModifier modifier : modifiers)
+						if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+							indexes.add(modifiers.indexOf(modifier));
+					if (!indexes.isEmpty())
+						for (Integer index : indexes)
+							event.getModifiers().remove(Attributes.ATTACK_SPEED, modifiers.get(index));
+				}
+				if (event.getModifiers().containsKey(ForgeMod.ENTITY_REACH.get())) {
+					List<Integer> indexes = new ArrayList<>();
+					List<AttributeModifier> modifiers = event.getModifiers().get(ForgeMod.ENTITY_REACH.get()).stream().toList();
+					for (AttributeModifier modifier : modifiers)
+						if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
+							indexes.add(modifiers.indexOf(modifier));
+					if (!indexes.isEmpty())
+						for (Integer index : indexes)
+							event.getModifiers().remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
+				}
+				ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
+				configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE, modMap);
+				event.getModifiers().putAll(modMap);
+			}
+			if (configurableItemData.damage != null) {
+				if (event.getModifiers().containsKey(Attributes.ATTACK_DAMAGE)) {
+					List<Integer> indexes = new ArrayList<>();
+					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_DAMAGE).stream().toList();
+					for (AttributeModifier modifier : modifiers)
+						if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							indexes.add(modifiers.indexOf(modifier));
+					if (!indexes.isEmpty())
+						for (Integer index : indexes)
+							event.getModifiers().remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
+				}
+				event.getModifiers().put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
+			}
+			if (configurableItemData.speed != null) {
+				if (event.getModifiers().containsKey(Attributes.ATTACK_SPEED)) {
+					List<Integer> indexes = new ArrayList<>();
+					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_SPEED).stream().toList();
+					for (AttributeModifier modifier : modifiers)
+						if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+							indexes.add(modifiers.indexOf(modifier));
+					if (!indexes.isEmpty())
+						for (Integer index : indexes)
+							event.getModifiers().remove(Attributes.ATTACK_SPEED, modifiers.get(index));
+				}
+				event.getModifiers().put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
+			}
+			if (configurableItemData.reach != null) {
+				if (event.getModifiers().containsKey(ForgeMod.ENTITY_REACH.get())) {
+					List<Integer> indexes = new ArrayList<>();
+					List<AttributeModifier> modifiers = event.getModifiers().get(ForgeMod.ENTITY_REACH.get()).stream().toList();
+					for (AttributeModifier modifier : modifiers)
+						if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
+							indexes.add(modifiers.indexOf(modifier));
+					if (!indexes.isEmpty())
+						for (Integer index : indexes)
+							event.getModifiers().remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
+				}
+				event.getModifiers().put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
+			}
+		}
 	}
 	public AttributeModifier calculateSpeed(double amount) {
 		if(amount >= 0) {
@@ -150,14 +229,6 @@ public class Combatify {
 				return trident;
 			}
 		});
-		if (CONFIG.configOnlyWeapons.get()) {
-			Event<ItemGroupEvents.ModifyEntries> evt = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
-			evt.register(entries -> entries.addAfter(NETHERITE_SWORD, ItemRegistry.WOODEN_KNIFE.get(), ItemRegistry.STONE_KNIFE.get(), ItemRegistry.IRON_KNIFE.get(), ItemRegistry.GOLD_KNIFE.get(), ItemRegistry.DIAMOND_KNIFE.get(), ItemRegistry.NETHERITE_KNIFE.get(), ItemRegistry.WOODEN_LONGSWORD.get(), ItemRegistry.STONE_LONGSWORD.get(), ItemRegistry.IRON_LONGSWORD.get(), ItemRegistry.GOLD_LONGSWORD.get(), ItemRegistry.DIAMOND_LONGSWORD.get(), ItemRegistry.NETHERITE_LONGSWORD.get()));
-		}
-		if (CONFIG.tieredShields.get()) {
-			Event<ItemGroupEvents.ModifyEntries> evt = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
-			evt.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD.get(), TieredShieldItem.IRON_SHIELD.get(), TieredShieldItem.GOLD_SHIELD.get(), TieredShieldItem.DIAMOND_SHIELD.get(), TieredShieldItem.NETHERITE_SHIELD.get()));
-		}
 		IForgeRegistry<Item> items = ForgeRegistries.ITEMS;
 
 		for(Item item : items) {

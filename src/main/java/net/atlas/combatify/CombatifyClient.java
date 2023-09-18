@@ -4,13 +4,19 @@ import com.mojang.serialization.Codec;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.IOptions;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.atlas.combatify.util.ArrayListExtensions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -19,7 +25,11 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static net.atlas.combatify.Combatify.CONFIG;
+import static net.atlas.combatify.item.ItemRegistry.*;
+import static net.atlas.combatify.item.TieredShieldItem.*;
 import static net.minecraft.client.Options.genericValueLabel;
+import static net.minecraft.world.item.Items.NETHERITE_SWORD;
+import static net.minecraft.world.item.Items.SHIELD;
 
 @Mod.EventBusSubscriber(modid = Combatify.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class CombatifyClient {
@@ -54,15 +64,35 @@ public class CombatifyClient {
 			}
 	);
 	@SubscribeEvent
+	public static void modelLayerLocationInit(EntityRenderersEvent.RegisterLayerDefinitions event) {
+		if (CONFIG.tieredShields.get()) {
+			event.registerLayerDefinition(WOODEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(GOLDEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+		}
+	}
+	@SubscribeEvent
 	public static void clientSetup(FMLClientSetupEvent event) {
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
-		if (CONFIG.tieredShields.get()) {
-			EntityModelLayerRegistry.registerModelLayer(WOODEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(GOLDEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+	}
+	@SubscribeEvent
+	public static void onCreativeTabBuild(BuildCreativeModeTabContentsEvent event) {
+		if (event.getTabKey() == CreativeModeTabs.COMBAT && CONFIG.configOnlyWeapons.get()) {
+			ArrayListExtensions<ItemLike> arrayListExtensions = new ArrayListExtensions<>();
+			arrayListExtensions.addAll(NETHERITE_SWORD, WOODEN_KNIFE.get(), STONE_KNIFE.get(), IRON_KNIFE.get(), GOLD_KNIFE.get(), DIAMOND_KNIFE.get(), NETHERITE_KNIFE.get(), WOODEN_LONGSWORD.get(), STONE_LONGSWORD.get(), IRON_LONGSWORD.get(), GOLD_LONGSWORD.get(), DIAMOND_LONGSWORD.get(), NETHERITE_LONGSWORD.get());
+			for (int i = 1; i < arrayListExtensions.size(); i++) {
+				event.getEntries().putAfter(new ItemStack(arrayListExtensions.get(i - 1)), new ItemStack(arrayListExtensions.get(i)), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+			}
+		}
+		if (event.getTabKey() == CreativeModeTabs.COMBAT && CONFIG.tieredShields.get()) {
+			ArrayListExtensions<ItemLike> arrayListExtensions = new ArrayListExtensions<>();
+			arrayListExtensions.addAll(SHIELD, WOODEN_SHIELD.get(), IRON_SHIELD.get(), GOLD_SHIELD.get(), DIAMOND_SHIELD.get(), NETHERITE_SHIELD.get());
+			for (int i = 1; i < arrayListExtensions.size(); i++) {
+				event.getEntries().putAfter(new ItemStack(arrayListExtensions.get(i - 1)), new ItemStack(arrayListExtensions.get(i)), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+			}
 		}
 	}
 }

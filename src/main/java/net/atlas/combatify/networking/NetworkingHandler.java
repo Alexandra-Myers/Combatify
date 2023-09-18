@@ -1,15 +1,13 @@
 package net.atlas.combatify.networking;
 
-import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
-import net.atlas.combatify.item.WeaponType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
-import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -19,15 +17,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.Tiers;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 
@@ -69,86 +60,7 @@ public class NetworkingHandler {
 			ServerPlayNetworking.send(handler.player, new ItemConfigPacket(ITEMS));
 			Combatify.LOGGER.info("Config packet sent to client.");
 		});
-		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
-			Item item = stack.getItem();
-			if (ITEMS.configuredItems.containsKey(item) && slot == EquipmentSlot.MAINHAND) {
-				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
-				if (configurableItemData.type != null) {
-					if (attributeModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
-						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
-						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
-								indexes.add(modifiers.indexOf(modifier));
-						if (!indexes.isEmpty())
-							for (Integer index : indexes)
-								attributeModifiers.remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
-					}
-					if (attributeModifiers.containsKey(Attributes.ATTACK_SPEED)) {
-						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_SPEED).stream().toList();
-						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
-								indexes.add(modifiers.indexOf(modifier));
-						if (!indexes.isEmpty())
-							for (Integer index : indexes)
-								attributeModifiers.remove(Attributes.ATTACK_SPEED, modifiers.get(index));
-					}
-					if (attributeModifiers.containsKey(ForgeMod.ENTITY_REACH.get())) {
-						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(ForgeMod.ENTITY_REACH.get()).stream().toList();
-						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
-								indexes.add(modifiers.indexOf(modifier));
-						if (!indexes.isEmpty())
-							for (Integer index : indexes)
-								attributeModifiers.remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
-					}
-					ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
-					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE, modMap);
-					attributeModifiers.putAll(modMap);
-				}
-				if (configurableItemData.damage != null) {
-					if (attributeModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
-						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
-						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
-								indexes.add(modifiers.indexOf(modifier));
-						if (!indexes.isEmpty())
-							for (Integer index : indexes)
-								attributeModifiers.remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
-					}
-					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
-				}
-				if (configurableItemData.speed != null) {
-					if (attributeModifiers.containsKey(Attributes.ATTACK_SPEED)) {
-						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_SPEED).stream().toList();
-						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
-								indexes.add(modifiers.indexOf(modifier));
-						if (!indexes.isEmpty())
-							for (Integer index : indexes)
-								attributeModifiers.remove(Attributes.ATTACK_SPEED, modifiers.get(index));
-					}
-					attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
-				}
-				if (configurableItemData.reach != null) {
-					if (attributeModifiers.containsKey(ForgeMod.ENTITY_REACH.get())) {
-						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(ForgeMod.ENTITY_REACH.get()).stream().toList();
-						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
-								indexes.add(modifiers.indexOf(modifier));
-						if (!indexes.isEmpty())
-							for (Integer index : indexes)
-								attributeModifiers.remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
-					}
-					attributeModifiers.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
-				}
-			}
-		});
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> ((PlayerExtensions)player).attackAir());
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
 			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
 				Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
@@ -219,6 +131,36 @@ public class NetworkingHandler {
 		@Override
 		public void write(FriendlyByteBuf buf) {
 			ITEMS.saveToNetwork(buf);
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public PacketType<?> getType() {
+			return TYPE;
+		}
+	}
+	public record ServerboundMissPacket() implements FabricPacket {
+		public static final PacketType<ServerboundMissPacket> TYPE = PacketType.create(Combatify.id("player_miss"), ServerboundMissPacket::new);
+
+		public ServerboundMissPacket(FriendlyByteBuf buf) {
+			this();
+		}
+
+		/**
+		 * Writes the contents of this packet to the buffer.
+		 *
+		 * @param buf the output buffer
+		 */
+		@Override
+		public void write(FriendlyByteBuf buf) {
+
 		}
 
 		/**

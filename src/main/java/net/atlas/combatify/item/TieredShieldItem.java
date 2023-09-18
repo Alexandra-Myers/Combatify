@@ -7,12 +7,12 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
 import net.atlas.combatify.util.BlockingType;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -33,8 +33,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 		super(properties);
 		this.tier = tier;
 		shields.add(this);
-		if(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
-			registerModelPredicate();
+		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> this::registerModelPredicate);
 	}
 
 	private void registerModelPredicate() {
