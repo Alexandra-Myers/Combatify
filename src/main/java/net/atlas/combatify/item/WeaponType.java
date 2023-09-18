@@ -7,13 +7,15 @@ import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.IExtensibleEnum;
 
 import java.util.UUID;
 
-public enum WeaponType {
+public enum WeaponType implements IExtensibleEnum {
     SWORD,
 	LONGSWORD,
     AXE,
@@ -181,5 +183,10 @@ public enum WeaponType {
 	}
 	public static WeaponType fromID(String id) {
 		return valueOf(id);
+	}
+
+	@SuppressWarnings("unused")
+	public static WeaponType create(String name) {
+		throw new IllegalStateException("Enum not extended");
 	}
 }

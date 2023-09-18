@@ -49,7 +49,6 @@ import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 @Mod(Combatify.MOD_ID)
 @Mod.EventBusSubscriber(modid = Combatify.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class Combatify {
-	public static Player player;
 	public static final String MOD_ID = "combatify";
 	public static ForgeConfig CONFIG;
 	public static ItemConfig ITEMS;

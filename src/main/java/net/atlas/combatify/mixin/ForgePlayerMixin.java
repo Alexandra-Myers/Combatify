@@ -13,7 +13,7 @@ public abstract class ForgePlayerMixin {
 	@Shadow
 	protected abstract Player self();
 
-	@ModifyReturnValue(method = "getEntityReach", at = @At(value = "RETURN"))
+	@ModifyReturnValue(method = "getEntityReach", at = @At(value = "RETURN"), remap = false)
 	public double modReach(double original) {
 		return ((PlayerExtensions)self()).getCurrentAttackReach(0.0F);
 	}

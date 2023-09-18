@@ -2,6 +2,7 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.AABBExtensions;
+import net.atlas.combatify.extensions.IServerGamePacketListener;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
@@ -17,16 +18,16 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public abstract class ServerGamePacketMixin {
+public abstract class ServerGamePacketMixin implements IServerGamePacketListener {
 	@Shadow
 	public ServerPlayer player;
+
 	@Unique Entity targetEntity;
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
 		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
 			ci.cancel();
-		Combatify.player = player;
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
@@ -76,6 +77,11 @@ public abstract class ServerGamePacketMixin {
 		if (serverboundPongPacket.getId() == 3492 && Combatify.unmoddedPlayers.contains(player.getUUID()) && ((ServerPlayerExtensions)player).isAwaitingResponse()) {
 			((ServerPlayerExtensions) player).setAwaitingResponse(false);
 		}
+	}
+
+	@Override
+	public ServerPlayer getPlayer() {
+		return player;
 	}
 
 }
