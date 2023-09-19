@@ -22,7 +22,6 @@
     "FishingHookMixin",
     "FoodDataMixin",
     "ForgeModMixin",
-    "ForgePlayerMixin",
     "HoeItemMixin",
     "HoneyBottleItemMixin",
     "ItemMixin",
