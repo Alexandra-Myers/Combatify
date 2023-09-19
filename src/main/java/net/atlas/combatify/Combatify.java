@@ -1,6 +1,7 @@
 package net.atlas.combatify;
 
 import com.google.common.collect.ArrayListMultimap;
+import commonnetwork.api.Network;
 import net.atlas.combatify.config.ConfigSynchronizer;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ForgeConfig;
@@ -9,14 +10,21 @@ import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.enchantment.EnchantmentRegistry;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.combatify.networking.ClientboundResponsePacket;
+import net.atlas.combatify.networking.S2CConfigPacket;
+import net.atlas.combatify.networking.ItemConfigPacket;
+import net.atlas.combatify.networking.PacketRegistration;
 import net.atlas.combatify.util.*;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;
@@ -30,14 +38,19 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.registries.*;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +67,6 @@ public class Combatify {
 	public static ForgeConfig CONFIG;
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
-	public NetworkingHandler networkingHandler;
 	public static final DeferredRegister<MobEffect> VANILLA_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, "minecraft");
 
 	public static final RegistryObject<MobEffect> DAMAGE_BOOST = registerEffect("strength", () -> new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 0.2)
@@ -101,6 +113,112 @@ public class Combatify {
 
 		MinecraftForge.EVENT_BUS.register(this);
 		VANILLA_EFFECTS.register(bus);
+	}
+	@SubscribeEvent
+	public void dedicatedServerStartup(InterModEnqueueEvent event) {
+		Combatify.LOGGER.info("Config init started.");
+		ITEMS = new ItemConfig();
+
+		IForgeRegistry<Item> items = ForgeRegistries.ITEMS;
+
+		for(Item item : items)
+			((ItemExtensions) item).modifyAttributeModifiers();
+		for(Item item : ITEMS.configuredItems.keySet()) {
+			ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+			if (configurableItemData.stackSize != null)
+				((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+		}
+		Combatify.LOGGER.info("Loaded items config.");
+	}
+	@SubscribeEvent
+	public void playerAttackBlockEvent(PlayerInteractEvent.LeftClickBlock event) {
+		if (Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()) && finalizingAttack.get(event.getEntity().getUUID()) && event.getEntity() instanceof ServerPlayer serverPlayer) {
+			Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
+			((ServerPlayerExtensions) serverPlayer).getPresentResult();
+			for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).getOldHitResults()) {
+				if(hitResultToChoose == null)
+					continue;
+				Float[] rotations = null;
+				if (hitResultToRotationMap.containsKey(hitResultToChoose))
+					rotations = hitResultToRotationMap.get(hitResultToChoose);
+				float xRot = serverPlayer.getXRot() % 360;
+				float yRot = serverPlayer.getYHeadRot() % 360;
+				if(rotations != null) {
+					float xDiff = Math.abs(xRot - rotations[1]);
+					float yDiff = Math.abs(yRot - rotations[0]);
+					if(xDiff > 20 || yDiff > 20)
+						continue;
+				}
+				if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
+					event.setCancellationResult(InteractionResult.FAIL);
+					event.setCanceled(true);
+				}
+			}
+		}
+	}
+	@SubscribeEvent
+	public void playerUseItemEvent(PlayerInteractEvent.RightClickItem event) {
+		if(Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()))
+			Combatify.isPlayerAttacking.put(event.getEntity().getUUID(), false);
+	}
+	@SubscribeEvent
+	public void playerUseBlockEvent(PlayerInteractEvent.RightClickBlock event) {
+		if(Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()))
+			Combatify.isPlayerAttacking.put(event.getEntity().getUUID(), false);
+	}
+	@SubscribeEvent
+	public void playerUseNothingEvent(PlayerInteractEvent.RightClickEmpty event) {
+		if(Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()))
+			Combatify.isPlayerAttacking.put(event.getEntity().getUUID(), false);
+	}
+	@SubscribeEvent
+	public void playerUseEntityEvent(PlayerInteractEvent.EntityInteract event) {
+		if(Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()))
+			Combatify.isPlayerAttacking.put(event.getEntity().getUUID(), false);
+	}
+	@SubscribeEvent
+	public void playerUseEntitySpecificEvent(PlayerInteractEvent.EntityInteractSpecific event) {
+		if(Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()))
+			Combatify.isPlayerAttacking.put(event.getEntity().getUUID(), false);
+	}
+	@SubscribeEvent
+	public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+			Network.getNetworkHandler().sendToClient(new ClientboundResponsePacket(), serverPlayer);
+			boolean bl = CONFIG.configOnlyWeapons.get() || CONFIG.defender.get() || CONFIG.piercer.get() || !CONFIG.letVanillaConnect.get();
+			boolean isModLoaded = NetworkRegistry.getClientNonVanillaNetworkMods().contains("Combatify");
+			if (!isModLoaded) {
+				if (bl) {
+					serverPlayer.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
+					return;
+				}
+				Combatify.unmoddedPlayers.add(serverPlayer.getUUID());
+				Combatify.isPlayerAttacking.put(serverPlayer.getUUID(), true);
+				Combatify.finalizingAttack.put(serverPlayer.getUUID(), true);
+				scheduleHitResult.put(serverPlayer.getUUID(), new Timer());
+				Combatify.LOGGER.info("Unmodded player joined: " + serverPlayer.getUUID());
+				return;
+			}
+			if (unmoddedPlayers.contains(serverPlayer.getUUID())) {
+				unmoddedPlayers.remove(serverPlayer.getUUID());
+				isPlayerAttacking.remove(serverPlayer.getUUID());
+				finalizingAttack.remove(serverPlayer.getUUID());
+			}
+			Combatify.LOGGER.info("Sending server config values to client");
+			Network.getNetworkHandler().sendToClient(new S2CConfigPacket(), serverPlayer);
+			Network.getNetworkHandler().sendToClient(new ItemConfigPacket(ITEMS), serverPlayer);
+			Combatify.LOGGER.info("Config packet sent to client.");
+		}
+	}
+	@SubscribeEvent
+	public void disconnect(PlayerEvent.PlayerLoggedOutEvent event) {
+		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+			if (unmoddedPlayers.contains(serverPlayer.getUUID())) {
+				Timer timer = scheduleHitResult.get(serverPlayer.getUUID());
+				timer.cancel();
+				timer.purge();
+			}
+		}
 	}
 	@SubscribeEvent
 	public void attributeModifier(ItemAttributeModifierEvent event) {
@@ -216,7 +334,6 @@ public class Combatify {
 		CONFIG = new ForgeConfig();
 	}
 	public void commonSetup(FMLCommonSetupEvent event) {
-		networkingHandler = new NetworkingHandler();
 		ConfigSynchronizer.init();
 		LOGGER.info("Init started.");
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
@@ -234,6 +351,7 @@ public class Combatify {
 		for(Item item : items) {
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
+		new PacketRegistration().init();
 	}
 	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
 		Combatify.registeredTypes.put(blockingType.getName(), blockingType);

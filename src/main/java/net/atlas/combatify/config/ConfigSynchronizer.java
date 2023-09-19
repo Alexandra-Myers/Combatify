@@ -3,28 +3,22 @@ package net.atlas.combatify.config;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
+import commonnetwork.api.Network;
+import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.mixin.ServerGamePacketListenerAccessor;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
+import net.atlas.combatify.networking.C2SConfigPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -34,8 +28,6 @@ import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 
 public class ConfigSynchronizer {
-
-    public static final ResourceLocation CONFIG_SYNC_CHANNEL = new ResourceLocation("owo", "config_sync");
 
     private static final Map<Connection, BiMap<String, SynchableOption<?>>> CLIENT_OPTION_STORAGE = new WeakHashMap<>();
 	public static void init() {
@@ -54,15 +46,11 @@ public class ConfigSynchronizer {
 		return CLIENT_OPTION_STORAGE.get(((ServerGamePacketListenerAccessor) player.connection).combatify$getConnection());
     }
 
-    private static void write(FriendlyByteBuf packet, int ordinal) {
+    public static void write(FriendlyByteBuf packet, int ordinal) {
         packet.writeVarInt(1);
 
-        var configBuf = PacketByteBufs.create();
-        var optionBuf = PacketByteBufs.create();
-        packet.writeUtf("combatify-config");
-
-        configBuf.resetReaderIndex().resetWriterIndex();
-        configBuf.writeVarInt((int) Combatify.CONFIG.options.values().stream().filter(option -> 2 >= ordinal).count());
+        var configBuf = new FriendlyByteBuf(Unpooled.buffer());
+        var optionBuf = new FriendlyByteBuf(Unpooled.buffer());
 
         Combatify.CONFIG.options.forEach((key, option) -> {
             if (2 < ordinal) return;
@@ -80,15 +68,16 @@ public class ConfigSynchronizer {
         packet.writeBytes(configBuf);
     }
 
-    private static void read(FriendlyByteBuf buf, BiConsumer<SynchableOption<?>, FriendlyByteBuf> optionConsumer) {
-        int configCount = buf.readVarInt();
-        for (int i = 0; i < configCount; i++) {
-            var configName = buf.readUtf();
-            var config = Combatify.CONFIG;
-            if (!configName.equals("combatify-config")) {
-                Combatify.LOGGER.error("Tried to sync an owo config which does not belong to Combatify");
+    public static void read(FriendlyByteBuf buf, BiConsumer<SynchableOption<?>, FriendlyByteBuf> optionConsumer) {
+        var config = Combatify.CONFIG;
+        int optionCount = buf.readVarInt();
+        for (int j = 0; j < optionCount; j++) {
+			var name = buf.readUtf();
+            var option = config.options.get(name);
+            if (option == null) {
+                Combatify.LOGGER.error("Received override for unknown option '" + name + "' in config `combatify-config`, skipping");
 
-                // skip size of current config
+                // skip size of current option
                 buf.skipBytes(buf.readVarInt());
                 continue;
             }
@@ -96,28 +85,14 @@ public class ConfigSynchronizer {
             // ignore size
             buf.readVarInt();
 
-            int optionCount = buf.readVarInt();
-            for (int j = 0; j < optionCount; j++) {
-				var name = buf.readUtf();
-                var option = config.options.get(name);
-                if (option == null) {
-                    Combatify.LOGGER.error("Received override for unknown option '" + name + "' in config `combatify-config`, skipping");
-
-                    // skip size of current option
-                    buf.skipBytes(buf.readVarInt());
-                    continue;
-                }
-
-                // ignore size
-                buf.readVarInt();
-
-                optionConsumer.accept(option, buf);
-            }
+            optionConsumer.accept(option, buf);
         }
     }
 
-    @Environment(EnvType.CLIENT)
-    private static void applyClient(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender sender) {
+    @OnlyIn(Dist.CLIENT)
+    public static void applyClient(FriendlyByteBuf buf) {
+		Minecraft client = Minecraft.getInstance();
+		ClientPacketListener handler = client.getConnection();
         Combatify.LOGGER.info("Applying server overrides");
         var mismatchedOptions = new HashMap<SynchableOption<?>, Object>();
 
@@ -139,13 +114,10 @@ public class ConfigSynchronizer {
         }
 
         Combatify.LOGGER.info("Responding with client values");
-        var packet = PacketByteBufs.create();
-        write(packet, 1);
-
-        sender.sendPacket(CONFIG_SYNC_CHANNEL, packet);
+        Network.getNetworkHandler().sendToServer(new C2SConfigPacket());
     }
 
-    private static void applyServer(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, FriendlyByteBuf buf, PacketSender sender) {
+    public static void applyServer(ServerPlayer player, FriendlyByteBuf buf) {
         Combatify.LOGGER.info("Receiving client config");
         var connection = ((ServerGamePacketListenerAccessor) player.connection).combatify$getConnection();
 
@@ -153,26 +125,5 @@ public class ConfigSynchronizer {
             var config = CLIENT_OPTION_STORAGE.computeIfAbsent(connection, $ -> HashBiMap.create());
             config.put(config.inverse().get(option), option.trySync(optionBuf));
         });
-    }
-
-    static {
-        var earlyPhase = new ResourceLocation("owo", "early");
-        ServerPlayConnectionEvents.JOIN.addPhaseOrdering(earlyPhase, Event.DEFAULT_PHASE);
-        ServerPlayConnectionEvents.JOIN.register(earlyPhase, (handler, sender, server) -> {
-            Combatify.LOGGER.info("Sending server config values to client");
-
-            var packet = PacketByteBufs.create();
-            write(packet, 2);
-
-            sender.sendPacket(CONFIG_SYNC_CHANNEL, packet);
-        });
-
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            ClientPlayNetworking.registerGlobalReceiver(CONFIG_SYNC_CHANNEL, ConfigSynchronizer::applyClient);
-
-            ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> Combatify.CONFIG.options.forEach((s, synchableOption) -> synchableOption.restore()));
-        }
-
-        ServerPlayNetworking.registerGlobalReceiver(CONFIG_SYNC_CHANNEL, ConfigSynchronizer::applyServer);
     }
 }

@@ -5,7 +5,6 @@ import com.google.gson.stream.JsonReader;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -15,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.File;
@@ -42,7 +42,7 @@ public class ItemConfig {
 	JsonObject itemsJsonObject;
 
 	public ItemConfig() {
-		configFolderPath = FabricLoader.getInstance().getConfigDir().getFileName();
+		configFolderPath = FMLPaths.CONFIGDIR.get();
 
 		load();
 	}

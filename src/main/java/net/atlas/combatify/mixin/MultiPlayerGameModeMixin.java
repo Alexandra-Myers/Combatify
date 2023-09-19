@@ -2,11 +2,11 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import commonnetwork.api.Network;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
 import net.atlas.combatify.extensions.PlayerExtensions;
-import net.atlas.combatify.networking.NetworkingHandler;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.atlas.combatify.networking.ServerboundMissPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -71,7 +71,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@Override
 	public void swingInAir(Player player) {
 		ensureHasSentCarriedItem();
-		ClientPlayNetworking.send(new NetworkingHandler.ServerboundMissPacket());
+		Network.getNetworkHandler().sendToServer(new ServerboundMissPacket());
 		if (localPlayerMode != GameType.SPECTATOR) {
 			((PlayerExtensions)player).attackAir();
 			((PlayerExtensions)player).resetAttackStrengthTicker(false);

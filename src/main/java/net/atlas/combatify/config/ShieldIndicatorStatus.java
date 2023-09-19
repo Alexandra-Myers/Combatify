@@ -1,15 +1,15 @@
 package net.atlas.combatify.config;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
-@Environment(EnvType.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public enum ShieldIndicatorStatus implements OptionEnum {
 	OFF(0, "options.off"),
 	CROSSHAIR(1, "options.attack.crosshair"),

@@ -4,8 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -15,6 +13,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings("unused")
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
 	public LocalPlayerMixin(ClientLevel clientLevel, GameProfile gameProfile) {
@@ -40,7 +41,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
-	@Environment(EnvType.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
 		if(thisPlayer.onGround() && this.hasEnabledShieldOnCrouch()) {
@@ -118,7 +119,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public boolean hasEnabledShieldOnCrouch() {
 		return ((IOptions)minecraft.options).shieldCrouch().get();
 	}
