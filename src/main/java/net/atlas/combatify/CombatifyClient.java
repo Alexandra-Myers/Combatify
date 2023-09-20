@@ -32,7 +32,6 @@ import static net.minecraft.world.item.Items.SHIELD;
 
 @Mod.EventBusSubscriber(modid = Combatify.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class CombatifyClient {
-	public static boolean shouldDisconnect = true;
 	public static final ModelLayerLocation WOODEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(new ResourceLocation("combatify", "wooden_shield"),"main");
 	public static final ModelLayerLocation IRON_SHIELD_MODEL_LAYER = new ModelLayerLocation(new ResourceLocation("combatify", "iron_shield"),"main");
 	public static final ModelLayerLocation GOLDEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(new ResourceLocation("combatify", "golden_shield"),"main");
@@ -72,10 +71,6 @@ public class CombatifyClient {
 			event.registerLayerDefinition(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			event.registerLayerDefinition(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 		}
-	}
-	@SubscribeEvent
-	public static void login(ClientPlayerNetworkEvent.LoggingOut event) {
-		Combatify.CONFIG.options.forEach((s, synchableOption) -> synchableOption.restore());
 	}
 	@SubscribeEvent
 	public static void onCreativeTabBuild(BuildCreativeModeTabContentsEvent event) {

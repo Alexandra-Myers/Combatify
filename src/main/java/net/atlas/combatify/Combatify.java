@@ -14,7 +14,6 @@ import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.networking.ClientboundResponsePacket;
 import net.atlas.combatify.networking.S2CConfigPacket;
 import net.atlas.combatify.networking.ItemConfigPacket;
 import net.atlas.combatify.networking.PacketRegistration;
@@ -110,12 +109,12 @@ public class Combatify {
 		}
 
 		bus.addListener(this::commonSetup);
+		bus.addListener(this::interModEnqueue);
 
 		MinecraftForge.EVENT_BUS.register(this);
 		VANILLA_EFFECTS.register(bus);
 	}
-	@SubscribeEvent
-	public void dedicatedServerStartup(InterModEnqueueEvent event) {
+	public void interModEnqueue(InterModEnqueueEvent event) {
 		Combatify.LOGGER.info("Config init started.");
 		ITEMS = new ItemConfig();
 
@@ -184,7 +183,6 @@ public class Combatify {
 	@SubscribeEvent
 	public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
 		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-			Network.getNetworkHandler().sendToClient(new ClientboundResponsePacket(), serverPlayer);
 			boolean bl = CONFIG.configOnlyWeapons.get() || CONFIG.defender.get() || CONFIG.piercer.get() || !CONFIG.letVanillaConnect.get();
 			boolean isModLoaded = NetworkRegistry.getClientNonVanillaNetworkMods().contains("Combatify");
 			if (!isModLoaded) {
