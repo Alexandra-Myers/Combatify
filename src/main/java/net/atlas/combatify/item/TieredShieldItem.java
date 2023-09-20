@@ -1,21 +1,27 @@
 package net.atlas.combatify.item;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.client.CombatifyBlockEntityWIthoutLevelRenderer;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
 import net.atlas.combatify.util.BlockingType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.Combatify.shields;
@@ -56,6 +62,18 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	}
 	public static void init(IEventBus bus) {
 		ITEMS.register(bus);
+	}
+	@Override
+	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+		if (Combatify.CONFIG.tieredShields.get()) {
+			consumer.accept(new IClientItemExtensions() {
+
+				@Override
+				public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+					return new CombatifyBlockEntityWIthoutLevelRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
+				}
+			});
+		}
 	}
 
 	@Override

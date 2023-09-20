@@ -65,7 +65,6 @@
     "MinecraftMixin",
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
-    "RendererMixin",
     "RenderSystemMixin",
     "VideoSettingsMixin"
   ],
