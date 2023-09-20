@@ -3,8 +3,10 @@ package net.atlas.combatify.config;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.lang.reflect.Field;
+
 public class DoubleOption extends SynchableOption<Double> {
-	public DoubleOption(ForgeConfigSpec.ConfigValue<Double> configValue, boolean requiresRestart) {
+	public DoubleOption(Field configValue, boolean requiresRestart) {
 		super(configValue, requiresRestart);
 	}
 

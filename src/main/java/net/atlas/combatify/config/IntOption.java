@@ -3,8 +3,10 @@ package net.atlas.combatify.config;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.lang.reflect.Field;
+
 public class IntOption extends SynchableOption<Integer> {
-	public IntOption(ForgeConfigSpec.ConfigValue<Integer> configValue, boolean requiresRestart) {
+	public IntOption(Field configValue, boolean requiresRestart) {
 		super(configValue, requiresRestart);
 	}
 

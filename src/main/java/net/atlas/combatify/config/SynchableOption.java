@@ -1,13 +1,17 @@
 package net.atlas.combatify.config;
 
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.lang.reflect.Field;
+
 public abstract class SynchableOption<T> {
-	private final ForgeConfigSpec.ConfigValue<T> value;
+	private final Field value;
 	private T overrideValue = null;
 	protected final boolean restartRequired;
-	public SynchableOption(ForgeConfigSpec.ConfigValue<T> configValue, boolean requiresRestart) {
+	public SynchableOption(Field configValue, boolean requiresRestart) {
 		value = configValue;
 		restartRequired = requiresRestart;
 	}
@@ -17,15 +21,23 @@ public abstract class SynchableOption<T> {
 	}
 	public final T findMismatch(FriendlyByteBuf buf) {
 		overrideValue = readFromBuf(buf);
-		if (restartRequired && overrideValue != value.get())
-			return overrideValue;
+		try {
+			if (restartRequired && overrideValue != value.get(null))
+				return overrideValue;
+		} catch (IllegalAccessException e) {
+			throw new ReportedException(new CrashReport("Access to this option is not allowed! This should not happen!", e));
+		}
 		return null;
 	}
 	abstract T readFromBuf(FriendlyByteBuf buf);
 	public final T get() {
 		if(overrideValue != null)
 			return overrideValue;
-		return value.get();
+		try {
+			return (T) value.get(null);
+		} catch (IllegalAccessException e) {
+			throw new ReportedException(new CrashReport("Access to this option is not allowed! This should not happen!", e));
+		}
 	}
 	abstract void writeToBuf(FriendlyByteBuf buf);
 	public final void restore() {

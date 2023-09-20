@@ -2,12 +2,13 @@ package net.atlas.combatify.config;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import eu.midnightdust.lib.config.MidnightConfig;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
+
+import java.lang.reflect.Field;
 
 public class ForgeConfig {
-
 	public BooleanOption toolsAreWeapons;
 	public BooleanOption midairKB;
 	public BooleanOption fishingHookKB;
@@ -53,127 +54,137 @@ public class ForgeConfig {
 	public BiMap<String, SynchableOption<?>> options = HashBiMap.create();
 
     public ForgeConfig() {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder().worldRestart();
+		MidnightConfig.init("combatify", WrappableConfig.class);
 
-        builder.comment("Booleans");
+        toolsAreWeapons = defineBoolean(WrappableConfig.class, "toolsAreWeapons");
 
-        toolsAreWeapons = defineBoolean(builder, "toolsAreWeapons", false);
+        midairKB = defineBoolean(WrappableConfig.class, "midairKB");
 
-        midairKB = defineBoolean(builder, "midairKB",false);
+        fishingHookKB = defineBoolean(WrappableConfig.class, "fishingHookKB");
 
-        fishingHookKB = defineBoolean(builder, "fishingHookKB",false);
+		fistDamage = defineBoolean(WrappableConfig.class, "fistDamage");
 
-		fistDamage = defineBoolean(builder, "fistDamage", false);
+        swordBlocking = defineBoolean(WrappableConfig.class, "swordBlocking");
 
-        swordBlocking = defineBoolean(builder, "swordBlocking",false);
+		shieldOnlyWhenCharged = defineBoolean(WrappableConfig.class, "shieldOnlyWhenCharged");
 
-		shieldOnlyWhenCharged = defineBoolean(builder, "shieldOnlyWhenCharged",false);
+        sprintCritsEnabled = defineBoolean(WrappableConfig.class, "sprintCritsEnabled");
 
-        sprintCritsEnabled = defineBoolean(builder, "sprintCritsEnabled",true);
+        saturationHealing = defineBoolean(WrappableConfig.class, "saturationHealing");
 
-        saturationHealing = defineBoolean(builder, "saturationHealing",false);
+		fastHealing = defineBoolean(WrappableConfig.class, "fastHealing");
 
-		fastHealing = defineBoolean(builder, "fastHealing",false);
+		letVanillaConnect = defineBoolean(WrappableConfig.class, "letVanillaConnect");
 
-		letVanillaConnect = defineBoolean(builder, "letVanillaConnect",false);
+		oldSprintFoodRequirement = defineBoolean(WrappableConfig.class, "oldSprintFoodRequirement");
 
-		oldSprintFoodRequirement = defineBoolean(builder, "oldSprintFoodRequirement",false);
+		projectilesHaveIFrames = defineBoolean(WrappableConfig.class, "projectilesHaveIFrames");
 
-		projectilesHaveIFrames = defineBoolean(builder, "projectilesHaveIFrames",false);
+		magicHasIFrames = defineBoolean(WrappableConfig.class, "magicHasIFrames");
 
-		magicHasIFrames = defineBoolean(builder, "magicHasIFrames",true);
+        autoAttackAllowed = defineBoolean(WrappableConfig.class, "autoAttackAllowed");
 
-        autoAttackAllowed = defineBoolean(builder, "autoAttackAllowed",true);
+        configOnlyWeapons = defineBoolean(WrappableConfig.class, "configOnlyWeapons", true);
 
-        configOnlyWeapons = defineBoolean(builder, "configOnlyWeapons",false, true);
+		tieredShields = defineBoolean(WrappableConfig.class, "tieredShields", true);
 
-		tieredShields = defineBoolean(builder, "tieredShields",false, true);
+		piercer = defineBoolean(WrappableConfig.class, "piercer", true);
 
-		piercer = defineBoolean(builder, "piercer",false, true);
+		defender = defineBoolean(WrappableConfig.class, "defender", true);
 
-		defender = defineBoolean(builder, "defender",false, true);
+        attackReach = defineBoolean(WrappableConfig.class, "attackReach");
 
-        attackReach = defineBoolean(builder, "attackReach", true);
+        attackSpeed = defineBoolean(WrappableConfig.class, "attackSpeed");
 
-        attackSpeed = defineBoolean(builder, "attackSpeed", true);
+		instaAttack = defineBoolean(WrappableConfig.class, "instaAttack");
 
-		instaAttack = defineBoolean(builder, "instaAttack",false);
+        ctsAttackBalancing = defineBoolean(WrappableConfig.class, "ctsAttackBalancing");
 
-        ctsAttackBalancing = defineBoolean(builder, "ctsAttackBalancing", true);
+        eatingInterruption = defineBoolean(WrappableConfig.class, "eatingInterruption");
 
-        eatingInterruption = defineBoolean(builder, "eatingInterruption", true);
+		improvedMiscEntityAttacks = defineBoolean(WrappableConfig.class, "improvedMiscEntityAttacks");
 
-		improvedMiscEntityAttacks = defineBoolean(builder, "improvedMiscEntityAttacks", false);
+        swordProtectionEfficacy = defineIntRange(WrappableConfig.class, "swordProtectionEfficacy");
 
-        builder.comment("Integers");
+        potionUseDuration = defineIntRange(WrappableConfig.class, "potionUseDuration");
 
-        swordProtectionEfficacy = defineIntRange(builder, "potionUseDuration", 0,-3,4);
+        honeyBottleUseDuration = defineIntRange(WrappableConfig.class, "honeyBottleUseDuration");
 
-        potionUseDuration = defineIntRange(builder, "potionUseDuration", 20,1,1000);
+        milkBucketUseDuration = defineIntRange(WrappableConfig.class, "milkBucketUseDuration");
 
-        honeyBottleUseDuration = defineIntRange(builder, "honeyBottleUseDuration",20,1,1000);
+        stewUseDuration = defineIntRange(WrappableConfig.class, "stewUseDuration");
 
-        milkBucketUseDuration = defineIntRange(builder, "milkBucketUseDuration",20,1,1000);
+        instantHealthBonus = defineIntRange(WrappableConfig.class, "instantHealthBonus");
 
-        stewUseDuration = defineIntRange(builder, "stewUseDuration",20,1,1000);
+		shieldChargePercentage = defineIntRange(WrappableConfig.class, "shieldChargePercentage");
 
-        instantHealthBonus = defineIntRange(builder, "instantHealthBonus", 6, 1,1000);
+		shieldDisableTime = defineDoubleRange(WrappableConfig.class, "shieldDisableTime");
 
-		shieldChargePercentage = defineIntRange(builder, "shieldChargePercentage", 195, 1,200);
+		cleavingDisableTime = defineDoubleRange(WrappableConfig.class, "cleavingDisableTime");
 
-        builder.comment("Doubles");
+		defenderDisableReduction = defineDoubleRange(WrappableConfig.class, "defenderDisableReduction");
 
-		shieldDisableTime = defineDoubleRange(builder, "shieldDisableTime",1.6,0,10);
+        snowballDamage = defineDoubleRange(WrappableConfig.class, "snowballDamage");
 
-		cleavingDisableTime = defineDoubleRange(builder, "cleavingDisableTime",0.5,0,10);
+        eggDamage = defineDoubleRange(WrappableConfig.class, "eggDamage");
 
-		defenderDisableReduction = defineDoubleRange(builder, "defenderDisableReduction",0.5,0,10);
+        bowUncertainty = defineDoubleRange(WrappableConfig.class, "bowUncertainty");
 
-        snowballDamage = defineDoubleRange(builder, "snowballDamage",0,0,40.0);
+		baseHandAttackSpeed = defineDoubleRange(WrappableConfig.class, "baseHandAttackSpeed");
 
-        eggDamage = defineDoubleRange(builder, "eggDamage",0,0,40.0);
+		slowestToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "slowestToolAttackSpeed");
 
-        bowUncertainty = defineDoubleRange(builder, "bowUncertainty",0.25,0,4);
+		slowToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "slowToolAttackSpeed");
 
-		baseHandAttackSpeed = defineDoubleRange(builder, "baseHandAttackSpeed",2.5,0,20);
+		fastToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "fastToolAttackSpeed");
 
-		slowestToolAttackSpeed = defineDoubleRange(builder, "slowestToolAttackSpeed",-1,-1,17.5);
-
-		slowToolAttackSpeed = defineDoubleRange(builder, "slowToolAttackSpeed",-0.5,-1,17.5);
-
-		fastToolAttackSpeed = defineDoubleRange(builder, "fastToolAttackSpeed",0.5,-1,17.5);
-
-		fastestToolAttackSpeed = defineDoubleRange(builder, "fastestToolAttackSpeed",1,-1,17.5);
-
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON,builder.build());
+		fastestToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "fastestToolAttackSpeed");
     }
 
-	public BooleanOption defineBoolean(ForgeConfigSpec.Builder builder, String path, boolean defaultValue) {
-		return defineBoolean(builder, path, defaultValue, false);
+	public BooleanOption defineBoolean(Class<? extends MidnightConfig> builder, String path) {
+		return defineBoolean(builder, path, false);
 	}
-	public BooleanOption defineBoolean(ForgeConfigSpec.Builder builder, String path, boolean defaultValue, boolean restartRequired) {
-		ForgeConfigSpec.BooleanValue booleanValue = builder.define(path, defaultValue);
-		BooleanOption option = new BooleanOption(booleanValue, restartRequired);
-		options.put(path, option);
-		return option;
+	public BooleanOption defineBoolean(Class<? extends MidnightConfig> builder, String path, boolean restartRequired) {
+		try {
+			Field booleanValue = builder.getField(path);
+			if (!booleanValue.isAnnotationPresent(MidnightConfig.Entry.class) || !(booleanValue.getType() == boolean.class || booleanValue.getType() == Boolean.class))
+				throw new ReportedException(new CrashReport("Tried to access an invalid config option!", new NoSuchFieldException()));
+			BooleanOption option = new BooleanOption(booleanValue, restartRequired);
+			options.put(path, option);
+			return option;
+		} catch (NoSuchFieldException | SecurityException e) {
+			throw new ReportedException(new CrashReport("Tried to access an invalid config option!", e));
+		}
 	}
-	public IntOption defineIntRange(ForgeConfigSpec.Builder builder, String path, int defaultValue, int min, int max) {
-		return defineIntRange(builder, path, defaultValue, min, max, false);
+	public IntOption defineIntRange(Class<? extends MidnightConfig> builder, String path) {
+		return defineIntRange(builder, path, false);
 	}
-	public IntOption defineIntRange(ForgeConfigSpec.Builder builder, String path, int defaultValue, int min, int max, boolean restartRequired) {
-		ForgeConfigSpec.IntValue intValue = builder.defineInRange(path, defaultValue, min, max);
-		IntOption option = new IntOption(intValue, restartRequired);
-		options.put(path, option);
-		return option;
+	public IntOption defineIntRange(Class<? extends MidnightConfig> builder, String path, boolean restartRequired) {
+		try {
+			Field intValue = builder.getField(path);
+			if (!intValue.isAnnotationPresent(MidnightConfig.Entry.class) || !(intValue.getType() == int.class || intValue.getType() == Integer.class))
+				throw new ReportedException(new CrashReport("Tried to access an invalid config option!", new NoSuchFieldException()));
+			IntOption option = new IntOption(intValue, restartRequired);
+			options.put(path, option);
+			return option;
+		} catch (NoSuchFieldException | SecurityException e) {
+			throw new ReportedException(new CrashReport("Tried to access an invalid config option!", e));
+		}
 	}
-	public DoubleOption defineDoubleRange(ForgeConfigSpec.Builder builder, String path, double defaultValue, double min, double max) {
-		return defineDoubleRange(builder, path, defaultValue, min, max, false);
+	public DoubleOption defineDoubleRange(Class<? extends MidnightConfig> builder, String path) {
+		return defineDoubleRange(builder, path, false);
 	}
-	public DoubleOption defineDoubleRange(ForgeConfigSpec.Builder builder, String path, double defaultValue, double min, double max, boolean restartRequired) {
-		ForgeConfigSpec.DoubleValue doubleValue = builder.defineInRange(path, defaultValue, min, max);
-		DoubleOption option = new DoubleOption(doubleValue, restartRequired);
-		options.put(path, option);
-		return option;
+	public DoubleOption defineDoubleRange(Class<? extends MidnightConfig> builder, String path, boolean restartRequired) {
+		try {
+			Field doubleValue = builder.getField(path);
+			if (!doubleValue.isAnnotationPresent(MidnightConfig.Entry.class) || !(doubleValue.getType() == double.class || doubleValue.getType() == Double.class))
+				throw new ReportedException(new CrashReport("Tried to access an invalid config option!", new NoSuchFieldException()));
+			DoubleOption option = new DoubleOption(doubleValue, restartRequired);
+			options.put(path, option);
+			return option;
+		} catch (NoSuchFieldException | SecurityException e) {
+			throw new ReportedException(new CrashReport("Tried to access an invalid config option!", e));
+		}
 	}
 
 }

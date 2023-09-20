@@ -3,8 +3,10 @@ package net.atlas.combatify.config;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.lang.reflect.Field;
+
 public class BooleanOption extends SynchableOption<Boolean> {
-	public BooleanOption(ForgeConfigSpec.ConfigValue<Boolean> configValue, boolean requiresRestart) {
+	public BooleanOption(Field configValue, boolean requiresRestart) {
 		super(configValue, requiresRestart);
 	}
 

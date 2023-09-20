@@ -65,12 +65,13 @@ public class Combatify {
 	public static final String MOD_ID = "combatify";
 	public static ForgeConfig CONFIG;
 	public static ItemConfig ITEMS;
-	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public static final DeferredRegister<MobEffect> VANILLA_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, "minecraft");
 
+	@SuppressWarnings("unused")
 	public static final RegistryObject<MobEffect> DAMAGE_BOOST = registerEffect("strength", () -> new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 0.2)
 		.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
 
+	@SuppressWarnings("unused")
 	public static final RegistryObject<MobEffect> WEAKNESS = registerEffect("weakness", () -> new DummyAttackDamageMobEffect(MobEffectCategory.HARMFUL, 4738376, -0.2)
 		.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
@@ -80,12 +81,14 @@ public class Combatify {
 	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	private static <T extends MobEffect> RegistryObject<T> registerEffect(String name, Supplier<T> effect) {
-		RegistryObject<T> toReturn = VANILLA_EFFECTS.register(name, effect);
-		return toReturn;
+		return VANILLA_EFFECTS.register(name, effect);
 	}
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
+	@SuppressWarnings("unused")
 	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
+	@SuppressWarnings("unused")
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
+	@SuppressWarnings("unused")
 	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
