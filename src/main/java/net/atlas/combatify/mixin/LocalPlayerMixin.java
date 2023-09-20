@@ -19,6 +19,7 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -38,6 +39,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Shadow
 	@Final
 	public ClientPacketListener connection;
+	@Unique
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;

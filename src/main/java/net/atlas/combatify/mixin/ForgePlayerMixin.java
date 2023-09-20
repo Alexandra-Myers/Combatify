@@ -12,6 +12,10 @@ public interface ForgePlayerMixin {
 	@Shadow
 	Player self();
 
+	/**
+	 * @author Alexandra
+	 * @reason IForgePlayer is an interface, does not support injects
+	 */
 	@Overwrite(remap = false)
 	default double getEntityReach() {
 		return ((PlayerExtensions)self()).getCurrentAttackReach(0.0F);

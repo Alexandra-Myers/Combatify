@@ -40,10 +40,10 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(
 		method = "getPickRange", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getBlockReach()D"))
-	private float getActualReachDistance(final float original) {
+	private double getActualReachDistance(final double original) {
 		if (minecraft.player != null) {
-			float mod = original - 2.5F;
-			return (float) ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F) + mod;
+			double mod = original - 2.5F;
+			return ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F) + mod;
 		}
 		return original;
 	}
