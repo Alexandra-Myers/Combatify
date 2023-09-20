@@ -8,7 +8,7 @@ import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.config.ConfigSynchronizer.*;
 
 public class C2SConfigPacket {
-	public static final ResourceLocation CHANNEL = id("item_config");
+	public static final ResourceLocation CHANNEL = id("cts_config");
 	public static FriendlyByteBuf buf;
 
 	public C2SConfigPacket() {
