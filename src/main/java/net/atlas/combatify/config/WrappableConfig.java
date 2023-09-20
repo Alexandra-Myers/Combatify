@@ -2,6 +2,7 @@ package net.atlas.combatify.config;
 
 import eu.midnightdust.lib.config.MidnightConfig;
 
+@SuppressWarnings("unused")
 public class WrappableConfig extends MidnightConfig {
 
 	@Comment(category = "text", centered = true) public static Comment Booleans;

@@ -1,7 +1,6 @@
 package net.atlas.combatify.config;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.lang.reflect.Field;
 

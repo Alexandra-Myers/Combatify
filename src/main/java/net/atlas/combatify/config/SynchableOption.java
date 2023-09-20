@@ -3,7 +3,6 @@ package net.atlas.combatify.config;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.lang.reflect.Field;
 
