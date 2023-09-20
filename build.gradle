@@ -8,12 +8,9 @@ plugins {
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
-version = mod_version
-group = mod_group_id
-archivesBaseName = mod_id
-
-Configuration shade = configurations.create("shade")
-Configuration shadeRelocMixin = configurations.create("shadeRelocMixin")
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
 
 loom {
 	// use this if you are using the official mojang mappings
@@ -40,12 +37,6 @@ loom {
 		// also, any names used in your access transformer will need to be
 		// in SRG mapped ("func_" / "field_" with MCP class names) to work!
 		// (both of these things may be subject to change in the future)
-	}
-}
-
-configurations {
-	compileOnly {
-		extendsFrom(shade, shadeRelocMixin)
 	}
 }
 
@@ -117,12 +108,13 @@ processResources {
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
+tasks.withType(JavaCompile) {
 	// ensure that the encoding is set to UTF-8, no matter what the system default is
 	// this fixes some edge cases with special characters not displaying correctly
 	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 	// If Javadoc is generated, this must be specified in that task too.
-	it.options.encoding = "UTF-8"
+	options.encoding = "UTF-8"
+	options.release = 17
 }
 
 java {
