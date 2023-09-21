@@ -80,7 +80,6 @@ dependencies {
 	forge "net.neoforged:forge:${minecraft_version}-${neo_version}"
 	implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.2.0-rc.3"))
 	implementation(include("io.github.llamalad7:mixinextras-forge:0.2.0-rc.3"))
-	modImplementation 'mysticdrew:common-networking:1.0.1+1.20.1-forge'
 	modImplementation include("maven.modrinth:midnightlib:${project.midnightlib_version}")
 
 	// additional dependencies can be specified using loom's regular format

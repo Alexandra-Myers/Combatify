@@ -3,13 +3,12 @@ package net.atlas.combatify.config;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
-import commonnetwork.api.Network;
 import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.mixin.ServerGamePacketListenerAccessor;
 import net.atlas.combatify.networking.C2SConfigPacket;
+import net.atlas.combatify.networking.PacketRegistration;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -98,7 +97,7 @@ public class ConfigSynchronizer {
         }
 
         Combatify.LOGGER.info("Responding with client values");
-        Network.getNetworkHandler().sendToServer(new C2SConfigPacket());
+        PacketRegistration.MAIN.sendToServer(new C2SConfigPacket());
     }
 
     public static void applyServer(ServerPlayer player, FriendlyByteBuf buf) {

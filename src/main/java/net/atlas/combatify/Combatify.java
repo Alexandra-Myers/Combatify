@@ -1,7 +1,6 @@
 package net.atlas.combatify;
 
 import com.google.common.collect.ArrayListMultimap;
-import commonnetwork.api.Network;
 import net.atlas.combatify.config.ConfigSynchronizer;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ForgeConfig;
@@ -50,6 +49,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.*;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
@@ -206,8 +206,8 @@ public class Combatify {
 				finalizingAttack.remove(serverPlayer.getUUID());
 			}
 			Combatify.LOGGER.info("Sending server config values to client");
-			Network.getNetworkHandler().sendToClient(new S2CConfigPacket(), serverPlayer);
-			Network.getNetworkHandler().sendToClient(new ItemConfigPacket(ITEMS), serverPlayer);
+			PacketRegistration.MAIN.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new S2CConfigPacket());
+			PacketRegistration.MAIN.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new ItemConfigPacket(ITEMS));
 			Combatify.LOGGER.info("Config packet sent to client.");
 		}
 	}

@@ -1,15 +1,13 @@
 package net.atlas.combatify.networking;
 
-import commonnetwork.networking.data.PacketContext;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkEvent;
 
-import static net.atlas.combatify.Combatify.*;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 public class ServerboundMissPacket {
-	public static final ResourceLocation CHANNEL = id("attack_miss");
-
 	public ServerboundMissPacket() {
 	}
 
@@ -20,7 +18,7 @@ public class ServerboundMissPacket {
 	public void encode(FriendlyByteBuf buf) {
 	}
 
-	public static void handle(PacketContext<ServerboundMissPacket> ctx) {
-		((PlayerExtensions)ctx.sender()).attackAir();
+	public void handle(Supplier<NetworkEvent.Context> ctx) {
+		((PlayerExtensions) Objects.requireNonNull(ctx.get().getSender())).attackAir();
 	}
 }

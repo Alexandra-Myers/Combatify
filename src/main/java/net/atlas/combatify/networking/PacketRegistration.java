@@ -1,17 +1,24 @@
 package net.atlas.combatify.networking;
 
-import commonnetwork.api.Network;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
+
+import static net.atlas.combatify.Combatify.id;
 
 public class PacketRegistration {
+	private static final String PROTOCOL_VERSION = "1";
+	public static final SimpleChannel MAIN = NetworkRegistry.newSimpleChannel(
+		id("combatify"),
+		() -> PROTOCOL_VERSION,
+		NetworkRegistry.acceptMissingOr(PROTOCOL_VERSION::equals),
+		PROTOCOL_VERSION::equals
+	);
 
 	public void init() {
-		Network
-			.registerPacket(ItemConfigPacket.CHANNEL, ItemConfigPacket.class, ItemConfigPacket::encode, ItemConfigPacket::decode, ItemConfigPacket::handle);
-		Network
-			.registerPacket(ServerboundMissPacket.CHANNEL, ServerboundMissPacket.class, ServerboundMissPacket::encode, ServerboundMissPacket::decode, ServerboundMissPacket::handle);
-		Network
-			.registerPacket(S2CConfigPacket.CHANNEL, S2CConfigPacket.class, S2CConfigPacket::encode, S2CConfigPacket::decode, S2CConfigPacket::handle);
-		Network
-			.registerPacket(C2SConfigPacket.CHANNEL, C2SConfigPacket.class, C2SConfigPacket::encode, C2SConfigPacket::decode, C2SConfigPacket::handle);
+		int id = 0;
+		MAIN.messageBuilder(ItemConfigPacket.class, id).encoder(ItemConfigPacket::encode).decoder(ItemConfigPacket::decode).consumerMainThread(ItemConfigPacket::handle);
+		MAIN.messageBuilder(ServerboundMissPacket.class, id++).encoder(ServerboundMissPacket::encode).decoder(ServerboundMissPacket::decode).consumerMainThread(ServerboundMissPacket::handle);
+		MAIN.messageBuilder(S2CConfigPacket.class, id++).encoder(S2CConfigPacket::encode).decoder(S2CConfigPacket::decode).consumerMainThread(S2CConfigPacket::handle);
+		MAIN.messageBuilder(C2SConfigPacket.class, id + 1).encoder(C2SConfigPacket::encode).decoder(C2SConfigPacket::decode).consumerMainThread(C2SConfigPacket::handle);
 	}
 }

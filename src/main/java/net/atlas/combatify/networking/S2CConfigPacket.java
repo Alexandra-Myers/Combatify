@@ -1,21 +1,22 @@
 package net.atlas.combatify.networking;
 
-import commonnetwork.networking.data.PacketContext;
+import net.atlas.combatify.client.ClientConfigHandlers;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.network.NetworkEvent;
 
-import static net.atlas.combatify.Combatify.*;
-import static net.atlas.combatify.config.ConfigSynchronizer.applyClient;
+import java.util.function.Supplier;
+
 import static net.atlas.combatify.config.ConfigSynchronizer.write;
 
 public class S2CConfigPacket {
-	public static final ResourceLocation CHANNEL = id("stc_config");
 
 	public S2CConfigPacket() {
 	}
 
 	public static S2CConfigPacket decode(FriendlyByteBuf buf) {
-		applyClient(buf);
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientConfigHandlers.generalConfigPacket(buf));
 		return new S2CConfigPacket();
 	}
 
@@ -23,7 +24,7 @@ public class S2CConfigPacket {
 		write(buf, 2);
 	}
 
-	public static void handle(PacketContext<S2CConfigPacket> ctx) {
+	public void handle(Supplier<NetworkEvent.Context> ctx) {
 
 	}
 }

@@ -1,29 +1,32 @@
 package net.atlas.combatify.networking;
 
-import commonnetwork.networking.data.PacketContext;
+import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkEvent;
 
-import static net.atlas.combatify.Combatify.id;
+import java.util.Objects;
+import java.util.function.Supplier;
+
 import static net.atlas.combatify.config.ConfigSynchronizer.*;
 
 public class C2SConfigPacket {
-	public static final ResourceLocation CHANNEL = id("cts_config");
-	public static FriendlyByteBuf buf;
+	public FriendlyByteBuf buf;
 
 	public C2SConfigPacket() {
+		buf = new FriendlyByteBuf(Unpooled.buffer());
 	}
 
 	public static C2SConfigPacket decode(FriendlyByteBuf buf) {
-		C2SConfigPacket.buf = buf;
-		return new C2SConfigPacket();
+		C2SConfigPacket packet = new C2SConfigPacket();
+		packet.buf = buf;
+		return packet;
 	}
 
 	public void encode(FriendlyByteBuf buf) {
 		write(buf, 1);
 	}
 
-	public static void handle(PacketContext<C2SConfigPacket> ctx) {
-		applyServer(ctx.sender(), buf);
+	public void handle(Supplier<NetworkEvent.Context> ctx) {
+		applyServer(Objects.requireNonNull(ctx.get().getSender()), buf);
 	}
 }
