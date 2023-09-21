@@ -11,7 +11,7 @@ import net.minecraftforge.registries.RegistryObject;
 import static net.atlas.combatify.Combatify.id;
 
 public class DefendingEnchantment extends Enchantment implements CustomEnchantment {
-	public static final RegistryObject<Enchantment> DEFENDER = EnchantmentRegistry.registerEnchant(id("defender"), new DefendingEnchantment());
+	public static final RegistryObject<Enchantment> DEFENDER = EnchantmentRegistry.registerEnchant(id("defender"), DefendingEnchantment::new);
 
 	public DefendingEnchantment() {
 		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});

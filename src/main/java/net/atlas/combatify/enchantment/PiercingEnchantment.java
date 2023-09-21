@@ -14,7 +14,7 @@ import net.minecraftforge.registries.RegistryObject;
 import static net.atlas.combatify.Combatify.id;
 
 public class PiercingEnchantment extends Enchantment implements CustomEnchantment {
-	public static final RegistryObject<Enchantment> PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), new PiercingEnchantment());
+	public static final RegistryObject<Enchantment> PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), PiercingEnchantment::new);
 
 	public PiercingEnchantment() {
 		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});

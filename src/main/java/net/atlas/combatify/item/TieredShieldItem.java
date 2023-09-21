@@ -22,6 +22,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.Combatify.shields;
@@ -29,11 +30,11 @@ import static net.atlas.combatify.Combatify.shields;
 public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtensions {
 	public final Tier tier;
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Combatify.MOD_ID);
-	public static final RegistryObject<Item> WOODEN_SHIELD = registerItem(id("wooden_shield"), new TieredShieldItem(Tiers.WOOD, new Item.Properties().durability(Tiers.WOOD.getUses() * 6)));
-	public static final RegistryObject<Item> IRON_SHIELD = registerItem(id("iron_shield"), new TieredShieldItem(Tiers.IRON, new Item.Properties().durability(Tiers.IRON.getUses() * 3)));
-	public static final RegistryObject<Item> GOLD_SHIELD = registerItem(id("golden_shield"), new TieredShieldItem(Tiers.GOLD, new Item.Properties().durability(Tiers.GOLD.getUses() * 6)));
-	public static final RegistryObject<Item> DIAMOND_SHIELD = registerItem(id("diamond_shield"), new TieredShieldItem(Tiers.DIAMOND, new Item.Properties().durability(Tiers.DIAMOND.getUses() * 2)));
-	public static final RegistryObject<Item> NETHERITE_SHIELD = registerItem(id("netherite_shield"), new TieredShieldItem(Tiers.NETHERITE, new Item.Properties().durability(Tiers.NETHERITE.getUses() * 2).fireResistant()));
+	public static final RegistryObject<Item> WOODEN_SHIELD = registerItem(id("wooden_shield"), () -> new TieredShieldItem(Tiers.WOOD, new Item.Properties().durability(Tiers.WOOD.getUses() * 6)));
+	public static final RegistryObject<Item> IRON_SHIELD = registerItem(id("iron_shield"), () -> new TieredShieldItem(Tiers.IRON, new Item.Properties().durability(Tiers.IRON.getUses() * 3)));
+	public static final RegistryObject<Item> GOLD_SHIELD = registerItem(id("golden_shield"), () -> new TieredShieldItem(Tiers.GOLD, new Item.Properties().durability(Tiers.GOLD.getUses() * 6)));
+	public static final RegistryObject<Item> DIAMOND_SHIELD = registerItem(id("diamond_shield"), () -> new TieredShieldItem(Tiers.DIAMOND, new Item.Properties().durability(Tiers.DIAMOND.getUses() * 2)));
+	public static final RegistryObject<Item> NETHERITE_SHIELD = registerItem(id("netherite_shield"), () -> new TieredShieldItem(Tiers.NETHERITE, new Item.Properties().durability(Tiers.NETHERITE.getUses() * 2).fireResistant()));
 
 	public TieredShieldItem(Tier tier, Properties properties) {
 		super(properties);
@@ -113,11 +114,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 		}
 		return Combatify.registeredTypes.get("new_shield");
 	}
-	public static RegistryObject<Item> registerItem(ResourceLocation resourceLocation, Item item) {
-		if (item instanceof BlockItem) {
-			((BlockItem)item).registerBlocks(Item.BY_BLOCK, item);
-		}
-
-		return ITEMS.register(resourceLocation.getPath(), () -> item);
+	public static RegistryObject<Item> registerItem(ResourceLocation resourceLocation, Supplier<Item> item) {
+		return ITEMS.register(resourceLocation.getPath(), item);
 	}
 }
