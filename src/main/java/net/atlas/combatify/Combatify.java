@@ -187,7 +187,7 @@ public class Combatify {
 	public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
 		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
 			boolean bl = CONFIG.configOnlyWeapons.get() || CONFIG.defender.get() || CONFIG.piercer.get() || !CONFIG.letVanillaConnect.get();
-			boolean isModLoaded = NetworkRegistry.getClientNonVanillaNetworkMods().contains("Combatify");
+			boolean isModLoaded = NetworkRegistry.getClientNonVanillaNetworkMods().contains("combatify");
 			if (!isModLoaded) {
 				if (bl) {
 					serverPlayer.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
