@@ -262,7 +262,7 @@ public class NetworkingHandler {
 		 */
 		@Override
 		public PacketType<?> getType() {
-			return null;
+			return TYPE;
 		}
 	}
 }
