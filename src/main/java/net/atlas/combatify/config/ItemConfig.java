@@ -161,7 +161,7 @@ public class ItemConfig {
 	}
 
 	public static Item itemFromName(String string) {
-		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElseThrow(() -> new JsonSyntaxException("Unknown item '" + string + "'"));
+		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElse(null);
 		if (item == Items.AIR) {
 			throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("You can't configure an empty item!"), "Configuring Items"));
 		} else {
@@ -392,6 +392,8 @@ public class ItemConfig {
 	}
 
 	public void parseItemConfig(Item item, JsonObject jsonObject) {
+		if(item == null)
+			return;
 		Double damage = null;
 		Double speed = null;
 		Double reach = null;
