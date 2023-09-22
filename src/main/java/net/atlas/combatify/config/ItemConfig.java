@@ -164,7 +164,7 @@ public class ItemConfig {
 	public static Item itemFromName(String string) {
 		ResourceLocation resourceLocation = ResourceLocation.tryParse(string);
 		if(!ForgeRegistries.ITEMS.containsKey(resourceLocation))
-			throw new JsonSyntaxException("Unknown item '" + string + "'");
+			return null;
 		Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
 		if (item == Items.AIR) {
 			throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("You can't configure an empty item!"), "Configuring Items"));
@@ -396,6 +396,8 @@ public class ItemConfig {
 	}
 
 	public void parseItemConfig(Item item, JsonObject jsonObject) {
+		if (item == null)
+			return;
 		Double damage = null;
 		Double speed = null;
 		Double reach = null;
