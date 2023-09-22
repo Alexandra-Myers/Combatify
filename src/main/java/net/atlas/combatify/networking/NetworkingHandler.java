@@ -5,6 +5,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
@@ -46,6 +47,7 @@ public class NetworkingHandler {
 				timer.purge();
 			}
 		});
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> ((PlayerExtensions)player).attackAir());
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, ItemConfigPacket.TYPE)) {
@@ -231,6 +233,36 @@ public class NetworkingHandler {
 		@Override
 		public PacketType<?> getType() {
 			return TYPE;
+		}
+	}
+	public record ServerboundMissPacket() implements FabricPacket {
+		public static final PacketType<ServerboundMissPacket> TYPE = PacketType.create(Combatify.id("miss_attack"), ServerboundMissPacket::new);
+
+		public ServerboundMissPacket(FriendlyByteBuf buf) {
+			this();
+		}
+
+		/**
+		 * Writes the contents of this packet to the buffer.
+		 *
+		 * @param buf the output buffer
+		 */
+		@Override
+		public void write(FriendlyByteBuf buf) {
+
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public PacketType<?> getType() {
+			return null;
 		}
 	}
 }

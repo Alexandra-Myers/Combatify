@@ -20,9 +20,6 @@
     ],
 		"client": [
       "net.atlas.combatify.CombatifyClient"
-    ],
-		"mm:early_risers": [
-      "net.atlas.combatify.EarlyRiser"
     ]
 	},
 	"mixins": [

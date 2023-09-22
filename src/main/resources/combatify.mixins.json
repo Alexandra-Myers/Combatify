@@ -42,7 +42,6 @@
     "ReachEntityAttributesMixin",
     "ResourceLocationMixin",
     "ServerEntityMixin",
-    "ServerGameInteractPacketMixin",
     "ServerGamePacketMixin",
     "ServerPlayerMixin",
     "ShapedRecipeMixin",
