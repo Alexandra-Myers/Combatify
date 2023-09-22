@@ -1,6 +1,8 @@
 package net.atlas.combatify;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import net.atlas.combatify.config.ConfigSynchronizer;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ForgeConfig;
@@ -246,7 +248,7 @@ public class Combatify {
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
-							event.getModifiers().remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
+							event.removeModifier(Attributes.ATTACK_DAMAGE, modifiers.get(index));
 				}
 				if (event.getModifiers().containsKey(Attributes.ATTACK_SPEED)) {
 					List<Integer> indexes = new ArrayList<>();
@@ -256,7 +258,7 @@ public class Combatify {
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
-							event.getModifiers().remove(Attributes.ATTACK_SPEED, modifiers.get(index));
+							event.removeModifier(Attributes.ATTACK_SPEED, modifiers.get(index));
 				}
 				if (event.getModifiers().containsKey(ForgeMod.ENTITY_REACH.get())) {
 					List<Integer> indexes = new ArrayList<>();
@@ -266,11 +268,11 @@ public class Combatify {
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
-							event.getModifiers().remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
+							event.removeModifier(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
 				}
 				ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
 				configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE, modMap);
-				event.getModifiers().putAll(modMap);
+				putAll(event, modMap);
 			}
 			if (configurableItemData.damage != null) {
 				if (event.getModifiers().containsKey(Attributes.ATTACK_DAMAGE)) {
@@ -281,9 +283,9 @@ public class Combatify {
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
-							event.getModifiers().remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
+							event.removeModifier(Attributes.ATTACK_DAMAGE, modifiers.get(index));
 				}
-				event.getModifiers().put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
+				event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
 			}
 			if (configurableItemData.speed != null) {
 				if (event.getModifiers().containsKey(Attributes.ATTACK_SPEED)) {
@@ -294,9 +296,9 @@ public class Combatify {
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
-							event.getModifiers().remove(Attributes.ATTACK_SPEED, modifiers.get(index));
+							event.removeModifier(Attributes.ATTACK_SPEED, modifiers.get(index));
 				}
-				event.getModifiers().put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
+				event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
 			}
 			if (configurableItemData.reach != null) {
 				if (event.getModifiers().containsKey(ForgeMod.ENTITY_REACH.get())) {
@@ -307,11 +309,19 @@ public class Combatify {
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
-							event.getModifiers().remove(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
+							event.removeModifier(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
 				}
-				event.getModifiers().put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
+				event.addModifier(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
 			}
 		}
+	}
+	@CanIgnoreReturnValue
+	public <K extends Attribute, V extends AttributeModifier> boolean putAll(ItemAttributeModifierEvent event, Multimap<? extends K, ? extends V> multimap) {
+		boolean changed = false;
+		for (Map.Entry<? extends K, ? extends V> entry : multimap.entries()) {
+			changed |= event.addModifier(entry.getKey(), entry.getValue());
+		}
+		return changed;
 	}
 	public AttributeModifier calculateSpeed(double amount) {
 		if(amount >= 0) {
