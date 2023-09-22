@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.entity.BannerPattern;
 
 import java.util.List;
 
-public class CombatifyBlockEntityWIthoutLevelRenderer extends BlockEntityWithoutLevelRenderer {
+public class CombatifyBlockEntityWithoutLevelRenderer extends BlockEntityWithoutLevelRenderer {
 	private ShieldModel modelWoodenShield;
 	private ShieldModel modelIronShield;
 	private ShieldModel modelGoldenShield;
@@ -43,10 +43,17 @@ public class CombatifyBlockEntityWIthoutLevelRenderer extends BlockEntityWithout
 	private static final Material NETHERITE_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/netherite_shield_base_nopattern"));
     private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
     private final EntityModelSet entityModelSet;
-    public CombatifyBlockEntityWIthoutLevelRenderer(BlockEntityRenderDispatcher p_172550_, EntityModelSet p_172551_) {
+    public CombatifyBlockEntityWithoutLevelRenderer(BlockEntityRenderDispatcher p_172550_, EntityModelSet p_172551_) {
         super(p_172550_, p_172551_);
         this.blockEntityRenderDispatcher = p_172550_;
         this.entityModelSet = p_172551_;
+		if (Combatify.CONFIG.tieredShields.get()) {
+			this.modelWoodenShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.WOODEN_SHIELD_MODEL_LAYER));
+			this.modelIronShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.IRON_SHIELD_MODEL_LAYER));
+			this.modelGoldenShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.GOLDEN_SHIELD_MODEL_LAYER));
+			this.modelDiamondShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.DIAMOND_SHIELD_MODEL_LAYER));
+			this.modelNetheriteShield = new ShieldModel(this.entityModelSet.bakeLayer(CombatifyClient.NETHERITE_SHIELD_MODEL_LAYER));
+		}
     }
 
 	@Override

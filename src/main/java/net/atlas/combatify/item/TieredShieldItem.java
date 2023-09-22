@@ -1,7 +1,7 @@
 package net.atlas.combatify.item;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.client.CombatifyBlockEntityWIthoutLevelRenderer;
+import net.atlas.combatify.client.CombatifyBlockEntityWithoutLevelRenderer;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -71,7 +71,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 
 				@Override
 				public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-					return new CombatifyBlockEntityWIthoutLevelRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
+					return new CombatifyBlockEntityWithoutLevelRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
 				}
 			});
 		}
