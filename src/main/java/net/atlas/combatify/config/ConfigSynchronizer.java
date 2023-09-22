@@ -19,7 +19,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 
@@ -78,7 +77,7 @@ public class ConfigSynchronizer {
         Combatify.LOGGER.info("Applying server overrides");
         var mismatchedOptions = new HashMap<SynchableOption<?>, Object>();
 
-        if (!(client.isSingleplayer() && Objects.requireNonNull(client.getCurrentServer()).isLan())) {
+        if (!(client.hasSingleplayerServer() && client.getSingleplayerServer().isSingleplayer())) {
             read(buf, (option, packetByteBuf) -> {
                 var mismatchedValue = option.findMismatch(packetByteBuf);
                 if (mismatchedValue != null) mismatchedOptions.put(option, mismatchedValue);
