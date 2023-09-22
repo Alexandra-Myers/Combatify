@@ -30,7 +30,6 @@ public abstract class ServerGamePacketMixin {
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
 		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
 			ci.cancel();
-		Combatify.player = player;
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);

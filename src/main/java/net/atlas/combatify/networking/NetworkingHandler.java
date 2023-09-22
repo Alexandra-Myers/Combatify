@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
@@ -19,6 +20,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -29,7 +31,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -47,7 +51,27 @@ public class NetworkingHandler {
 				timer.purge();
 			}
 		});
-		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> ((PlayerExtensions)player).attackAir());
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> {
+			final ServerLevel serverLevel = player.serverLevel();
+			player.resetLastActionTime();
+			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition())) {
+				return;
+			}
+			double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
+			d *= d;
+			if(!player.hasLineOfSight(player)) {
+				d = 6.25;
+			}
+
+			AABB aABB = player.getBoundingBox();
+			Vec3 eyePos = player.getEyePosition(0.0F);
+			eyePos.distanceToSqr(((AABBExtensions) aABB).getNearestPointTo(eyePos));
+			double dist = 0;
+			if (dist < d) {
+				((PlayerExtensions)player).attackAir();
+			}
+
+		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, ItemConfigPacket.TYPE)) {

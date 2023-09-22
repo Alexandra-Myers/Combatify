@@ -17,7 +17,6 @@ import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -32,7 +31,6 @@ import java.util.*;
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 public class Combatify implements ModInitializer {
-	public static Player player;
 	public static final String MOD_ID = "combatify";
 	public static final CombatifyConfig CONFIG = CombatifyConfig.createAndLoad();
 	public static ItemConfig ITEMS;

@@ -47,12 +47,19 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public abstract void swing(InteractionHand interactionHand);
 	@Shadow
 	public ServerGamePacketListenerImpl connection;
+	@Unique
 	public CopyOnWriteArrayList<HitResult> oldHitResults = new CopyOnWriteArrayList<>();
+	@Unique
 	public Map<HitResult, Float[]> hitResultToRotationMap = new ConcurrentHashMap<>();
+	@Unique
 	public ArrayList<Integer> pastPings = new ArrayList<>();
+	@Unique
 	public boolean awaitingResponse = false;
+	@Unique
 	public int responseTimer = 0;
+	@Unique
 	public int tickTimer = 4;
+	@Unique
 	public int currentAveragePing = 0;
 
 	@Unique
@@ -143,6 +150,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		}
 		ci.cancel();
 	}
+	@Unique
 	public void handleInteract(Entity entity, boolean hit) {
 		if (retainAttack) {
 			if(hit)
