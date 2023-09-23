@@ -116,8 +116,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 		if(shieldItem.getBlockingType().isToolBlocker()) {
-			((LivingEntityExtensions)target).newKnockback(0.4, x2, z2);
-			newKnockback(0.4, x, z);
+			newKnockback(0.5, x, z);
 			ci.cancel();
 			return;
 		}

@@ -31,7 +31,7 @@ public class WrappableConfig extends MidnightConfig {
 	@Entry public static boolean eatingInterruption = true;
 	@Entry public static boolean improvedMiscEntityAttacks = false;
 	@Comment(centered = true) public static Comment Integers;
-	@Entry(isSlider = true, min = -3, max = 4) public static int swordProtectionEfficacy = 0;
+	@Entry(isSlider = true, min = -3, max = 7) public static int swordProtectionEfficacy = 0;
 	@Entry(isSlider = true, min = 1, max = 1000) public static int potionUseDuration = 20;
 	@Entry(isSlider = true, min = 1, max = 1000) public static int honeyBottleUseDuration = 20;
 	@Entry(isSlider = true, min = 1, max = 1000) public static int milkBucketUseDuration = 20;

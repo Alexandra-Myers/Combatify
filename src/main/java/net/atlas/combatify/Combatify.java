@@ -12,6 +12,7 @@ import net.atlas.combatify.enchantment.EnchantmentRegistry;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
+import net.atlas.combatify.extensions.Tierable;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
@@ -271,7 +272,7 @@ public class Combatify {
 							event.removeModifier(ForgeMod.ENTITY_REACH.get(), modifiers.get(index));
 				}
 				ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
-				configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE, modMap);
+				configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : item instanceof Tierable tierable ? tierable.getTier() : Tiers.NETHERITE, modMap);
 				putAll(event, modMap);
 			}
 			if (configurableItemData.damage != null) {

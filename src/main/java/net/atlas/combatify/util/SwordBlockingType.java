@@ -61,13 +61,13 @@ public class SwordBlockingType extends BlockingType {
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
 		if (stack.getItem() instanceof Tierable tierable)
 			var2 = tierable.getTier();
-		float strengthIncrease = var2.getAttackDamageBonus() <= 1.0F ? -1F : 0.0F;
+		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy.get();
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		if(Combatify.CONFIG.defender.get()) {
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), stack);
 		}
-		return Math.min(0.5F + (strengthIncrease * 0.125F), 1);
+		return Math.min(0.3F + (strengthIncrease * 0.1F), 1);
 	}
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
