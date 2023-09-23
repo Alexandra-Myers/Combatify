@@ -38,7 +38,7 @@ public class CombatifyConfigModel {
 	public boolean eatingInterruption = true;
 	public boolean improvedMiscEntityAttacks = false;
 	@SectionHeader("Integers")
-	@RangeConstraint(min = -3, max = 4)
+	@RangeConstraint(min = -3, max = 7)
 	public int swordProtectionEfficacy = 0;
 	@RangeConstraint(min = 1, max = 1000)
 	public int potionUseDuration = 20;

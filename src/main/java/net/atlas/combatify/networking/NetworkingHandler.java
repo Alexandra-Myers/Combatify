@@ -4,10 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.extensions.AABBExtensions;
-import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.PlayerExtensions;
-import net.atlas.combatify.extensions.ServerPlayerExtensions;
+import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -130,7 +127,7 @@ public class NetworkingHandler {
 								attributeModifiers.remove(NewAttributes.ATTACK_REACH, modifiers.get(index));
 					}
 					ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
-					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.NETHERITE, modMap);
+					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : item instanceof Tierable tierable ? tierable.getTier() : Tiers.NETHERITE, modMap);
 					attributeModifiers.putAll(modMap);
 				}
 				if (configurableItemData.damage != null) {
