@@ -16,7 +16,10 @@ import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -83,6 +86,10 @@ public class Combatify implements ModInitializer {
 		for(Item item : items) {
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
+		MobEffects.DAMAGE_BOOST.getAttributeModifiers().remove(Attributes.ATTACK_DAMAGE);
+		MobEffects.DAMAGE_BOOST.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
+		MobEffects.WEAKNESS.getAttributeModifiers().remove(Attributes.ATTACK_DAMAGE);
+		MobEffects.WEAKNESS.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 	}
 	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
 		Combatify.registeredTypes.put(blockingType.getName(), blockingType);

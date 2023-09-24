@@ -18,7 +18,6 @@
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
     "EnchantmentsMixin",
-    "EntityDimensionsMixin",
     "EntityMixin",
     "FishingHookMixin",
     "FoodDataMixin",
