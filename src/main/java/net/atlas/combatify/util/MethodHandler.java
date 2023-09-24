@@ -29,14 +29,16 @@ import java.util.List;
 
 public class MethodHandler {
 	public static AABB inflateBoundingBox(AABB boundingBox) {
-		double xAdjust = Math.max(Combatify.CONFIG.minHitboxSize() - boundingBox.getXsize(), 0);
-		double yAdjust = Math.max(Combatify.CONFIG.minHitboxSize() - boundingBox.getYsize(), 0);
-		double zAdjust = Math.max(Combatify.CONFIG.minHitboxSize() - boundingBox.getZsize(), 0);
-		Combatify.LOGGER.info("x Adjustment: " + xAdjust);
-		Combatify.LOGGER.info("y Adjustment: " + yAdjust);
-		Combatify.LOGGER.info("z Adjustment: " + zAdjust);
+		double xAdjust = Math.max((Combatify.CONFIG.minHitboxSize() - boundingBox.getXsize()) * 0.5, 0);
+		double yAdjust = Math.max((Combatify.CONFIG.minHitboxSize() - boundingBox.getYsize()) * 0.5, 0);
+		double zAdjust = Math.max((Combatify.CONFIG.minHitboxSize() - boundingBox.getZsize()) * 0.5, 0);
 		boundingBox = boundingBox.inflate(xAdjust, yAdjust, zAdjust);
 		return boundingBox;
+	}
+	public static float inflate(float f) {
+		float adjust = (float) Math.max(Combatify.CONFIG.minHitboxSize() - f, 0);
+		f += adjust;
+		return f;
 	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
