@@ -26,8 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -58,7 +57,6 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 import static net.atlas.combatify.item.WeaponType.BASE_ATTACK_SPEED_UUID;
 
@@ -68,24 +66,12 @@ public class Combatify {
 	public static final String MOD_ID = "combatify";
 	public static ForgeConfig CONFIG;
 	public static ItemConfig ITEMS;
-	public static final DeferredRegister<MobEffect> VANILLA_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, "minecraft");
-
-	@SuppressWarnings("unused")
-	public static final RegistryObject<MobEffect> DAMAGE_BOOST = registerEffect("strength", () -> new DummyAttackDamageMobEffect(MobEffectCategory.BENEFICIAL, 9643043, 0.2)
-		.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
-
-	@SuppressWarnings("unused")
-	public static final RegistryObject<MobEffect> WEAKNESS = registerEffect("weakness", () -> new DummyAttackDamageMobEffect(MobEffectCategory.HARMFUL, 4738376, -0.2)
-		.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<UUID, Boolean> finalizingAttack = new HashMap<>();
 	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
-	private static <T extends MobEffect> RegistryObject<T> registerEffect(String name, Supplier<T> effect) {
-		return VANILLA_EFFECTS.register(name, effect);
-	}
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	@SuppressWarnings("unused")
 	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
@@ -118,7 +104,6 @@ public class Combatify {
 		bus.addListener(this::interModEnqueue);
 
 		MinecraftForge.EVENT_BUS.register(this);
-		VANILLA_EFFECTS.register(bus);
 	}
 	public void interModEnqueue(InterModEnqueueEvent event) {
 		Combatify.LOGGER.info("Config init started.");
@@ -133,6 +118,10 @@ public class Combatify {
 			if (configurableItemData.stackSize != null)
 				((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 		}
+		MobEffects.DAMAGE_BOOST.getAttributeModifiers().remove(Attributes.ATTACK_DAMAGE);
+		MobEffects.DAMAGE_BOOST.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
+		MobEffects.WEAKNESS.getAttributeModifiers().remove(Attributes.ATTACK_DAMAGE);
+		MobEffects.WEAKNESS.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 		Combatify.LOGGER.info("Loaded items config.");
 	}
 	@SubscribeEvent

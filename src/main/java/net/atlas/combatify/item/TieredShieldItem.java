@@ -5,9 +5,9 @@ import net.atlas.combatify.client.CombatifyBlockEntityWithoutLevelRenderer;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
 import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -45,7 +45,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 
 	private void registerModelPredicate() {
 		ItemProperties.register(this, new ResourceLocation("blocking"), (itemStack, clientWorld, livingEntity, i) ->
-			livingEntity != null && livingEntity.isUsingItem() && ((LivingEntityExtensions)livingEntity).getBlockingItem() == itemStack ? 1.0F : 0.0F);
+			livingEntity != null && livingEntity.isUsingItem() && MethodHandler.getBlockingItem(livingEntity) == itemStack ? 1.0F : 0.0F);
 	}
 
 

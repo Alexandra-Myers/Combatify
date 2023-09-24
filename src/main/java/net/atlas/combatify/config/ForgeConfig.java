@@ -51,6 +51,7 @@ public class ForgeConfig {
 	public DoubleOption slowToolAttackSpeed;
 	public DoubleOption fastToolAttackSpeed;
 	public DoubleOption fastestToolAttackSpeed;
+	public DoubleOption minHitboxSize;
 	public BiMap<String, SynchableOption<?>> options = HashBiMap.create();
 
     public ForgeConfig() {
@@ -139,6 +140,8 @@ public class ForgeConfig {
 		fastToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "fastToolAttackSpeed");
 
 		fastestToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "fastestToolAttackSpeed");
+
+		minHitboxSize = defineDoubleRange(WrappableConfig.class, "minHitboxSize");
     }
 
 	public BooleanOption defineBoolean(Class<? extends MidnightConfig> builder, String path) {

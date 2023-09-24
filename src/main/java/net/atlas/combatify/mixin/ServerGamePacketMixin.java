@@ -1,11 +1,11 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.IServerGamePacketListener;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundPongPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -54,14 +54,14 @@ public abstract class ServerGamePacketMixin implements IServerGamePacketListener
 		if (entity instanceof ServerPlayer target) {
 			return CombatUtil.allowReach(player, target);
 		}
-		double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
+		double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 		d *= d;
 		if(!player.hasLineOfSight(entity)) {
 			d = 6.25;
 		}
 		// If target is not a player do vanilla code
 		Vec3 vec3 = player.getEyePosition(0.0F);
-		return vec3.distanceToSqr(((AABBExtensions)entity.getBoundingBox()).getNearestPointTo(vec3)) < d;
+		return vec3.distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), vec3)) < d;
 	}
 	/**
 	 *  Credits to <a href="https://github.com/Blumbo/CTS-AntiCheat/tree/master">Blumbo's CTS Anti-Cheat</a>, integrated into Combatify from there <br>

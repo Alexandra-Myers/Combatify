@@ -1,5 +1,6 @@
 package net.atlas.combatify.enchantment;
 
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.CustomEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -29,7 +30,7 @@ public class DefendingEnchantment extends Enchantment implements CustomEnchantme
 
 	@Override
 	public boolean canEnchant(ItemStack stack) {
-		return !((ItemExtensions) stack.getItem()).getBlockingType().isEmpty();
+		return !((ItemExtensions) stack.getItem()).getBlockingType().isEmpty() && (!((ItemExtensions)stack.getItem()).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get());
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -83,7 +83,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
-		return !this.getBlockingItem().isEmpty();
+		return !MethodHandler.getBlockingItem(thisEntity).isEmpty();
 	}
 
 	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
@@ -92,7 +92,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double z = target.getZ() - this.getZ();
 		double x2 = this.getX() - target.getX();
 		double z2 = this.getZ() - target.getZ();
-		Item blockingItem = ((LivingEntityExtensions)target).getBlockingItem().getItem();
+		Item blockingItem = MethodHandler.getBlockingItem(target).getItem();
 		double piercingLevel = 0;
 		Item item = ((LivingEntity)(Object)this).getMainHandItem().getItem();
 		if (item instanceof PiercingItem piercingItem) {
@@ -116,12 +116,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 		if(shieldItem.getBlockingType().isToolBlocker()) {
-			newKnockback(0.5, x, z);
 			ci.cancel();
 			return;
 		}
-		((LivingEntityExtensions)target).newKnockback(0.5, x2, z2);
-		newKnockback(0.5, x, z);
+		MethodHandler.knockback(thisEntity, 0.5, x2, z2);
+		MethodHandler.knockback(thisEntity, 0.5, x, z);
 		ci.cancel();
 	}
 	@Override
@@ -182,8 +181,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
 	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
 		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
-			if(this.getBlockingItem().getItem() instanceof ItemExtensions shieldItem) {
-				shieldItem.getBlockingType().block(instance, null, this.getBlockingItem(), source, amount, f, g, bl);
+			if(MethodHandler.getBlockingItem(thisEntity).getItem() instanceof ItemExtensions shieldItem) {
+				shieldItem.getBlockingType().block(instance, null, MethodHandler.getBlockingItem(thisEntity), source, amount, f, g, bl);
 			}
 		}
 		return false;
@@ -222,50 +221,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
 		if ((Combatify.CONFIG.fishingHookKB.get() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB.get())) {
-			projectileKnockback(0.4, e, f);
+			MethodHandler.projectileKnockback(thisEntity, 0.4, e, f);
 		} else {
-			newKnockback(0.4, e, f);
-		}
-	}
-
-	@Override
-	public void newKnockback(double strength, double x, double z) {
-		double knockbackRes = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = this.getBlockingItem();
-		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
-			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
-			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
-		}
-
-		strength *= 1.0 - knockbackRes;
-		if (!(strength <= 0.0F)) {
-			this.hasImpulse = true;
-			Vec3 delta = this.getDeltaMovement();
-			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
-			this.setDeltaMovement(delta.x / 2.0 - diff.x, this.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
-		}
-	}
-	@Override
-	public void projectileKnockback(double strength, double x, double z) {
-		double knockbackRes = getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = this.getBlockingItem();
-		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
-			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
-			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
-		}
-
-		strength *= 1.0 - knockbackRes;
-		if (!(strength <= 0.0F)) {
-			this.hasImpulse = true;
-			Vec3 delta = this.getDeltaMovement();
-			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
-			this.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
+			MethodHandler.knockback(thisEntity, 0.4, e, f);
 		}
 	}
 
@@ -280,32 +238,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			return;
 		}
 		cir.setReturnValue(false);
-	}
-
-	@Override
-	public ItemStack getBlockingItem() {
-		LivingEntity thisLivingEntity = ((LivingEntity) (Object)this);
-		if (thisLivingEntity.isUsingItem() && !thisLivingEntity.getUseItem().isEmpty()) {
-			if (thisLivingEntity.getUseItem().getUseAnimation() == UseAnim.BLOCK) {
-				return thisLivingEntity.getUseItem();
-			}
-		} else if ((thisLivingEntity.onGround() && thisLivingEntity.isCrouching() && this.hasEnabledShieldOnCrouch() || thisLivingEntity.isPassenger()) && this.hasEnabledShieldOnCrouch()) {
-			for(InteractionHand hand : InteractionHand.values()) {
-				ItemStack var1 = thisLivingEntity.getItemInHand(hand);
-				Item blockingItem = var1.getItem();
-				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && thisLivingEntity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !this.isItemOnCooldown(var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
-					return var1;
-				}
-			}
-		}
-
-		return ItemStack.EMPTY;
-	}
-
-	@Override
-	public boolean isItemOnCooldown(ItemStack var1) {
-		return false;
 	}
 
 	@Override

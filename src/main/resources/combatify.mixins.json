@@ -5,10 +5,8 @@
   "plugin": "net.atlas.combatify.mixin.MixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "AABBMixin",
     "AnvilMenuMixin",
     "AttackDamageMobEffectMixin",
-    "AttributeInstanceMixin",
     "AxeItemMixin",
     "BowItemMixin",
     "ClientboundUpdateAttributesPacketMixin",
@@ -19,6 +17,7 @@
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
     "EnchantmentsMixin",
+    "EntityMixin",
     "FishingHookMixin",
     "FoodDataMixin",
     "ForgeModMixin",

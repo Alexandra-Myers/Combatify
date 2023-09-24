@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -55,11 +56,10 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
 				? abstractClientPlayer.getMainArm()
 				: abstractClientPlayer.getMainArm().getOpposite();
-		LivingEntityExtensions livingEntityExtensions = ((LivingEntityExtensions)abstractClientPlayer);
 
 		this.humanoidArm = humanoidArm;
 		if (Combatify.CONFIG.swordBlocking.get()) {
-			if (abstractClientPlayer.getUsedItemHand() == interactionHand && ((ItemExtensions)livingEntityExtensions.getBlockingItem().getItem()).getBlockingType().isToolBlocker()) {
+			if (abstractClientPlayer.getUsedItemHand() == interactionHand && ((ItemExtensions)MethodHandler.getBlockingItem(abstractClientPlayer).getItem()).getBlockingType().isToolBlocker()) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform2(poseStack, humanoidArm);
@@ -96,21 +96,15 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	private void modifyBowCode1(PoseStack instance, float x, float y, float z) {
 		assert minecraft.player != null;
 		float r = (float)itemStack.getUseDuration() - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
-		float l = r / 20.0F;
-		l = (l * l + l * 2.0F) / 3.0F;
-		if (l > 1.0F) {
-			l = 1.0F;
-		}
 		float m = Mth.sin((r - 0.1F) * 1.3F);
-		Item item = itemStack.getItem();
-		float n = (item instanceof IBowItem ? ((IBowItem)item).getFatigueForTime((int) r) : l) - 0.1F;
+		float n = MethodHandler.getFatigueForTime((int) r) - 0.1F;
 		float o = m * n;
 		instance.translate(o * 0.0F, o * 0.004F, o * 0.0F);
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
 		assert minecraft.player != null;
-		if(((LivingEntityExtensions)minecraft.player).getBlockingItem().getItem() instanceof ItemExtensions shieldItem && shieldItem.getBlockingType().isToolBlocker() && !shieldItem.getBlockingType().isEmpty()) {
+		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions shieldItem && shieldItem.getBlockingType().isToolBlocker() && !shieldItem.getBlockingType().isEmpty()) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();

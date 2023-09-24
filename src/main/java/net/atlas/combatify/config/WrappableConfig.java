@@ -39,16 +39,17 @@ public class WrappableConfig extends MidnightConfig {
 	@Entry(isSlider = true, min = 1, max = 1000) public static int instantHealthBonus = 6;
 	@Entry(isSlider = true, min = 1, max = 200) public static int shieldChargePercentage = 195;
 	@Comment(centered = true) public static Comment Doubles;
-	@Entry(isSlider = true, min = 0, max = 10) public static double shieldDisableTime = 1.6F;
-	@Entry(isSlider = true, min = 0, max = 10) public static double cleavingDisableTime = 0.5F;
-	@Entry(isSlider = true, min = 0, max = 10) public static double defenderDisableReduction = 0.5F;
+	@Entry(isSlider = true, min = 0, max = 10) public static double shieldDisableTime = 1.6;
+	@Entry(isSlider = true, min = 0, max = 10) public static double cleavingDisableTime = 0.5;
+	@Entry(isSlider = true, min = 0, max = 10) public static double defenderDisableReduction = 0.5;
 	@Entry(isSlider = true, min = 0, max = 40) public static double snowballDamage = 0;
 	@Entry(isSlider = true, min = 0, max = 40) public static double eggDamage = 0;
-	@Entry(isSlider = true, min = 0, max = 4) public static double bowUncertainty = 0.25F;
-	@Entry(isSlider = true, min = 0, max = 20) public static double baseHandAttackSpeed = 2.5F;
+	@Entry(isSlider = true, min = 0, max = 4) public static double bowUncertainty = 0.25;
+	@Entry(isSlider = true, min = 0, max = 20) public static double baseHandAttackSpeed = 2.5;
 	@Entry(isSlider = true, min = -1, max = 17.5) public static double slowestToolAttackSpeed = -1;
-	@Entry(isSlider = true, min = -1, max = 17.5) public static double slowToolAttackSpeed = -0.5F;
-	@Entry(isSlider = true, min = -1, max = 17.5) public static double fastToolAttackSpeed = 0.5F;
+	@Entry(isSlider = true, min = -1, max = 17.5) public static double slowToolAttackSpeed = -0.5;
+	@Entry(isSlider = true, min = -1, max = 17.5) public static double fastToolAttackSpeed = 0.5;
 	@Entry(isSlider = true, min = -1, max = 17.5) public static double fastestToolAttackSpeed = 1;
+	@Entry(isSlider = true, min = 0, max = 5) public static double minHitboxSize = 0.9;
 
 }

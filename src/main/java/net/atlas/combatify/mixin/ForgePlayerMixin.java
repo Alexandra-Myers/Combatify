@@ -1,6 +1,6 @@
 package net.atlas.combatify.mixin;
 
-import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.extensions.IForgePlayer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +18,6 @@ public interface ForgePlayerMixin {
 	 */
 	@Overwrite(remap = false)
 	default double getEntityReach() {
-		return ((PlayerExtensions)self()).getCurrentAttackReach(0.0F);
+		return MethodHandler.getCurrentAttackReach(self(),0.0F);
 	}
 }

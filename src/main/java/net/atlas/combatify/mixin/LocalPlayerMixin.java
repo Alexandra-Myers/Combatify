@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -49,7 +50,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if(thisPlayer.onGround() && this.hasEnabledShieldOnCrouch()) {
 			for (InteractionHand interactionHand : InteractionHand.values()) {
 				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
-					ItemStack itemStack = ((LivingEntityExtensions) this.thisPlayer).getBlockingItem();
+					ItemStack itemStack = MethodHandler.getBlockingItem(thisPlayer);
 
 					Item blockingItem = itemStack.getItem();
 					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
@@ -89,7 +90,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
 	private void isShieldCrouching(Input instance, boolean b, float v) {
-		Item item = ((LivingEntityExtensions) thisPlayer).getBlockingItem().getItem();
+		Item item = MethodHandler.getBlockingItem(thisPlayer).getItem();
 		if (thisPlayer.getCooldowns().isOnCooldown(item)) {
 			instance.tick(b, v);
 		} else if(((ItemExtensions) item).getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
@@ -112,12 +113,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			float var3 = this.oAttackAnim + var2 * tickDelta;
 			return var3 > 0.4F && this.getAttackStrengthScale(tickDelta) < 1.95F ? 0.4F + 0.6F * (float)Math.pow((var3 - 0.4F) / 0.6F, 4.0) : var3;
 		}
-		float f = this.attackAnim - this.oAttackAnim;
-		if (f < 0.0F) {
-			++f;
-		}
-
-		return this.oAttackAnim + f * tickDelta;
+		return super.getAttackAnim(tickDelta);
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.AABB;
@@ -27,7 +26,7 @@ public class CombatUtil {
      */
     public static boolean allowReach(ServerPlayer attacker, ServerPlayer target) {
         Vec3 eyePosition = attacker.getEyePosition(0);
-        double reach = ((PlayerExtensions)attacker).getCurrentAttackReach(1F);
+        double reach = MethodHandler.getCurrentAttackReach(attacker, 1F);
 		if (!Combatify.unmoddedPlayers.contains(attacker.getUUID()))
 			reach += 0.25;
         if (!attacker.hasLineOfSight(target)) reach = 2.5;
@@ -45,7 +44,7 @@ public class CombatUtil {
     }
 
     private static boolean canReach(Vec3 eyePosition, AABB boundingBox, double reach) {
-        return eyePosition.distanceToSqr(((AABBExtensions)boundingBox).getNearestPointTo(eyePosition)) < reach;
+        return eyePosition.distanceToSqr(MethodHandler.getNearestPointTo(boundingBox, eyePosition)) < reach;
     }
 
     /**

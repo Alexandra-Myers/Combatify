@@ -18,10 +18,6 @@ public interface PlayerExtensions {
 		return false;
 	}
 	boolean getMissedAttackRecovery();
-	int getAttackStrengthStartValue();
-	double getCurrentAttackReach(float baseTime);
-
-	double getSquaredCurrentAttackReach(float baseTime);
 
     void attackAir();
 }

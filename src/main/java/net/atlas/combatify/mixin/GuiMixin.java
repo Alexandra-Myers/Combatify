@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.ClientMethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Gui;
@@ -16,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,7 +45,7 @@ public abstract class GuiMixin {
 	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"))
 	private void renderCrosshair(GuiGraphics guiGraphics, CallbackInfo ci) {
 		Options options = this.minecraft.options;
-		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
+		ClientMethodHandler.redirectResult(minecraft.hitResult);
 		if (options.getCameraType().isFirstPerson()) {
 			assert minecraft.gameMode != null;
 			assert minecraft.player != null;
@@ -112,7 +112,7 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-		((IMinecraft)minecraft).redirectResult(minecraft.hitResult);
+		ClientMethodHandler.redirectResult(minecraft.hitResult);
 		int n = this.screenHeight - 20;
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT) {
@@ -124,11 +124,7 @@ public abstract class GuiMixin {
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && g >= maxIndicator) {
-			Vec3 vec3 = minecraft.player.getEyePosition(0.0F);
-			Vec3 vec31 = ((AABBExtensions)this.minecraft.crosshairPickEntity.getBoundingBox()).getNearestPointTo(vec3);
-			double dist = vec3.distanceTo(vec31);
-			bl = dist <= ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F);
-			bl &= this.minecraft.crosshairPickEntity.isAlive();
+			bl = this.minecraft.crosshairPickEntity.isAlive();
 		}
 		if (bl) {
 			guiGraphics.blit(GUI_ICONS_LOCATION, o, n, 0, 130, 18, 18);

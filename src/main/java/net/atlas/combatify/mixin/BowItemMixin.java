@@ -2,7 +2,6 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.IBowItem;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.*;
@@ -11,8 +10,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.atlas.combatify.util.MethodHandler.getFatigueForTime;
+
 @Mixin(BowItem.class)
-public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowItem {
+public abstract class BowItemMixin extends ProjectileWeaponItem {
 
 	private BowItemMixin(Properties properties) {
 		super(properties);
@@ -25,14 +26,5 @@ public abstract class BowItemMixin extends ProjectileWeaponItem implements IBowI
 	public void releaseUsing1(ItemStack itemStack, Level level, LivingEntity livingEntity, int i, CallbackInfo ci, @Local(ordinal = 0) final AbstractArrow abstractArrow, @Local(ordinal = 1) final int time) {
 		if(getFatigueForTime(time) > 0.5F)
 			abstractArrow.setCritArrow(false);
-	}
-
-	@Override
-	public float getFatigueForTime(int f) {
-		if (f < 60) {
-			return 0.5F;
-		} else {
-			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
-		}
 	}
 }

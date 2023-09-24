@@ -3,8 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.CombatUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPingPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -15,13 +14,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -79,7 +75,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				public void run() {
 					Entity camera = getCamera();
 					if (camera != null) {
-						adjustHitResults(pickResult(camera));
+						adjustHitResults(MethodHandler.pickResult(player, camera));
 					}
 				}
 			}, 0, 1);
@@ -143,6 +139,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		}
 		ci.cancel();
 	}
+	@Unique
 	public void handleInteract(Entity entity, boolean hit) {
 		if (retainAttack) {
 			if(hit)
@@ -169,7 +166,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			if (!serverLevel.getWorldBorder().isWithinBounds(entity.blockPosition())) {
 				return;
 			}
-			double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
+			double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 			d *= d;
 			if(!player.hasLineOfSight(entity)) {
 				d = 6.25;
@@ -177,7 +174,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 
 			AABB aABB = entity.getBoundingBox();
 			Vec3 eyePos = player.getEyePosition(0.0F);
-			double dist = eyePos.distanceToSqr(((AABBExtensions)aABB).getNearestPointTo(eyePos));
+			double dist = eyePos.distanceToSqr(MethodHandler.getNearestPointTo(aABB, eyePos));
 			if (entity instanceof ServerPlayer target) {
 				if (CombatUtil.allowReach(player, target)) {
 					dist = 0;
@@ -202,70 +199,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			}
 		}
 
-	}
-	public final HitResult redirectResult(HitResult instance) {
-		if(instance.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockHitResult = (BlockHitResult)instance;
-			BlockPos blockPos = blockHitResult.getBlockPos();
-			boolean bl = !level().getBlockState(blockPos).canOcclude() && !level().getBlockState(blockPos).getBlock().hasCollision;
-			assert player != null;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getCurrentAttackReach(0.0F));
-			if (rayTraceResult != null && bl) {
-				return rayTraceResult;
-			} else {
-				return instance;
-			}
-		}
-		return instance;
-	}
-	@Override
-	public HitResult pickResult(Entity camera) {
-		double d = ((PlayerExtensions) player).getCurrentAttackReach(0.0F) + 2;
-		HitResult hitResult = camera.pick(d, 1, false);
-		Vec3 eyePosition = camera.getEyePosition(1.0F);
-		Vec3 viewVector = camera.getViewVector(1.0F);
-		boolean bl = false;
-		double e = d;
-		if (d > ((PlayerExtensions) player).getCurrentAttackReach(0.0F)) {
-			bl = true;
-		}
-
-		e *= e;
-		if (hitResult != null) {
-			e = hitResult.getLocation().distanceToSqr(eyePosition);
-		}
-		Vec3 vec32 = eyePosition.add(viewVector.x * d, viewVector.y * d, viewVector.z * d);
-		AABB aABB = camera.getBoundingBox().expandTowards(viewVector.scale(d)).inflate(1.0, 1.0, 1.0);
-		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(camera, eyePosition, vec32, aABB, (entityx) ->
-			!entityx.isSpectator() && entityx.isPickable(), e);
-		if (entityHitResult != null) {
-			Vec3 vec33 = entityHitResult.getLocation();
-			double h = eyePosition.distanceToSqr(vec33);
-			if (bl && h > ((PlayerExtensions) player).getSquaredCurrentAttackReach(0.0F)) {
-				hitResult = BlockHitResult.miss(vec33, Direction.getNearest(viewVector.x, viewVector.y, viewVector.z), BlockPos.containing(vec33));
-			} else if (h < e || hitResult == null) {
-				hitResult = entityHitResult;
-			}
-		}
-		hitResult = redirectResult(hitResult);
-		return hitResult;
-	}
-	@Nullable
-	public EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
-		Vec3 from = getEyePosition(partialTicks);
-		Vec3 look = getViewVector(partialTicks);
-		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
-
-		return ProjectileUtil.getEntityHitResult(
-			player.level(),
-			player,
-			from,
-			to,
-			new AABB(from, to),
-			EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
-				&& e.isPickable()
-				&& e instanceof LivingEntity)
-		);
 	}
 	@Override
 	public void adjustHitResults(HitResult newValue) {
@@ -328,7 +261,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public void getPresentResult() {
 		Entity camera = getCamera();
 		if (camera != null) {
-			oldHitResults.set(0, pickResult(camera));
+			oldHitResults.set(0, MethodHandler.pickResult(player, camera));
 		}
 	}
 }

@@ -9,6 +9,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -29,7 +30,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -166,11 +166,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		boolean bl = livingEntity != null;
 		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl)
 			attackDamageBonus.set(CustomEnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity));
-		attackDamage.set((float) ((IAttributeInstance) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE))).calculateValue(attackDamageBonus.get()));
+		attackDamage.set((float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus.get()));
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
-		currentAttackReach = (float) this.getCurrentAttackReach(1.0F);
+		currentAttackReach = (float) MethodHandler.getCurrentAttackReach(player,1.0F);
 		return 1.0F;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
@@ -204,7 +204,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f) {
-		((LivingEntityExtensions) instance).newKnockback(d, e, f);
+		MethodHandler.knockback(instance, d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
@@ -229,7 +229,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
 			if (attackDamage > 0.0F && this.checkSweepAttack()) {
-				float var2 = (float) this.getCurrentAttackReach(1.0F);
+				float var2 = (float) MethodHandler.getCurrentAttackReach(player,1.0F);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
@@ -319,43 +319,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 			float var9 = var2 + var8.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(var8) < (var9 * var9)) {
-				((LivingEntityExtensions)var8).newKnockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+				MethodHandler.knockback(var8, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
 				var8.hurt(damageSources().playerAttack(player), sweepingDamageRatio);
 			}
 		}
 	}
 
 	@Override
-	public boolean isItemOnCooldown(ItemStack var1) {
-		return player.getCooldowns().isOnCooldown(var1.getItem());
-	}
-
-	@Override
-	public double getCurrentAttackReach(float baseTime) {
-		@Nullable final var attackRange = this.getAttribute(ForgeMod.ENTITY_REACH.get());
-		double chargedBonus = 0;
-		double baseAttackRange = Combatify.CONFIG.attackReach.get() ? 0 : 0.5;
-		float strengthScale = getAttackStrengthScale(baseTime);
-		if (strengthScale > 1.95F && !player.isCrouching()) {
-			Item item = getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
-		}
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
-	}
-
-	@Override
-	public double getSquaredCurrentAttackReach(float baseTime) {
-		final var attackRange = getCurrentAttackReach(baseTime);
-		return attackRange * attackRange;
-	}
-
-	@Override
 	public boolean getMissedAttackRecovery() {
 		return missedAttackRecovery;
-	}
-
-	@Override
-	public int getAttackStrengthStartValue() {
-		return attackStrengthStartValue;
 	}
 }
