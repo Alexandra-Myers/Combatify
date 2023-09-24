@@ -3,10 +3,10 @@ package net.atlas.combatify.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.AABBExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundPongPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -62,13 +62,13 @@ public abstract class ServerGamePacketMixin {
 		}
 		// If target is not a player do vanilla code
 		Vec3 vec3 = player.getEyePosition(0.0F);
-		return vec3.distanceToSqr(((AABBExtensions)instance).getNearestPointTo(vec3));
+		return vec3.distanceToSqr(MethodHandler.getNearestPointTo(instance, vec3));
 	}
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "handleInteract",
 			at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;MAX_INTERACTION_DISTANCE:D",opcode = Opcodes.GETSTATIC))
 	public double getActualAttackRange(double original, @Local(ordinal = 0) Entity entity) {
-		double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
+		double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 		d *= d;
 		if(!player.hasLineOfSight(entity)) {
 			d = 6.25;

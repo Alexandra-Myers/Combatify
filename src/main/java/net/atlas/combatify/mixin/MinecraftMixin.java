@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.ClientMethodHandler;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
@@ -11,14 +13,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.*;
@@ -62,10 +59,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	protected abstract boolean startAttack();
 
 	@Shadow
-	@org.jetbrains.annotations.Nullable
-	public Entity crosshairPickEntity;
-
-	@Shadow
 	public int missTime;
 
 	@Shadow
@@ -81,7 +74,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
-		assert player != null;
 		if (screen != null) {
 			this.retainAttack = false;
 		}
@@ -93,33 +85,35 @@ public abstract class MinecraftMixin implements IMinecraft {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 0))
 	public boolean allowBlockHitting(boolean original) {
 		if (!original) return false;
-		assert player != null;
-		ItemExtensions item = ((ItemExtensions) player.getUseItem().getItem());
-		boolean bl = item.getBlockingType().canBlockHit() && !item.getBlockingType().isEmpty();
-		if(bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
-			assert hitResult != null;
-			if (hitResult.getType() == HitResult.Type.BLOCK) {
-				startAttack();
+		if (player != null) {
+			ItemExtensions item = ((ItemExtensions) player.getUseItem().getItem());
+			boolean bl = item.getBlockingType().canBlockHit() && !item.getBlockingType().isEmpty();
+			if (bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
+				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
+					startAttack();
+				}
 			}
+			return bl;
 		}
-		return bl;
+		return true;
 	}
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 2))
 	public void checkIfCrouch(CallbackInfo ci) {
-		assert player != null;
-		ItemExtensions item = (ItemExtensions) ((LivingEntityExtensions)player).getBlockingItem().getItem();
-		if(((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
-			while(options.keyUse.consumeClick()) {
-				startUseItem();
-			}
-			while(options.keyAttack.consumeClick()) {
-				startAttack();
+		if (player != null) {
+			ItemExtensions item = (ItemExtensions) MethodHandler.getBlockingItem(player).getItem();
+			if (((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
+				while (options.keyUse.consumeClick()) {
+					startUseItem();
+				}
+				while (options.keyAttack.consumeClick()) {
+					startAttack();
+				}
 			}
 		}
 	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
-		Item blockingItem = ((LivingEntityExtensions)player).getBlockingItem().getItem();
+		Item blockingItem = MethodHandler.getBlockingItem(player).getItem();
 		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
 		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || !player.onGround()) {
 			instance.releaseUsingItem(player);
@@ -131,11 +125,11 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance) {
-		assert hitResult != null;
-		HitResult newResult = redirectResult(hitResult);
-		this.hitResult = newResult == null ? hitResult : newResult;
-		assert this.player != null;
-		if (!((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
+		if(hitResult != null)
+			ClientMethodHandler.redirectResult(hitResult);
+		if (player == null)
+			return startAttack();
+		if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
@@ -161,76 +155,34 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer player) {
-		assert gameMode != null;
-		((IPlayerGameMode)gameMode).swingInAir(player);
-	}
-	@Override
-	public final HitResult redirectResult(HitResult instance) {
-		if(instance.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockHitResult = (BlockHitResult)instance;
-			BlockPos blockPos = blockHitResult.getBlockPos();
-			assert level != null;
-			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
-			assert player != null;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, ((PlayerExtensions)player).getCurrentAttackReach(0.0F));
-			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
-			if (entity != null && bl) {
-				crosshairPickEntity = entity;
-				hitResult = rayTraceResult;
-				return hitResult;
-			} else {
-				return instance;
-			}
-
+		if (gameMode != null) {
+			((IPlayerGameMode) gameMode).swingInAir(player);
 		}
-		return instance;
 	}
 	@Unique
 	@Override
 	public final void startUseItem(InteractionHand interactionHand) {
-		assert gameMode != null;
-		if (!gameMode.isDestroying()) {
+		if (gameMode != null && !gameMode.isDestroying()) {
 			this.rightClickDelay = 4;
-			assert this.player != null;
-			if (!this.player.isHandsBusy()) {
+			if (player != null && !this.player.isHandsBusy()) {
 				if (this.hitResult == null) {
 					LOGGER.warn("Null returned as 'hitResult', this shouldn't happen!");
 				}
-					ItemStack itemStack = this.player.getItemInHand(interactionHand);
-					if (!itemStack.isEmpty()) {
-						this.gameMode.useItem(this.player, interactionHand);
-					}
+				ItemStack itemStack = this.player.getItemInHand(interactionHand);
+				if (!itemStack.isEmpty()) {
+					this.gameMode.useItem(this.player, interactionHand);
 				}
+			}
 		}
-	}
-	@Nullable
-	@Override
-	public EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
-		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
-
-		return ProjectileUtil.getEntityHitResult(
-				player.level(),
-				player,
-				from,
-				to,
-				new AABB(from, to),
-				EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
-				&& e.isPickable()
-				&& e instanceof LivingEntity)
-		);
 	}
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
-		assert hitResult != null;
-		redirectResult(hitResult);
+		ClientMethodHandler.redirectResult(hitResult);
 		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
 		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
 		if (missTime <= 0) {
-			assert this.player != null;
-			if (!this.player.isUsingItem()) {
+			if (player != null && !this.player.isUsingItem()) {
 				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
 					this.retainAttack = false;
 				} else if (bl1 && ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && bl2) {

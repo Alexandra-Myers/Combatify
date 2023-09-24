@@ -163,7 +163,9 @@ public abstract class ItemStackMixin {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand()).getItem();
 		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original == InteractionResult.PASS) {
-			holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
+			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+				holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
+			}
 		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
@@ -187,7 +189,9 @@ public abstract class ItemStackMixin {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = player.getItemInHand(hand).getItem();
 		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {
-			holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
+			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+				holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
+			}
 		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);

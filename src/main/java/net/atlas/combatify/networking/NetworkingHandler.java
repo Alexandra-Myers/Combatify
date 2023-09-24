@@ -7,6 +7,7 @@ import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
@@ -21,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -54,7 +56,7 @@ public class NetworkingHandler {
 			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition())) {
 				return;
 			}
-			double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
+			double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 			d *= d;
 			if(!player.hasLineOfSight(player)) {
 				d = 6.25;
@@ -62,7 +64,7 @@ public class NetworkingHandler {
 
 			AABB aABB = player.getBoundingBox();
 			Vec3 eyePos = player.getEyePosition(0.0F);
-			eyePos.distanceToSqr(((AABBExtensions) aABB).getNearestPointTo(eyePos));
+			eyePos.distanceToSqr(MethodHandler.getNearestPointTo(aABB, eyePos));
 			double dist = 0;
 			if (dist < d) {
 				((PlayerExtensions)player).attackAir();
@@ -224,6 +226,10 @@ public class NetworkingHandler {
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}
+			MobEffects.DAMAGE_BOOST.getAttributeModifiers().remove(Attributes.ATTACK_DAMAGE);
+			MobEffects.DAMAGE_BOOST.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
+			MobEffects.WEAKNESS.getAttributeModifiers().remove(Attributes.ATTACK_DAMAGE);
+			MobEffects.WEAKNESS.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 		});
 	}
 	public record ItemConfigPacket(ItemConfig config) implements FabricPacket {

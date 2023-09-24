@@ -2,7 +2,7 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -20,7 +20,7 @@ public class MobMixin {
 	}
 	@Redirect(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f) {
-		((LivingEntityExtensions) instance).newKnockback(d, e, f);
+		MethodHandler.knockback(instance, d, e, f);
 	}
 
 }

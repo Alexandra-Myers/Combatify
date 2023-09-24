@@ -75,6 +75,8 @@ public class CombatifyConfigModel {
 	public float fastToolAttackSpeed = 0.5F;
 	@RangeConstraint(min = -1, max = 17.5F)
 	public float fastestToolAttackSpeed = 1F;
+	@RangeConstraint(min = 0, max = 5)
+	public float minHitboxSize = 0.9F;
 	public static class UseDurations {
 	}
 	public static class Cooldowns {

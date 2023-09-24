@@ -1,10 +1,9 @@
 package net.atlas.combatify.mixin;
 
 import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
-import net.atlas.combatify.extensions.AABBExtensions;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CombatUtil;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,12 +25,12 @@ import java.util.Objects;
 public class ReachEntityAttributesMixin {
 	@Inject(method = "getAttackRange", at = @At(value = "HEAD"), cancellable = true)
 	private static void getRealReach(LivingEntity entity, double baseAttackRange, CallbackInfoReturnable<Double> cir) {
-		if (entity instanceof PlayerExtensions playerExtensions)
-			cir.setReturnValue(playerExtensions.getCurrentAttackReach(1.0F));
+		if (entity instanceof Player player)
+			cir.setReturnValue(MethodHandler.getCurrentAttackReach(player, 1.0F));
 	}
 	@Inject(method = "isWithinAttackRange", at = @At(value = "HEAD"), cancellable = true)
 	private static void getTrueReach(Player player, Entity entity, CallbackInfoReturnable<Boolean> cir) {
-		double d = ((PlayerExtensions)player).getCurrentAttackReach(1.0F) + 1;
+		double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 		d *= d;
 		if(!player.hasLineOfSight(entity)) {
 			d = 6.25;
@@ -39,7 +38,7 @@ public class ReachEntityAttributesMixin {
 
 		AABB aABB = entity.getBoundingBox();
 		Vec3 eyePos = player.getEyePosition(0.0F);
-		double dist = eyePos.distanceToSqr(((AABBExtensions)aABB).getNearestPointTo(eyePos));
+		double dist = eyePos.distanceToSqr(MethodHandler.getNearestPointTo(aABB, eyePos));
 		if (entity instanceof ServerPlayer target && player instanceof ServerPlayer attacker) {
 			if (CombatUtil.allowReach(attacker, target)) {
 				dist = 0;

@@ -83,7 +83,7 @@ public class SwordBlockingType extends BlockingType {
 	@Override
 	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		ItemStack itemStack = user.getItemInHand(hand);
-		if(Combatify.CONFIG.swordBlocking() && hand != InteractionHand.OFF_HAND) {
+		if(hand != InteractionHand.OFF_HAND) {
 			ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
 			if(oppositeStack.isEmpty()) {
 				if(user.isSprinting()) {

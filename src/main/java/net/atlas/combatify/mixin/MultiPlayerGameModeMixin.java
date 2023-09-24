@@ -6,9 +6,9 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -43,7 +43,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		require = 2, allow = 2, at = { @At(value = "CONSTANT", args = "floatValue=5.0F"), @At(value = "CONSTANT", args = "floatValue=4.5F") })
 	private float getActualReachDistance(final float reachDistance) {
 		if (minecraft.player != null) {
-			return (float) ((PlayerExtensions)minecraft.player).getCurrentAttackReach(0.0F) + 2;
+			return (float) MethodHandler.getCurrentAttackReach(minecraft.player, 0.0F) + 2;
 		}
 		return 4.5F;
 	}
