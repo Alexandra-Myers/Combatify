@@ -165,5 +165,6 @@
   "combatify.midnightconfig.slowestToolAttackSpeed": "Slowest Auto-Corrected Modded Weapon / Tool Speed Offset",
   "combatify.midnightconfig.slowToolAttackSpeed": "Slow Auto-Corrected Modded Weapon / Tool Speed Offset",
   "combatify.midnightconfig.fastToolAttackSpeed": "Fast Auto-Corrected Modded Weapon / Tool Speed Offset",
-  "combatify.midnightconfig.fastestToolAttackSpeed": "Fastest Auto-Corrected Modded Weapon / Tool Speed Offset"
+  "combatify.midnightconfig.fastestToolAttackSpeed": "Fastest Auto-Corrected Modded Weapon / Tool Speed Offset",
+  "combatify.midnightconfig.minHitboxSize": "Size which entity hitboxes cannot be lower than"
 }
