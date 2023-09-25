@@ -39,30 +39,18 @@ public class MethodHandler {
 		if(attributeInstance == null)
 			return damageBonus;
 		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
-		List<AttributeModifier> additionList = attributeInstance.getModifiers()
-			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.ADDITION)
-			.toList();
-		List<AttributeModifier> multiplyBaseList = attributeInstance.getModifiers()
-			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE)
-			.toList();
-		List<AttributeModifier> multiplyTotalList = attributeInstance.getModifiers()
-			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE)
-			.toList();
 
-		for(AttributeModifier attributeModifier : additionList) {
+		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
 			attributeInstanceBaseValue += attributeModifier.getAmount();
 		}
 
 		double withDamageBonus = attributeInstanceBaseValue + damageBonus;
 
-		for(AttributeModifier attributeModifier2 : multiplyBaseList) {
+		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
 			withDamageBonus += attributeInstanceBaseValue * attributeModifier2.getAmount();
 		}
 
-		for(AttributeModifier attributeModifier2 : multiplyTotalList) {
+		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
 			withDamageBonus *= 1.0 + attributeModifier2.getAmount();
 		}
 
