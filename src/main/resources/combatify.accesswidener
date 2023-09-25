@@ -45,3 +45,4 @@ accessible method net/minecraft/network/protocol/game/ServerboundInteractPacket 
 accessible class net/minecraft/resources/ResourceLocation$Dummy
 accessible field net/minecraft/server/network/ServerGamePacketListenerImpl LOGGER Lorg/slf4j/Logger;
 accessible field net/minecraft/client/main/Main LOGGER Lorg/slf4j/Logger;
+accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance getModifiersOrEmpty (Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Ljava/util/Collection;

@@ -25,21 +25,7 @@ import net.minecraft.world.phys.*;
 import net.minecraftforge.common.ForgeMod;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class MethodHandler {
-	public static AABB inflateBoundingBox(AABB boundingBox) {
-		double xAdjust = Math.max((Combatify.CONFIG.minHitboxSize.get() - boundingBox.getXsize()) * 0.5, 0);
-		double yAdjust = Math.max((Combatify.CONFIG.minHitboxSize.get() - boundingBox.getYsize()) * 0.5, 0);
-		double zAdjust = Math.max((Combatify.CONFIG.minHitboxSize.get() - boundingBox.getZsize()) * 0.5, 0);
-		boundingBox = boundingBox.inflate(xAdjust, yAdjust, zAdjust);
-		return boundingBox;
-	}
-	public static float inflate(float f) {
-		float adjust = (float) Math.max(Combatify.CONFIG.minHitboxSize.get() - f, 0);
-		f += adjust;
-		return f;
-	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
 		double y = Mth.clamp(vec3.y, box.minY, box.maxY);
@@ -51,30 +37,18 @@ public class MethodHandler {
 		if(attributeInstance == null)
 			return damageBonus;
 		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
-		List<AttributeModifier> additionList = attributeInstance.getModifiers()
-			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.ADDITION)
-			.toList();
-		List<AttributeModifier> multiplyBaseList = attributeInstance.getModifiers()
-			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE)
-			.toList();
-		List<AttributeModifier> multiplyTotalList = attributeInstance.getModifiers()
-			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE)
-			.toList();
 
-		for(AttributeModifier attributeModifier : additionList) {
+		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
 			attributeInstanceBaseValue += attributeModifier.getAmount();
 		}
 
 		double withDamageBonus = attributeInstanceBaseValue + damageBonus;
 
-		for(AttributeModifier attributeModifier2 : multiplyBaseList) {
+		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
 			withDamageBonus += attributeInstanceBaseValue * attributeModifier2.getAmount();
 		}
 
-		for(AttributeModifier attributeModifier2 : multiplyTotalList) {
+		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
 			withDamageBonus *= 1.0 + attributeModifier2.getAmount();
 		}
 
