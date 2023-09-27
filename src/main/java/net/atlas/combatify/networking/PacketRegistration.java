@@ -10,8 +10,8 @@ public class PacketRegistration {
 	public static final SimpleChannel MAIN = NetworkRegistry.newSimpleChannel(
 		id("combatify"),
 		() -> PROTOCOL_VERSION,
-		NetworkRegistry.acceptMissingOr(PROTOCOL_VERSION::equals),
-		PROTOCOL_VERSION::equals
+		PROTOCOL_VERSION::equals,
+		NetworkRegistry.acceptMissingOr(PROTOCOL_VERSION::equals)
 	);
 
 	public void init() {
