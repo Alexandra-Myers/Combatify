@@ -94,7 +94,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double z2 = this.getZ() - target.getZ();
 		Item blockingItem = MethodHandler.getBlockingItem(target).getItem();
 		double piercingLevel = 0;
-		Item item = ((LivingEntity)(Object)this).getMainHandItem().getItem();
+		Item item = thisEntity.getMainHandItem().getItem();
 		if (item instanceof PiercingItem piercingItem) {
 			piercingLevel += piercingItem.getPiercingLevel();
 		}
@@ -107,7 +107,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			if (piercingLevel > 0) {
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
 			}
-			float damage = Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * Combatify.CONFIG.cleavingDisableTime();
+			float damage = Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(thisEntity) * Combatify.CONFIG.cleavingDisableTime();
 			if(Combatify.CONFIG.defender()) {
 				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction();
 			}
@@ -119,7 +119,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			ci.cancel();
 			return;
 		}
-		MethodHandler.knockback(thisEntity, 0.5, x2, z2);
+		MethodHandler.knockback(target, 0.5, x2, z2);
 		MethodHandler.knockback(thisEntity, 0.5, x, z);
 		ci.cancel();
 	}

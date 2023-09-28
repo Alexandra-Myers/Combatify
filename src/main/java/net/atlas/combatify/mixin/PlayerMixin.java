@@ -139,7 +139,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				if (item != tieredShieldItem)
 					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
 		player.stopUsingItem();
-		player.level().broadcastEntityEvent(player, (byte)30);
+		player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F);
 		return true;
 	}
 
