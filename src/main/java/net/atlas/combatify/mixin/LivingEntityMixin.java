@@ -120,8 +120,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			ci.cancel();
 			return;
 		}
-		MethodHandler.knockback(thisEntity, 0.5, x2, z2);
-		MethodHandler.knockback(target, 0.5, x, z);
+		MethodHandler.knockback(target, 0.5, x2, z2);
+		MethodHandler.knockback(thisEntity, 0.5, x, z);
 		ci.cancel();
 	}
 	@Override
