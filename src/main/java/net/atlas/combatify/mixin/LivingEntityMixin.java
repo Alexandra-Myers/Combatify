@@ -92,22 +92,23 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double z = target.getZ() - this.getZ();
 		double x2 = this.getX() - target.getX();
 		double z2 = this.getZ() - target.getZ();
-		Item blockingItem = MethodHandler.getBlockingItem(target).getItem();
+		ItemStack blockingStack = MethodHandler.getBlockingItem(target);
+		Item blockingItem = blockingStack.getItem();
 		double piercingLevel = 0;
-		Item item = ((LivingEntity)(Object)this).getMainHandItem().getItem();
+		Item item = thisEntity.getMainHandItem().getItem();
 		if (item instanceof PiercingItem piercingItem) {
 			piercingLevel += piercingItem.getPiercingLevel();
 		}
 		if (Combatify.CONFIG.piercer.get()) {
 			piercingLevel += CustomEnchantmentHelper.getPierce((LivingEntity) (Object) this) * 0.1;
 		}
-		boolean bl = item instanceof AxeItem || piercingLevel > 0;
+		boolean bl = thisEntity.getMainHandItem().canDisableShield(blockingStack, target, thisEntity) || piercingLevel > 0;
 		ItemExtensions shieldItem = (ItemExtensions) blockingItem;
 		if (bl && shieldItem.getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0) {
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
 			}
-			float damage = Combatify.CONFIG.shieldDisableTime.get().floatValue() + (float) CustomEnchantmentHelper.getChopping(((LivingEntity) (Object)this)) * Combatify.CONFIG.cleavingDisableTime.get().floatValue();
+			float damage = Combatify.CONFIG.shieldDisableTime.get().floatValue() + (float) CustomEnchantmentHelper.getChopping(thisEntity) * Combatify.CONFIG.cleavingDisableTime.get().floatValue();
 			if(Combatify.CONFIG.defender.get()) {
 				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction.get();
 			}
@@ -120,7 +121,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			return;
 		}
 		MethodHandler.knockback(thisEntity, 0.5, x2, z2);
-		MethodHandler.knockback(thisEntity, 0.5, x, z);
+		MethodHandler.knockback(target, 0.5, x, z);
 		ci.cancel();
 	}
 	@Override

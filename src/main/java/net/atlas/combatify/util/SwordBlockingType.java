@@ -43,7 +43,6 @@ public class SwordBlockingType extends BlockingType {
 				if (entity instanceof LivingEntity) {
 					instance.blockUsingShield((LivingEntity) entity);
 				}
-				bl.set(true);
 			}
 
 			amount.set(amount.get() - g.get());

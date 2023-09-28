@@ -22,7 +22,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.*;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.common.ToolActions;
+import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class MethodHandler {
@@ -62,41 +65,53 @@ public class MethodHandler {
 		}
 	}
 	public static void knockback(LivingEntity entity, double strength, double x, double z) {
-		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = getBlockingItem(entity);
-		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
-			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
-			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
-		}
+		LivingKnockBackEvent event = ForgeHooks.onLivingKnockBack(entity, (float)strength, x, z);
+		if (!event.isCanceled()) {
+			strength = event.getStrength();
+			x = event.getRatioX();
+			z = event.getRatioZ();
+			double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack blockingItem = getBlockingItem(entity);
+			if (!blockingItem.isEmpty()) {
+				BlockingType blockingType = ((ItemExtensions) blockingItem.getItem()).getBlockingType();
+				if (!blockingType.defaultKbMechanics())
+					knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
+				else
+					knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
+			}
 
-		strength *= 1.0 - knockbackRes;
-		if (!(strength <= 0.0F)) {
-			entity.hasImpulse = true;
-			Vec3 delta = entity.getDeltaMovement();
-			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
-			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
+			strength *= 1.0 - knockbackRes;
+			if (!(strength <= 0.0F)) {
+				entity.hasImpulse = true;
+				Vec3 delta = entity.getDeltaMovement();
+				Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
+				entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
+			}
 		}
 	}
 	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
-		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = getBlockingItem(entity);
-		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
-			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
-			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
-		}
+		LivingKnockBackEvent event = ForgeHooks.onLivingKnockBack(entity, (float)strength, x, z);
+		if (!event.isCanceled()) {
+			strength = event.getStrength();
+			x = event.getRatioX();
+			z = event.getRatioZ();
+			double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+			ItemStack blockingItem = getBlockingItem(entity);
+			if (!blockingItem.isEmpty()) {
+				BlockingType blockingType = ((ItemExtensions) blockingItem.getItem()).getBlockingType();
+				if (!blockingType.defaultKbMechanics())
+					knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
+				else
+					knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
+			}
 
-		strength *= 1.0 - knockbackRes;
-		if (!(strength <= 0.0F)) {
-			entity.hasImpulse = true;
-			Vec3 delta = entity.getDeltaMovement();
-			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
-			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
+			strength *= 1.0 - knockbackRes;
+			if (!(strength <= 0.0F)) {
+				entity.hasImpulse = true;
+				Vec3 delta = entity.getDeltaMovement();
+				Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
+				entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
+			}
 		}
 	}
 	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
@@ -131,15 +146,16 @@ public class MethodHandler {
 	}
 	public static ItemStack getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
-			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK) {
+			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK || entity.getUseItem().canPerformAction(ToolActions.SHIELD_BLOCK)) {
 				return entity.getUseItem();
 			}
 		} else if ((entity.onGround() && entity.isCrouching() && ((LivingEntityExtensions) entity).hasEnabledShieldOnCrouch() || entity.isPassenger()) && ((LivingEntityExtensions)entity).hasEnabledShieldOnCrouch()) {
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = entity.getItemInHand(hand);
 				Item blockingItem = var1.getItem();
+				boolean canBlock = var1.getUseAnimation() == UseAnim.BLOCK || var1.canPerformAction(ToolActions.SHIELD_BLOCK);
 				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
+				if (!var1.isEmpty() && canBlock && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
 					return var1;
 				}
 			}
