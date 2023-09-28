@@ -32,9 +32,7 @@ public class SwordBlockingType extends BlockingType {
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
 		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
 			boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
-			if (source.is(DamageTypeTags.IS_EXPLOSION)) {
-				g.set(Math.min(amount.get(), 10));
-			} else if (blocked) {
+			if (blocked) {
 				((LivingEntityExtensions)instance).setIsParryTicker(0);
 				((LivingEntityExtensions)instance).setIsParry(true);
 				float actualStrength = this.getShieldBlockDamageValue(blockingItem);
@@ -43,6 +41,9 @@ public class SwordBlockingType extends BlockingType {
 				if (entity instanceof LivingEntity) {
 					instance.blockUsingShield((LivingEntity) entity);
 				}
+			} else {
+				float actualStrength = this.getShieldBlockDamageValue(blockingItem);
+				g.set(amount.get() * actualStrength);
 			}
 
 			amount.set(amount.get() - g.get());
