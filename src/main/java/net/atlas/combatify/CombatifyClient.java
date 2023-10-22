@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import eu.midnightdust.lib.config.MidnightConfig;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.networking.ClientPacketInfo;
 import net.atlas.combatify.util.ArrayListExtensions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
@@ -16,12 +17,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.network.NetworkDirection;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -65,6 +68,7 @@ public class CombatifyClient {
 			value -> {
 			}
 	);
+	private static final ArrayListExtensions<ClientPacketInfo<?>> scheduledPackets = new ArrayListExtensions<>();
 	@SubscribeEvent
 	public static void modelLayerLocationInit(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		if (CONFIG.tieredShields.get()) {
@@ -95,5 +99,12 @@ public class CombatifyClient {
 				event.getEntries().putAfter(new ItemStack(arrayListExtensions.get(i - 1)), new ItemStack(arrayListExtensions.get(i)), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
 			}
 		}
+	}
+	@SubscribeEvent
+	public static void clientJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+		scheduledPackets.forEach(packet -> packet.channel().sendTo(packet.message(), event.getConnection(), NetworkDirection.PLAY_TO_SERVER));
+	}
+	public static void schedulePacket(ClientPacketInfo<?> info) {
+		scheduledPackets.add(info);
 	}
 }

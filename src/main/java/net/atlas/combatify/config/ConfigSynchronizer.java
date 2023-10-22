@@ -5,8 +5,10 @@ import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.mixin.ServerGamePacketListenerAccessor;
 import net.atlas.combatify.networking.C2SConfigPacket;
+import net.atlas.combatify.networking.ClientPacketInfo;
 import net.atlas.combatify.networking.PacketRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
@@ -16,6 +18,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +99,7 @@ public class ConfigSynchronizer {
         }
 
         Combatify.LOGGER.info("Responding with client values");
-        PacketRegistration.MAIN.sendToServer(new C2SConfigPacket());
+		CombatifyClient.schedulePacket(new ClientPacketInfo<>(PacketRegistration.MAIN, new C2SConfigPacket()));
     }
 
     public static void applyServer(ServerPlayer player, FriendlyByteBuf buf) {

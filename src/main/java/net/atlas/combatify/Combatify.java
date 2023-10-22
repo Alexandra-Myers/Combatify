@@ -17,7 +17,6 @@ import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.S2CConfigPacket;
-import net.atlas.combatify.networking.ItemConfigPacket;
 import net.atlas.combatify.networking.PacketRegistration;
 import net.atlas.combatify.util.*;
 import net.minecraft.core.Position;
@@ -197,8 +196,6 @@ public class Combatify {
 			}
 			Combatify.LOGGER.info("Sending server config values to client");
 			PacketRegistration.MAIN.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new S2CConfigPacket());
-			PacketRegistration.MAIN.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new ItemConfigPacket(ITEMS));
-			Combatify.LOGGER.info("Config packet sent to client.");
 		}
 	}
 	@SubscribeEvent
