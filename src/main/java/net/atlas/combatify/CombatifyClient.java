@@ -68,7 +68,6 @@ public class CombatifyClient {
 			value -> {
 			}
 	);
-	private static final ArrayListExtensions<ClientPacketInfo<?>> scheduledPackets = new ArrayListExtensions<>();
 	@SubscribeEvent
 	public static void modelLayerLocationInit(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		if (CONFIG.tieredShields.get()) {
@@ -99,12 +98,5 @@ public class CombatifyClient {
 				event.getEntries().putAfter(new ItemStack(arrayListExtensions.get(i - 1)), new ItemStack(arrayListExtensions.get(i)), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
 			}
 		}
-	}
-	@SubscribeEvent
-	public static void clientJoin(ClientPlayerNetworkEvent.LoggingIn event) {
-		scheduledPackets.forEach(packet -> packet.channel().sendTo(packet.message(), event.getConnection(), NetworkDirection.PLAY_TO_SERVER));
-	}
-	public static void schedulePacket(ClientPacketInfo<?> info) {
-		scheduledPackets.add(info);
 	}
 }

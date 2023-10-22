@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.event.ClientForgeBusEventHandler;
 import net.atlas.combatify.mixin.ServerGamePacketListenerAccessor;
 import net.atlas.combatify.networking.C2SConfigPacket;
 import net.atlas.combatify.networking.ClientPacketInfo;
@@ -99,7 +100,7 @@ public class ConfigSynchronizer {
         }
 
         Combatify.LOGGER.info("Responding with client values");
-		CombatifyClient.schedulePacket(new ClientPacketInfo<>(PacketRegistration.MAIN, new C2SConfigPacket()));
+		ClientForgeBusEventHandler.schedulePacket(new ClientPacketInfo<>(PacketRegistration.MAIN, new C2SConfigPacket()));
     }
 
     public static void applyServer(ServerPlayer player, FriendlyByteBuf buf) {
