@@ -6,19 +6,19 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public interface ServerPlayerExtensions {
-	void adjustHitResults(HitResult newValue);
+	void combatify$adjustHitResults(HitResult newValue);
 
-    void setAwaitingResponse(boolean awaitingResponse);
+    void combatify$setAwaitingResponse(boolean awaitingResponse);
 
-	boolean isAwaitingResponse();
+	boolean combatify$isAwaitingResponse();
 
-    CopyOnWriteArrayList<HitResult> getOldHitResults();
+    CopyOnWriteArrayList<HitResult> combatify$getOldHitResults();
 
-	boolean isRetainingAttack();
+	boolean combatify$isRetainingAttack();
 
-	void setRetainAttack(boolean retain);
+	void combatify$setRetainAttack(boolean retain);
 
-    Map<HitResult, Float[]> getHitResultToRotationMap();
+    Map<HitResult, Float[]> combatify$getHitResultToRotationMap();
 
-	void getPresentResult();
+	void combatify$getPresentResult();
 }

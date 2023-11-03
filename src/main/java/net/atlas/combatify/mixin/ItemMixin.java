@@ -1,9 +1,11 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.BowlFoodItem;
 import net.minecraft.world.item.Item;
@@ -14,33 +16,29 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Objects;
-
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
 
 	@Override
-	public void setStackSize(int stackSize) {
-		((Item) (Object)this).maxStackSize = stackSize;
+	public void combatify$setStackSize(int stackSize) {
+		((ItemAccessor) this).combatify$setMaxStackSize(stackSize);
 	}
 
-	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
-	public void getUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+
+	@Inject(method = "getUseDuration", at = @At("HEAD"),cancellable = true)
+	private void modifyBowlUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
 			cir.setReturnValue(Combatify.CONFIG.stewUseDuration());
-		} else if (stack.getItem().isEdible()) {
-			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
-		} else {
-			if (!getBlockingType().isEmpty()) {
-				cir.setReturnValue(72000);
-				return;
-			}
-			cir.setReturnValue(0);
 		}
 	}
 
+	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN", ordinal = 1))
+	public int modifyBlockingType(int zero) {
+		return !combatify$getBlockingType().isEmpty() ? 72000 : 0;
+	}
+
 	@Override
-	public double getChargedAttackBonus() {
+	public double combatify$getChargedAttackBonus() {
 		Item item = Item.class.cast(this);
 		double chargedBonus = 1.0;
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
@@ -56,7 +54,7 @@ public abstract class ItemMixin implements ItemExtensions {
 	}
 
 	@Override
-	public BlockingType getBlockingType() {
+	public BlockingType combatify$getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(Item.class.cast(this))) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(Item.class.cast(this));
 			if (configurableItemData.blockingType != null) {

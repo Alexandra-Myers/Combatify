@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import com.mojang.logging.LogUtils;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.CombatUtil;
@@ -34,6 +35,7 @@ import static net.atlas.combatify.Combatify.scheduleHitResult;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
 
+	@Unique
 	private boolean retainAttack;
 
 	@Shadow
@@ -82,7 +84,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				public void run() {
 					Entity camera = getCamera();
 					if (camera != null) {
-						adjustHitResults(MethodHandler.pickResult(player, camera));
+						combatify$adjustHitResults(MethodHandler.pickResult(player, camera));
 					}
 				}
 			}, 0, 1);
@@ -94,7 +96,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			connection.send(new ClientboundPingPacket(3492));
 			awaitingResponse = true;
 		}
-		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
+		if (((PlayerExtensions) this.player).combatify$isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
 			swing(InteractionHand.MAIN_HAND);
 		}
@@ -105,7 +107,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if(Combatify.unmoddedPlayers.contains(getUUID())) {
 			if (Combatify.isPlayerAttacking.get(getUUID())) {
 				HitResult hitResult = null;
-				getPresentResult();
+				combatify$getPresentResult();
 				for (HitResult hitResultToChoose : oldHitResults) {
 					if(hitResultToChoose == null)
 						continue;
@@ -153,12 +155,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 			return;
 		}
-		if (!isAttackAvailable(0.0F)) {
+		if (!combatify$isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
 				if(hit)
 					this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
-				resetAttackStrengthTicker(!getMissedAttackRecovery());
+				combatify$resetAttackStrengthTicker(!combatify$getMissedAttackRecovery());
 				return;
 			}
 
@@ -198,17 +200,17 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						}
 					} else {
 						player.connection.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-						ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", player.getName().getString());
+						LogUtils.getLogger().warn("Player {} tried to attack an invalid entity", player.getName().getString());
 					}
 				} else {
-					attackAir();
+					combatify$attackAir();
 				}
 			}
 		}
 
 	}
 	@Override
-	public void adjustHitResults(HitResult newValue) {
+	public void combatify$adjustHitResults(HitResult newValue) {
 		if (awaitingResponse)
 			responseTimer++;
 		if (!awaitingResponse && responseTimer > 0) {
@@ -235,37 +237,37 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 
 	@Override
-	public void setAwaitingResponse(boolean awaitingResponse) {
+	public void combatify$setAwaitingResponse(boolean awaitingResponse) {
 		this.awaitingResponse = awaitingResponse;
 	}
 
 	@Override
-	public boolean isAwaitingResponse() {
+	public boolean combatify$isAwaitingResponse() {
 		return awaitingResponse;
 	}
 
 	@Override
-	public CopyOnWriteArrayList<HitResult> getOldHitResults() {
+	public CopyOnWriteArrayList<HitResult> combatify$getOldHitResults() {
 		return oldHitResults;
 	}
 
 	@Override
-	public boolean isRetainingAttack() {
+	public boolean combatify$isRetainingAttack() {
 		return retainAttack;
 	}
 
 	@Override
-	public void setRetainAttack(boolean retain) {
+	public void combatify$setRetainAttack(boolean retain) {
 		retainAttack = retain;
 	}
 
 	@Override
-	public Map<HitResult, Float[]> getHitResultToRotationMap() {
+	public Map<HitResult, Float[]> combatify$getHitResultToRotationMap() {
 		return hitResultToRotationMap;
 	}
 
 	@Override
-	public void getPresentResult() {
+	public void combatify$getPresentResult() {
 		Entity camera = getCamera();
 		if (camera != null) {
 			oldHitResults.set(0, MethodHandler.pickResult(player, camera));

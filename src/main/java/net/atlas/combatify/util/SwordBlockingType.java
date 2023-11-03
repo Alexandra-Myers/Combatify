@@ -7,6 +7,7 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
+import net.atlas.combatify.mixin.accessors.LivingEntityAccessor;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -33,13 +34,13 @@ public class SwordBlockingType extends BlockingType {
 		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
 			boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
 			if (blocked) {
-				((LivingEntityExtensions)instance).setIsParryTicker(0);
-				((LivingEntityExtensions)instance).setIsParry(true);
+				((LivingEntityExtensions)instance).combatify$setIsParryTicker(0);
+				((LivingEntityExtensions)instance).combatify$setIsParry(true);
 				float actualStrength = this.getShieldBlockDamageValue(blockingItem);
 				g.set(amount.get() * actualStrength);
 				entity = source.getDirectEntity();
 				if (entity instanceof LivingEntity) {
-					instance.blockUsingShield((LivingEntity) entity);
+					((LivingEntityAccessor) instance).blockUsingShield((LivingEntity) entity);
 				}
 			} else {
 				float actualStrength = this.getShieldBlockDamageValue(blockingItem);
@@ -60,7 +61,7 @@ public class SwordBlockingType extends BlockingType {
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
 		if (stack.getItem() instanceof Tierable tierable)
-			var2 = tierable.getTier();
+			var2 = tierable.combatify$getTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy();
 		strengthIncrease = Math.max(strengthIncrease, -3);

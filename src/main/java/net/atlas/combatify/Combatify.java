@@ -7,6 +7,7 @@ import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.mixin.accessors.ThrownTridentAccessor;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.*;
 import net.fabricmc.api.ModInitializer;
@@ -59,14 +60,13 @@ public class Combatify implements ModInitializer {
 			@Override
 			protected @NotNull Projectile getProjectile(Level world, Position position, ItemStack stack) {
 				ThrownTrident trident = new ThrownTrident(EntityType.TRIDENT, world);
-				trident.tridentItem = stack.copy();
+				((ThrownTridentAccessor) trident).setTridentItem(stack.copy());
 				trident.setPosRaw(position.x(), position.y(), position.z());
 				trident.pickup = AbstractArrow.Pickup.ALLOWED;
 				return trident;
 			}
 		});
 		if (CONFIG.configOnlyWeapons()) {
-			ItemRegistry.registerWeapons();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(NETHERITE_SWORD, ItemRegistry.WOODEN_KNIFE, ItemRegistry.STONE_KNIFE, ItemRegistry.IRON_KNIFE, ItemRegistry.GOLD_KNIFE, ItemRegistry.DIAMOND_KNIFE, ItemRegistry.NETHERITE_KNIFE, ItemRegistry.WOODEN_LONGSWORD, ItemRegistry.STONE_LONGSWORD, ItemRegistry.IRON_LONGSWORD, ItemRegistry.GOLD_LONGSWORD, ItemRegistry.DIAMOND_LONGSWORD, ItemRegistry.NETHERITE_LONGSWORD));
 		}

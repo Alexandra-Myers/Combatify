@@ -30,7 +30,6 @@
     "MiscCategoryMixin",
     "MobEffectMixin",
     "MobMixin",
-    "OwoOptionAccessor",
     "PiglinAiMixin",
     "PlayerListMixin",
     "PlayerMixin",
@@ -50,7 +49,12 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
-    "TridentItemMixin"
+    "TridentItemMixin",
+    "accessors.AttributeInstanceAccessor",
+    "accessors.BlockBehaviourAccessor",
+    "accessors.ItemAccessor",
+    "accessors.LivingEntityAccessor",
+    "accessors.ThrownTridentAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -15,7 +15,7 @@ public class ShovelItemMixin extends DiggerItemMixin {
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
+	public WeaponType combatify$getWeaponType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
 			if (type != null)
@@ -24,9 +24,9 @@ public class ShovelItemMixin extends DiggerItemMixin {
 		return WeaponType.SHOVEL;
 	}
 	@Override
-	public double getChargedAttackBonus() {
+	public double combatify$getChargedAttackBonus() {
 		Item item = this;
-		double chargedBonus = getWeaponType().getChargedReach();
+		double chargedBonus = combatify$getWeaponType().getChargedReach();
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)

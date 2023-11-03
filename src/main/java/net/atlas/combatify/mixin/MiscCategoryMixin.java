@@ -25,7 +25,7 @@ public abstract class MiscCategoryMixin extends Category implements IMiscCategor
 	}
 
 	@Override
-	public Option<Boolean> getForce100PercentRecharge() {
+	public Option<Boolean> combatify$getForce100PercentRecharge() {
 		return force100PercentRecharge;
 	}
 }

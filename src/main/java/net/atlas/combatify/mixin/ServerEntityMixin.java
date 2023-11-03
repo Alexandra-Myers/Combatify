@@ -29,7 +29,7 @@ public abstract class ServerEntityMixin {
 		if(packet instanceof ClientboundBundlePacket clientboundBundlePacket)
 			clientboundBundlePacket.subPackets().forEach(clientGamePacketListenerPacket -> {
 				if(clientGamePacketListenerPacket instanceof ClientboundUpdateAttributesPacket clientboundUpdateAttributesPacket) {
-					((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).changeAttributes(serverPlayer);
+					((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).combatify$changeAttributes(serverPlayer);
 				}
 			});
 		instance.send(packet);
@@ -37,7 +37,7 @@ public abstract class ServerEntityMixin {
 	@Redirect(method = "sendDirtyEntityData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerEntity;broadcastAndSend(Lnet/minecraft/network/protocol/Packet;)V"))
 	public void modifyAttributes1(ServerEntity instance, Packet<?> packet) {
 		if(entity instanceof ServerPlayer serverPlayer && packet instanceof ClientboundUpdateAttributesPacket clientboundUpdateAttributesPacket)
-			((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).changeAttributes(serverPlayer);
+			((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).combatify$changeAttributes(serverPlayer);
 		broadcastAndSend(packet);
 	}
 }

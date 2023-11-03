@@ -22,7 +22,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 	private List<ClientboundUpdateAttributesPacket.AttributeSnapshot> attributes;
 
 	@Override
-	public void changeAttributes(ServerPlayer reciever) {
+	public void combatify$changeAttributes(ServerPlayer reciever) {
 		List<Integer> indexes = new ArrayList<>();
 		Map<Integer, AttributeModifier> modifierMap = new HashMap<>();
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {

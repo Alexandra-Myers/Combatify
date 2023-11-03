@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class EnchantmentHelperMixin implements CustomEnchantmentHelper {
 	@ModifyExpressionValue(method = "getAvailableEnchantmentResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentCategory;canEnchant(Lnet/minecraft/world/item/Item;)Z"))
 	private static boolean redirectCanEnchant(boolean original, @Local(ordinal = 0) Enchantment currentEnchantment, @Local(ordinal = 0) ItemStack itemStack) {
-		return currentEnchantment instanceof CustomEnchantment customEnchantment && itemStack != null ? customEnchantment.isAcceptibleConditions(itemStack) : original;
+		return currentEnchantment instanceof CustomEnchantment customEnchantment && itemStack != null ? customEnchantment.combatify$isAcceptibleConditions(itemStack) : original;
 	}
 
 	@ModifyExpressionValue(method = "getEnchantmentCost", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
@@ -29,7 +29,7 @@ public abstract class EnchantmentHelperMixin implements CustomEnchantmentHelper 
 				return configurableItemData.enchantability;
 			}
 		}
-		if(!((ItemExtensions)stack.getItem()).getBlockingType().isEmpty() && original == 0) {
+		if(!((ItemExtensions)stack.getItem()).combatify$getBlockingType().isEmpty() && original == 0) {
 			return 14;
 		}
 		return original;
@@ -42,7 +42,7 @@ public abstract class EnchantmentHelperMixin implements CustomEnchantmentHelper 
 				return configurableItemData.enchantability;
 			}
 		}
-		if(!((ItemExtensions)stack.getItem()).getBlockingType().isEmpty() && original == 0) {
+		if(!((ItemExtensions)stack.getItem()).combatify$getBlockingType().isEmpty() && original == 0) {
 			return 14;
 		}
 		return original;

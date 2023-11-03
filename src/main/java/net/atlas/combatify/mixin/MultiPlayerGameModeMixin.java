@@ -59,22 +59,22 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 			|| target.getType().equals(EntityType.ITEM_FRAME)
 			|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
 			|| target.getType().equals(EntityType.PAINTING);
-		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+		((PlayerExtensions)instance).combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset2(LocalPlayer instance) {
 		if(getPlayerMode() == GameType.ADVENTURE)
 			return;
-		((PlayerExtensions)instance).resetAttackStrengthTicker(true);
+		((PlayerExtensions)instance).combatify$resetAttackStrengthTicker(true);
 	}
 
 	@Override
-	public void swingInAir(Player player) {
+	public void combatify$swingInAir(Player player) {
 		ensureHasSentCarriedItem();
 		ClientPlayNetworking.send(new NetworkingHandler.ServerboundMissPacket());
 		if (localPlayerMode != GameType.SPECTATOR) {
-			((PlayerExtensions)player).attackAir();
-			((PlayerExtensions)player).resetAttackStrengthTicker(false);
+			((PlayerExtensions)player).combatify$attackAir();
+			((PlayerExtensions)player).combatify$resetAttackStrengthTicker(false);
 		}
 	}
 }

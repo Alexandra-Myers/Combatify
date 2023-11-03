@@ -29,16 +29,16 @@ public class DefendingEnchantment extends Enchantment implements CustomEnchantme
 
 	@Override
 	public boolean canEnchant(ItemStack stack) {
-		return !((ItemExtensions) stack.getItem()).getBlockingType().isEmpty() && (!((ItemExtensions)stack.getItem()).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking());
+		return !((ItemExtensions) stack.getItem()).combatify$getBlockingType().isEmpty() && (!((ItemExtensions)stack.getItem()).combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking());
 	}
 
 	@Override
-	public boolean isAcceptibleConditions(ItemStack stack) {
+	public boolean combatify$isAcceptibleConditions(ItemStack stack) {
 		return this.canEnchant(stack);
 	}
 
 	@Override
-	public boolean isAcceptibleAnvil(ItemStack stack) {
+	public boolean combatify$isAcceptibleAnvil(ItemStack stack) {
 		return this.canEnchant(stack);
 	}
 	public static void registerEnchants() {

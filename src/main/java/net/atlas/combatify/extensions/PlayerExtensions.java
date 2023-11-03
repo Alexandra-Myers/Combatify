@@ -4,22 +4,22 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 
 public interface PlayerExtensions {
-	boolean isAttackAvailable(float baseTime);
+	boolean combatify$isAttackAvailable(float baseTime);
 
-	void customSwing(InteractionHand interactionHand);
+	void combatify$customSwing(InteractionHand interactionHand);
 
-	void resetAttackStrengthTicker(boolean var1);
+	void combatify$resetAttackStrengthTicker(boolean var1);
 
-	default boolean ctsShieldDisable(float damage, Item item) {
+	default boolean combatify$ctsShieldDisable(float damage, Item item) {
 		return false;
 	}
 
 	default boolean hasEnabledShieldOnCrouch() {
 		return false;
 	}
-	boolean getMissedAttackRecovery();
+	boolean combatify$getMissedAttackRecovery();
 
-    void attackAir();
+    void combatify$attackAir();
 
-	int getAttackStrengthStartValue();
+	int combatify$getAttackStrengthStartValue();
 }

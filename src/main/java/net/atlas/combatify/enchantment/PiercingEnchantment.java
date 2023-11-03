@@ -40,12 +40,12 @@ public class PiercingEnchantment extends Enchantment implements CustomEnchantmen
 	}
 
 	@Override
-	public boolean isAcceptibleConditions(ItemStack stack) {
+	public boolean combatify$isAcceptibleConditions(ItemStack stack) {
 		return this.canEnchant(stack);
 	}
 
 	@Override
-	public boolean isAcceptibleAnvil(ItemStack stack) {
+	public boolean combatify$isAcceptibleAnvil(ItemStack stack) {
 		return this.canEnchant(stack);
 	}
 

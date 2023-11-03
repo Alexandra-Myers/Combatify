@@ -23,7 +23,7 @@ public class AttributeModifierMixin {
 
 	@Inject(method = "<init>(Ljava/util/UUID;Ljava/util/function/Supplier;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V", at = @At(value = "RETURN"))
 	private void injectChanges(UUID uUID, Supplier<String> supplier, double d, AttributeModifier.Operation operation, CallbackInfo ci) {
-		if (uUID == Item.BASE_ATTACK_SPEED_UUID) {
+		if (uUID == UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF")) {
 			if (d >= 0) {
 				amount = Combatify.CONFIG.fastestToolAttackSpeed();
 			} else if (d >= -1) {

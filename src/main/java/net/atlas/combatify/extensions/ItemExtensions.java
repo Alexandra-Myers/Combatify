@@ -8,9 +8,9 @@ public interface ItemExtensions {
 
 	}
 
-	void setStackSize(int stackSize);
+	void combatify$setStackSize(int stackSize);
 
-	double getChargedAttackBonus();
+	double combatify$getChargedAttackBonus();
 
-    BlockingType getBlockingType();
+    BlockingType combatify$getBlockingType();
 }

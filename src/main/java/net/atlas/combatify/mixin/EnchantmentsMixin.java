@@ -19,7 +19,7 @@ public abstract class EnchantmentsMixin implements IEnchantments {
 	private static final Enchantment CLEAVING_ENCHANTMENT = register("cleaving", new CleavingEnchantment());
 
 	@Override
-	public Enchantment getCleavingEnchantment() {
+	public Enchantment combatify$getCleavingEnchantment() {
 		return CLEAVING_ENCHANTMENT;
 	}
 }

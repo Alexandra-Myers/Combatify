@@ -7,6 +7,7 @@ import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
@@ -22,7 +23,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -67,7 +67,7 @@ public class NetworkingHandler {
 			eyePos.distanceToSqr(MethodHandler.getNearestPointTo(aABB, eyePos));
 			double dist = 0;
 			if (dist < d) {
-				((PlayerExtensions)player).attackAir();
+				((PlayerExtensions)player).combatify$attackAir();
 			}
 
 		});
@@ -102,7 +102,7 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							if (modifier.getId() == ItemAccessor.getBaseAttackDamageUUID() || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -112,7 +112,7 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_SPEED).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+							if (modifier.getId() == ItemAccessor.getBaseAttackSpeedUUID() || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -129,7 +129,7 @@ public class NetworkingHandler {
 								attributeModifiers.remove(NewAttributes.ATTACK_REACH, modifiers.get(index));
 					}
 					ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
-					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : item instanceof Tierable tierable ? tierable.getTier() : Tiers.NETHERITE, modMap);
+					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : item instanceof Tierable tierable ? tierable.combatify$getTier() : Tiers.NETHERITE, modMap);
 					attributeModifiers.putAll(modMap);
 				}
 				if (configurableItemData.damage != null) {
@@ -137,7 +137,7 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							if (modifier.getId() == ItemAccessor.getBaseAttackDamageUUID() || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -150,7 +150,7 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_SPEED).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+							if (modifier.getId() == ItemAccessor.getBaseAttackSpeedUUID() || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -175,9 +175,9 @@ public class NetworkingHandler {
 		});
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
 			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
-				Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
-				((ServerPlayerExtensions) serverPlayer).getPresentResult();
-				for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).getOldHitResults()) {
+				Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).combatify$getHitResultToRotationMap();
+				((ServerPlayerExtensions) serverPlayer).combatify$getPresentResult();
+				for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).combatify$getOldHitResults()) {
 					if(hitResultToChoose == null)
 						continue;
 					Float[] rotations = null;
@@ -224,7 +224,7 @@ public class NetworkingHandler {
 			for(Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
-					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+					((ItemExtensions) item).combatify$setStackSize(configurableItemData.stackSize);
 			}
 		});
 	}

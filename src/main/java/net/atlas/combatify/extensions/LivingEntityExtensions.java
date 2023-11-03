@@ -3,19 +3,19 @@ package net.atlas.combatify.extensions;
 import net.minecraft.world.damagesource.DamageSource;
 
 public interface LivingEntityExtensions {
-	boolean hasEnabledShieldOnCrouch();
+	boolean combatify$hasEnabledShieldOnCrouch();
 
-	void setPiercingNegation(double negation);
+	void combatify$setPiercingNegation(double negation);
 
-	boolean getIsParry();
+	boolean combatify$getIsParry();
 
-	void setIsParry(boolean isParry);
+	void combatify$setIsParry(boolean isParry);
 
-	int getIsParryTicker();
+	int combatify$getIsParryTicker();
 
-	void setIsParryTicker(int isParryTicker);
+	void combatify$setIsParryTicker(int isParryTicker);
 
-    float getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel);
+    float combatify$getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel);
 
-	float getNewDamageAfterMagicAbsorb(DamageSource source, float amount, double piercingLevel);
+	float combatify$getNewDamageAfterMagicAbsorb(DamageSource source, float amount, double piercingLevel);
 }

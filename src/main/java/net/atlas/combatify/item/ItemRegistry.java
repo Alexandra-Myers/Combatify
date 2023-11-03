@@ -29,7 +29,4 @@ public class ItemRegistry {
 
 		return Registry.register(BuiltInRegistries.ITEM, resourceLocation, item);
 	}
-	public static void registerWeapons() {
-
-	}
 }

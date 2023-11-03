@@ -4,5 +4,5 @@ import net.minecraft.world.InteractionHand;
 
 public interface IMinecraft {
 
-	void startUseItem(InteractionHand hand);
+	void combatify$startUseItem(InteractionHand hand);
 }

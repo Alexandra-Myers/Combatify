@@ -9,12 +9,14 @@ import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -24,6 +26,7 @@ import java.util.function.Consumer;
 @Mixin(DiggerItem.class)
 public abstract class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
 	@Shadow
+	@Mutable
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public DiggerItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -31,9 +34,9 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(getTier(), var3);
+		combatify$getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+		((DefaultedItemExtensions)this).combatify$setDefaultModifiers(output);
 	}
 	@Redirect(method = "hurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
@@ -46,17 +49,17 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	}
 
 	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+	public void combatify$setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
 	}
 
 	@Override
-	public void setStackSize(int stackSize) {
-		this.maxStackSize = stackSize;
+	public void combatify$setStackSize(int stackSize) {
+		((ItemAccessor) this).combatify$setMaxStackSize(stackSize);
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
+	public WeaponType combatify$getWeaponType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
 			if (type != null)
@@ -65,9 +68,9 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 		return WeaponType.PICKAXE;
 	}
 	@Override
-	public double getChargedAttackBonus() {
+	public double combatify$getChargedAttackBonus() {
 		Item item = this;
-		double chargedBonus = getWeaponType().getChargedReach();
+		double chargedBonus = combatify$getWeaponType().getChargedReach();
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)
@@ -77,15 +80,15 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	}
 
 	@Override
-	public BlockingType getBlockingType() {
+	public BlockingType combatify$getBlockingType() {
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(combatify$getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(combatify$getWeaponType());
 			if (configurableWeaponData.blockingType != null) {
 				return configurableWeaponData.blockingType;
 			}

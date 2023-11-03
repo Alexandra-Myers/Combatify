@@ -16,7 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 import net.rizecookey.cookeymod.CookeyMod;
 import net.rizecookey.cookeymod.config.category.AnimationsCategory;
-import net.rizecookey.cookeymod.config.category.HudRenderingCategory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -67,10 +66,10 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 		this.humanoidArm = humanoidArm;
 		if (Combatify.CONFIG.swordBlocking()) {
-			if (abstractClientPlayer.getUsedItemHand() == interactionHand && ((ItemExtensions) MethodHandler.getBlockingItem(abstractClientPlayer).getItem()).getBlockingType().isToolBlocker()) {
+			if (abstractClientPlayer.getUsedItemHand() == interactionHand && ((ItemExtensions) MethodHandler.getBlockingItem(abstractClientPlayer).getItem()).combatify$getBlockingType().isToolBlocker()) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
-				applyItemBlockTransform2(poseStack, humanoidArm);
+				combatify$applyItemBlockTransform2(poseStack, humanoidArm);
 				if (animationsCategory.swingAndUseItem.get()) {
 					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 				}
@@ -115,14 +114,14 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
 		assert minecraft.player != null;
-		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions shieldItem && shieldItem.getBlockingType().isToolBlocker() && !shieldItem.getBlockingType().isEmpty()) {
+		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions shieldItem && shieldItem.combatify$getBlockingType().isToolBlocker() && !shieldItem.combatify$getBlockingType().isEmpty()) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();
 		}
 	}
 	@Override
-	public void applyItemBlockTransform2(PoseStack poseStack, HumanoidArm humanoidArm) {
+	public void combatify$applyItemBlockTransform2(PoseStack poseStack, HumanoidArm humanoidArm) {
 		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
 		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));

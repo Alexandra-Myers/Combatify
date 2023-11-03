@@ -1,5 +1,6 @@
 package net.atlas.combatify.util;
 
+import net.atlas.combatify.mixin.accessors.BlockBehaviourAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -25,7 +26,7 @@ public class ClientMethodHandler {
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			Level level = Objects.requireNonNull(minecraft.level);
 			Player player = Objects.requireNonNull(minecraft.player);
-			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
+			boolean bl = !level.getBlockState(blockPos).canOcclude() && !((BlockBehaviourAccessor) level.getBlockState(blockPos).getBlock()).getHasCollision();
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, MethodHandler.getCurrentAttackReach(player, 0.0F));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {

@@ -28,23 +28,23 @@ public abstract class ServerGamePacketMixin {
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
-		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
+		if (!(((PlayerExtensions) player).combatify$isAttackAvailable(1.0F)))
 			ci.cancel();
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
-			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
+			if (((ServerPlayerExtensions)player).combatify$isRetainingAttack()) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
 				ci.cancel();
 			}
-			if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
+			if (!((PlayerExtensions) player).combatify$isAttackAvailable(0.0F)) {
 				float var1 = player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
 					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
-					((PlayerExtensions) player).resetAttackStrengthTicker(!((PlayerExtensions) player).getMissedAttackRecovery());
+					((PlayerExtensions) player).combatify$resetAttackStrengthTicker(!((PlayerExtensions) player).combatify$getMissedAttackRecovery());
 					ci.cancel();
 				}
 
 				if (var1 < 1.0F) {
-					((ServerPlayerExtensions) player).setRetainAttack(true);
+					((ServerPlayerExtensions) player).combatify$setRetainAttack(true);
 					ci.cancel();
 				}
 			}
@@ -87,8 +87,8 @@ public abstract class ServerGamePacketMixin {
 	}
 	@Inject(method = "handlePong", at = @At(value = "HEAD"))
 	public void getPing(ServerboundPongPacket serverboundPongPacket, CallbackInfo ci) {
-		if (serverboundPongPacket.getId() == 3492 && Combatify.unmoddedPlayers.contains(player.getUUID()) && ((ServerPlayerExtensions)player).isAwaitingResponse()) {
-			((ServerPlayerExtensions) player).setAwaitingResponse(false);
+		if (serverboundPongPacket.getId() == 3492 && Combatify.unmoddedPlayers.contains(player.getUUID()) && ((ServerPlayerExtensions)player).combatify$isAwaitingResponse()) {
+			((ServerPlayerExtensions) player).combatify$setAwaitingResponse(false);
 		}
 	}
 

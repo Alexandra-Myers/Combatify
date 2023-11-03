@@ -4,6 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,12 +16,12 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
     }
 
 	@Override
-	public void setStackSize(int stackSize) {
-		maxStackSize = stackSize;
+	public void combatify$setStackSize(int stackSize) {
+		((ItemAccessor) this).combatify$setMaxStackSize(stackSize);
 	}
 
 	@Override
-	public double getChargedAttackBonus() {
+	public double combatify$getChargedAttackBonus() {
 		double chargedBonus = 1.0;
 		if(Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
@@ -35,7 +36,7 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 	}
 
 	@Override
-	public BlockingType getBlockingType() {
+	public BlockingType combatify$getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {

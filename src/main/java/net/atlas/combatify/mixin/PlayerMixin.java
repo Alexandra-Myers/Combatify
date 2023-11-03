@@ -8,6 +8,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.mixin.accessors.LivingEntityAccessor;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
@@ -54,6 +55,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	public abstract float getCurrentItemAttackStrengthDelay();
+
 
 	@Shadow
 	public abstract void attack(Entity entity);
@@ -108,17 +110,17 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
-		--instance.attackStrengthTicker;
-		setIsParryTicker(getIsParryTicker() + 1);
-		if(getIsParryTicker() >= 40) {
-			setIsParry(false);
-			setIsParryTicker(0);
+		((LivingEntityAccessor) instance).setAttackStrengthTicker(((LivingEntityAccessor)instance).getAttackStrengthTicker() - 1);
+		combatify$setIsParryTicker(combatify$getIsParryTicker() + 1);
+		if(combatify$getIsParryTicker() >= 40) {
+			combatify$setIsParry(false);
+			combatify$setIsParryTicker(0);
 		}
 	}
 
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
-		return !((ItemExtensions)useItem.getItem()).getBlockingType().isEmpty() || original;
+		return !((ItemExtensions)useItem.getItem()).combatify$getBlockingType().isEmpty() || original;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
@@ -132,7 +134,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public boolean ctsShieldDisable(float damage, Item item) {
+	public boolean combatify$ctsShieldDisable(float damage, Item item) {
 		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
 		if (item instanceof TieredShieldItem)
 			for (TieredShieldItem tieredShieldItem : Combatify.shields)
@@ -144,13 +146,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public boolean hasEnabledShieldOnCrouch() {
+	public boolean combatify$hasEnabledShieldOnCrouch() {
 		return true;
 	}
 
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
-		if(!isAttackAvailable(baseValue)) ci.cancel();
+		if(!combatify$isAttackAvailable(baseValue)) ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "TAIL"))
 	public void resetTicker(Entity target, CallbackInfo ci) {
@@ -159,7 +161,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				|| target.getType().equals(EntityType.ITEM_FRAME)
 				|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
 				|| target.getType().equals(EntityType.PAINTING);
-			this.resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+			this.combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
@@ -195,13 +197,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(!Combatify.CONFIG.sprintCritsEnabled()) {
 			isCrit &= !isSprinting();
 		}
-		bl3.set(isCrit || getIsParry());
+		bl3.set(isCrit || combatify$getIsParry());
 		if (isCrit) {
 			attackDamage.set(attackDamage.get() * 1.5F);
 		}
-		if (getIsParry()) {
+		if (combatify$getIsParry()) {
 			attackDamage.set(attackDamage.get() * 1.25F);
-			setIsParry(false);
+			combatify$setIsParry(false);
 		}
 
 	}
@@ -227,9 +229,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		bl4.set(checkSweepAttack());
 	}
 	@Override
-	public void attackAir() {
-		if (this.isAttackAvailable(baseValue)) {
-			customSwing(InteractionHand.MAIN_HAND);
+	public void combatify$attackAir() {
+		if (this.combatify$isAttackAvailable(baseValue)) {
+			combatify$customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
 			if (attackDamage > 0.0F && this.checkSweepAttack()) {
 				float var2 = (float) MethodHandler.getCurrentAttackReach(player, 1.0F);
@@ -239,15 +241,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				betterSweepAttack(var9, var2, attackDamage, null);
 			}
 
-			this.resetAttackStrengthTicker(false);
+			this.combatify$resetAttackStrengthTicker(false);
 		}
 	}
 	@Override
-	public void customSwing(InteractionHand interactionHand) {
+	public void combatify$customSwing(InteractionHand interactionHand) {
 		swing(interactionHand, false);
 	}
 	@Override
-	public void resetAttackStrengthTicker(boolean hit) {
+	public void combatify$resetAttackStrengthTicker(boolean hit) {
 		this.missedAttackRecovery = !hit;
 		if (!Combatify.CONFIG.attackSpeed()) {
 			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 20) {
@@ -281,7 +283,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public boolean isAttackAvailable(float baseTime) {
+	public boolean combatify$isAttackAvailable(float baseTime) {
 		if (getAttackStrengthScale(baseTime) < 1.0F) {
 			return (this.missedAttackRecovery && this.attackStrengthStartValue - (this.attackStrengthTicker - baseTime) > 4.0F);
 		}
@@ -329,11 +331,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 
 	@Override
-	public boolean getMissedAttackRecovery() {
+	public boolean combatify$getMissedAttackRecovery() {
 		return missedAttackRecovery;
 	}
 	@Override
-	public int getAttackStrengthStartValue() {
+	public int combatify$getAttackStrengthStartValue() {
 		return attackStrengthStartValue;
 	}
 }

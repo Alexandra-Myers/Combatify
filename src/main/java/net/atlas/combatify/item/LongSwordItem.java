@@ -9,6 +9,7 @@ import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.extensions.WeaponWithType;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
@@ -28,15 +29,15 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(getTier(), var3);
+		combatify$getWeaponType().addCombatAttributes(getTier(), var3);
 		defaultModifiers = var3.build();
 	}
 	@Override
 	public void modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(getTier(), var3);
+		combatify$getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
-		this.setDefaultModifiers(output);
+		this.combatify$setDefaultModifiers(output);
 	}
 
 	@Override
@@ -79,17 +80,17 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	}
 
 	@Override
-	public void setStackSize(int stackSize) {
-		this.maxStackSize = stackSize;
+	public void combatify$setStackSize(int stackSize) {
+		((ItemAccessor) this).combatify$setMaxStackSize(stackSize);
 	}
 
 	@Override
-	public double getPiercingLevel() {
+	public double combatify$getPiercingLevel() {
 		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.2 : getTier() == Tiers.GOLD || getTier() == Tiers.WOOD || getTier() == Tiers.STONE || getTier().getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (getTier().getLevel() - 1));
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
+	public WeaponType combatify$getWeaponType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
 			if (type != null)
@@ -98,9 +99,9 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 		return WeaponType.LONGSWORD;
 	}
 	@Override
-	public double getChargedAttackBonus() {
+	public double combatify$getChargedAttackBonus() {
 		Item item = this;
-		double chargedBonus = getWeaponType().getChargedReach();
+		double chargedBonus = combatify$getWeaponType().getChargedReach();
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)
@@ -110,15 +111,15 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	}
 
 	@Override
-	public BlockingType getBlockingType() {
+	public BlockingType combatify$getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(combatify$getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(combatify$getWeaponType());
 			if (configurableWeaponData.blockingType != null) {
 				return configurableWeaponData.blockingType;
 			}
@@ -127,7 +128,7 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 	}
 
 	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+	public void combatify$setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
 	}
 }

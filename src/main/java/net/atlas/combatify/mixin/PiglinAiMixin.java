@@ -19,7 +19,7 @@ public class PiglinAiMixin {
 
 		for (ItemStack itemStack : iterable) {
 			Item item = itemStack.getItem();
-			if(item instanceof TieredShieldItem tieredShield && tieredShield.getTier() == Tiers.GOLD) {
+			if(item instanceof TieredShieldItem tieredShield && tieredShield.combatify$getTier() == Tiers.GOLD) {
 				bl = true;
 			}
 		}

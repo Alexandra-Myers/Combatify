@@ -4,8 +4,8 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
@@ -49,7 +49,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	}
 
 	@Override
-	public Tier getTier() {
+	public Tier combatify$getTier() {
 		return tier;
 	}
 	public static void init() {
@@ -57,12 +57,12 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	}
 
 	@Override
-	public void setStackSize(int stackSize) {
-		this.maxStackSize = stackSize;
+	public void combatify$setStackSize(int stackSize) {
+		((ItemAccessor) this).combatify$setMaxStackSize(stackSize);
 	}
 
 	@Override
-	public double getChargedAttackBonus() {
+	public double combatify$getChargedAttackBonus() {
 		Item item = this;
 		double chargedBonus = 1.0;
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
@@ -78,7 +78,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	}
 
 	@Override
-	public BlockingType getBlockingType() {
+	public BlockingType combatify$getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {

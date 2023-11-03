@@ -11,6 +11,7 @@ import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
+import net.atlas.combatify.mixin.accessors.ItemAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.InteractionHand;
@@ -47,14 +48,19 @@ public abstract class ItemStackMixin {
 	@Shadow
 	public abstract boolean isEnchanted();
 
+	@Shadow
+	@Final
+	@Deprecated
+	private @Nullable Item item;
+
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
-		if (!item.getBlockingType().isEmpty()) {
-			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
-				float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
-				double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
-				if (!item.getBlockingType().isPercentage())
+		if (!item.combatify$getBlockingType().isEmpty()) {
+			if (!item.combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+				float f = item.combatify$getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
+				double g = item.combatify$getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
+				if (!item.combatify$getBlockingType().isPercentage())
 					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
 				else
 					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
@@ -65,7 +71,7 @@ public abstract class ItemStackMixin {
 		}
 	}
 
-	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"))
+	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"),remap = false)
 	public boolean preventOutcome(boolean original, @Local(ordinal = 0) Player player, @Local(ordinal = 0) List<Component> list, @Local(ordinal = 0) Multimap<Attribute, AttributeModifier> multimap, @Local(ordinal = 0) EquipmentSlot equipmentSlot) {
 		if (!original) {
 			boolean attackReach = Combatify.CONFIG.attackReach();
@@ -77,11 +83,11 @@ public abstract class ItemStackMixin {
 				double d = attributeModifier.getAmount();
 				boolean bl = false;
 				if (player != null) {
-					if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID) {
+					if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == ItemAccessor.getBaseAttackDamageUUID()) {
 						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getBaseValue();
 						d += EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, player.getMobType());
 						bl = true;
-					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID) {
+					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == ItemAccessor.getBaseAttackSpeedUUID()) {
 						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).getBaseValue() - 1.5;
 						bl = true;
 					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
@@ -102,7 +108,7 @@ public abstract class ItemStackMixin {
 					e = d;
 				}
 
-				if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || bl) {
+				if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == ItemAccessor.getBaseAttackSpeedUUID() || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == ItemAccessor.getBaseAttackDamageUUID() || bl) {
 					list.add(
 							Component.literal(" ")
 									.append(
@@ -140,7 +146,7 @@ public abstract class ItemStackMixin {
 				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER, (ItemStack) (Object) this) * 0.1;
 			}
 			if(getItem() instanceof PiercingItem item) {
-				piercingLevel += item.getPiercingLevel();
+				piercingLevel += item.combatify$getPiercingLevel();
 			}
 			if (piercingLevel > 0) {
 				list.add(
@@ -162,9 +168,9 @@ public abstract class ItemStackMixin {
 	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0) UseOnContext useOnContext) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand()).getItem();
-		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original == InteractionResult.PASS) {
-			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
-				holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
+		if (!((ItemExtensions)item).combatify$getBlockingType().isEmpty() && original == InteractionResult.PASS) {
+			if(!((ItemExtensions)item).combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+				holder = ((ItemExtensions)item).combatify$getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
 			}
 		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
@@ -181,16 +187,16 @@ public abstract class ItemStackMixin {
 
 	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
 	public boolean addEnchantability(boolean original) {
-		return (!((ItemExtensions)getItem()).getBlockingType().isEmpty() && !isEnchanted()) || original;
+		return (!((ItemExtensions)getItem()).combatify$getBlockingType().isEmpty() && !isEnchanted()) || original;
 	}
 
 	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
 	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = player.getItemInHand(hand).getItem();
-		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {
-			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
-				holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
+		if (!((ItemExtensions)item).combatify$getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {
+			if(!((ItemExtensions)item).combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+				holder = ((ItemExtensions)item).combatify$getBlockingType().use(world, player, hand);
 			}
 		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
@@ -216,7 +222,7 @@ public abstract class ItemStackMixin {
 	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))
 	public UseAnim addBlockAnim(UseAnim original) {
 		if (original == UseAnim.NONE) {
-			if (!((ItemExtensions)getItem()).getBlockingType().isEmpty()) {
+			if (!((ItemExtensions)getItem()).combatify$getBlockingType().isEmpty()) {
 				return UseAnim.BLOCK;
 			}
 		}

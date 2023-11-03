@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.atlas.combatify.mixin.accessors.LivingEntityAccessor;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -35,7 +36,7 @@ public class ShieldBlockingType extends BlockingType {
 			if (entity instanceof LivingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());
 				hurt = true;
-				instance.blockUsingShield((LivingEntity) entity);
+				((LivingEntityAccessor) instance).blockUsingShield((LivingEntity) entity);
 			}
 		} else
 			g.set(amount.get());

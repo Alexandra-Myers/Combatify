@@ -22,6 +22,7 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -41,28 +42,30 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Final
 	public ClientPacketListener connection;
 	@Final
+	@Unique
 	public Minecraft minecraft = Minecraft.getInstance();
+	@Unique
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if(thisPlayer.onGround() && this.hasEnabledShieldOnCrouch()) {
+		if(thisPlayer.onGround() && this.combatify$hasEnabledShieldOnCrouch()) {
 			for (InteractionHand interactionHand : InteractionHand.values()) {
 				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
 					ItemStack itemStack = MethodHandler.getBlockingItem(thisPlayer);
 
 					Item blockingItem = itemStack.getItem();
-					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.onGround() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
+					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).combatify$getBlockingType().requireFullCharge();
+					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).combatify$getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).combatify$getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.onGround() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
-							((IMinecraft) minecraft).startUseItem(interactionHand);
+							((IMinecraft) minecraft).combatify$startUseItem(interactionHand);
 							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 						}
 					}
 				} else if ((thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
 					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
 					ItemExtensions item = (ItemExtensions) itemStack.getItem();
-					if (!itemStack.isEmpty() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
+					if (!itemStack.isEmpty() && item.combatify$getBlockingType().canCrouchBlock() && !item.combatify$getBlockingType().isEmpty()) {
 						assert minecraft.gameMode != null;
 						minecraft.gameMode.releaseUsingItem(thisPlayer);
 						startedUsingItem = false;
@@ -73,7 +76,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 
 	@Override
-	public void customSwing(InteractionHand interactionHand) {
+	public void combatify$customSwing(InteractionHand interactionHand) {
 		swing(interactionHand, false);
 		connection.send(new ServerboundSwingPacket(interactionHand));
 	}
@@ -84,10 +87,10 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 
 	@Override
-	public boolean isAttackAvailable(float baseTime) {
+	public boolean combatify$isAttackAvailable(float baseTime) {
 		MiscCategory miscCategory = CookeyMod.getInstance().getConfig().getCategory(MiscCategory.class);
 		if (getAttackStrengthScale(baseTime) < 1.0F) {
-			return this.getMissedAttackRecovery() && this.getAttackStrengthStartValue() - (this.attackStrengthTicker - baseTime) > 4.0F && !((IMiscCategory)miscCategory).getForce100PercentRecharge().get();
+			return this.combatify$getMissedAttackRecovery() && this.combatify$getAttackStrengthStartValue() - (this.attackStrengthTicker - baseTime) > 4.0F && !((IMiscCategory)miscCategory).combatify$getForce100PercentRecharge().get();
 		}
 		return true;
 	}
@@ -101,7 +104,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		Item item = MethodHandler.getBlockingItem(thisPlayer).getItem();
 		if (thisPlayer.getCooldowns().isOnCooldown(item)) {
 			instance.tick(b, v);
-		} else if(((ItemExtensions) item).getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
+		} else if(((ItemExtensions) item).combatify$getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).combatify$getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
 			if(v < 1.0F) {
 				v = 1.0F;
 			}
@@ -126,7 +129,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public boolean hasEnabledShieldOnCrouch() {
+	public boolean combatify$hasEnabledShieldOnCrouch() {
 		return ((IOptions)minecraft.options).shieldCrouch().get();
 	}
 }

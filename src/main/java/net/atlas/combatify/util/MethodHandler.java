@@ -4,6 +4,9 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.item.NewAttributes;
+import net.atlas.combatify.mixin.accessors.AttributeInstanceAccessor;
+import net.atlas.combatify.mixin.accessors.BlockBehaviourAccessor;
+import net.atlas.combatify.mixin.accessors.ThrownTridentAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -25,8 +28,6 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class MethodHandler {
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -40,17 +41,17 @@ public class MethodHandler {
 			return damageBonus;
 		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
 
-		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
+		for(AttributeModifier attributeModifier : ((AttributeInstanceAccessor) attributeInstance).combatify$getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
 			attributeInstanceBaseValue += attributeModifier.getAmount();
 		}
 
 		double withDamageBonus = attributeInstanceBaseValue + damageBonus;
 
-		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
+		for(AttributeModifier attributeModifier2 : ((AttributeInstanceAccessor) attributeInstance).combatify$getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
 			withDamageBonus += attributeInstanceBaseValue * attributeModifier2.getAmount();
 		}
 
-		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
+		for(AttributeModifier attributeModifier2 : ((AttributeInstanceAccessor) attributeInstance).combatify$getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
 			withDamageBonus *= 1.0 + attributeModifier2.getAmount();
 		}
 
@@ -67,7 +68,7 @@ public class MethodHandler {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity);
 		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
+			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType();
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
 			else
@@ -86,7 +87,7 @@ public class MethodHandler {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity);
 		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
+			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType();
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
 			else
@@ -121,7 +122,7 @@ public class MethodHandler {
 		if(instance.getType() == HitResult.Type.BLOCK) {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
-			boolean bl = !player.level().getBlockState(blockPos).canOcclude() && !player.level().getBlockState(blockPos).getBlock().hasCollision;
+			boolean bl = !player.level().getBlockState(blockPos).canOcclude() && !((BlockBehaviourAccessor) player.level().getBlockState(blockPos).getBlock()).getHasCollision();
 			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			if (rayTraceResult != null && bl) {
 				return rayTraceResult;
@@ -136,12 +137,12 @@ public class MethodHandler {
 			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK) {
 				return entity.getUseItem();
 			}
-		} else if ((entity.onGround() && entity.isCrouching() && ((LivingEntityExtensions) entity).hasEnabledShieldOnCrouch() || entity.isPassenger()) && ((LivingEntityExtensions)entity).hasEnabledShieldOnCrouch()) {
+		} else if ((entity.onGround() && entity.isCrouching() && ((LivingEntityExtensions) entity).combatify$hasEnabledShieldOnCrouch() || entity.isPassenger()) && ((LivingEntityExtensions)entity).combatify$hasEnabledShieldOnCrouch()) {
 			for(InteractionHand hand : InteractionHand.values()) {
 				ItemStack var1 = entity.getItemInHand(hand);
 				Item blockingItem = var1.getItem();
-				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
+				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).combatify$getBlockingType().requireFullCharge();
+				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).combatify$getBlockingType().canCrouchBlock() && !bl) {
 					return var1;
 				}
 			}
@@ -159,7 +160,7 @@ public class MethodHandler {
 		float strengthScale = player.getAttackStrengthScale(baseTime);
 		if (strengthScale > 1.95F && !player.isCrouching()) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
+			chargedBonus = ((ItemExtensions) item).combatify$getChargedAttackBonus();
 		}
 		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
 	}
@@ -201,7 +202,7 @@ public class MethodHandler {
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
 		if(trident.getY() <= -65 && j > 0) {
-			if (!trident.isAcceptibleReturnOwner()) {
+			if (!((ThrownTridentAccessor) trident).isAcceptibleReturnOwner()) {
 				trident.discard();
 			} else {
 				trident.setNoPhysics(true);

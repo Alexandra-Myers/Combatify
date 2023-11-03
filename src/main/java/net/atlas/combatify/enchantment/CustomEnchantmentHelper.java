@@ -8,7 +8,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 public class CustomEnchantmentHelper {
 	public static int getChopping(LivingEntity entity) {
 		Enchantments enchantments = new Enchantments();
-		return EnchantmentHelper.getEnchantmentLevel(((IEnchantments)enchantments).getCleavingEnchantment(), entity);
+		return EnchantmentHelper.getEnchantmentLevel(((IEnchantments)enchantments).combatify$getCleavingEnchantment(), entity);
 	}
 	public static int getPierce(LivingEntity entity) {
 		return EnchantmentHelper.getEnchantmentLevel(PiercingEnchantment.PIERCER, entity);

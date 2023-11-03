@@ -15,9 +15,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 
 import java.util.Arrays;
@@ -41,7 +38,7 @@ public class ClientNetworkingHandler {
 			for (Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
-					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+					((ItemExtensions) item).combatify$setStackSize(configurableItemData.stackSize);
 			}
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
@@ -58,7 +55,7 @@ public class ClientNetworkingHandler {
 			for(Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
-					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+					((ItemExtensions) item).combatify$setStackSize(configurableItemData.stackSize);
 			}
 			Combatify.LOGGER.info("Loaded items config.");
 		});

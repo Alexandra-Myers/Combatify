@@ -6,6 +6,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.Tierable;
+import net.atlas.combatify.mixin.accessors.LivingEntityAccessor;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -40,7 +41,7 @@ public class NewShieldBlockingType extends BlockingType {
 			entity = source.getDirectEntity();
 			if (entity instanceof LivingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());
-				instance.blockUsingShield((LivingEntity) entity);
+				((LivingEntityAccessor) instance).blockUsingShield((LivingEntity) entity);
 			}
 		}
 
@@ -59,7 +60,7 @@ public class NewShieldBlockingType extends BlockingType {
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
 		if (stack.getItem() instanceof Tierable tierable)
-			var2 = tierable.getTier();
+			var2 = tierable.combatify$getTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		if(Combatify.CONFIG.defender()) {
@@ -78,7 +79,7 @@ public class NewShieldBlockingType extends BlockingType {
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
 		if (stack.getItem() instanceof Tierable tierable)
-			var2 = tierable.getTier();
+			var2 = tierable.combatify$getTier();
 		if (var2.getLevel() >= 4)
 			return 0.5;
 		return 0.25;
