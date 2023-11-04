@@ -25,8 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
-	@Shadow
 	@Final
+	@Shadow
 	private Minecraft minecraft;
 
 	@Shadow

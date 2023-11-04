@@ -29,7 +29,6 @@ public abstract class FishingHookMixin extends Entity {
 	public void injectChanges(Player player, Level level, int i, int j, CallbackInfo ci) {
 		if(Combatify.CONFIG.fishingHookKB())
 			setDeltaMovement(getDeltaMovement().multiply(1.5, 1, 1.5));
-
 	}
 
 	@Inject(method = "onHitEntity", at = @At(value = "TAIL"))

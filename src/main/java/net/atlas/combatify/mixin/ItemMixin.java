@@ -34,7 +34,7 @@ public abstract class ItemMixin implements ItemExtensions {
 
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN", ordinal = 1))
 	public int modifyBlockingType(int zero) {
-		return !combatify$getBlockingType().isEmpty() ? 72000 : 0;
+		return !combatify$getBlockingType().isEmpty() ? 72000 : zero;
 	}
 
 	@Override

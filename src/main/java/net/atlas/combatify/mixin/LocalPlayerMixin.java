@@ -41,8 +41,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Shadow
 	@Final
 	public ClientPacketListener connection;
+
 	@Final
-	@Unique
 	public Minecraft minecraft = Minecraft.getInstance();
 	@Unique
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;

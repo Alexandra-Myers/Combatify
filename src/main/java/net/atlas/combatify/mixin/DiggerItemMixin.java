@@ -2,6 +2,7 @@ package net.atlas.combatify.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,6 +27,7 @@ import java.util.function.Consumer;
 
 @Mixin(DiggerItem.class)
 public abstract class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
+	@Final
 	@Shadow
 	@Mutable
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
@@ -32,7 +35,7 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 		super(tier, properties);
 	}
 	@Override
-	public void modifyAttributeModifiers() {
+	public void combatify$modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		combatify$getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();

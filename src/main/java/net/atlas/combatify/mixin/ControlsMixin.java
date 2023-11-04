@@ -28,7 +28,9 @@ public abstract class ControlsMixin extends OptionsSubScreen {
 	}
 	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 6))
 	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener) {
-		assert this.minecraft != null;
+		//What ever kind of sourcery this is
+		if(this.minecraft == null) return guiEventListener;
+
 		return this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
 	}
 }

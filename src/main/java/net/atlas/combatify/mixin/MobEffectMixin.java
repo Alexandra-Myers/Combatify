@@ -11,6 +11,6 @@ public class MobEffectMixin {
 
 	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
 	public int changeInstantHealth(int constant) {
-		return Combatify.CONFIG.instantHealthBonus();
+		return constant == Combatify.CONFIG.instantHealthBonus() ? constant : Combatify.CONFIG.instantHealthBonus();
 	}
 }

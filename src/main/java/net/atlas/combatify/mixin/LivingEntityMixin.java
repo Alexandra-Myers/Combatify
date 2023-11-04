@@ -33,10 +33,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
@@ -80,14 +80,18 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	protected int useItemRemaining;
 
-	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
 		return !MethodHandler.getBlockingItem(thisEntity).isEmpty();
 	}
 
-	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
-	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
+	//@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
+	/**
+	 * @author zOnlyKroks
+	 * @reason	don't unconditionally kill other mixins
+	 */
+	@Overwrite
+	public void blockedByShield(LivingEntity target) {
 		double x = target.getX() - this.getX();
 		double z = target.getZ() - this.getZ();
 		double x2 = this.getX() - target.getX();
@@ -116,20 +120,18 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 		if(shieldItem.combatify$getBlockingType().isToolBlocker()) {
-			ci.cancel();
 			return;
 		}
 		MethodHandler.knockback(target, 0.5, x2, z2);
 		MethodHandler.knockback(thisEntity, 0.5, x, z);
-		ci.cancel();
 	}
 	@Override
 	public void combatify$setPiercingNegation(double negation) {
 		piercingNegation = negation;
 	}
 	@Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
-		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
+	public void combatify$addPiercing(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
+		if(source.getEntity() instanceof LivingEntity livingEntity && combatify$isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			double d = 0;
 			if(item instanceof PiercingItem piercingItem) {
@@ -147,8 +149,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 	@Inject(method = "getDamageAfterMagicAbsorb", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing1(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
-		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
+	public void combatify$addPiercing1(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
+		if(source.getEntity() instanceof LivingEntity livingEntity && combatify$isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			double d = 0;
 			if(item instanceof PiercingItem piercingItem) {
@@ -166,7 +168,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 	@SafeVarargs
-	public final boolean isSourceAnyOf(DamageSource source, ResourceKey<DamageType>... damageTypes) {
+	@Unique
+	public final boolean combatify$isSourceAnyOf(DamageSource source, ResourceKey<DamageType>... damageTypes) {
 		boolean bl = false;
 		for(ResourceKey<DamageType> damageType : damageTypes) {
 			bl |= source.is(damageType);
@@ -178,7 +181,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return 10;
 	}
 
-	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+	/*@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
 	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
 		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
 			if(MethodHandler.getBlockingItem(thisEntity).getItem() instanceof ItemExtensions shieldItem) {
@@ -186,9 +189,21 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 		return false;
+	}*/
+
+	@ModifyExpressionValue(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+	public boolean combatify$modifyShield(boolean original,DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
+		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
+			if(MethodHandler.getBlockingItem(thisEntity).getItem() instanceof ItemExtensions shieldItem) {
+				shieldItem.combatify$getBlockingType().block(thisEntity, null, MethodHandler.getBlockingItem(thisEntity), source, amount, f, g, bl);
+			}
+		}
+
+		return false;
 	}
+
 	@ModifyConstant(method = "hurt", constant = @Constant(intValue = 20, ordinal = 0))
-	public int changeIFrames(int constant, @Local(ordinal = 0) final DamageSource source, @Local(ordinal = 0) final float amount) {
+	public int combatify$changeIFrames(int constant, @Local(ordinal = 0) final DamageSource source, @Local(ordinal = 0) final float amount) {
 		Entity entity2 = source.getEntity();
 		int invulnerableTime = 10;
 		if (entity2 instanceof Player player) {

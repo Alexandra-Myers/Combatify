@@ -1,11 +1,12 @@
 package net.atlas.combatify.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.atlas.combatify.Combatify;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
@@ -16,12 +17,11 @@ public abstract class EntityMixin {
 	@Shadow
 	public abstract float getBbHeight();
 
-	@ModifyReturnValue(method = "getPickRadius", at = @At(value = "RETURN"))
-	public float inflateBoxes(float original) {
+	@Inject(method = "getPickRadius", at = @At(value = "HEAD"))
+	public void inflateBoxes(CallbackInfoReturnable<Float> cir) {
 		float f = Math.max(getBbWidth(), getBbHeight());
 		if (f < Combatify.CONFIG.minHitboxSize()) {
-		  return (Combatify.CONFIG.minHitboxSize() - f) * 0.5F;
+		  cir.setReturnValue((Combatify.CONFIG.minHitboxSize() - f) * 0.5F);
 		}
-		return original;
 	}
 }

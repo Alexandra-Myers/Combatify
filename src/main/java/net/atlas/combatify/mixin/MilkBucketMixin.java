@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.atlas.combatify.Combatify;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MilkBucketItem;
@@ -11,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MilkBucketItem.class)
 public class MilkBucketMixin {
 
-	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
-	public void getUseDuration(ItemStack itemStack, CallbackInfoReturnable<Integer> cir) {
-		cir.setReturnValue(Combatify.CONFIG.milkBucketUseDuration());
+	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
+	public int getUseDuration(int original) {
+		return original != Combatify.CONFIG.milkBucketUseDuration() ? Combatify.CONFIG.milkBucketUseDuration() : original;
 	}
 }

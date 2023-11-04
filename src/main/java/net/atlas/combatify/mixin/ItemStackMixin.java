@@ -48,11 +48,6 @@ public abstract class ItemStackMixin {
 	@Shadow
 	public abstract boolean isEnchanted();
 
-	@Shadow
-	@Final
-	@Deprecated
-	private @Nullable Item item;
-
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
@@ -165,7 +160,7 @@ public abstract class ItemStackMixin {
 		return true;
 	}
 	@ModifyReturnValue(method = "useOn", at = @At(value = "RETURN"))
-	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0) UseOnContext useOnContext) {
+	public InteractionResult combatify$addBlockAbility(InteractionResult original, @Local(ordinal = 0) UseOnContext useOnContext) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand()).getItem();
 		if (!((ItemExtensions)item).combatify$getBlockingType().isEmpty() && original == InteractionResult.PASS) {
@@ -186,12 +181,12 @@ public abstract class ItemStackMixin {
 	}
 
 	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
-	public boolean addEnchantability(boolean original) {
+	public boolean combatify$addEnchantability(boolean original) {
 		return (!((ItemExtensions)getItem()).combatify$getBlockingType().isEmpty() && !isEnchanted()) || original;
 	}
 
 	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
-	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
+	public InteractionResultHolder<ItemStack> combatify$addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = player.getItemInHand(hand).getItem();
 		if (!((ItemExtensions)item).combatify$getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {

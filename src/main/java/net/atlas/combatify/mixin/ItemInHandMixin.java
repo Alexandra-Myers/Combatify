@@ -42,17 +42,19 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Shadow
 	protected abstract void applyItemArmTransform(PoseStack matrices, HumanoidArm arm, float equipProgress);
 
+	@Unique
 	AnimationsCategory animationsCategory = CookeyMod.getInstance().getConfig().getCategory(AnimationsCategory.class);
 
 	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
 
 	//This works, trust us
+	//Note from zOnlyKroks: sketchy to say the least
 	@ModifyVariable(method = "tick", slice = @Slice(
 			from = @At(value = "JUMP", ordinal = 3)
 	), at = @At(value = "FIELD", ordinal = 0))
 	public float modifyArmHeight(float f) {
-		f *= 0.5;
+		f *= 0.5F;
 		f = f * f * f * 0.25F + 0.75F;
 		return f;
 	}

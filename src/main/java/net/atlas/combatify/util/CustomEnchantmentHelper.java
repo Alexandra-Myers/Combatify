@@ -15,7 +15,7 @@ public interface CustomEnchantmentHelper {
 		}
 		return EnchantmentHelper.getDamageBonus(level, entity.getMobType());
 	}
-	static float getKnockbackDebuff(ItemStack level, LivingEntity entity) {
+	/*static float getKnockbackDebuff(ItemStack level, LivingEntity entity) {
 		return getDamageBonus(level, entity) / 2.5F;
 	}
 
@@ -29,5 +29,5 @@ public interface CustomEnchantmentHelper {
 		}
 
 		return i;
-	}
+	}*/
 }

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.*;
 
@@ -46,7 +47,8 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				attributes.add(index, new ClientboundUpdateAttributesPacket.AttributeSnapshot(attributeSnapshot.getAttribute(), attributeSnapshot.getBase() - 1.5, newModifiers));
 			}
 	}
-	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Attribute attribute) {
+	@Unique
+	private double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Attribute attribute) {
 		double attributeInstanceBaseValue = baseValue;
 		List<AttributeModifier> additionList = modifiers
 			.stream()
@@ -75,11 +77,13 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 
 		return attribute.sanitizeValue(attributeInstanceBaseValue);
 	}
+	@Unique
 	private static int CTSMath(double attackSpeed) {
 		double d = attackSpeed - 1.5;
 		d = 1.0 / d * 20.0 + 0.5;
 		return (int) (d);
 	}
+	@Unique
 	private static int vanillaMath(double attackSpeed) {
 		double d = attackSpeed;
 		d = 1.0 / d * 20.0;

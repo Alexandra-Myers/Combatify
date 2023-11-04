@@ -219,7 +219,7 @@ public class NetworkingHandler {
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 			for(Item item : items) {
-				((ItemExtensions) item).modifyAttributeModifiers();
+				((ItemExtensions) item).combatify$modifyAttributeModifiers();
 			}
 			for(Item item : ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);

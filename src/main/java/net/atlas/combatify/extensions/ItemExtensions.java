@@ -4,7 +4,7 @@ import net.atlas.combatify.util.BlockingType;
 
 public interface ItemExtensions {
 
-	default void modifyAttributeModifiers() {
+	default void combatify$modifyAttributeModifiers() {
 
 	}
 

@@ -32,7 +32,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 	}
 
 	@Override
-	public void modifyAttributeModifiers() {
+	public void combatify$modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		combatify$getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();

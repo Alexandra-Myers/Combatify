@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
@@ -37,7 +38,6 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@Final
 	private Minecraft minecraft;
 
-	@SuppressWarnings("unused")
 	@ModifyExpressionValue(
 		method = "getPickRange",
 		require = 2, allow = 2, at = { @At(value = "CONSTANT", args = "floatValue=5.0F"), @At(value = "CONSTANT", args = "floatValue=4.5F") })
@@ -48,9 +48,9 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		return 4.5F;
 	}
 
-	@Inject(method = "hasFarPickRange", at = @At(value = "RETURN"), cancellable = true)
-	public void hasFarPickRange(CallbackInfoReturnable<Boolean> cir) {
-		cir.setReturnValue(false);
+	@ModifyReturnValue(method = "hasFarPickRange", at = @At(value = "RETURN"))
+	public boolean hasFarPickRange(boolean original) {
+		return false;
 	}
 
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))

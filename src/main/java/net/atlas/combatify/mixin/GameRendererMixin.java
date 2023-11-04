@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @SuppressWarnings("unused")
 @Mixin(GameRenderer.class)
-abstract class GameRendererMixin implements ResourceManagerReloadListener/*, AutoCloseable*/ {
+abstract class GameRendererMixin implements ResourceManagerReloadListener {
     @Shadow
 	@Final
 	Minecraft minecraft;

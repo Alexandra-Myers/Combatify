@@ -128,9 +128,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
-	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
-		ci.cancel();
+	@ModifyExpressionValue(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"))
+	public boolean blockUsingShield(boolean original) {
+		return false;
 	}
 
 	@Override
@@ -150,9 +150,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
-	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
-	public void attack(Entity target, CallbackInfo ci) {
-		if(!combatify$isAttackAvailable(baseValue)) ci.cancel();
+	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;isAttackable()Z"))
+	public boolean attack(boolean original) {
+		return original && combatify$isAttackAvailable(baseValue);
 	}
 	@Inject(method = "attack", at = @At(value = "TAIL"))
 	public void resetTicker(Entity target, CallbackInfo ci) {

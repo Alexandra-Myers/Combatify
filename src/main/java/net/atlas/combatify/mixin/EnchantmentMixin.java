@@ -26,7 +26,7 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 	public Enchantment thisEnchantment = Enchantment.class.cast(this);
 
 	@Inject(method = "canEnchant", at = @At(value = "HEAD"), cancellable = true)
-	public void canEnchant(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+	public void combatify$canEnchant(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
 		if(thisEnchantment instanceof SweepingEdgeEnchantment) {
 			cir.setReturnValue(stack.getItem() instanceof TieredItem);
 		}

@@ -29,4 +29,9 @@ public class ItemRegistry {
 
 		return Registry.register(BuiltInRegistries.ITEM, resourceLocation, item);
 	}
+
+	//Kroks, next time don't delete class loading shit
+	public static void registerWeapons() {
+
+	}
 }

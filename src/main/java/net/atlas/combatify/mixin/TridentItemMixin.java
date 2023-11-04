@@ -30,7 +30,7 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 		super(properties);
 	}
 	@Override
-	public void modifyAttributeModifiers() {
+	public void combatify$modifyAttributeModifiers() {
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		combatify$getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
