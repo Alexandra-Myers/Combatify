@@ -26,8 +26,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class MethodHandler {
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -102,11 +100,12 @@ public class MethodHandler {
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
 	}
-	public static HitResult clipFromPos(Entity entity, double reach, double mod) {
+	public static HitResult pickFromPos(Entity entity, BlockPos blockPos, double reach, double mod) {
+		reach = Math.max(reach - mod, 0);
 		Vec3 viewVector = entity.getViewVector(1);
 		Vec3 pos = entity.getEyePosition(1).add(viewVector.scale(mod));
-		Vec3 endResult = pos.add(Math.max(viewVector.x * (reach - mod), 0), Math.max(viewVector.y * (reach - mod), 0), Math.max(viewVector.z * (reach - mod), 0));
-		return entity.level().clip(new ClipContext(pos, endResult, ClipContext.Block.OUTLINE, net.minecraft.world.level.ClipContext.Fluid.NONE, entity));
+		Vec3 endPos = pos.add(viewVector.x * reach, viewVector.y * reach,viewVector.z * reach);
+		return entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
 	}
 	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
 		Vec3 from = player.getEyePosition(partialTicks);
@@ -132,16 +131,16 @@ public class MethodHandler {
 			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			if (rayTraceResult != null && bl) {
 				double reach = getCurrentAttackReach(player, 0);
-				int i = 0;
+				double d = 0;
 				HitResult check;
-				while (i <= Math.ceil(player.distanceTo(rayTraceResult.getEntity()))) {
-					check = clipFromPos(player, reach, i);
+				while (d <= Math.ceil(player.distanceTo(rayTraceResult.getEntity()))) {
+					check = pickFromPos(player, blockPos, reach, d);
 					if(check.getType() == HitResult.Type.BLOCK) {
 						bl = !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
 						if (!bl)
 							return instance;
 					}
-					i++;
+					d += 0.01;
 				}
 				return rayTraceResult;
 			} else {

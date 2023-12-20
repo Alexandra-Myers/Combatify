@@ -30,16 +30,16 @@ public class ClientMethodHandler {
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {
 				double reach = getCurrentAttackReach(player, 0);
-				int i = 0;
+				double d = 0;
 				HitResult check;
-				while (i <= Math.ceil(player.distanceTo(entity))) {
-					check = clipFromPos(player, reach, i);
+				while (d <= Math.ceil(player.distanceTo(entity))) {
+					check = pickFromPos(player, blockPos, reach, d);
 					if(check.getType() == HitResult.Type.BLOCK) {
 						bl = !level.getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !level.getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
 						if (!bl)
 							return instance;
 					}
-					i++;
+					d += 0.1;
 				}
 				minecraft.crosshairPickEntity = entity;
 				minecraft.hitResult = rayTraceResult;
