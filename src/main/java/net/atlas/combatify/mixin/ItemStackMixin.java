@@ -167,7 +167,7 @@ public abstract class ItemStackMixin {
 				holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
 			}
 		}
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item) && original != InteractionResult.PASS && original != InteractionResult.FAIL) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
 				Objects.requireNonNull(useOnContext.getPlayer()).getCooldowns().addCooldown(item, configurableItemData.cooldown);
@@ -193,7 +193,7 @@ public abstract class ItemStackMixin {
 				holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
 			}
 		}
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item) && original.getResult() != InteractionResult.PASS && original.getResult() != InteractionResult.FAIL) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
 				player.getCooldowns().addCooldown(item, configurableItemData.cooldown);

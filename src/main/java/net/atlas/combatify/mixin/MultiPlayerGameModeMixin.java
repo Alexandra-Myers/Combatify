@@ -33,21 +33,6 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	@Shadow
 	public abstract GameType getPlayerMode();
 
-	@Shadow
-	@Final
-	private Minecraft minecraft;
-
-	@SuppressWarnings("unused")
-	@ModifyExpressionValue(
-		method = "getPickRange",
-		require = 2, allow = 2, at = { @At(value = "CONSTANT", args = "floatValue=5.0F"), @At(value = "CONSTANT", args = "floatValue=4.5F") })
-	private float getActualReachDistance(final float reachDistance) {
-		if (minecraft.player != null) {
-			return (float) MethodHandler.getCurrentAttackReach(minecraft.player, 0.0F) + 2;
-		}
-		return 4.5F;
-	}
-
 	@Inject(method = "hasFarPickRange", at = @At(value = "RETURN"), cancellable = true)
 	public void hasFarPickRange(CallbackInfoReturnable<Boolean> cir) {
 		cir.setReturnValue(false);

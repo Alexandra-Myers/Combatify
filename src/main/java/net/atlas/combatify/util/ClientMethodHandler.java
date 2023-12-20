@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-import static net.atlas.combatify.util.MethodHandler.rayTraceEntity;
+import static net.atlas.combatify.util.MethodHandler.*;
 
 @Environment(EnvType.CLIENT)
 public class ClientMethodHandler {
@@ -26,9 +26,21 @@ public class ClientMethodHandler {
 			Level level = Objects.requireNonNull(minecraft.level);
 			Player player = Objects.requireNonNull(minecraft.player);
 			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, MethodHandler.getCurrentAttackReach(player, 0.0F));
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {
+				double reach = getCurrentAttackReach(player, 0);
+				int i = 0;
+				HitResult check;
+				while (i <= Math.ceil(player.distanceTo(entity))) {
+					check = clipFromPos(player, reach, i);
+					if(check.getType() == HitResult.Type.BLOCK) {
+						bl = !level.getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !level.getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
+						if (!bl)
+							return instance;
+					}
+					i++;
+				}
 				minecraft.crosshairPickEntity = entity;
 				minecraft.hitResult = rayTraceResult;
 				return minecraft.hitResult;

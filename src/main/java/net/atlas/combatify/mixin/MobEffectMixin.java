@@ -9,6 +9,11 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 @Mixin(MobEffect.class)
 public class MobEffectMixin {
 
+	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))
+	public int changeInstantHealthTick(int constant) {
+		return Combatify.CONFIG.instantHealthBonus();
+	}
+
 	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
 	public int changeInstantHealth(int constant) {
 		return Combatify.CONFIG.instantHealthBonus();
