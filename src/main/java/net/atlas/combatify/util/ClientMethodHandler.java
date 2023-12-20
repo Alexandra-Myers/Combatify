@@ -29,10 +29,10 @@ public class ClientMethodHandler {
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {
-				double reach = getCurrentAttackReach(player, 0);
+				double reach = player.distanceTo(entity);
 				double d = 0;
 				HitResult check;
-				while (d <= Math.ceil(player.distanceTo(entity))) {
+				while (d <= Math.ceil(reach)) {
 					check = pickFromPos(player, blockPos, reach, d);
 					if(check.getType() == HitResult.Type.BLOCK) {
 						bl = !level.getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !level.getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;

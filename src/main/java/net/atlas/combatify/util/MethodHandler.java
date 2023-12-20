@@ -130,10 +130,10 @@ public class MethodHandler {
 			boolean bl = !player.level().getBlockState(blockPos).canOcclude() && !player.level().getBlockState(blockPos).getBlock().hasCollision;
 			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			if (rayTraceResult != null && bl) {
-				double reach = getCurrentAttackReach(player, 0);
+				double reach = player.distanceTo(rayTraceResult.getEntity());
 				double d = 0;
 				HitResult check;
-				while (d <= Math.ceil(player.distanceTo(rayTraceResult.getEntity()))) {
+				while (d <= Math.ceil(reach)) {
 					check = pickFromPos(player, blockPos, reach, d);
 					if(check.getType() == HitResult.Type.BLOCK) {
 						bl = !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
