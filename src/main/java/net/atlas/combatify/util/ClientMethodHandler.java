@@ -39,7 +39,7 @@ public class ClientMethodHandler {
 						if (!bl)
 							return instance;
 					}
-					d += 0.1;
+					d += 0.0001;
 				}
 				minecraft.crosshairPickEntity = entity;
 				minecraft.hitResult = rayTraceResult;
