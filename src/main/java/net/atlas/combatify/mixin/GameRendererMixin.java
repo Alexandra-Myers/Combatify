@@ -21,7 +21,7 @@ abstract class GameRendererMixin implements ResourceManagerReloadListener/*, Aut
 	@ModifyArg(method = "pick(F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/ProjectileUtil;getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"), index = 5)
 	private double getHigherRange(double original) {
 		if (this.minecraft.player != null) {
-			return MethodHandler.getCurrentAttackReach(minecraft.player,0.0F);
+			return MethodHandler.getSquaredCurrentAttackReach(minecraft.player,0.0F);
 		}
 		return original;
 	}
