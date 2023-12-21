@@ -100,12 +100,18 @@ public class MethodHandler {
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
 	}
-	public static HitResult pickFromPos(Entity entity, BlockPos blockPos, double reach, double mod) {
+	public static HitResult[] pickFromPos(Entity entity, double reach, double mod) {
 		reach = Math.max(reach - mod, 0);
 		Vec3 viewVector = entity.getViewVector(1);
 		Vec3 pos = entity.getEyePosition(1).add(viewVector.scale(mod));
 		Vec3 endPos = pos.add(viewVector.x * reach, viewVector.y * reach,viewVector.z * reach);
-		return entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
+		HitResult[] hitResults = new HitResult[3];
+		hitResults[0] = entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
+		endPos = pos.add(viewVector.x * reach, viewVector.y * reach, viewVector.z * reach * 0.99);
+		hitResults[1] = entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
+		endPos = pos.add(viewVector.x * reach * 0.99, viewVector.y * reach, viewVector.z * reach);
+		hitResults[2] = entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
+		return hitResults;
 	}
 	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
 		Vec3 from = player.getEyePosition(partialTicks);
@@ -132,15 +138,17 @@ public class MethodHandler {
 			if (rayTraceResult != null && bl) {
 				double reach = player.distanceTo(rayTraceResult.getEntity());
 				double d = 0;
-				HitResult check;
+				HitResult[] checkArray;
 				while (d <= Math.ceil(reach)) {
-					check = pickFromPos(player, blockPos, reach, d);
-					if(check.getType() == HitResult.Type.BLOCK) {
-						bl = !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
-						if (!bl)
-							return instance;
+					checkArray = pickFromPos(player, reach, d);
+					for (HitResult check : checkArray) {
+						if (check.getType() == HitResult.Type.BLOCK) {
+							bl = !player.level().getBlockState(((BlockHitResult) check).getBlockPos()).canOcclude() && !player.level().getBlockState(((BlockHitResult) check).getBlockPos()).getBlock().hasCollision;
+							if (!bl)
+								return instance;
+						}
 					}
-					d += 0.0001;
+					d += 0.0000001;
 				}
 				return rayTraceResult;
 			} else {
@@ -191,16 +199,13 @@ public class MethodHandler {
 		Vec3 eyePosition = camera.getEyePosition(1.0F);
 		Vec3 viewVector = camera.getViewVector(1.0F);
 		boolean bl = false;
-		double e = d;
+		double e;
 		if (d > getCurrentAttackReach(player, 0.0F)) {
 			bl = true;
 		}
 
-		e *= e;
-		if (hitResult != null) {
-			e = hitResult.getLocation().distanceToSqr(eyePosition);
-		}
-		Vec3 vec32 = eyePosition.add(viewVector.x * d, viewVector.y * d, viewVector.z * d);
+        e = hitResult.getLocation().distanceToSqr(eyePosition);
+        Vec3 vec32 = eyePosition.add(viewVector.x * d, viewVector.y * d, viewVector.z * d);
 		AABB aABB = camera.getBoundingBox().expandTowards(viewVector.scale(d)).inflate(1.0, 1.0, 1.0);
 		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(camera, eyePosition, vec32, aABB, (entityx) ->
 			!entityx.isSpectator() && entityx.isPickable(), e);
@@ -209,7 +214,7 @@ public class MethodHandler {
 			double h = eyePosition.distanceToSqr(vec33);
 			if (bl && h > getSquaredCurrentAttackReach(player, 0.0F)) {
 				hitResult = BlockHitResult.miss(vec33, Direction.getNearest(viewVector.x, viewVector.y, viewVector.z), BlockPos.containing(vec33));
-			} else if (h < e || hitResult == null) {
+			} else if (h < e) {
 				hitResult = entityHitResult;
 			}
 		}

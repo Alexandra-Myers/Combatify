@@ -33,15 +33,17 @@ public class ClientMethodHandler {
 			if (entity != null && bl) {
 				double enemyDistance = player.distanceTo(entity);
 				double d = 0;
-				HitResult check;
-				while (d <= Math.ceil(enemyDistance)) {
-					check = pickFromPos(player, blockPos, enemyDistance, d);
-					if(check.getType() == HitResult.Type.BLOCK) {
-						bl = !level.getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !level.getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
-						if (!bl)
-							return;
+				HitResult[] checkArray;
+				while (d <= enemyDistance) {
+					checkArray = pickFromPos(player, enemyDistance, d);
+					for (HitResult check : checkArray) {
+						if (check.getType() == HitResult.Type.BLOCK) {
+							bl = !level.getBlockState(((BlockHitResult) check).getBlockPos()).canOcclude() && !level.getBlockState(((BlockHitResult) check).getBlockPos()).getBlock().hasCollision;
+							if (!bl)
+								return;
+						}
 					}
-					d += 0.0001;
+					d += 0.0000001;
 				}
 				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
 				double reach = MethodHandler.getCurrentAttackReach(player, 1.0F);
