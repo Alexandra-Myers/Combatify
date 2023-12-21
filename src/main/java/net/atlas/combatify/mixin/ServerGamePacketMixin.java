@@ -61,7 +61,7 @@ public abstract class ServerGamePacketMixin {
 			}
 		}
 		// If target is not a player do vanilla code
-		Vec3 vec3 = player.getEyePosition(0.0F);
+		Vec3 vec3 = player.getEyePosition();
 		return vec3.distanceToSqr(MethodHandler.getNearestPointTo(instance, vec3));
 	}
 	@SuppressWarnings("unused")
