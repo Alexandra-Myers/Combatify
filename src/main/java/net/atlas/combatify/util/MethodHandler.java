@@ -148,7 +148,7 @@ public class MethodHandler {
 								return instance;
 						}
 					}
-					d += 0.0000001;
+					d += 0.00001;
 				}
 				return rayTraceResult;
 			} else {

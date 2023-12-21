@@ -43,7 +43,7 @@ public class ClientMethodHandler {
 								return;
 						}
 					}
-					d += 0.0000001;
+					d += 0.00001;
 				}
 				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
 				double reach = MethodHandler.getCurrentAttackReach(player, 1.0F);
