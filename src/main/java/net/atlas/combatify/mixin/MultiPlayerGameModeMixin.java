@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
@@ -32,6 +33,20 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 
 	@Shadow
 	public abstract GameType getPlayerMode();
+
+	@Shadow
+	@Final
+	private Minecraft minecraft;
+
+	@SuppressWarnings("unused")
+	@ModifyReturnValue(method = "getPickRange", at = @At(value = "RETURN"))
+	private float getActualReachDistance(float reachDistance) {
+		if (localPlayerMode.isCreative())
+			reachDistance -= 0.5F;
+		if (minecraft.player != null && MethodHandler.getCurrentAttackReach(minecraft.player, 0.0F) > reachDistance)
+			return (float) MethodHandler.getCurrentAttackReach(minecraft.player, 0.0F);
+		return reachDistance;
+	}
 
 	@Inject(method = "hasFarPickRange", at = @At(value = "RETURN"), cancellable = true)
 	public void hasFarPickRange(CallbackInfoReturnable<Boolean> cir) {

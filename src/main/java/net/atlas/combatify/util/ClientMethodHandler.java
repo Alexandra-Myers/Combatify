@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,20 +32,6 @@ public class ClientMethodHandler {
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null && bl) {
-				double enemyDistance = player.distanceTo(entity);
-				double d = 0;
-				HitResult[] checkArray;
-				while (d <= enemyDistance) {
-					checkArray = pickFromPos(player, enemyDistance, d);
-					for (HitResult check : checkArray) {
-						if (check.getType() == HitResult.Type.BLOCK) {
-							bl = !level.getBlockState(((BlockHitResult) check).getBlockPos()).canOcclude() && !level.getBlockState(((BlockHitResult) check).getBlockPos()).getBlock().hasCollision;
-							if (!bl)
-								return;
-						}
-					}
-					d += 0.00001;
-				}
 				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
 				double reach = MethodHandler.getCurrentAttackReach(player, 1.0F);
 				reach *= reach;
@@ -52,6 +39,19 @@ public class ClientMethodHandler {
 					reach = 6.25;
 				if (dist > reach)
 					return;
+				double enemyDistance = player.distanceTo(entity);
+				double d = 0;
+				HitResult check;
+				while (d <= enemyDistance) {
+					check = pickFromPos(player, enemyDistance, d);
+					if (check.getType() == HitResult.Type.BLOCK) {
+						BlockState state = level.getBlockState(((BlockHitResult) check).getBlockPos());
+						bl = !state.canOcclude() && !state.getBlock().hasCollision;
+						if (!bl)
+							return;
+					}
+					d += 0.0002;
+				}
 				minecraft.hitResult = rayTraceResult;
 				if (entity instanceof LivingEntity || entity instanceof ItemFrame) {
 					minecraft.crosshairPickEntity = entity;

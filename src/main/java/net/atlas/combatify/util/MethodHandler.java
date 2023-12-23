@@ -23,6 +23,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,18 +102,12 @@ public class MethodHandler {
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
 	}
-	public static HitResult[] pickFromPos(Entity entity, double reach, double mod) {
+	public static HitResult pickFromPos(Entity entity, double reach, double mod) {
 		reach = Math.max(reach - mod, 0);
 		Vec3 viewVector = entity.getViewVector(1);
 		Vec3 pos = entity.getEyePosition(1).add(viewVector.scale(mod));
 		Vec3 endPos = pos.add(viewVector.x * reach, viewVector.y * reach,viewVector.z * reach);
-		HitResult[] hitResults = new HitResult[3];
-		hitResults[0] = entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
-		endPos = pos.add(viewVector.x * reach, viewVector.y * reach, viewVector.z * reach * 0.99);
-		hitResults[1] = entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
-		endPos = pos.add(viewVector.x * reach * 0.99, viewVector.y * reach, viewVector.z * reach);
-		hitResults[2] = entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
-		return hitResults;
+		return entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
 	}
 	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
 		Vec3 from = player.getEyePosition(partialTicks);
@@ -133,22 +129,22 @@ public class MethodHandler {
 		if(instance.getType() == HitResult.Type.BLOCK) {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
-			boolean bl = !player.level().getBlockState(blockPos).canOcclude() && !player.level().getBlockState(blockPos).getBlock().hasCollision;
+			Level level = player.level();
+			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
 			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			if (rayTraceResult != null && bl) {
 				double reach = player.distanceTo(rayTraceResult.getEntity());
 				double d = 0;
-				HitResult[] checkArray;
+				HitResult check;
 				while (d <= Math.ceil(reach)) {
-					checkArray = pickFromPos(player, reach, d);
-					for (HitResult check : checkArray) {
-						if (check.getType() == HitResult.Type.BLOCK) {
-							bl = !player.level().getBlockState(((BlockHitResult) check).getBlockPos()).canOcclude() && !player.level().getBlockState(((BlockHitResult) check).getBlockPos()).getBlock().hasCollision;
-							if (!bl)
-								return instance;
-						}
+					check = pickFromPos(player, reach, d);
+					if (check.getType() == HitResult.Type.BLOCK) {
+						BlockState state = level.getBlockState(((BlockHitResult) check).getBlockPos());
+						bl = !state.canOcclude() && !state.getBlock().hasCollision;
+						if (!bl)
+							return instance;
 					}
-					d += 0.00001;
+					d += 0.0002;
 				}
 				return rayTraceResult;
 			} else {
