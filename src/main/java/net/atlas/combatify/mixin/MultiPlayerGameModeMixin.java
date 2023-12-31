@@ -11,7 +11,11 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Interaction;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -46,7 +50,11 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		boolean isMiscTarget = target.getType().equals(EntityType.END_CRYSTAL)
 			|| target.getType().equals(EntityType.ITEM_FRAME)
 			|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
-			|| target.getType().equals(EntityType.PAINTING);
+			|| target.getType().equals(EntityType.PAINTING)
+			|| target instanceof ArmorStand
+			|| target instanceof Boat
+			|| target instanceof AbstractMinecart
+			|| target instanceof Interaction;
 		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks.get() || !isMiscTarget);
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))

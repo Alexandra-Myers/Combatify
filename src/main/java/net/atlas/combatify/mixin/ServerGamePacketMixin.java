@@ -60,7 +60,7 @@ public abstract class ServerGamePacketMixin implements IServerGamePacketListener
 			d = 6.25;
 		}
 		// If target is not a player do vanilla code
-		Vec3 vec3 = player.getEyePosition(0.0F);
+		Vec3 vec3 = player.getEyePosition();
 		return vec3.distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), vec3)) < d;
 	}
 	/**

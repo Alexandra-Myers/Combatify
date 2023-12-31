@@ -24,6 +24,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -155,7 +157,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			boolean isMiscTarget = target.getType().equals(EntityType.END_CRYSTAL)
 				|| target.getType().equals(EntityType.ITEM_FRAME)
 				|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
-				|| target.getType().equals(EntityType.PAINTING);
+				|| target.getType().equals(EntityType.PAINTING)
+				|| target instanceof ArmorStand
+				|| target instanceof Boat
+				|| target instanceof AbstractMinecart
+				|| target instanceof Interaction;
 			this.resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks.get() || !isMiscTarget);
 		}
 	}
