@@ -163,7 +163,7 @@ public abstract class ItemStackMixin {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand()).getItem();
 		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original == InteractionResult.PASS) {
-			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+			if(((ItemExtensions) item).getBlockingType().canUse(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand())) {
 				holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
 			}
 		}
@@ -179,17 +179,12 @@ public abstract class ItemStackMixin {
 		return original;
 	}
 
-	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
-	public boolean addEnchantability(boolean original) {
-		return (!((ItemExtensions)getItem()).getBlockingType().isEmpty() && !isEnchanted()) || original;
-	}
-
 	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
 	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = player.getItemInHand(hand).getItem();
 		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {
-			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+			if(((ItemExtensions) item).getBlockingType().canUse(world, player, hand)) {
 				holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
 			}
 		}
@@ -215,11 +210,9 @@ public abstract class ItemStackMixin {
 	}
 	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))
 	public UseAnim addBlockAnim(UseAnim original) {
-		if (original == UseAnim.NONE) {
-			if (!((ItemExtensions)getItem()).getBlockingType().isEmpty()) {
+		if (original == UseAnim.NONE)
+			if (!((ItemExtensions)getItem()).getBlockingType().isEmpty() && (!((ItemExtensions)getItem()).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()))
 				return UseAnim.BLOCK;
-			}
-		}
 		return original;
 	}
 }

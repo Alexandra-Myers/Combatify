@@ -9,13 +9,15 @@ public class ConfigurableWeaponData {
 	public final Double chargedReach;
 	public final Boolean tierable;
 	public final BlockingType blockingType;
-	ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType) {
+	public final Boolean hasSwordEnchants;
+	ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType, Boolean hasSwordEnchants) {
 		damageOffset = clamp(attackDamage, 0, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
 		this.chargedReach = clamp(chargedReach, 0, 10);
 		tierable = tiered;
 		this.blockingType = blockingType;
+		this.hasSwordEnchants = hasSwordEnchants;
 	}
 
 	public static Double clamp(Double d, double e, double f) {

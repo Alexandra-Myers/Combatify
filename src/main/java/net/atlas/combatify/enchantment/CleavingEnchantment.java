@@ -5,8 +5,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.DamageEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraft.world.item.enchantment.TridentImpalerEnchantment;
 
 public class CleavingEnchantment extends Enchantment implements CustomEnchantment {
 	public int level;
@@ -49,5 +51,10 @@ public class CleavingEnchantment extends Enchantment implements CustomEnchantmen
 	@Override
 	public boolean isAcceptibleAnvil(ItemStack stack) {
 		return this.canEnchant(stack);
+	}
+
+	@Override
+	protected boolean checkCompatibility(Enchantment enchantment) {
+		return super.checkCompatibility(enchantment) && !(enchantment instanceof PiercingEnchantment || enchantment instanceof DamageEnchantment || enchantment instanceof TridentImpalerEnchantment);
 	}
 }

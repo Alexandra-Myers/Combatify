@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 public class AnvilMenuMixin {
 	@ModifyExpressionValue(method = "createResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;canEnchant(Lnet/minecraft/world/item/ItemStack;)Z"))
 	public boolean redirectCheck(boolean original, @Local(ordinal = 0) Enchantment instance, @Local(ordinal = 0) ItemStack stack) {
-		return instance instanceof CustomEnchantment customEnchantment ? customEnchantment.isAcceptibleAnvil(stack) : original;
+		return original || ((CustomEnchantment) instance).isAcceptibleAnvil(stack);
 	}
 }

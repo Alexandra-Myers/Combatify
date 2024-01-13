@@ -13,6 +13,7 @@ import net.minecraft.world.item.Tiers;
 import java.util.UUID;
 
 public enum WeaponType {
+	EMPTY,
     SWORD,
 	LONGSWORD,
     AXE,
@@ -30,6 +31,8 @@ public enum WeaponType {
     }
 
     public void addCombatAttributes(Tier tier, ImmutableMultimap.Builder<Attribute, AttributeModifier> attributeModifiers) {
+		if (isEmpty())
+			return;
         double speed = this.getSpeed(tier);
         double damage = this.getDamage(tier);
         double reach = this.getReach();
@@ -41,6 +44,8 @@ public enum WeaponType {
         }
     }
 	public void addCombatAttributes(Tier tier, ArrayListMultimap<Attribute, AttributeModifier> attributeModifiers) {
+		if (isEmpty())
+			return;
 		double speed = this.getSpeed(tier);
 		double damage = this.getDamage(tier);
 		double reach = this.getReach();
@@ -88,7 +93,7 @@ public enum WeaponType {
 			}
 			case AXE -> {
 				if (!Combatify.CONFIG.ctsAttackBalancing()) {
-					return (!isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
+					return (isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
 				} else if (isCTSNotT1) {
 					return damageBonus + 2;
 				} else {
@@ -172,11 +177,24 @@ public enum WeaponType {
 	public double getChargedReach() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
-			if (configurableWeaponData.chargedReach != null) {
+			if (configurableWeaponData.chargedReach != null)
 				return configurableWeaponData.chargedReach;
-			}
 		}
 		return 1.0;
+	}
+	public boolean hasSwordEnchants() {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.hasSwordEnchants != null)
+				return configurableWeaponData.hasSwordEnchants;
+		}
+		return switch (this) {
+			case SWORD, AXE, LONGSWORD, KNIFE -> true;
+			default -> false;
+		};
+	}
+	public boolean isEmpty() {
+		return this == EMPTY;
 	}
 	public static WeaponType fromID(String id) {
 		return valueOf(id);

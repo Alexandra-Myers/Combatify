@@ -30,6 +30,8 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	}
 	@Override
 	public void modifyAttributeModifiers() {
+		if (getWeaponType().isEmpty())
+			return;
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
@@ -39,7 +41,7 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
-		if (Combatify.CONFIG.toolsAreWeapons() || bl) {
+		if (bl) {
 			amount -= 1;
 		}
 		instance.hurtAndBreak(amount, entity, breakCallback);
@@ -62,7 +64,7 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 			if (type != null)
 				return type;
 		}
-		return WeaponType.PICKAXE;
+		return WeaponType.EMPTY;
 	}
 	@Override
 	public double getChargedAttackBonus() {

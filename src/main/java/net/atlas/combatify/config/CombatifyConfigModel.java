@@ -9,7 +9,6 @@ import io.wispforest.owo.config.annotation.*;
 @Config(name = "combatify-config", wrapperName = "CombatifyConfig")
 public class CombatifyConfigModel {
 	@SectionHeader("Booleans")
-	public boolean toolsAreWeapons = false;
 	public boolean midairKB = false;
 	public boolean fishingHookKB = false;
 	public boolean fistDamage = false;

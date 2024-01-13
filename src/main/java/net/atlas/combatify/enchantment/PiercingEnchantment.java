@@ -51,7 +51,7 @@ public class PiercingEnchantment extends Enchantment implements CustomEnchantmen
 
 	@Override
 	protected boolean checkCompatibility(Enchantment enchantment) {
-		return !(enchantment instanceof CleavingEnchantment || enchantment instanceof DamageEnchantment || enchantment instanceof TridentImpalerEnchantment);
+		return super.checkCompatibility(enchantment) && !(enchantment instanceof CleavingEnchantment || enchantment instanceof DamageEnchantment || enchantment instanceof TridentImpalerEnchantment);
 	}
 
 	public static void registerEnchants() {

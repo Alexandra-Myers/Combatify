@@ -112,4 +112,5 @@ public abstract class BlockingType {
 	public abstract float getShieldBlockDamageValue(ItemStack stack);
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
 	public abstract @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand);
+	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
 }

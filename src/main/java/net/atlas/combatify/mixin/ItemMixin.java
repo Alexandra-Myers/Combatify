@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
@@ -24,19 +26,30 @@ public abstract class ItemMixin implements ItemExtensions {
 		((Item) (Object)this).maxStackSize = stackSize;
 	}
 
-	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
-	public void getUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
+	public int getUseDuration(int original, @Local(ordinal = 0) ItemStack stack) {
 		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
-			cir.setReturnValue(Combatify.CONFIG.stewUseDuration());
-		} else if (stack.getItem().isEdible()) {
-			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
+			return Combatify.CONFIG.stewUseDuration();
 		} else {
 			if (!getBlockingType().isEmpty()) {
-				cir.setReturnValue(72000);
-				return;
+				if (!getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
+					return 72000;
+                }
 			}
-			cir.setReturnValue(0);
 		}
+		return original;
+	}
+
+	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
+	public boolean addEnchantability(boolean original) {
+		boolean enchantable = false;
+		Item item = Item.class.cast(this);
+		if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.isEnchantable != null)
+				enchantable = configurableItemData.isEnchantable;
+		}
+		return enchantable || original;
 	}
 
 	@Override

@@ -38,4 +38,9 @@ public class EmptyBlockingType extends BlockingType {
 	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		return InteractionResultHolder.pass(user.getItemInHand(hand));
 	}
+
+	@Override
+	public boolean canUse(Level world, Player user, InteractionHand hand) {
+		return false;
+	}
 }
