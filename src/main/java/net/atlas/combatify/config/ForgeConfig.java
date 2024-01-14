@@ -9,7 +9,6 @@ import net.minecraft.ReportedException;
 import java.lang.reflect.Field;
 
 public class ForgeConfig {
-	public BooleanOption toolsAreWeapons;
 	public BooleanOption midairKB;
 	public BooleanOption fishingHookKB;
 	public BooleanOption fistDamage;
@@ -56,8 +55,6 @@ public class ForgeConfig {
 
     public ForgeConfig() {
 		MidnightConfig.init("combatify", WrappableConfig.class);
-
-        toolsAreWeapons = defineBoolean(WrappableConfig.class, "toolsAreWeapons");
 
         midairKB = defineBoolean(WrappableConfig.class, "midairKB");
 

@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.atlas.combatify.util.TestBlockingType;
 import net.atlas.combatify.util.UtilClass;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;

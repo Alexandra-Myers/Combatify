@@ -5,7 +5,6 @@ import com.google.common.collect.HashBiMap;
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.event.ClientForgeBusEventHandler;
 import net.atlas.combatify.mixin.ServerGamePacketListenerAccessor;
 import net.atlas.combatify.networking.C2SConfigPacket;
@@ -19,7 +18,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.HashMap;
 import java.util.Map;

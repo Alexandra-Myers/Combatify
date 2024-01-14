@@ -7,7 +7,6 @@ import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraftforge.common.ForgeMod;
@@ -16,6 +15,7 @@ import net.minecraftforge.common.IExtensibleEnum;
 import java.util.UUID;
 
 public enum WeaponType implements IExtensibleEnum {
+	EMPTY,
     SWORD,
 	LONGSWORD,
     AXE,
@@ -33,6 +33,7 @@ public enum WeaponType implements IExtensibleEnum {
     }
 
     public void addCombatAttributes(Tier tier, ImmutableMultimap.Builder<Attribute, AttributeModifier> attributeModifiers) {
+		if (isEmpty()) return;
         double speed = this.getSpeed(tier);
         double damage = this.getDamage(tier);
         double reach = this.getReach();
@@ -44,6 +45,7 @@ public enum WeaponType implements IExtensibleEnum {
         }
     }
 	public void addCombatAttributes(Tier tier, ArrayListMultimap<Attribute, AttributeModifier> attributeModifiers) {
+		if (isEmpty()) return;
 		double speed = this.getSpeed(tier);
 		double damage = this.getDamage(tier);
 		double reach = this.getReach();
@@ -64,14 +66,12 @@ public enum WeaponType implements IExtensibleEnum {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.damageOffset != null) {
 				if (configurableWeaponData.tierable) {
-					if (isCTSNotT1) {
+					if (isCTSNotT1)
 						return damageBonus + configurableWeaponData.damageOffset;
-					} else {
+					else
 						return damageBonus + configurableWeaponData.damageOffset + 1.0;
-					}
-				} else {
+				} else
 					return modifier + configurableWeaponData.damageOffset;
-				}
 			}
 		}
 		switch (this) {
@@ -91,7 +91,7 @@ public enum WeaponType implements IExtensibleEnum {
 			}
 			case AXE -> {
 				if (!Combatify.CONFIG.ctsAttackBalancing.get()) {
-					return (!isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
+					return (isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
 				} else if (isCTSNotT1) {
 					return damageBonus + 2;
 				} else {
@@ -100,9 +100,8 @@ public enum WeaponType implements IExtensibleEnum {
 			}
 			case LONGSWORD, HOE -> {
 				if (tier != Tiers.IRON && tier != Tiers.DIAMOND) {
-					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4) {
+					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4)
 						return tier == Tiers.NETHERITE ? 2 + modifier : 2 + damageBonus - 4 + modifier;
-					}
 
 					return modifier;
 				}
@@ -123,9 +122,8 @@ public enum WeaponType implements IExtensibleEnum {
     public double getSpeed(Tier tier) {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
-			if (configurableWeaponData.speed != null) {
+			if (configurableWeaponData.speed != null)
 				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed.get();
-			}
 		}
 		switch (this) {
 			case KNIFE -> {
@@ -138,16 +136,15 @@ public enum WeaponType implements IExtensibleEnum {
 				return -0.5;
 			}
 			case HOE -> {
-				if (tier == Tiers.WOOD) {
+				if (tier == Tiers.WOOD)
 					return -0.5;
-				} else if (tier == Tiers.IRON) {
+				else if (tier == Tiers.IRON)
 					return 0.5;
-				} else if (tier == Tiers.DIAMOND || tier == Tiers.GOLD) {
+				else if (tier == Tiers.DIAMOND || tier == Tiers.GOLD)
 					return 1.0;
-				} else {
-					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4) {
+				else {
+					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4)
 						return 1.0;
-					}
 
 					return 0;
 				}
@@ -161,9 +158,8 @@ public enum WeaponType implements IExtensibleEnum {
     public double getReach() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
-			if (configurableWeaponData.reach != null) {
+			if (configurableWeaponData.reach != null)
 				return configurableWeaponData.reach - 2.5;
-			}
 		}
 		return switch (this) {
 			case KNIFE -> 0.25;
@@ -175,11 +171,24 @@ public enum WeaponType implements IExtensibleEnum {
 	public double getChargedReach() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
-			if (configurableWeaponData.chargedReach != null) {
+			if (configurableWeaponData.chargedReach != null)
 				return configurableWeaponData.chargedReach;
-			}
 		}
 		return 1.0;
+	}
+	public boolean hasSwordEnchants() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.hasSwordEnchants != null)
+				return configurableWeaponData.hasSwordEnchants;
+		}
+		return switch (this) {
+			case SWORD, AXE, LONGSWORD, KNIFE -> true;
+			default -> false;
+		};
+	}
+	public boolean isEmpty() {
+		return this == EMPTY;
 	}
 	public static WeaponType fromID(String id) {
 		return valueOf(id);

@@ -84,10 +84,14 @@ public class TestBlockingType extends BlockingType {
 	@Override
 	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		ItemStack itemStack = user.getItemInHand(hand);
-		if(user.isSprinting()) {
+		if (user.isSprinting())
 			user.setSprinting(false);
-		}
 		user.startUsingItem(hand);
 		return InteractionResultHolder.consume(itemStack);
+	}
+
+	@Override
+	public boolean canUse(Level world, Player user, InteractionHand hand) {
+		return false;
 	}
 }

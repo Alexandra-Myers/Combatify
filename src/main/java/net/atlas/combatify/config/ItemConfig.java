@@ -107,8 +107,11 @@ public class ItemConfig {
 						Double reach = null;
 						Double chargedReach = null;
 						BlockingType blockingType = null;
-						Boolean tierable = getBoolean(jsonObject, "tierable");
-						if (!jsonObject.has("tierable"))
+						Boolean tierable;
+						Boolean hasSwordEnchants = null;
+						if (jsonObject.has("tierable"))
+							tierable = getBoolean(jsonObject, "tierable");
+						else
 							throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean `tierable` if a weapon type is defined!"), "Configuring Weapon Types"));
 						if (jsonObject.has("damage_offset"))
 							damageOffset = getDouble(jsonObject, "damage_offset");
@@ -130,7 +133,9 @@ public class ItemConfig {
 							}
 							blockingType = Combatify.registeredTypes.get(blocking_type);
 						}
-						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType);
+						if (jsonObject.has("has_sword_enchants"))
+							hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
+						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants);
 						configuredWeapons.put(type, configurableWeaponData);
 					} else
 						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
@@ -315,26 +320,36 @@ public class ItemConfig {
 			Double blockStrength = buf1.readDouble();
 			Double blockKbRes = buf1.readDouble();
 			Integer enchantlevel = buf1.readInt();
-			if(damage == -100)
+			int isEnchantableAsInt = buf1.readInt();
+			int hasSwordEnchantsAsInt = buf1.readInt();
+			Boolean isEnchantable = null;
+			Boolean hasSwordEnchants = null;
+			if (damage == -10)
 				damage = null;
-			if(speed == -10)
+			if (speed == -10)
 				speed = null;
-			if(reach == -10)
+			if (reach == -10)
 				reach = null;
-			if(chargedReach == -10)
+			if (chargedReach == -10)
 				chargedReach = null;
-			if(stackSize == -10)
+			if (stackSize == -10)
 				stackSize = null;
-			if(cooldown == -10)
+			if (cooldown == -10)
 				cooldown = null;
-			if(blockStrength == -10)
+			if (blockStrength == -10)
 				blockStrength = null;
-			if(blockKbRes == -10)
+			if (blockKbRes == -10)
 				blockKbRes = null;
+			if (enchantlevel == -10)
+				enchantlevel = null;
+			if (isEnchantableAsInt != -10)
+				isEnchantable = isEnchantableAsInt == 1;
+			if (hasSwordEnchantsAsInt != -10)
+				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -344,15 +359,19 @@ public class ItemConfig {
 			Boolean tierable = buf1.readBoolean();
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			if(damageOffset == -10)
+			int hasSwordEnchantsAsInt = buf1.readInt();
+			Boolean hasSwordEnchants = null;
+			if (damageOffset == -10)
 				damageOffset = null;
-			if(speed == -10)
+			if (speed == -10)
 				speed = null;
-			if(reach == -10)
+			if (reach == -10)
 				reach = null;
-			if(chargedReach == -10)
+			if (chargedReach == -10)
 				chargedReach = null;
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType);
+			if (hasSwordEnchantsAsInt != -10)
+				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
+			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants);
 		});
 		return this;
 	}
@@ -371,7 +390,7 @@ public class ItemConfig {
 			buf1.writeBoolean(blockingType.requiresSwordBlocking());
 		});
 		buf.writeMap(configuredItems, (buf1, item) -> buf1.writeId(BuiltInRegistries.ITEM, item), (buf12, configurableItemData) -> {
-			buf12.writeDouble(configurableItemData.damage == null ? -100 : configurableItemData.damage);
+			buf12.writeDouble(configurableItemData.damage == null ? -10 : configurableItemData.damage);
 			buf12.writeDouble(configurableItemData.speed == null ? -10 : configurableItemData.speed);
 			buf12.writeDouble(configurableItemData.reach == null ? -10 : configurableItemData.reach);
 			buf12.writeDouble(configurableItemData.chargedReach == null ? -10 : configurableItemData.chargedReach);
@@ -384,6 +403,8 @@ public class ItemConfig {
 			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
 			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
 			buf12.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
+			buf12.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
+			buf12.writeInt(configurableItemData.hasSwordEnchants == null ? -10 : configurableItemData.hasSwordEnchants ? 1 : 0);
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -392,6 +413,7 @@ public class ItemConfig {
 			buf12.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
 			buf12.writeBoolean(configurableWeaponData.tierable);
 			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
+			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
 		});
 	}
 
@@ -410,6 +432,25 @@ public class ItemConfig {
 		Double blockStrength = null;
 		Double blockKbRes = null;
 		Integer enchantment_level = null;
+		Boolean isEnchantable = null;
+		Boolean hasSwordEnchants = null;
+		if (configuredItems.containsKey(item)) {
+			ConfigurableItemData oldData = configuredItems.get(item);
+			damage = oldData.damage;
+			speed = oldData.speed;
+			reach = oldData.reach;
+			chargedReach = oldData.chargedReach;
+			stack_size = oldData.stackSize;
+			cooldown = oldData.cooldown;
+			cooldownAfterUse = oldData.cooldownAfter;
+			type = oldData.type;
+			blockingType = oldData.blockingType;
+			blockStrength = oldData.blockStrength;
+			blockKbRes = oldData.blockKbRes;
+			enchantment_level = oldData.enchantability;
+			isEnchantable = oldData.isEnchantable;
+			hasSwordEnchants = oldData.hasSwordEnchants;
+		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
 		if (jsonObject.has("speed"))
@@ -449,7 +490,7 @@ public class ItemConfig {
 			}
 			blockingType = Combatify.registeredTypes.get(blocking_type);
 		}
-		if (cooldown != null) {
+		if (cooldown != null && cooldownAfterUse == null) {
 			if (!jsonObject.has("cooldown_after"))
 				throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!"), "Applying Item Cooldown"));
 			cooldownAfterUse = getBoolean(jsonObject, "cooldown_after");
@@ -460,7 +501,11 @@ public class ItemConfig {
 			blockKbRes = getDouble(jsonObject, "block_knockback_resistance");
 		if (jsonObject.has("enchantment_level"))
 			enchantment_level = getInt(jsonObject, "enchantment_level");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level);
+		if (jsonObject.has("is_enchantable"))
+			isEnchantable = getBoolean(jsonObject, "is_enchantable");
+		if (jsonObject.has("has_sword_enchants"))
+			hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants);
 		configuredItems.put(item, configurableItemData);
 	}
 }

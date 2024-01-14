@@ -78,4 +78,9 @@ public class ShieldBlockingType extends BlockingType {
 		player.startUsingItem(interactionHand);
 		return InteractionResultHolder.consume(itemStack);
 	}
+
+	@Override
+	public boolean canUse(Level world, Player user, InteractionHand hand) {
+		return true;
+	}
 }

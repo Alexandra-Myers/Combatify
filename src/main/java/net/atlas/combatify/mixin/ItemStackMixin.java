@@ -44,9 +44,6 @@ public abstract class ItemStackMixin {
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
-	@Shadow
-	public abstract boolean isEnchanted();
-
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
@@ -162,11 +159,9 @@ public abstract class ItemStackMixin {
 	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0) UseOnContext useOnContext) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand()).getItem();
-		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original == InteractionResult.PASS) {
-			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()) {
-				holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
-			}
-		}
+		if (!((ItemExtensions) item).getBlockingType().isEmpty() && original == InteractionResult.PASS)
+			if (((ItemExtensions) item).getBlockingType().canUse(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand()))
+				holder = ((ItemExtensions) item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item) && original != InteractionResult.PASS && original != InteractionResult.FAIL) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
@@ -179,20 +174,13 @@ public abstract class ItemStackMixin {
 		return original;
 	}
 
-	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
-	public boolean addEnchantability(boolean original) {
-		return (!((ItemExtensions)getItem()).getBlockingType().isEmpty() && !isEnchanted()) || original;
-	}
-
 	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
 	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0) Level world, @Local(ordinal = 0) Player player, @Local(ordinal = 0) InteractionHand hand) {
 		InteractionResultHolder<ItemStack> holder = null;
 		Item item = player.getItemInHand(hand).getItem();
-		if (!((ItemExtensions)item).getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS) {
-			if(!((ItemExtensions)item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()) {
-				holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
-			}
-		}
+		if (!((ItemExtensions) item).getBlockingType().isEmpty() && original.getResult() == InteractionResult.PASS)
+			if (((ItemExtensions) item).getBlockingType().canUse(world, player, hand))
+				holder = ((ItemExtensions) item).getBlockingType().use(world, player, hand);
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item) && original.getResult() != InteractionResult.PASS && original.getResult() != InteractionResult.FAIL) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
@@ -215,11 +203,9 @@ public abstract class ItemStackMixin {
 	}
 	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))
 	public UseAnim addBlockAnim(UseAnim original) {
-		if (original == UseAnim.NONE) {
-			if (!((ItemExtensions)getItem()).getBlockingType().isEmpty()) {
+		if (original == UseAnim.NONE)
+			if (!((ItemExtensions) getItem()).getBlockingType().isEmpty() && (!((ItemExtensions) getItem()).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()))
 				return UseAnim.BLOCK;
-			}
-		}
 		return original;
 	}
 }

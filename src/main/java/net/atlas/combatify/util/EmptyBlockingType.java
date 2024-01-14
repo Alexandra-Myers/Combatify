@@ -2,7 +2,6 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import net.atlas.combatify.Combatify;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -37,5 +36,10 @@ public class EmptyBlockingType extends BlockingType {
 	@Override
 	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		return InteractionResultHolder.pass(user.getItemInHand(hand));
+	}
+
+	@Override
+	public boolean canUse(Level world, Player user, InteractionHand hand) {
+		return false;
 	}
 }

@@ -16,7 +16,9 @@ public class ConfigurableItemData {
 	public final Double blockStrength;
 	public final Double blockKbRes;
 	public final Integer enchantability;
-	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability) {
+	public final Boolean isEnchantable;
+	public final Boolean hasSwordEnchants;
+	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants) {
 		damage = clamp(attackDamage, -10, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
@@ -29,6 +31,8 @@ public class ConfigurableItemData {
 		this.blockStrength = clamp(blockStrength, 0, 1000);
 		this.blockKbRes = clamp(blockKbRes, 0, 1);
 		this.enchantability = clamp(enchantability, 0, 1000);
+		this.isEnchantable = isEnchantable;
+		this.hasSwordEnchants = hasSwordEnchants;
 	}
 	public static Integer clamp(Integer i, int j, int k) {
 		if (i == null)

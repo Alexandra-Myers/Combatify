@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
@@ -11,10 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SuspiciousStewItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Objects;
 
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
@@ -24,19 +22,25 @@ public abstract class ItemMixin implements ItemExtensions {
 		((Item) (Object)this).maxStackSize = stackSize;
 	}
 
-	@Inject(method = "getUseDuration", at = @At(value = "RETURN"), cancellable = true)
-	public void getUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
-		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem) {
-			cir.setReturnValue(Combatify.CONFIG.stewUseDuration.get());
-		} else if (stack.getItem().isEdible()) {
-			cir.setReturnValue(Objects.requireNonNull(((Item) (Object) this).getFoodProperties()).isFastFood() ? 16 : 32);
-		} else {
-			if (!getBlockingType().isEmpty()) {
-				cir.setReturnValue(72000);
-				return;
-			}
-			cir.setReturnValue(0);
+	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
+	public int getUseDuration(int original,@Local(ordinal = 0) ItemStack stack) {
+		if (stack.getItem() instanceof BowlFoodItem || stack.getItem() instanceof SuspiciousStewItem)
+			return Combatify.CONFIG.stewUseDuration.get();
+		else if (!getBlockingType().isEmpty() && (!getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()))
+			return 72000;
+		return original;
+	}
+
+	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
+	public boolean addEnchantability(boolean original) {
+		boolean enchantable = false;
+		Item item = Item.class.cast(this);
+		if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.isEnchantable != null)
+				enchantable = configurableItemData.isEnchantable;
 		}
+		return enchantable || original;
 	}
 
 	@Override
@@ -46,9 +50,7 @@ public abstract class ItemMixin implements ItemExtensions {
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.type != null)
-				if (Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type))
-					if (Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach != null)
-						chargedBonus = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach;
+				chargedBonus = configurableItemData.type.getChargedReach();
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}

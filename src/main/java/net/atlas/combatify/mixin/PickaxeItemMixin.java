@@ -2,13 +2,13 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.WeaponType;
-import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.Tier;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(ShovelItem.class)
-public class ShovelItemMixin extends DiggerItemMixin {
-	public ShovelItemMixin(Tier tier, Properties properties) {
+@Mixin(PickaxeItem.class)
+public class PickaxeItemMixin extends DiggerItemMixin {
+	public PickaxeItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
 
@@ -19,7 +19,7 @@ public class ShovelItemMixin extends DiggerItemMixin {
 			if (type != null)
 				return type;
 		}
-		return WeaponType.SHOVEL;
+		return WeaponType.PICKAXE;
 	}
 
 }

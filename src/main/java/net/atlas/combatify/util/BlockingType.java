@@ -2,7 +2,6 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import net.atlas.combatify.Combatify;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -113,4 +112,5 @@ public abstract class BlockingType {
 	public abstract float getShieldBlockDamageValue(ItemStack stack);
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
 	public abstract @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand);
+	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
 }
