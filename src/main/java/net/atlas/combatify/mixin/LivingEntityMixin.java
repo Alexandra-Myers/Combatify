@@ -8,6 +8,8 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.networking.PacketRegistration;
+import net.atlas.combatify.networking.RemainingUseSyncPacket;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,6 +34,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -213,6 +216,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption.get()) {
 			useItemRemaining = thisEntity.getUseItem().getUseDuration();
+			PacketRegistration.MAIN.send(PacketDistributor.ALL.noArg(), new RemainingUseSyncPacket(getId(), useItemRemaining));
 		}
 	}
 	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "floatValue=10.0F", ordinal = 0))
@@ -310,5 +314,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				return amount;
 			}
 		}
+	}
+	@Override
+	public void setUseItemRemaining(int ticks) {
+		useItemRemaining = ticks;
 	}
 }
