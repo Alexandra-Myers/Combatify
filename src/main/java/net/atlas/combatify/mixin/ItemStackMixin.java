@@ -44,6 +44,12 @@ public abstract class ItemStackMixin {
 	@Final
 	public static DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
+	@Shadow
+	public abstract boolean isEnchanted();
+
+	@Shadow
+	public abstract boolean is(Item arg);
+
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
@@ -155,6 +161,30 @@ public abstract class ItemStackMixin {
 		}
 		return true;
 	}
+	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
+	public int getUseDuration(int original) {
+		Item item = getItem();
+		if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.useDuration != null)
+				return configurableItemData.useDuration;
+		} else if (!((ItemExtensions) item).getBlockingType().isEmpty() && (!((ItemExtensions) item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()))
+			return 72000;
+		return original;
+	}
+
+	@ModifyReturnValue(method = "isEnchantable", at = @At(value = "RETURN"))
+	public boolean addEnchantability(boolean original) {
+		boolean enchantable = false;
+		Item item = getItem();
+		if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.isEnchantable != null)
+				enchantable = configurableItemData.isEnchantable && !isEnchanted();
+		}
+		return enchantable || original;
+	}
+
 	@ModifyReturnValue(method = "useOn", at = @At(value = "RETURN"))
 	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0) UseOnContext useOnContext) {
 		InteractionResultHolder<ItemStack> holder = null;

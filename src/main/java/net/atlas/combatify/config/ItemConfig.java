@@ -1,8 +1,8 @@
 package net.atlas.combatify.config;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.CrashReport;
@@ -14,151 +14,124 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Supplier;
 
-public class ItemConfig {
-	public Map<Item, ConfigurableItemData> configuredItems = new HashMap<>();
-	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons = new HashMap<>();
+import static net.atlas.combatify.Combatify.*;
 
-	final Path configFolderPath;
-
-	File itemsFile;
-
-	JsonElement itemsJsonElement;
-
-	JsonObject itemsJsonObject;
+public class ItemConfig extends AtlasConfig {
+	public Map<Item, ConfigurableItemData> configuredItems;
+	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
 
 	public ItemConfig() {
-		configFolderPath = FMLPaths.CONFIGDIR.get();
-
-		load();
+		super(id("combatify-items"));
 	}
-	public void load() {
-		itemsFile = new File(configFolderPath.toAbsolutePath() + "/combatify-items.json");
-		if (!itemsFile.exists()) {
-			try {
-				itemsFile.createNewFile();
-				InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-items.json");
-				Files.write(itemsFile.toPath(), inputStream.readAllBytes());
-				inputStream.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+
+	@Override
+	protected void loadExtra(JsonObject object) {
+		if (!object.has("items"))
+			object.add("items", new JsonArray());
+		JsonElement items = object.get("items");
+		if (!object.has("weapon_types"))
+			object.add("weapon_types", new JsonArray());
+		JsonElement weapons = object.get("weapon_types");
+		if (!object.has("blocking_types"))
+			object.add("blocking_types", new JsonArray());
+		JsonElement defenders = object.get("blocking_types");
+		if (defenders instanceof JsonArray typeArray) {
+			typeArray.asList().forEach(jsonElement -> {
+				if (jsonElement instanceof JsonObject jsonObject) {
+					parseBlockingType(jsonObject);
+				} else
+					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Blocking Types"));
+			});
 		}
-
-		try {
-			itemsJsonElement = JsonParser.parseReader(new JsonReader(new FileReader(itemsFile)));
-
-			itemsJsonObject = itemsJsonElement.getAsJsonObject();
-			if (!itemsJsonObject.has("items"))
-				itemsJsonObject.add("items", new JsonArray());
-			JsonElement items = itemsJsonObject.get("items");
-			if (!itemsJsonObject.has("weapon_types"))
-				itemsJsonObject.add("weapon_types", new JsonArray());
-			JsonElement weapons = itemsJsonObject.get("weapon_types");
-			if (!itemsJsonObject.has("blocking_types"))
-				itemsJsonObject.add("blocking_types", new JsonArray());
-			JsonElement defenders = itemsJsonObject.get("blocking_types");
-			if (defenders instanceof JsonArray typeArray) {
-				typeArray.asList().forEach(jsonElement -> {
-					if (jsonElement instanceof JsonObject jsonObject) {
-						parseBlockingType(jsonObject);
-					} else
-						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Blocking Types"));
-				});
-			}
-			if (items instanceof JsonArray itemArray) {
-				itemArray.asList().forEach(jsonElement -> {
-					if (jsonElement instanceof JsonObject jsonObject) {
-						if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) {
-							itemsWithConfig.asList().forEach(
-								itemName -> {
-									Item item = itemFromName(itemName.getAsString());
-									parseItemConfig(item, jsonObject);
-								}
-							);
-						} else {
-							Item item = itemFromJson(jsonObject);
-							parseItemConfig(item, jsonObject);
-						}
-					} else
-						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
-				});
-			}
-			if (weapons instanceof JsonArray typeArray) {
-				typeArray.asList().forEach(jsonElement -> {
-					if (jsonElement instanceof JsonObject jsonObject) {
-						WeaponType type = typeFromJson(jsonObject);
-						Double damageOffset = null;
-						Double speed = null;
-						Double reach = null;
-						Double chargedReach = null;
-						BlockingType blockingType = null;
-						Boolean tierable;
-						Boolean hasSwordEnchants = null;
-						if (jsonObject.has("tierable"))
-							tierable = getBoolean(jsonObject, "tierable");
-						else
-							throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean `tierable` if a weapon type is defined!"), "Configuring Weapon Types"));
-						if (jsonObject.has("damage_offset"))
-							damageOffset = getDouble(jsonObject, "damage_offset");
-						if (jsonObject.has("speed"))
-							speed = getDouble(jsonObject, "speed");
-						if (jsonObject.has("reach"))
-							reach = getDouble(jsonObject, "reach");
-						if (jsonObject.has("charged_reach"))
-							chargedReach = getDouble(jsonObject, "charged_reach");
-						if (jsonObject.has("blocking_type")) {
-							String blocking_type = getString(jsonObject, "blocking_type");
-							blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-							if (!Combatify.registeredTypes.containsKey(blocking_type)) {
-								CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
-								CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
-								crashReportCategory.setDetail("Type name", blocking_type);
-								crashReportCategory.setDetail("Json Object", jsonObject);
-								throw new ReportedException(report);
+		if (items instanceof JsonArray itemArray) {
+			itemArray.asList().forEach(jsonElement -> {
+				if (jsonElement instanceof JsonObject jsonObject) {
+					if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) {
+						itemsWithConfig.asList().forEach(
+							itemName -> {
+								Item item = itemFromName(itemName.getAsString());
+								parseItemConfig(item, jsonObject);
 							}
-							blockingType = Combatify.registeredTypes.get(blocking_type);
+						);
+					} else {
+						Item item = itemFromJson(jsonObject);
+						parseItemConfig(item, jsonObject);
+					}
+				} else
+					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
+			});
+		}
+		if (weapons instanceof JsonArray typeArray) {
+			typeArray.asList().forEach(jsonElement -> {
+				if (jsonElement instanceof JsonObject jsonObject) {
+					WeaponType type = typeFromJson(jsonObject);
+					Double damageOffset = null;
+					Double speed = null;
+					Double reach = null;
+					Double chargedReach = null;
+					BlockingType blockingType = null;
+					Boolean tierable;
+					Boolean hasSwordEnchants = null;
+					if (jsonObject.has("tierable"))
+						tierable = getBoolean(jsonObject, "tierable");
+					else
+						throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean `tierable` if a weapon type is defined!"), "Configuring Weapon Types"));
+					if (jsonObject.has("damage_offset"))
+						damageOffset = getDouble(jsonObject, "damage_offset");
+					if (jsonObject.has("speed"))
+						speed = getDouble(jsonObject, "speed");
+					if (jsonObject.has("reach"))
+						reach = getDouble(jsonObject, "reach");
+					if (jsonObject.has("charged_reach"))
+						chargedReach = getDouble(jsonObject, "charged_reach");
+					if (jsonObject.has("blocking_type")) {
+						String blocking_type = getString(jsonObject, "blocking_type");
+						blocking_type = blocking_type.toLowerCase(Locale.ROOT);
+						if (!Combatify.registeredTypes.containsKey(blocking_type)) {
+							CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
+							CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+							crashReportCategory.setDetail("Type name", blocking_type);
+							crashReportCategory.setDetail("Json Object", jsonObject);
+							throw new ReportedException(report);
 						}
-						if (jsonObject.has("has_sword_enchants"))
-							hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
-						ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants);
-						configuredWeapons.put(type, configurableWeaponData);
-					} else
-						throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
-				});
-			}
-		} catch (IOException | IllegalStateException e) {
-			e.printStackTrace();
+						blockingType = Combatify.registeredTypes.get(blocking_type);
+					}
+					if (jsonObject.has("has_sword_enchants"))
+						hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
+					ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants);
+					configuredWeapons.put(type, configurableWeaponData);
+				} else
+					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
+			});
 		}
 	}
 
-	public static String getString(JsonObject element, String name) {
-		return element.get(name).getAsString();
+	@Override
+	protected InputStream getDefaultedConfig() {
+		return Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-items.json");
 	}
 
-	public static Integer getInt(JsonObject element, String name) {
-		return element.get(name).getAsInt();
+	@Override
+	public void defineConfigHolders() {
+		configuredItems = new HashMap<>();
+		configuredWeapons = new HashMap<>();
 	}
 
-	public static Double getDouble(JsonObject element, String name) {
-		return element.get(name).getAsDouble();
-	}
-	public static Boolean getBoolean(JsonObject element, String name) {
-		return element.get(name).getAsBoolean();
+	@Override
+	public <T> void alertChange(ConfigValue<T> tConfigValue, T newValue) {
+
 	}
 
 	public static Item itemFromJson(JsonObject jsonObject) {
@@ -274,6 +247,7 @@ public class ItemConfig {
 	}
 
 	public ItemConfig loadFromNetwork(FriendlyByteBuf buf) {
+		super.loadFromNetwork(buf);
 		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
 			try {
 				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
@@ -324,6 +298,7 @@ public class ItemConfig {
 			int hasSwordEnchantsAsInt = buf1.readInt();
 			Boolean isEnchantable = null;
 			Boolean hasSwordEnchants = null;
+			Integer useDuration = buf1.readInt();
 			if (damage == -10)
 				damage = null;
 			if (speed == -10)
@@ -346,10 +321,12 @@ public class ItemConfig {
 				isEnchantable = isEnchantableAsInt == 1;
 			if (hasSwordEnchantsAsInt != -10)
 				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
+			if (useDuration == -10)
+				useDuration = null;
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -377,6 +354,7 @@ public class ItemConfig {
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
+		super.saveToNetwork(buf);
 		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeUtf, (buf1, blockingType) -> {
 			buf1.writeUtf(blockingType.getClass().getName());
 			buf1.writeUtf(blockingType.getName());
@@ -405,6 +383,7 @@ public class ItemConfig {
 			buf12.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
 			buf12.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
 			buf12.writeInt(configurableItemData.hasSwordEnchants == null ? -10 : configurableItemData.hasSwordEnchants ? 1 : 0);
+			buf12.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -415,6 +394,21 @@ public class ItemConfig {
 			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
 			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
 		});
+	}
+
+	@Override
+	public void handleExtraSync(Supplier<NetworkEvent.Context> ctx) {
+		LOGGER.info("Loading config details from buffer.");
+
+		IForgeRegistry<Item> items = ForgeRegistries.ITEMS;
+
+		for(Item item : items)
+			((ItemExtensions) item).modifyAttributeModifiers();
+		for (Item item : ITEMS.configuredItems.keySet()) {
+			ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+			if (configurableItemData.stackSize != null)
+				((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
+		}
 	}
 
 	public void parseItemConfig(Item item, JsonObject jsonObject) {
@@ -434,6 +428,7 @@ public class ItemConfig {
 		Integer enchantment_level = null;
 		Boolean isEnchantable = null;
 		Boolean hasSwordEnchants = null;
+		Integer useDuration = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -450,6 +445,7 @@ public class ItemConfig {
 			enchantment_level = oldData.enchantability;
 			isEnchantable = oldData.isEnchantable;
 			hasSwordEnchants = oldData.hasSwordEnchants;
+			useDuration = oldData.useDuration;
 		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
@@ -505,7 +501,9 @@ public class ItemConfig {
 			isEnchantable = getBoolean(jsonObject, "is_enchantable");
 		if (jsonObject.has("has_sword_enchants"))
 			hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants);
+		if (jsonObject.has("use_duration"))
+			useDuration = getInt(jsonObject, "use_duration");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration);
 		configuredItems.put(item, configurableItemData);
 	}
 }

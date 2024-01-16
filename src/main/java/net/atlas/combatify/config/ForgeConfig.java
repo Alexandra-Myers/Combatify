@@ -33,10 +33,6 @@ public class ForgeConfig {
 	public BooleanOption eatingInterruption;
 	public BooleanOption improvedMiscEntityAttacks;
 	public IntOption swordProtectionEfficacy;
-	public IntOption potionUseDuration;
-	public IntOption honeyBottleUseDuration;
-	public IntOption milkBucketUseDuration;
-	public IntOption stewUseDuration;
 	public IntOption instantHealthBonus;
 	public IntOption shieldChargePercentage;
 	public DoubleOption shieldDisableTime;
@@ -103,14 +99,6 @@ public class ForgeConfig {
 		improvedMiscEntityAttacks = defineBoolean(WrappableConfig.class, "improvedMiscEntityAttacks");
 
         swordProtectionEfficacy = defineIntRange(WrappableConfig.class, "swordProtectionEfficacy");
-
-        potionUseDuration = defineIntRange(WrappableConfig.class, "potionUseDuration");
-
-        honeyBottleUseDuration = defineIntRange(WrappableConfig.class, "honeyBottleUseDuration");
-
-        milkBucketUseDuration = defineIntRange(WrappableConfig.class, "milkBucketUseDuration");
-
-        stewUseDuration = defineIntRange(WrappableConfig.class, "stewUseDuration");
 
         instantHealthBonus = defineIntRange(WrappableConfig.class, "instantHealthBonus");
 

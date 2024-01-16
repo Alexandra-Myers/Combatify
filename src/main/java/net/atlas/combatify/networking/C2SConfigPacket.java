@@ -2,6 +2,7 @@ package net.atlas.combatify.networking;
 
 import io.netty.buffer.Unpooled;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.AtlasConfig;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
@@ -31,7 +32,9 @@ public class C2SConfigPacket {
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		applyServer(Objects.requireNonNull(ctx.get().getSender()), buf);
-		PacketRegistration.MAIN.send(PacketDistributor.PLAYER.with(() -> ctx.get().getSender()), new ItemConfigPacket(ITEMS));
+		for (AtlasConfig atlasConfig : AtlasConfig.configs.values()) {
+			PacketRegistration.MAIN.send(PacketDistributor.PLAYER.with(() -> ctx.get().getSender()), new AtlasConfigPacket(atlasConfig));
+		}
 		Combatify.LOGGER.info("Config packet sent to client.");
 	}
 }

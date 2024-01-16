@@ -6,7 +6,6 @@ import eu.midnightdust.lib.config.MidnightConfig;
 public class WrappableConfig extends MidnightConfig {
 
 	@Comment(centered = true) public static Comment Booleans;
-	@Entry public static boolean toolsAreWeapons = false;
 	@Entry public static boolean midairKB = false;
 	@Entry public static boolean fishingHookKB = false;
 	@Entry public static boolean fistDamage = false;
@@ -32,10 +31,6 @@ public class WrappableConfig extends MidnightConfig {
 	@Entry public static boolean improvedMiscEntityAttacks = false;
 	@Comment(centered = true) public static Comment Integers;
 	@Entry(isSlider = true, min = -3, max = 7) public static int swordProtectionEfficacy = 0;
-	@Entry(isSlider = true, min = 1, max = 1000) public static int potionUseDuration = 20;
-	@Entry(isSlider = true, min = 1, max = 1000) public static int honeyBottleUseDuration = 20;
-	@Entry(isSlider = true, min = 1, max = 1000) public static int milkBucketUseDuration = 20;
-	@Entry(isSlider = true, min = 1, max = 1000) public static int stewUseDuration = 20;
 	@Entry(isSlider = true, min = 1, max = 1000) public static int instantHealthBonus = 6;
 	@Entry(isSlider = true, min = 1, max = 200) public static int shieldChargePercentage = 195;
 	@Comment(centered = true) public static Comment Doubles;
