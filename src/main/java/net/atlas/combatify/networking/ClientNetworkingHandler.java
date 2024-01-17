@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 
@@ -33,10 +32,7 @@ public class ClientNetworkingHandler {
 				livingEntity.setUseItemRemaining(packet.ticks());
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
-			boolean bl = handler.getServerData() != null && handler.getServerData().protocol == 803;
-			if(!ClientPlayNetworking.canSend(modDetectionNetworkChannel) && !bl)
-				handler.getConnection().disconnect(Component.literal("Combatify needs to be installed on the server to join with this client"));
-			if (bl) {
+			if (ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
 				ITEMS.reloadFromDefault();
 				ConfigSynchronizer configSynchronizer = new ConfigSynchronizer();
 				((ConfigSyncBase) configSynchronizer).applyDefault();
