@@ -32,7 +32,7 @@ public class ClientNetworkingHandler {
 				livingEntity.setUseItemRemaining(packet.ticks());
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
-			if (ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
+			if (!ClientPlayNetworking.canSend(modDetectionNetworkChannel)) {
 				ITEMS.reloadFromDefault();
 				ConfigSynchronizer configSynchronizer = new ConfigSynchronizer();
 				((ConfigSyncBase) configSynchronizer).applyDefault();
