@@ -20,9 +20,9 @@ public class ConfigurableWeaponData {
 		this.hasSwordEnchants = hasSwordEnchants;
 	}
 
-	public static Double clamp(Double d, double e, double f) {
-		if (d == null)
-			return d;
-		return d < e ? e : Math.min(d, f);
+	public static Double clamp(Double value, double min, double max) {
+		if (value == null)
+			return null;
+		return value < min ? min : Math.min(value, max);
 	}
 }

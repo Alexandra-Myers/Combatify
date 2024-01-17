@@ -18,4 +18,6 @@ public interface LivingEntityExtensions {
     float getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel);
 
 	float getNewDamageAfterMagicAbsorb(DamageSource source, float amount, double piercingLevel);
+
+    void setUseItemRemaining(int useItemRemaining);
 }

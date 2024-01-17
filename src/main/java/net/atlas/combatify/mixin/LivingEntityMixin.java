@@ -8,8 +8,11 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
@@ -40,6 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Mixin(value = LivingEntity.class, priority = 1400)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
@@ -79,6 +83,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Shadow
 	protected int useItemRemaining;
+
+	@Shadow
+	public abstract void playHurtSound(DamageSource damageSource);
 
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
@@ -212,6 +219,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption()) {
 			useItemRemaining = thisEntity.getUseItem().getUseDuration();
+			if (level() instanceof ServerLevel serverLevel)
+				for (UUID playerUUID : Combatify.moddedPlayers)
+					if (serverLevel.getPlayerByUUID(playerUUID) instanceof ServerPlayer serverPlayer)
+						ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.RemainingUseSyncPacket(getId(), useItemRemaining));
 		}
 	}
 	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "floatValue=10.0F", ordinal = 0))
@@ -308,5 +319,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				return amount;
 			}
 		}
+	}
+
+	@Override
+	public void setUseItemRemaining(int ticks) {
+		this.useItemRemaining = ticks;
 	}
 }

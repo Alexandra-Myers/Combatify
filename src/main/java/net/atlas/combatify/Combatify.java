@@ -41,6 +41,7 @@ public class Combatify implements ModInitializer {
 	public NetworkingHandler networkingHandler;
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
+	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<UUID, Boolean> finalizingAttack = new HashMap<>();
 	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();

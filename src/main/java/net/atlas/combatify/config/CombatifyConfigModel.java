@@ -40,14 +40,6 @@ public class CombatifyConfigModel {
 	@RangeConstraint(min = -3, max = 7)
 	public int swordProtectionEfficacy = 0;
 	@RangeConstraint(min = 1, max = 1000)
-	public int potionUseDuration = 20;
-	@RangeConstraint(min = 1, max = 1000)
-	public int honeyBottleUseDuration = 20;
-	@RangeConstraint(min = 1, max = 1000)
-	public int milkBucketUseDuration = 20;
-	@RangeConstraint(min = 1, max = 1000)
-	public int stewUseDuration = 20;
-	@RangeConstraint(min = 1, max = 1000)
 	public int instantHealthBonus = 6;
 	@RangeConstraint(min = 1, max = 200)
 	public int shieldChargePercentage = 195;

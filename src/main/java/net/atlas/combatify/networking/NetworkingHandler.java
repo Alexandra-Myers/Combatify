@@ -2,6 +2,7 @@ package net.atlas.combatify.networking;
 
 import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.AtlasConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
@@ -22,7 +23,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -48,7 +48,11 @@ public class NetworkingHandler {
 				Timer timer = scheduleHitResult.get(handler.getPlayer().getUUID());
 				timer.cancel();
 				timer.purge();
+				unmoddedPlayers.remove(handler.player.getUUID());
+				isPlayerAttacking.remove(handler.player.getUUID());
+				finalizingAttack.remove(handler.player.getUUID());
 			}
+			moddedPlayers.remove(handler.player.getUUID());
 		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> {
 			final ServerLevel serverLevel = player.serverLevel();
@@ -73,7 +77,7 @@ public class NetworkingHandler {
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
-			if(!ServerPlayNetworking.canSend(handler.player, ItemConfigPacket.TYPE)) {
+			if(!ServerPlayNetworking.canSend(handler.player, AtlasConfigPacket.TYPE)) {
 				if(bl) {
 					handler.player.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
 					return;
@@ -85,12 +89,10 @@ public class NetworkingHandler {
 				Combatify.LOGGER.info("Unmodded player joined: " + handler.player.getUUID());
 				return;
 			}
-			if (unmoddedPlayers.contains(handler.player.getUUID())) {
-				unmoddedPlayers.remove(handler.player.getUUID());
-				isPlayerAttacking.remove(handler.player.getUUID());
-				finalizingAttack.remove(handler.player.getUUID());
+			moddedPlayers.add(handler.player.getUUID());
+			for (AtlasConfig atlasConfig : AtlasConfig.configs.values()) {
+				ServerPlayNetworking.send(handler.player, new AtlasConfigPacket(atlasConfig));
 			}
-			ServerPlayNetworking.send(handler.player, new ItemConfigPacket(ITEMS));
 			Combatify.LOGGER.info("Config packet sent to client.");
 		});
 		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
@@ -228,11 +230,11 @@ public class NetworkingHandler {
 			}
 		});
 	}
-	public record ItemConfigPacket(ItemConfig config) implements FabricPacket {
-		public static final PacketType<ItemConfigPacket> TYPE = PacketType.create(Combatify.id("item_config"), ItemConfigPacket::new);
+	public record AtlasConfigPacket(AtlasConfig config) implements FabricPacket {
+		public static final PacketType<AtlasConfigPacket> TYPE = PacketType.create(Combatify.id("atlas_config"), AtlasConfigPacket::new);
 
-		public ItemConfigPacket(FriendlyByteBuf buf) {
-			this(ITEMS.loadFromNetwork(buf));
+		public AtlasConfigPacket(FriendlyByteBuf buf) {
+			this(AtlasConfig.staticLoadFromNetwork(buf));
 		}
 
 		/**
@@ -242,7 +244,8 @@ public class NetworkingHandler {
 		 */
 		@Override
 		public void write(FriendlyByteBuf buf) {
-			ITEMS.saveToNetwork(buf);
+			buf.writeResourceLocation(config.name);
+			config.saveToNetwork(buf);
 		}
 
 		/**
@@ -273,6 +276,37 @@ public class NetworkingHandler {
 		@Override
 		public void write(FriendlyByteBuf buf) {
 
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public PacketType<?> getType() {
+			return TYPE;
+		}
+	}
+	public record RemainingUseSyncPacket(int id, int ticks) implements FabricPacket {
+		public static final PacketType<RemainingUseSyncPacket> TYPE = PacketType.create(Combatify.id("remaining_use_ticks"), RemainingUseSyncPacket::new);
+
+		public RemainingUseSyncPacket(FriendlyByteBuf buf) {
+			this(buf.readVarInt(), buf.readInt());
+		}
+
+		/**
+		 * Writes the contents of this packet to the buffer.
+		 *
+		 * @param buf the output buffer
+		 */
+		@Override
+		public void write(FriendlyByteBuf buf) {
+			buf.writeVarInt(id);
+			buf.writeInt(ticks);
 		}
 
 		/**
