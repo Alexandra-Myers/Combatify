@@ -57,11 +57,9 @@
     "GuiMixin",
     "ItemInHandMixin",
     "LocalPlayerMixin",
-    "MainMixin",
     "MinecraftMixin",
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
-    "RenderSystemMixin",
     "VideoSettingsMixin"
   ],
   "mixinPriority": 1200
