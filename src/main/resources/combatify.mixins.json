@@ -27,7 +27,6 @@
     "MiscCategoryMixin",
     "MobEffectMixin",
     "MobMixin",
-    "OwoConfigSyncMixin",
     "PickaxeItemMixin",
     "PiglinAiMixin",
     "PlayerListMixin",
@@ -63,7 +62,8 @@
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
     "RendererMixin",
-    "VideoSettingsMixin"
+    "VideoSettingsMixin",
+    "OwoConfigSyncMixin"
   ],
   "mixinPriority": 1200
 }
