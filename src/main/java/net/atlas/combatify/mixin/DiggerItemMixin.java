@@ -94,4 +94,21 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 		}
 		return Combatify.EMPTY;
 	}
+
+	@Override
+	public double getPiercingLevel() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.piercingLevel != null) {
+				return configurableItemData.piercingLevel;
+			}
+		}
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+			if (configurableWeaponData.piercingLevel != null) {
+				return configurableWeaponData.piercingLevel;
+			}
+		}
+		return 0;
+	}
 }

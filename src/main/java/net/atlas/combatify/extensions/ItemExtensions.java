@@ -13,4 +13,6 @@ public interface ItemExtensions {
 	double getChargedAttackBonus();
 
     BlockingType getBlockingType();
+
+	double getPiercingLevel();
 }

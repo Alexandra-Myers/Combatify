@@ -50,4 +50,21 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 		}
 		return Combatify.registeredTypes.get("shield");
 	}
+
+	@Override
+	public double getPiercingLevel() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.piercingLevel != null) {
+				return configurableItemData.piercingLevel;
+			}
+			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
+				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
+				if (configurableWeaponData.piercingLevel != null) {
+					return configurableWeaponData.piercingLevel;
+				}
+			}
+		}
+		return 0;
+	}
 }
