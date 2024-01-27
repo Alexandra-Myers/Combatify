@@ -6,9 +6,16 @@ import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.CombatRules;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,6 +28,7 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.minecraftforge.common.ForgeHooks;
@@ -254,5 +262,32 @@ public class MethodHandler {
 				++trident.clientSideReturnTridentTickCount;
 			}
 		}
+	}
+	public static float getNewDamageAfterMagicAbsorb(LivingEntity entity, DamageSource source, float amount, double piercingLevel) {
+		if (!source.is(DamageTypeTags.BYPASSES_EFFECTS)) {
+			if (entity.hasEffect(MobEffects.DAMAGE_RESISTANCE) && !source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
+				int i = entity.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1;
+				int j = 5 - i;
+				float f = (float) (amount * j * (1 + piercingLevel));
+				float g = amount;
+				amount = Math.max(f / 5.0F, (float) (amount * piercingLevel));
+				float h = g - amount;
+				if (h > 0.0F && h < 3.4028235E37F) {
+					if (entity instanceof ServerPlayer serverPlayer)
+						serverPlayer.awardStat(Stats.DAMAGE_RESISTED, Math.round(h * 10.0F));
+					if (source.getEntity() instanceof ServerPlayer serverPlayer)
+						serverPlayer.awardStat(Stats.DAMAGE_DEALT_RESISTED, Math.round(h * 10.0F));
+				}
+			}
+
+			if (amount <= 0.0F)
+				return 0.0F;
+			else if (!source.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
+				int i = EnchantmentHelper.getDamageProtection(entity.getArmorSlots(), source);
+				if (i > 0)
+					amount = CombatRules.getDamageAfterMagicAbsorb(amount, i - Mth.ceil(i * piercingLevel));
+			}
+		}
+		return amount;
 	}
 }
