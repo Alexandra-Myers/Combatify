@@ -245,7 +245,7 @@ public class MethodHandler {
 		if(trident.getY() <= -65 && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
-			}else {
+			} else {
 				trident.setNoPhysics(true);
 				Vec3 vec3 = trident.getEyePosition().subtract(trident.position());
 				trident.setPosRaw(trident.getX(), trident.getY() + vec3.y * 0.015 * j, trident.getZ());
@@ -264,7 +264,7 @@ public class MethodHandler {
 		}
 	}
 	public static float getNewDamageAfterMagicAbsorb(LivingEntity entity, DamageSource source, float amount, double piercingLevel) {
-		if (!source.is(DamageTypeTags.BYPASSES_EFFECTS)) {
+		if (!source.is(DamageTypeTags.BYPASSES_EFFECTS) && piercingLevel < 1) {
 			if (entity.hasEffect(MobEffects.DAMAGE_RESISTANCE) && !source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
 				int i = entity.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1;
 				int j = 5 - i;
@@ -285,7 +285,7 @@ public class MethodHandler {
 			else if (!source.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
 				int i = EnchantmentHelper.getDamageProtection(entity.getArmorSlots(), source);
 				if (i > 0)
-					amount = CombatRules.getDamageAfterMagicAbsorb(amount, i - Mth.ceil(i * piercingLevel));
+					amount = CombatRules.getDamageAfterMagicAbsorb(amount, i - Math.round(i * piercingLevel));
 			}
 		}
 		return amount;

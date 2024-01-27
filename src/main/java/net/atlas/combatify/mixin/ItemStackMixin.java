@@ -143,6 +143,7 @@ public abstract class ItemStackMixin {
 			}
 			piercingLevel += ((ItemExtensions)getItem()).getPiercingLevel();
 			if (piercingLevel > 0) {
+				piercingLevel = Math.min(piercingLevel, 1);
 				list.add(
 					Component.literal(" ")
 						.append(
