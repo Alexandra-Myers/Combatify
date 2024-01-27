@@ -99,9 +99,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		Item blockingItem = blockingStack.getItem();
 		double piercingLevel = 0;
 		Item item = thisEntity.getMainHandItem().getItem();
-		if (item instanceof PiercingItem piercingItem) {
-			piercingLevel += piercingItem.getPiercingLevel();
-		}
+		piercingLevel += ((ItemExtensions)item).getPiercingLevel();
 		if (Combatify.CONFIG.piercer.get()) {
 			piercingLevel += CustomEnchantmentHelper.getPierce((LivingEntity) (Object) this) * 0.1;
 		}
@@ -136,10 +134,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			double d = 0;
-			if(item instanceof PiercingItem piercingItem) {
-				d += piercingItem.getPiercingLevel();
-			}
-			if(Combatify.CONFIG.piercer.get()) {
+			d += ((ItemExtensions)item).getPiercingLevel();
+			if (Combatify.CONFIG.piercer.get()) {
 				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
 			}
 			d -= piercingNegation;
@@ -155,9 +151,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			double d = 0;
-			if(item instanceof PiercingItem piercingItem) {
-				d += piercingItem.getPiercingLevel();
-			}
+			d += ((ItemExtensions)item).getPiercingLevel();
 			if(Combatify.CONFIG.piercer.get()) {
 				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
 			}

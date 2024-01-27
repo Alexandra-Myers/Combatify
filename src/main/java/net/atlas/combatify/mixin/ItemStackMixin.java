@@ -7,7 +7,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.minecraft.ChatFormatting;
@@ -142,9 +141,7 @@ public abstract class ItemStackMixin {
 			if(Combatify.CONFIG.piercer.get()) {
 				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER.get(), (ItemStack) (Object) this) * 0.1;
 			}
-			if(getItem() instanceof PiercingItem item) {
-				piercingLevel += item.getPiercingLevel();
-			}
+			piercingLevel += ((ItemExtensions)getItem()).getPiercingLevel();
 			if (piercingLevel > 0) {
 				list.add(
 					Component.literal(" ")

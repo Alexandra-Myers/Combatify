@@ -84,6 +84,7 @@ public class ItemConfig extends AtlasConfig {
 					BlockingType blockingType = null;
 					Boolean tierable;
 					Boolean hasSwordEnchants = null;
+					Double piercingLevel = null;
 					if (jsonObject.has("tierable"))
 						tierable = getBoolean(jsonObject, "tierable");
 					else
@@ -110,7 +111,9 @@ public class ItemConfig extends AtlasConfig {
 					}
 					if (jsonObject.has("has_sword_enchants"))
 						hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
-					ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants);
+					if (jsonObject.has("armor_piercing"))
+						piercingLevel = getDouble(jsonObject, "armor_piercing");
+					ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants, piercingLevel);
 					configuredWeapons.put(type, configurableWeaponData);
 				} else
 					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
@@ -299,6 +302,7 @@ public class ItemConfig extends AtlasConfig {
 			Boolean isEnchantable = null;
 			Boolean hasSwordEnchants = null;
 			Integer useDuration = buf1.readInt();
+			Double piercingLevel = buf1.readDouble();
 			if (damage == -10)
 				damage = null;
 			if (speed == -10)
@@ -323,10 +327,12 @@ public class ItemConfig extends AtlasConfig {
 				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
 			if (useDuration == -10)
 				useDuration = null;
+			if (piercingLevel == -10)
+				piercingLevel = null;
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -338,6 +344,7 @@ public class ItemConfig extends AtlasConfig {
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
 			int hasSwordEnchantsAsInt = buf1.readInt();
 			Boolean hasSwordEnchants = null;
+			Double piercingLevel = buf1.readDouble();
 			if (damageOffset == -10)
 				damageOffset = null;
 			if (speed == -10)
@@ -348,7 +355,9 @@ public class ItemConfig extends AtlasConfig {
 				chargedReach = null;
 			if (hasSwordEnchantsAsInt != -10)
 				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants);
+			if (piercingLevel == -10)
+				piercingLevel = null;
+			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, piercingLevel);
 		});
 		return this;
 	}
@@ -384,6 +393,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
 			buf12.writeInt(configurableItemData.hasSwordEnchants == null ? -10 : configurableItemData.hasSwordEnchants ? 1 : 0);
 			buf12.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
+			buf12.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -393,6 +403,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeBoolean(configurableWeaponData.tierable);
 			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
 			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
+			buf12.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
 		});
 	}
 
@@ -429,6 +440,7 @@ public class ItemConfig extends AtlasConfig {
 		Boolean isEnchantable = null;
 		Boolean hasSwordEnchants = null;
 		Integer useDuration = null;
+		Double piercingLevel = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -446,6 +458,7 @@ public class ItemConfig extends AtlasConfig {
 			isEnchantable = oldData.isEnchantable;
 			hasSwordEnchants = oldData.hasSwordEnchants;
 			useDuration = oldData.useDuration;
+			piercingLevel = oldData.piercingLevel;
 		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
@@ -503,7 +516,9 @@ public class ItemConfig extends AtlasConfig {
 			hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
 		if (jsonObject.has("use_duration"))
 			useDuration = getInt(jsonObject, "use_duration");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration);
+		if (jsonObject.has("armor_piercing"))
+			useDuration = getInt(jsonObject, "armor_piercing");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
 		configuredItems.put(item, configurableItemData);
 	}
 }

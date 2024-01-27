@@ -7,7 +7,6 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.PiercingItem;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
@@ -23,7 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, PiercingItem, WeaponWithType, DefaultedItemExtensions {
+public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensions, WeaponWithType, DefaultedItemExtensions {
 	private Multimap<Attribute, AttributeModifier> defaultModifiers;
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -85,6 +84,18 @@ public class LongSwordItem extends TieredItem implements Vanishable, ItemExtensi
 
 	@Override
 	public double getPiercingLevel() {
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+			if (configurableItemData.piercingLevel != null) {
+				return configurableItemData.piercingLevel;
+			}
+		}
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+			if (configurableWeaponData.piercingLevel != null) {
+				return configurableWeaponData.piercingLevel;
+			}
+		}
 		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.2 : getTier() == Tiers.GOLD || getTier() == Tiers.WOOD || getTier() == Tiers.STONE || getTier().getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (getTier().getLevel() - 1));
 	}
 

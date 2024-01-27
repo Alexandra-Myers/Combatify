@@ -10,7 +10,8 @@ public class ConfigurableWeaponData {
 	public final Boolean tierable;
 	public final BlockingType blockingType;
 	public final Boolean hasSwordEnchants;
-	ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType, Boolean hasSwordEnchants) {
+	public final Double piercingLevel;
+	ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType, Boolean hasSwordEnchants, Double piercingLevel) {
 		damageOffset = clamp(attackDamage, 0, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
@@ -18,6 +19,7 @@ public class ConfigurableWeaponData {
 		tierable = tiered;
 		this.blockingType = blockingType;
 		this.hasSwordEnchants = hasSwordEnchants;
+		this.piercingLevel = piercingLevel;
 	}
 
 	public static Double clamp(Double value, double min, double max) {
