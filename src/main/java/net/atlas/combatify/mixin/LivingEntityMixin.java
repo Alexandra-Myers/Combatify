@@ -50,11 +50,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	@Unique
-	boolean combatify$isParry = false;
-	@Unique
-	public int combatify$isParryTicker = 0;
-
-	@Unique
 	LivingEntity combatify$thisEntity = LivingEntity.class.cast(this);
 
 	@Shadow
@@ -236,22 +231,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
 		return true;
-	}
-	@Override
-	public boolean getIsParry() {
-		return combatify$isParry;
-	}
-	@Override
-	public void setIsParry(boolean isParry) {
-		this.combatify$isParry = isParry;
-	}
-	@Override
-	public int getIsParryTicker() {
-		return combatify$isParryTicker;
-	}
-	@Override
-	public void setIsParryTicker(int isParryTicker) {
-		this.combatify$isParryTicker = isParryTicker;
 	}
 	@Override
 	public void setUseItemRemaining(int ticks) {

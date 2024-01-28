@@ -108,11 +108,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
 	public void redirectAttackStrengthTicker(Player instance, int value) {
 		--instance.attackStrengthTicker;
-		setIsParryTicker(getIsParryTicker() + 1);
-		if(getIsParryTicker() >= 40) {
-			setIsParry(false);
-			setIsParryTicker(0);
-		}
 	}
 
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/minecraftforge/common/ToolAction;)Z"))
@@ -198,14 +193,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(!Combatify.CONFIG.sprintCritsEnabled.get()) {
 			isCrit &= !isSprinting();
 		}
-		bl3.set(isCrit || getIsParry());
-		if (isCrit) {
+		bl3.set(isCrit);
+		if (isCrit)
 			attackDamage.set(attackDamage.get() * 1.5F);
-		}
-		if (getIsParry()) {
-			attackDamage.set(attackDamage.get() * 1.25F);
-			setIsParry(false);
-		}
 
 	}
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))

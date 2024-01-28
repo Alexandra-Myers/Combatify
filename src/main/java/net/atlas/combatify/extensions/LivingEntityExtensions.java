@@ -6,13 +6,5 @@ public interface LivingEntityExtensions {
 
 	void setPiercingNegation(double negation);
 
-	boolean getIsParry();
-
-	void setIsParry(boolean isParry);
-
-	int getIsParryTicker();
-
-	void setIsParryTicker(int isParryTicker);
-
     void setUseItemRemaining(int ticks);
 }

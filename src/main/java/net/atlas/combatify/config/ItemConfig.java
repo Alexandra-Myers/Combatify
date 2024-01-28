@@ -517,7 +517,7 @@ public class ItemConfig extends AtlasConfig {
 		if (jsonObject.has("use_duration"))
 			useDuration = getInt(jsonObject, "use_duration");
 		if (jsonObject.has("armor_piercing"))
-			useDuration = getInt(jsonObject, "armor_piercing");
+			piercingLevel = getDouble(jsonObject, "armor_piercing");
 		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
 		configuredItems.put(item, configurableItemData);
 	}
