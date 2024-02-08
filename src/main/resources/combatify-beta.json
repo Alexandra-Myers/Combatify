@@ -30,6 +30,7 @@
   "defenderDisableReduction": 0.5,
   "snowballDamage": 0.0,
   "eggDamage": 0.0,
+  "windChargeDamage": 1.0,
   "bowUncertainty": 0.25,
   "baseHandAttackSpeed": 2.5,
   "minHitboxSize": 0.9

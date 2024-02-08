@@ -5,6 +5,7 @@
   "plugin": "net.atlas.combatify.mixin.MixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AbstractWindChargeMixin",
     "AnvilMenuMixin",
     "AttributeModifierMixin",
     "AxeItemMixin",

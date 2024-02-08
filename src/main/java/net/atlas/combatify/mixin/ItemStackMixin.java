@@ -46,7 +46,7 @@ public abstract class ItemStackMixin {
 	@Shadow
 	public abstract String toString();
 
-	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
+	@Inject(method = "getTooltipLines", at = @At("RETURN"))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
 		if (!item.getBlockingType().isEmpty()) {
@@ -57,17 +57,20 @@ public abstract class ItemStackMixin {
 					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.id(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
 				else
 					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.id(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-				if (g > 0.0) {
+				if (g > 0.0)
 					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.id(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-				}
 			}
 		}
 	}
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;getOperation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
 	public void addAttackReach(Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> list, @Local(ordinal = 0) AttributeModifier attributeModifier, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl, @Local(ordinal = 0) Iterator var11) {
 		if (player != null) {
+			if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
+				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
+				bl.set(true);
+			}
 			if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-				d.set(d.get() + Objects.requireNonNull(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)).getBaseValue() + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
+				d.set(d.get() + player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE) + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
 				bl.set(true);
 			}
 		}
