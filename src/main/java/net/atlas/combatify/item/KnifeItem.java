@@ -10,6 +10,7 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,19 +23,19 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions, WeaponWithType, DefaultedItemExtensions {
-	private Multimap<Attribute, AttributeModifier> defaultModifiers;
+public class KnifeItem extends TieredItem implements ItemExtensions, WeaponWithType, DefaultedItemExtensions {
+	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 	public KnifeItem(Tier tier, Properties properties) {
 		super(tier, properties);
-		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
 		defaultModifiers = var3.build();
 	}
 	@Override
 	public void modifyAttributeModifiers() {
-		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
-		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
 		this.setDefaultModifiers(output);
 	}
 
@@ -54,14 +55,14 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 
 	@Override
 	public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-		stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+		stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
 		return true;
 	}
 
 	@Override
 	public boolean mineBlock(ItemStack stack, Level world, BlockState state, BlockPos pos, LivingEntity miner) {
 		if (state.getDestroySpeed(world, pos) != 0.0F) {
-			stack.hurtAndBreak(2, miner, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+			stack.hurtAndBreak(2, miner, EquipmentSlot.MAINHAND);
 		}
 
 		return true;
@@ -73,19 +74,19 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 	}
 
 	@Override
-	public @NotNull Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+	public @NotNull Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
 		return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
 
 	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
 	}
 
 	@Override
 	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.CONFIG.configuredItems.get(this).type;
 			if (type != null)
 				return type;
 		}
@@ -101,8 +102,8 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 	public double getChargedAttackBonus() {
 		Item item = this;
 		double chargedBonus = getWeaponType().getChargedReach();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+		if(Combatify.CONFIG.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
@@ -111,14 +112,14 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 
 	@Override
 	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.blockingType != null) {
 				return configurableWeaponData.blockingType;
 			}
@@ -128,14 +129,14 @@ public class KnifeItem extends TieredItem implements Vanishable, ItemExtensions,
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.piercingLevel != null) {
 				return configurableItemData.piercingLevel;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.piercingLevel != null) {
 				return configurableWeaponData.piercingLevel;
 			}

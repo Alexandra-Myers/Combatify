@@ -1,20 +1,19 @@
 package net.atlas.combatify.enchantment;
 
 import net.atlas.combatify.extensions.CustomEnchantment;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.DamageEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.item.enchantment.TridentImpalerEnchantment;
 
 public class CleavingEnchantment extends Enchantment implements CustomEnchantment {
 	public int level;
 
 	public CleavingEnchantment() {
-		super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+		super(Rarity.RARE, ItemTags.AXES, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
 	}
 
 	@Override
@@ -33,14 +32,9 @@ public class CleavingEnchantment extends Enchantment implements CustomEnchantmen
 	}
 
 	@Override
-	public float getDamageBonus(int level, MobType group) {
+	public float getDamageBonus(int level, EntityType<?> group) {
 		this.level = level;
 		return (float)1 + level;
-	}
-
-	@Override
-	public boolean canEnchant(ItemStack stack) {
-		return stack.getItem() instanceof AxeItem;
 	}
 
 	@Override

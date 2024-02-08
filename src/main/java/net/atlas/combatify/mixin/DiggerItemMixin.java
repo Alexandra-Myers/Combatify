@@ -10,6 +10,8 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -22,9 +24,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.function.Consumer;
 
 @Mixin(DiggerItem.class)
-public abstract class DiggerItemMixin extends TieredItem implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
+public abstract class DiggerItemMixin extends TieredItem implements ItemExtensions, DefaultedItemExtensions, WeaponWithType {
 	@Shadow
-	private Multimap<Attribute, AttributeModifier> defaultModifiers;
+	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 	public DiggerItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
@@ -32,23 +34,23 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	public void modifyAttributeModifiers() {
 		if (getWeaponType().isEmpty())
 			return;
-		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
-		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
 		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
 	@Redirect(method = "hurtEnemy",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
-	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
+	public <T extends LivingEntity> void damage(ItemStack instance, int amount, LivingEntity livingEntity, EquipmentSlot equipmentSlot) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
 		if (bl) {
 			amount -= 1;
 		}
-		instance.hurtAndBreak(amount, entity, breakCallback);
+		instance.hurtAndBreak(amount, livingEntity, equipmentSlot);
 	}
 
 	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
 	}
 
@@ -59,8 +61,8 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 
 	@Override
 	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.CONFIG.configuredItems.get(this).type;
 			if (type != null)
 				return type;
 		}
@@ -70,8 +72,8 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 	public double getChargedAttackBonus() {
 		Item item = this;
 		double chargedBonus = getWeaponType().getChargedReach();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+		if(Combatify.CONFIG.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
@@ -80,14 +82,14 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 
 	@Override
 	public BlockingType getBlockingType() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.blockingType != null) {
 				return configurableWeaponData.blockingType;
 			}
@@ -97,14 +99,14 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.piercingLevel != null) {
 				return configurableItemData.piercingLevel;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.piercingLevel != null) {
 				return configurableWeaponData.piercingLevel;
 			}

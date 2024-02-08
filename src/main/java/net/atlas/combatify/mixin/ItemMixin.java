@@ -20,12 +20,12 @@ public abstract class ItemMixin implements ItemExtensions {
 	public double getChargedAttackBonus() {
 		Item item = Item.class.cast(this);
 		double chargedBonus = 1.0;
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+		if(Combatify.CONFIG.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
 			if (configurableItemData.type != null)
-				if (Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type))
-					if (Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach != null)
-						chargedBonus = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach;
+				if (Combatify.CONFIG.configuredWeapons.containsKey(configurableItemData.type))
+					if (Combatify.CONFIG.configuredWeapons.get(configurableItemData.type).chargedReach != null)
+						chargedBonus = Combatify.CONFIG.configuredWeapons.get(configurableItemData.type).chargedReach;
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
@@ -34,13 +34,13 @@ public abstract class ItemMixin implements ItemExtensions {
 
 	@Override
 	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(Item.class.cast(this))) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(Item.class.cast(this));
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(Item.class.cast(this))) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(Item.class.cast(this));
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
-			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
-				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
+			if (configurableItemData.type != null && Combatify.CONFIG.configuredWeapons.containsKey(configurableItemData.type)) {
+				ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(configurableItemData.type);
 				if (configurableWeaponData.blockingType != null) {
 					return configurableWeaponData.blockingType;
 				}
@@ -51,13 +51,13 @@ public abstract class ItemMixin implements ItemExtensions {
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.piercingLevel != null) {
 				return configurableItemData.piercingLevel;
 			}
-			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
-				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
+			if (configurableItemData.type != null && Combatify.CONFIG.configuredWeapons.containsKey(configurableItemData.type)) {
+				ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(configurableItemData.type);
 				if (configurableWeaponData.piercingLevel != null) {
 					return configurableWeaponData.piercingLevel;
 				}

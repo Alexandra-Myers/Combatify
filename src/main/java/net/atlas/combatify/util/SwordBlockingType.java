@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
@@ -44,10 +43,10 @@ public class SwordBlockingType extends BlockingType {
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockStrength != null) {
-				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F);
+				return (float) (configurableItemData.blockStrength / 100.0) + (Combatify.CONFIG.defender() ? EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F : 0);
 			}
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
@@ -56,15 +55,14 @@ public class SwordBlockingType extends BlockingType {
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy();
 		strengthIncrease = Math.max(strengthIncrease, -3);
-		if(Combatify.CONFIG.defender()) {
+		if(Combatify.CONFIG.defender())
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
-		}
 		return Math.min(0.3F + (strengthIncrease * 0.1F), 1);
 	}
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockKbRes != null) {
 				return configurableItemData.blockKbRes;
 			}

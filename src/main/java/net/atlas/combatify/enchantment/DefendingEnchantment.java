@@ -3,10 +3,10 @@ package net.atlas.combatify.enchantment;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.CustomEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 import static net.atlas.combatify.Combatify.id;
 
@@ -14,7 +14,7 @@ public class DefendingEnchantment extends Enchantment implements CustomEnchantme
 	public static final Enchantment DEFENDER = EnchantmentRegistry.registerEnchant(id("defender"), new DefendingEnchantment());
 
 	public DefendingEnchantment() {
-		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
+		super(Rarity.VERY_RARE, ItemTags.WEAPON_ENCHANTABLE, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
 	}
 
 	@Override

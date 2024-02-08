@@ -3,6 +3,7 @@ package net.atlas.combatify.config;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
+import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.loader.api.FabricLoader;
@@ -10,6 +11,8 @@ import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.*;
@@ -140,7 +143,7 @@ public abstract class AtlasConfig {
         return valueNameToConfigHolderMap.get(value.name);
     }
     @SafeVarargs
-    public final <E extends Enum<E>> EnumHolder<E> createEnum(String name, Enum<E> defaultVal, Class<E> clazz, Enum<E>... values) {
+    public final <E extends Enum<E>> EnumHolder<E> createEnum(String name, E defaultVal, Class<E> clazz, E... values) {
         EnumHolder<E> enumHolder = new EnumHolder<>(new ConfigValue<>(defaultVal, values, false, name, this), clazz);
         enumValues.add(enumHolder);
         return enumHolder;
@@ -212,23 +215,21 @@ public abstract class AtlasConfig {
     public static abstract class ConfigHolder<T> {
         private T value;
         public final ConfigValue<T> heldValue;
-        public final FriendlyByteBuf.Reader<T> reader;
-        public final FriendlyByteBuf.Writer<T> writer;
-        public ConfigHolder(ConfigValue<T> value, FriendlyByteBuf.Reader<T> reader, FriendlyByteBuf.Writer<T> writer) {
+        public final StreamCodec<ByteBuf, T> codec;
+        public ConfigHolder(ConfigValue<T> value, StreamCodec<ByteBuf, T> codec) {
             this.value = value.defaultValue;
             heldValue = value;
-            this.reader = reader;
-            this.writer = writer;
+            this.codec = codec;
             value.addAssociation(this);
         }
         public T get() {
             return value;
         }
         public void writeToBuf(FriendlyByteBuf buf) {
-            writer.accept(buf, value);
+            codec.encode(buf, value);
         }
         public void readFromBuf(FriendlyByteBuf buf) {
-            T newValue = reader.apply(buf);
+            T newValue = codec.decode(buf);
             if (isNotValid(newValue))
                 return;
             heldValue.emitChanged(newValue);
@@ -244,10 +245,20 @@ public abstract class AtlasConfig {
             value = newValue;
         }
     }
-    public static class EnumHolder<E extends Enum<E>> extends ConfigHolder<Enum<E>> {
+    public static class EnumHolder<E extends Enum<E>> extends ConfigHolder<E> {
         public final Class<E> clazz;
-        private EnumHolder(ConfigValue<Enum<E>> value, Class<E> clazz) {
-            super(value, buf -> buf.readEnum(clazz), FriendlyByteBuf::writeEnum);
+        private EnumHolder(ConfigValue<E> value, Class<E> clazz) {
+            super(value, new StreamCodec<>() {
+                @Override
+                public void encode(ByteBuf object, E object2) {
+                    new FriendlyByteBuf(object).writeEnum(object2);
+                }
+
+                @Override
+                public E decode(ByteBuf object) {
+                    return new FriendlyByteBuf(object).readEnum(clazz);
+                }
+            });
             this.clazz = clazz;
 
         }
@@ -265,17 +276,17 @@ public abstract class AtlasConfig {
     }
     public static class StringHolder extends ConfigHolder<String> {
         private StringHolder(ConfigValue<String> value) {
-            super(value, FriendlyByteBuf::readUtf, FriendlyByteBuf::writeUtf);
+            super(value, ByteBufCodecs.STRING_UTF8);
         }
     }
     public static class BooleanHolder extends ConfigHolder<Boolean> {
         private BooleanHolder(ConfigValue<Boolean> value) {
-            super(value, FriendlyByteBuf::readBoolean, FriendlyByteBuf::writeBoolean);
+            super(value, ByteBufCodecs.BOOL);
         }
     }
     public static class IntegerHolder extends ConfigHolder<Integer> {
         private IntegerHolder(ConfigValue<Integer> value) {
-            super(value, FriendlyByteBuf::readInt, FriendlyByteBuf::writeInt);
+            super(value, ByteBufCodecs.VAR_INT);
         }
 
         @Override
@@ -286,7 +297,7 @@ public abstract class AtlasConfig {
     }
     public static class DoubleHolder extends ConfigHolder<Double> {
         private DoubleHolder(ConfigValue<Double> value) {
-            super(value, FriendlyByteBuf::readDouble, FriendlyByteBuf::writeDouble);
+            super(value, ByteBufCodecs.DOUBLE);
         }
 
         @Override

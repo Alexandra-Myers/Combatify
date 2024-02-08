@@ -14,9 +14,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
-import net.rizecookey.cookeymod.CookeyMod;
-import net.rizecookey.cookeymod.config.category.AnimationsCategory;
-import net.rizecookey.cookeymod.config.category.HudRenderingCategory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,12 +35,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	private float f;
 
 	@Shadow
-	protected abstract void applyItemArmAttackTransform(PoseStack matrices, HumanoidArm arm, float swingProgress);
-
-	@Shadow
 	protected abstract void applyItemArmTransform(PoseStack matrices, HumanoidArm arm, float equipProgress);
-
-	AnimationsCategory animationsCategory = CookeyMod.getInstance().getConfig().getCategory(AnimationsCategory.class);
 
 	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light);
@@ -71,9 +63,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform2(poseStack, humanoidArm);
-				if (animationsCategory.swingAndUseItem.get()) {
-					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
-				}
 				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
 				renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
 

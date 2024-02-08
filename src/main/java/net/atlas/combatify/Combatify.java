@@ -1,7 +1,6 @@
 package net.atlas.combatify;
 
-import net.atlas.combatify.config.CombatifyConfig;
-import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -35,8 +34,7 @@ import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
-	public static final CombatifyConfig CONFIG = CombatifyConfig.createAndLoad();
-	public static ItemConfig ITEMS;
+	public static CombatifyBetaConfig CONFIG;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
@@ -60,7 +58,7 @@ public class Combatify implements ModInitializer {
 			@Override
 			protected @NotNull Projectile getProjectile(Level world, Position position, ItemStack stack) {
 				ThrownTrident trident = new ThrownTrident(EntityType.TRIDENT, world);
-				trident.tridentItem = stack.copy();
+				trident.pickupItemStack = stack.copy();
 				trident.setPosRaw(position.x(), position.y(), position.z());
 				trident.pickup = AbstractArrow.Pickup.ALLOWED;
 				return trident;
@@ -87,8 +85,8 @@ public class Combatify implements ModInitializer {
 		for(Item item : items) {
 			((ItemExtensions) item).modifyAttributeModifiers();
 		}
-		MobEffects.DAMAGE_BOOST.addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
-		MobEffects.WEAKNESS.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
+		MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
+		MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 	}
 	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
 		Combatify.registeredTypes.put(blockingType.getName(), blockingType);

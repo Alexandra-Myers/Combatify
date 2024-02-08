@@ -3,7 +3,6 @@ package net.atlas.combatify.util;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
-import net.atlas.combatify.item.NewAttributes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -63,7 +62,7 @@ public class MethodHandler {
 			withDamageBonus *= 1.0 + attributeModifier2.getAmount();
 		}
 
-		return attributeInstance.getAttribute().sanitizeValue(withDamageBonus);
+		return attributeInstance.getAttribute().value().sanitizeValue(withDamageBonus);
 	}
 	public static float getFatigueForTime(int f) {
 		if (f < 60) {
@@ -183,7 +182,7 @@ public class MethodHandler {
 		return entity instanceof Player player && player.getCooldowns().isOnCooldown(var1.getItem());
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
-		@Nullable final var attackRange = player.getAttribute(NewAttributes.ATTACK_REACH);
+		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		double chargedBonus = 0;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
 		float strengthScale = player.getAttackStrengthScale(baseTime);

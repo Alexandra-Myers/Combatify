@@ -10,6 +10,7 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
@@ -19,20 +20,20 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(TridentItem.class)
-public class TridentItemMixin extends Item implements Vanishable, ItemExtensions, DefaultedItemExtensions, WeaponWithType {
+public class TridentItemMixin extends Item implements ItemExtensions, DefaultedItemExtensions, WeaponWithType {
 	@Mutable
 	@Shadow
 	@Final
-	private Multimap<Attribute, AttributeModifier> defaultModifiers;
+	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 
 	public TridentItemMixin(Item.Properties properties) {
 		super(properties);
 	}
 	@Override
 	public void modifyAttributeModifiers() {
-		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
-		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
+		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
 		((DefaultedItemExtensions)this).setDefaultModifiers(output);
 	}
 
@@ -42,14 +43,14 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 	}
 
 	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Attribute, AttributeModifier> modifiers) {
+	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
 		defaultModifiers = modifiers;
 	}
 
 	@Override
 	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.CONFIG.configuredItems.get(this).type;
 			if (type != null)
 				return type;
 		}
@@ -59,8 +60,8 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 	public double getChargedAttackBonus() {
 		Item item = this;
 		double chargedBonus = getWeaponType().getChargedReach();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+		if(Combatify.CONFIG.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
@@ -69,14 +70,14 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 
 	@Override
 	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.blockingType != null) {
 				return configurableWeaponData.blockingType;
 			}
@@ -86,14 +87,14 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
 			if (configurableItemData.piercingLevel != null) {
 				return configurableItemData.piercingLevel;
 			}
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.piercingLevel != null) {
 				return configurableWeaponData.piercingLevel;
 			}

@@ -6,7 +6,6 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AnvilMenuMixin",
-    "AttackDamageMobEffectMixin",
     "AttributeModifierMixin",
     "AxeItemMixin",
     "BowItemMixin",
@@ -24,7 +23,6 @@
     "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
-    "MiscCategoryMixin",
     "MobEffectMixin",
     "MobMixin",
     "PickaxeItemMixin",
@@ -33,7 +31,6 @@
     "PlayerMixin",
     "ProjectileMixin",
     "RamTargetMixin",
-    "ReachEntityAttributesMixin",
     "ResourceLocationMixin",
     "ServerEntityMixin",
     "ServerGamePacketMixin",
@@ -62,8 +59,7 @@
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
     "RendererMixin",
-    "VideoSettingsMixin",
-    "OwoConfigSyncMixin"
+    "VideoSettingsMixin"
   ],
   "mixinPriority": 1200
 }

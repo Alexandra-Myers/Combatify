@@ -14,8 +14,8 @@ public class HoeItemMixin extends DiggerItemMixin {
 
 	@Override
 	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.CONFIG.configuredItems.get(this).type;
 			if (type != null)
 				return type;
 		}

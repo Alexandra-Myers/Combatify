@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -30,7 +31,7 @@ public enum WeaponType {
     WeaponType() {
     }
 
-    public void addCombatAttributes(Tier tier, ImmutableMultimap.Builder<Attribute, AttributeModifier> attributeModifiers) {
+    public void addCombatAttributes(Tier tier, ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> attributeModifiers) {
 		if (isEmpty())
 			return;
         double speed = this.getSpeed(tier);
@@ -40,10 +41,10 @@ public enum WeaponType {
 		if (!Combatify.CONFIG.instaAttack())
 			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
         if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
-            attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
+            attributeModifiers.put(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
         }
     }
-	public void addCombatAttributes(Tier tier, ArrayListMultimap<Attribute, AttributeModifier> attributeModifiers) {
+	public void addCombatAttributes(Tier tier, ArrayListMultimap<Holder<Attribute>, AttributeModifier> attributeModifiers) {
 		if (isEmpty())
 			return;
 		double speed = this.getSpeed(tier);
@@ -53,7 +54,7 @@ public enum WeaponType {
 		if (!Combatify.CONFIG.instaAttack())
 			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
 		if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
-			attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
+			attributeModifiers.put(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
 		}
 	}
 
@@ -62,8 +63,8 @@ public enum WeaponType {
 		double damageBonus = tier.getAttackDamageBonus() + modifier;
 		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && damageBonus != (Combatify.CONFIG.fistDamage() ? 1 : 0);
 		boolean isCTSNotT1 = isNotTier1 && Combatify.CONFIG.ctsAttackBalancing();
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(this);
 			if (configurableWeaponData.damageOffset != null) {
 				if (configurableWeaponData.tierable) {
 					if (isCTSNotT1) {
@@ -123,8 +124,8 @@ public enum WeaponType {
     }
 
     public double getSpeed(Tier tier) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(this);
 			if (configurableWeaponData.speed != null) {
 				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed();
 			}
@@ -161,8 +162,8 @@ public enum WeaponType {
     }
 
     public double getReach() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(this);
 			if (configurableWeaponData.reach != null) {
 				return configurableWeaponData.reach - 2.5;
 			}
@@ -175,16 +176,16 @@ public enum WeaponType {
 		};
     }
 	public double getChargedReach() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(this);
 			if (configurableWeaponData.chargedReach != null)
 				return configurableWeaponData.chargedReach;
 		}
 		return 1.0;
 	}
 	public boolean hasSwordEnchants() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(this);
 			if (configurableWeaponData.hasSwordEnchants != null)
 				return configurableWeaponData.hasSwordEnchants;
 		}

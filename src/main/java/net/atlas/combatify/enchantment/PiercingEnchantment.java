@@ -1,13 +1,13 @@
 package net.atlas.combatify.enchantment;
 
 import net.atlas.combatify.extensions.CustomEnchantment;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.DamageEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.item.enchantment.TridentImpalerEnchantment;
 
 import static net.atlas.combatify.Combatify.id;
@@ -16,7 +16,7 @@ public class PiercingEnchantment extends Enchantment implements CustomEnchantmen
 	public static final Enchantment PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), new PiercingEnchantment());
 
 	public PiercingEnchantment() {
-		super(Rarity.VERY_RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+		super(Rarity.VERY_RARE, ItemTags.WEAPON_ENCHANTABLE, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
 	}
 
 	@Override

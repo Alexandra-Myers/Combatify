@@ -20,7 +20,7 @@ public abstract class EntityMixin {
 	public float inflateBoxes(float original) {
 		float f = Math.max(getBbWidth(), getBbHeight());
 		if (f < Combatify.CONFIG.minHitboxSize()) {
-		  return (Combatify.CONFIG.minHitboxSize() - f) * 0.5F;
+		  return (float) ((Combatify.CONFIG.minHitboxSize() - f) * 0.5F);
 		}
 		return original;
 	}

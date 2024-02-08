@@ -3,34 +3,39 @@ package net.atlas.combatify.networking;
 import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.AtlasConfig;
+import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -41,20 +46,17 @@ import static net.atlas.combatify.Combatify.*;
 public class NetworkingHandler {
 
 	public NetworkingHandler() {
-		ServerPlayNetworking.registerGlobalReceiver(modDetectionNetworkChannel,(server, player, handler, buf, responseSender) -> {
-		});
+		PayloadTypeRegistry.playS2C().register(AtlasConfigPacket.TYPE, AtlasConfigPacket.CODEC);
+		PayloadTypeRegistry.playC2S().register(ServerboundMissPacket.TYPE, ServerboundMissPacket.CODEC);
+		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
-				Timer timer = scheduleHitResult.get(handler.getPlayer().getUUID());
-				timer.cancel();
-				timer.purge();
 				unmoddedPlayers.remove(handler.player.getUUID());
-				isPlayerAttacking.remove(handler.player.getUUID());
-				finalizingAttack.remove(handler.player.getUUID());
 			}
 			moddedPlayers.remove(handler.player.getUUID());
 		});
-		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> {
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, context) -> {
+			ServerPlayer player = context.player();
 			final ServerLevel serverLevel = player.serverLevel();
 			player.resetLastActionTime();
 			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition())) {
@@ -83,9 +85,7 @@ public class NetworkingHandler {
 					return;
 				}
 				Combatify.unmoddedPlayers.add(handler.player.getUUID());
-				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
-				Combatify.finalizingAttack.put(handler.player.getUUID(), true);
-				scheduleHitResult.put(handler.player.getUUID(), new Timer());
+				Combatify.isPlayerAttacking.put(handler.player.getUUID(), false);
 				Combatify.LOGGER.info("Unmodded player joined: " + handler.player.getUUID());
 				return;
 			}
@@ -97,8 +97,8 @@ public class NetworkingHandler {
 		});
 		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
 			Item item = stack.getItem();
-			if (ITEMS.configuredItems.containsKey(item) && slot == EquipmentSlot.MAINHAND) {
-				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+			if (Combatify.CONFIG.configuredItems.containsKey(item) && slot == EquipmentSlot.MAINHAND) {
+				ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
 				if (configurableItemData.type != null) {
 					if (attributeModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
 						List<Integer> indexes = new ArrayList<>();
@@ -120,17 +120,17 @@ public class NetworkingHandler {
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_SPEED, modifiers.get(index));
 					}
-					if (attributeModifiers.containsKey(NewAttributes.ATTACK_REACH)) {
+					if (attributeModifiers.containsKey(Attributes.ENTITY_INTERACTION_RANGE)) {
 						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(NewAttributes.ATTACK_REACH).stream().toList();
+						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ENTITY_INTERACTION_RANGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
 							if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
-								attributeModifiers.remove(NewAttributes.ATTACK_REACH, modifiers.get(index));
+								attributeModifiers.remove(Attributes.ENTITY_INTERACTION_RANGE, modifiers.get(index));
 					}
-					ArrayListMultimap<Attribute, AttributeModifier> modMap = ArrayListMultimap.create();
+					ArrayListMultimap<Holder<Attribute>, AttributeModifier> modMap = ArrayListMultimap.create();
 					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier() : item instanceof Tierable tierable ? tierable.getTier() : Tiers.NETHERITE, modMap);
 					attributeModifiers.putAll(modMap);
 				}
@@ -161,42 +161,36 @@ public class NetworkingHandler {
 					attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADDITION));
 				}
 				if (configurableItemData.reach != null) {
-					if (attributeModifiers.containsKey(NewAttributes.ATTACK_REACH)) {
+					if (attributeModifiers.containsKey(Attributes.ENTITY_INTERACTION_RANGE)) {
 						List<Integer> indexes = new ArrayList<>();
-						List<AttributeModifier> modifiers = attributeModifiers.get(NewAttributes.ATTACK_REACH).stream().toList();
+						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ENTITY_INTERACTION_RANGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
 							if (modifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
-								attributeModifiers.remove(NewAttributes.ATTACK_REACH, modifiers.get(index));
+								attributeModifiers.remove(Attributes.ENTITY_INTERACTION_RANGE, modifiers.get(index));
 					}
-					attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADDITION));
 				}
 			}
 		});
+		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
+			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+			return InteractionResult.PASS;
+		});
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
-			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
-				Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
-				((ServerPlayerExtensions) serverPlayer).getPresentResult();
-				for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).getOldHitResults()) {
-					if(hitResultToChoose == null)
-						continue;
-					Float[] rotations = null;
-					if (hitResultToRotationMap.containsKey(hitResultToChoose))
-						rotations = hitResultToRotationMap.get(hitResultToChoose);
-					float xRot = serverPlayer.getXRot() % 360;
-					float yRot = serverPlayer.getYHeadRot() % 360;
-					if(rotations != null) {
-						float xDiff = Math.abs(xRot - rotations[1]);
-						float yDiff = Math.abs(yRot - rotations[0]);
-						if(xDiff > 20 || yDiff > 20)
-							continue;
-					}
-					if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
-						return InteractionResult.FAIL;
-					}
-				}
+			if(Combatify.unmoddedPlayers.contains(player.getUUID())) {
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+				Vec3 eyePos = player.getEyePosition(1.0f);
+				Vec3 viewVector = player.getViewVector(1.0f);
+				double reach = player.entityInteractionRange();
+				Vec3 adjPos = eyePos.add(viewVector.x * reach, viewVector.y * reach, viewVector.z * reach);
+				AABB rayBB = player.getBoundingBox().expandTowards(viewVector.scale(reach)).inflate(1.0, 1.0, 1.0);
+				EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(player, eyePos, adjPos, rayBB, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), reach * reach);
+				if (entityHitResult != null && player instanceof ServerPlayer serverPlayer)
+					serverPlayer.connection.handleInteract(ServerboundInteractPacket.createAttackPacket(entityHitResult.getEntity(), false));
 			}
 			return InteractionResult.PASS;
 		});
@@ -216,94 +210,62 @@ public class NetworkingHandler {
 			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
-			ITEMS = new ItemConfig();
+			Combatify.CONFIG = new CombatifyBetaConfig();
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 			for(Item item : items) {
 				((ItemExtensions) item).modifyAttributeModifiers();
 			}
-			for(Item item : ITEMS.configuredItems.keySet()) {
-				ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
+			for(Item item : Combatify.CONFIG.configuredItems.keySet()) {
+				ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}
 		});
 	}
-	public record AtlasConfigPacket(AtlasConfig config) implements FabricPacket {
-		public static final PacketType<AtlasConfigPacket> TYPE = PacketType.create(Combatify.id("atlas_config"), AtlasConfigPacket::new);
+	public record AtlasConfigPacket(AtlasConfig config) implements CustomPacketPayload {
+		public static final Type<AtlasConfigPacket> TYPE = CustomPacketPayload.createType(Combatify.id("atlas_config").toString());
+		public static final StreamCodec<FriendlyByteBuf, AtlasConfigPacket> CODEC = CustomPacketPayload.codec(AtlasConfigPacket::write, AtlasConfigPacket::new);
 
 		public AtlasConfigPacket(FriendlyByteBuf buf) {
 			this(AtlasConfig.staticLoadFromNetwork(buf));
 		}
 
-		/**
-		 * Writes the contents of this packet to the buffer.
-		 *
-		 * @param buf the output buffer
-		 */
-		@Override
 		public void write(FriendlyByteBuf buf) {
 			buf.writeResourceLocation(config.name);
 			config.saveToNetwork(buf);
 		}
 
-		/**
-		 * Returns the packet type of this packet.
-		 *
-		 * <p>Implementations should store the packet type instance in a {@code static final}
-		 * field and return that here, instead of creating a new instance.
-		 *
-		 * @return the type of this packet
-		 */
 		@Override
-		public PacketType<?> getType() {
+		public Type<? extends CustomPacketPayload> type() {
 			return TYPE;
 		}
 	}
-	public record ServerboundMissPacket() implements FabricPacket {
-		public static final PacketType<ServerboundMissPacket> TYPE = PacketType.create(Combatify.id("miss_attack"), ServerboundMissPacket::new);
+	public record ServerboundMissPacket() implements CustomPacketPayload {
+		public static final Type<ServerboundMissPacket> TYPE = CustomPacketPayload.createType(Combatify.id("miss_attack").toString());
+		public static final StreamCodec<FriendlyByteBuf, ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
 
 		public ServerboundMissPacket(FriendlyByteBuf buf) {
 			this();
 		}
 
-		/**
-		 * Writes the contents of this packet to the buffer.
-		 *
-		 * @param buf the output buffer
-		 */
-		@Override
 		public void write(FriendlyByteBuf buf) {
 
 		}
-
-		/**
-		 * Returns the packet type of this packet.
-		 *
-		 * <p>Implementations should store the packet type instance in a {@code static final}
-		 * field and return that here, instead of creating a new instance.
-		 *
-		 * @return the type of this packet
-		 */
 		@Override
-		public PacketType<?> getType() {
+		public Type<?> type() {
 			return TYPE;
 		}
 	}
-	public record RemainingUseSyncPacket(int id, int ticks) implements FabricPacket {
-		public static final PacketType<RemainingUseSyncPacket> TYPE = PacketType.create(Combatify.id("remaining_use_ticks"), RemainingUseSyncPacket::new);
+	public record RemainingUseSyncPacket(int id, int ticks) implements CustomPacketPayload {
+		public static final Type<RemainingUseSyncPacket> TYPE = CustomPacketPayload.createType(Combatify.id("remaining_use_ticks").toString());
+		public static final StreamCodec<FriendlyByteBuf, RemainingUseSyncPacket> CODEC = CustomPacketPayload.codec(RemainingUseSyncPacket::write, RemainingUseSyncPacket::new);
 
 		public RemainingUseSyncPacket(FriendlyByteBuf buf) {
 			this(buf.readVarInt(), buf.readInt());
 		}
 
-		/**
-		 * Writes the contents of this packet to the buffer.
-		 *
-		 * @param buf the output buffer
-		 */
-		@Override
 		public void write(FriendlyByteBuf buf) {
 			buf.writeVarInt(id);
 			buf.writeInt(ticks);
@@ -318,7 +280,7 @@ public class NetworkingHandler {
 		 * @return the type of this packet
 		 */
 		@Override
-		public PacketType<?> getType() {
+		public Type<?> type() {
 			return TYPE;
 		}
 	}

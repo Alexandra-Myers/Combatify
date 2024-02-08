@@ -4,6 +4,8 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.CustomEnchantment;
 import net.atlas.combatify.extensions.WeaponWithType;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.*;
 import org.spongepowered.asm.mixin.Final;
@@ -20,19 +22,19 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 
 	@Shadow
 	@Final
-	public EnchantmentCategory category;
+	private TagKey<Item> match;
 
 	@Inject(method = "canEnchant", at = @At(value = "HEAD"), cancellable = true)
 	public void canEnchant(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
 		boolean hasSwordEnchants = false;
 		if (stack.getItem() instanceof WeaponWithType weaponWithType)
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}
-		if (category == EnchantmentCategory.WEAPON && hasSwordEnchants)
+		if (match.equals(ItemTags.WEAPON_ENCHANTABLE) && hasSwordEnchants)
 			cir.setReturnValue(true);
 	}
 
@@ -41,12 +43,12 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 		boolean hasSwordEnchants = false;
 		if (stack.getItem() instanceof WeaponWithType weaponWithType)
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}
-		return category.canEnchant(stack.getItem()) || (category == EnchantmentCategory.WEAPON && hasSwordEnchants);
+		return stack.is(match) || (match.equals(ItemTags.WEAPON_ENCHANTABLE) && hasSwordEnchants);
 	}
 
 	@Override
@@ -54,11 +56,11 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 		boolean hasSwordEnchants = false;
 		if (stack.getItem() instanceof WeaponWithType weaponWithType)
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}
-		return canEnchant(stack) || (category == EnchantmentCategory.WEAPON && hasSwordEnchants);
+		return canEnchant(stack) || (match.equals(ItemTags.WEAPON_ENCHANTABLE) && hasSwordEnchants);
 	}
 }

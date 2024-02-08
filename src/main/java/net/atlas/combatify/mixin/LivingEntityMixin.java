@@ -11,6 +11,7 @@ import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,7 +56,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	LivingEntity thisEntity = LivingEntity.class.cast(this);
 
 	@Shadow
-	public abstract double getAttributeValue(Attribute attribute);
+	public abstract double getAttributeValue(Holder<Attribute> attribute);
 
 	@Shadow
 	public abstract void hurtArmor(DamageSource damageSource, float v);
@@ -93,7 +94,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (bl && shieldItem.getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0)
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
-			float damage = Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(thisEntity) * Combatify.CONFIG.cleavingDisableTime();
+			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(thisEntity) * Combatify.CONFIG.cleavingDisableTime());
 			if(Combatify.CONFIG.defender())
 				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction();
 			if(target instanceof PlayerExtensions player)
@@ -208,7 +209,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 	}
 
-	@Inject(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;"), cancellable = true)
+	@Inject(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;calculateViewVector(FF)Lnet/minecraft/world/phys/Vec3;"), cancellable = true)
 	public void isDamageSourceBlocked(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
 		Vec3 currentVector = this.getViewVector(1.0F);
 		if (currentVector.y > -0.99 && currentVector.y < 0.99) {
