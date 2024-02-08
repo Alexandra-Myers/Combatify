@@ -4,6 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.AtlasConfig;
 import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -32,17 +33,18 @@ public class ClientNetworkingHandler {
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
 			if (!ClientPlayNetworking.canSend(NetworkingHandler.ServerboundMissPacket.TYPE)) {
 				Combatify.CONFIG.reloadFromDefault();
+				ITEMS.reloadFromDefault();
 			}
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
-			CONFIG = new CombatifyBetaConfig();
+			ITEMS = new ItemConfig();
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 			for(Item item : items)
 				((ItemExtensions) item).modifyAttributeModifiers();
-			for(Item item : Combatify.CONFIG.configuredItems.keySet()) {
-				ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+			for(Item item : Combatify.ITEMS.configuredItems.keySet()) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}

@@ -15,8 +15,6 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.*;
 
-import static net.atlas.combatify.item.WeaponType.BASE_ATTACK_SPEED_UUID;
-
 @Mixin(ClientboundUpdateAttributesPacket.class)
 public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributesPacket {
 	@Shadow

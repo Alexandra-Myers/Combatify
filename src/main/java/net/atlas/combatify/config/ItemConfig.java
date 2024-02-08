@@ -426,8 +426,8 @@ public class ItemConfig extends AtlasConfig {
 
 		for(Item item : items)
 			((ItemExtensions) item).modifyAttributeModifiers();
-		for (Item item : Combatify.CONFIG.configuredItems.keySet()) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+		for (Item item : Combatify.ITEMS.configuredItems.keySet()) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.stackSize != null)
 				((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 		}

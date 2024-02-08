@@ -49,8 +49,8 @@ public class TridentItemMixin extends Item implements ItemExtensions, DefaultedI
 
 	@Override
 	public WeaponType getWeaponType() {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.CONFIG.configuredItems.get(this).type;
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
 			if (type != null)
 				return type;
 		}
@@ -60,8 +60,8 @@ public class TridentItemMixin extends Item implements ItemExtensions, DefaultedI
 	public double getChargedAttackBonus() {
 		Item item = this;
 		double chargedBonus = getWeaponType().getChargedReach();
-		if(Combatify.CONFIG.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
@@ -70,14 +70,14 @@ public class TridentItemMixin extends Item implements ItemExtensions, DefaultedI
 
 	@Override
 	public BlockingType getBlockingType() {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.blockingType != null) {
 				return configurableItemData.blockingType;
 			}
 		}
-		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.blockingType != null) {
 				return configurableWeaponData.blockingType;
 			}
@@ -87,14 +87,14 @@ public class TridentItemMixin extends Item implements ItemExtensions, DefaultedI
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
 			if (configurableItemData.piercingLevel != null) {
 				return configurableItemData.piercingLevel;
 			}
 		}
-		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.CONFIG.configuredWeapons.get(getWeaponType());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
 			if (configurableWeaponData.piercingLevel != null) {
 				return configurableWeaponData.piercingLevel;
 			}

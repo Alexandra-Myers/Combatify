@@ -95,8 +95,8 @@ public abstract class ItemStackMixin {
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
 	public int getUseDuration(int original) {
 		Item item = getItem();
-		if (Combatify.CONFIG.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+		if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.useDuration != null)
 				return configurableItemData.useDuration;
 		} else if (!((ItemExtensions) item).getBlockingType().isEmpty() && (!((ItemExtensions) item).getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()))
@@ -108,8 +108,8 @@ public abstract class ItemStackMixin {
 	public boolean addEnchantability(boolean original) {
 		boolean enchantable = false;
 		Item item = getItem();
-		if (Combatify.CONFIG.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+		if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.isEnchantable != null)
 				enchantable = configurableItemData.isEnchantable && !isEnchanted();
 		}
@@ -124,8 +124,8 @@ public abstract class ItemStackMixin {
 				holder = ((ItemExtensions)item).getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
 			}
 		}
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(item) && original != InteractionResult.PASS && original != InteractionResult.FAIL) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item) && original != InteractionResult.PASS && original != InteractionResult.FAIL) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
 				Objects.requireNonNull(useOnContext.getPlayer()).getCooldowns().addCooldown(item, configurableItemData.cooldown);
 			}
@@ -145,8 +145,8 @@ public abstract class ItemStackMixin {
 				holder = ((ItemExtensions)item).getBlockingType().use(world, player, hand);
 			}
 		}
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(item) && original.getResult() != InteractionResult.PASS && original.getResult() != InteractionResult.FAIL) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item) && original.getResult() != InteractionResult.PASS && original.getResult() != InteractionResult.FAIL) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter) {
 				player.getCooldowns().addCooldown(item, configurableItemData.cooldown);
 			}
@@ -158,8 +158,8 @@ public abstract class ItemStackMixin {
 	}
 	@Inject(method = "releaseUsing", at = @At(value = "TAIL"))
 	public void addCooldown(Level level, LivingEntity livingEntity, int i, CallbackInfo ci) {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(getItem());
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(getItem());
 			if (configurableItemData.cooldown != null && configurableItemData.cooldownAfter && livingEntity instanceof Player player) {
 				player.getCooldowns().addCooldown(getItem(), configurableItemData.cooldown);
 			}

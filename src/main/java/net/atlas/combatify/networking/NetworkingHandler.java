@@ -3,8 +3,8 @@ package net.atlas.combatify.networking;
 import com.google.common.collect.ArrayListMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.AtlasConfig;
-import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.MethodHandler;
@@ -97,14 +97,14 @@ public class NetworkingHandler {
 		});
 		ModifyItemAttributeModifiersCallback.EVENT.register(modDetectionNetworkChannel, (stack, slot, attributeModifiers) -> {
 			Item item = stack.getItem();
-			if (Combatify.CONFIG.configuredItems.containsKey(item) && slot == EquipmentSlot.MAINHAND) {
-				ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+			if (Combatify.ITEMS.configuredItems.containsKey(item) && slot == EquipmentSlot.MAINHAND) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.type != null) {
 					if (attributeModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -139,13 +139,13 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
 					}
-					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADDITION));
 				}
 				if (configurableItemData.speed != null) {
 					if (attributeModifiers.containsKey(Attributes.ATTACK_SPEED)) {
@@ -219,15 +219,15 @@ public class NetworkingHandler {
 			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
-			Combatify.CONFIG = new CombatifyBetaConfig();
+			Combatify.ITEMS = new ItemConfig();
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
 			for(Item item : items) {
 				((ItemExtensions) item).modifyAttributeModifiers();
 			}
-			for(Item item : Combatify.CONFIG.configuredItems.keySet()) {
-				ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(item);
+			for(Item item : Combatify.ITEMS.configuredItems.keySet()) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)
 					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
 			}

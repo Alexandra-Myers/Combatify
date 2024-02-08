@@ -21,8 +21,8 @@ public abstract class EnchantmentHelperMixin {
 
 	@ModifyExpressionValue(method = "getEnchantmentCost", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
 	private static int getEnchantmentValue(int original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.enchantability != null)
 				return configurableItemData.enchantability;
 			if (configurableItemData.isEnchantable != null && original == 0)
@@ -32,8 +32,8 @@ public abstract class EnchantmentHelperMixin {
 	}
 	@ModifyExpressionValue(method = "selectEnchantment", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
 	private static int getEnchantmentValue1(int original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.enchantability != null)
 				return configurableItemData.enchantability;
 			if (configurableItemData.isEnchantable != null && original == 0)

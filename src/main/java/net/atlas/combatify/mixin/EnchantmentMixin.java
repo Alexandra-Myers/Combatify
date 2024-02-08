@@ -29,8 +29,8 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 		boolean hasSwordEnchants = false;
 		if (stack.getItem() instanceof WeaponWithType weaponWithType)
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
-		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}
@@ -43,8 +43,8 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 		boolean hasSwordEnchants = false;
 		if (stack.getItem() instanceof WeaponWithType weaponWithType)
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
-		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}
@@ -56,8 +56,8 @@ public abstract class EnchantmentMixin implements CustomEnchantment {
 		boolean hasSwordEnchants = false;
 		if (stack.getItem() instanceof WeaponWithType weaponWithType)
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
-		if (Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}

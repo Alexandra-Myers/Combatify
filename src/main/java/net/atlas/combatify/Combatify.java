@@ -1,6 +1,7 @@
 package net.atlas.combatify;
 
 import net.atlas.combatify.config.CombatifyBetaConfig;
+import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -35,6 +36,7 @@ import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
 	public static CombatifyBetaConfig CONFIG;
+	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
@@ -50,6 +52,7 @@ public class Combatify implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		CONFIG = new CombatifyBetaConfig();
 		networkingHandler = new NetworkingHandler();
 		LOGGER.info("Init started.");
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {

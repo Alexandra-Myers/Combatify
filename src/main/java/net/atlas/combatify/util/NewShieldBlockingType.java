@@ -51,8 +51,8 @@ public class NewShieldBlockingType extends BlockingType {
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack stack) {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockStrength != null) {
 				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F);
 			}
@@ -70,8 +70,8 @@ public class NewShieldBlockingType extends BlockingType {
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(stack.getItem());
+		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockKbRes != null) {
 				return configurableItemData.blockKbRes;
 			}
