@@ -1,12 +1,12 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
-import net.minecraft.world.effect.MobEffect;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import net.minecraft.world.effect.HealOrHarmMobEffect;
 
-@Mixin(MobEffect.class)
+@Mixin(HealOrHarmMobEffect.class)
 public class MobEffectMixin {
 
 	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))

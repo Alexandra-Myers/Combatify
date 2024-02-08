@@ -41,8 +41,6 @@ public class Combatify implements ModInitializer {
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
-	public static final Map<UUID, Boolean> finalizingAttack = new HashMap<>();
-	public static final Map<UUID, Timer> scheduleHitResult = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));

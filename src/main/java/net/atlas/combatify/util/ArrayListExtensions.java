@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class ArrayListExtensions<T> extends ArrayList<T> implements IterableExtensions<T> {
+public class ArrayListExtensions<T> extends ArrayList<T> {
 	public ArrayListExtensions(int initialCapacity) {
 		super(initialCapacity);
 	}

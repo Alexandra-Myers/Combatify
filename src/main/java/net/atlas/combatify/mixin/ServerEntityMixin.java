@@ -25,7 +25,7 @@ public abstract class ServerEntityMixin {
 	protected abstract void broadcastAndSend(Packet<?> packet);
 
 	@Redirect(method = "addPairing", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V"))
-	public void modifyAttributes(ServerGamePacketListenerImpl instance, Packet<?> packet, @Local(ordinal = 0) ServerPlayer serverPlayer) {
+	public void modifyAttributes(ServerGamePacketListenerImpl instance, Packet<?> packet, @Local(ordinal = 0, argsOnly = true) ServerPlayer serverPlayer) {
 		if(packet instanceof ClientboundBundlePacket clientboundBundlePacket)
 			clientboundBundlePacket.subPackets().forEach(clientGamePacketListenerPacket -> {
 				if(clientGamePacketListenerPacket instanceof ClientboundUpdateAttributesPacket clientboundUpdateAttributesPacket) {

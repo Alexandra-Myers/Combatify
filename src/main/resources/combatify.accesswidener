@@ -30,7 +30,6 @@ accessible field net/minecraft/world/entity/projectile/AbstractArrow pickupItemS
 accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
 mutable field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
 accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptibleReturnOwner ()Z
-accessible class net/minecraft/world/effect/AttackDamageMobEffect
 accessible method net/minecraft/world/entity/LivingEntity updateUsingItem (Lnet/minecraft/world/item/ItemStack;)V
 accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance calculateValue ()D
 accessible method net/minecraft/client/Minecraft startUseItem ()V
@@ -46,3 +45,4 @@ accessible class net/minecraft/resources/ResourceLocation$Dummy
 accessible field net/minecraft/server/network/ServerGamePacketListenerImpl LOGGER Lorg/slf4j/Logger;
 accessible field net/minecraft/client/main/Main LOGGER Lorg/slf4j/Logger;
 accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance getModifiersOrEmpty (Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Ljava/util/Collection;
+accessible class net/minecraft/world/effect/HealOrHarmMobEffect

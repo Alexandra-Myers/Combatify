@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.CombatUtil;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
-
+	@Unique
 	private boolean retainAttack;
 
 	@Shadow
@@ -51,11 +52,18 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			Vec3 eyePos = entity.getEyePosition(1.0f);
 			Vec3 viewVector = entity.getViewVector(1.0f);
 			double reach = entityInteractionRange();
+			double sqrReach = reach * reach;
 			Vec3 adjPos = eyePos.add(viewVector.x * reach, viewVector.y * reach, viewVector.z * reach);
 			AABB rayBB = entity.getBoundingBox().expandTowards(viewVector.scale(reach)).inflate(1.0, 1.0, 1.0);
-			EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(entity, eyePos, adjPos, rayBB, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), reach * reach);
-			if (entityHitResult != null)
-				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(entityHitResult.getEntity(), false));
+			HitResult hitResult = entity.pick(reach, 1.0f, false);
+			double i = hitResult.getLocation().distanceToSqr(eyePos);
+			EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(entity, eyePos, adjPos, rayBB, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), sqrReach);
+			if (entityHitResult != null && entityHitResult.getLocation().distanceToSqr(eyePos) < i)
+				hitResult = entityHitResult;
+			else
+				MethodHandler.redirectResult(player, hitResult);
+			if (hitResult.getType() == HitResult.Type.ENTITY)
+				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult)hitResult).getEntity(), false));
 		}
 	}
 	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
@@ -65,7 +73,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			if (Combatify.isPlayerAttacking.get(getUUID())) {
 				handleInteract(false);
 			}
-			Combatify.finalizingAttack.put(getUUID(), true);
 			Combatify.isPlayerAttacking.put(getUUID(), true);
 		}
 		ci.cancel();
@@ -92,5 +99,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			}
 		}
 		attackAir();
+	}
+	@Inject(method = "updatePlayerAttributes", at = @At("HEAD"), cancellable = true)
+	public void removeCreativeReach(CallbackInfo ci) {
+		ci.cancel();
 	}
 }

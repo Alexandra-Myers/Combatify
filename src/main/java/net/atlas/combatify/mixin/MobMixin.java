@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(Mob.class)
 public class MobMixin {
 	@Redirect(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getDamageBonus(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EntityType;)F"))
-	public float getDamageBonus(ItemStack itemStack, EntityType<?> entityType, @Local(ordinal = 0) Entity entity) {
+	public float getDamageBonus(ItemStack itemStack, EntityType<?> entityType, @Local(ordinal = 0, argsOnly = true) Entity entity) {
 		return CustomEnchantmentHelper.getDamageBonus(itemStack, (LivingEntity) entity);
 	}
 	@Redirect(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))

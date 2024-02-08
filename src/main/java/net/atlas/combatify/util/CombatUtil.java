@@ -26,8 +26,7 @@ public class CombatUtil {
     public static boolean allowReach(ServerPlayer attacker, ServerPlayer target) {
         Vec3 eyePosition = attacker.getEyePosition(0);
         double reach = MethodHandler.getCurrentAttackReach(attacker, 1F);
-		if (!Combatify.unmoddedPlayers.contains(attacker.getUUID()))
-			reach += 0.25;
+		reach += 0.75;
         if (!attacker.hasLineOfSight(target)) reach = 2.5;
         reach *= reach;
 

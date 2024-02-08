@@ -93,6 +93,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
 		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(!Combatify.CONFIG.fistDamage() ? 2 : 1);
 		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
+		Objects.requireNonNull(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)).setBaseValue(2.5);
 	}
 
 	@ModifyExpressionValue(method = "createAttributes", at = @At(value = "CONSTANT", args = "doubleValue=1.0"))
@@ -101,7 +102,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, 2.5).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 	}
 	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
 	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
@@ -207,16 +208,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		MethodHandler.knockback(instance, d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
-	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
+	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
 		bl4.set(false);
 		if (!bl3 && !bl2 && this.onGround() && d < (double)this.getSpeed())
 			bl4.set(checkSweepAttack());
-		if(bl6) {
-			if(bl4.get()) {
-				AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-				this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
-				bl4.set(false);
-			}
+		if(bl4.get()) {
+			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
+			this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
+			bl4.set(false);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))

@@ -4,7 +4,6 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -195,34 +194,6 @@ public class MethodHandler {
 	public static double getSquaredCurrentAttackReach(Player player, float baseTime) {
 		final var attackRange = getCurrentAttackReach(player,baseTime);
 		return attackRange * attackRange;
-	}
-	public static HitResult pickResult(Player player, Entity camera) {
-		double d = getCurrentAttackReach(player, 0.0F) + 2;
-		HitResult hitResult = camera.pick(d, 1, false);
-		Vec3 eyePosition = camera.getEyePosition(1.0F);
-		Vec3 viewVector = camera.getViewVector(1.0F);
-		boolean bl = false;
-		double e;
-		if (d > getCurrentAttackReach(player, 0.0F)) {
-			bl = true;
-		}
-
-        e = hitResult.getLocation().distanceToSqr(eyePosition);
-        Vec3 vec32 = eyePosition.add(viewVector.x * d, viewVector.y * d, viewVector.z * d);
-		AABB aABB = camera.getBoundingBox().expandTowards(viewVector.scale(d)).inflate(1.0, 1.0, 1.0);
-		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(camera, eyePosition, vec32, aABB, (entityx) ->
-			!entityx.isSpectator() && entityx.isPickable(), e);
-		if (entityHitResult != null) {
-			Vec3 vec33 = entityHitResult.getLocation();
-			double h = eyePosition.distanceToSqr(vec33);
-			if (bl && h > getSquaredCurrentAttackReach(player, 0.0F)) {
-				hitResult = BlockHitResult.miss(vec33, Direction.getNearest(viewVector.x, viewVector.y, viewVector.z), BlockPos.containing(vec33));
-			} else if (h < e) {
-				hitResult = entityHitResult;
-			}
-		}
-		hitResult = redirectResult(player, hitResult);
-		return hitResult;
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);

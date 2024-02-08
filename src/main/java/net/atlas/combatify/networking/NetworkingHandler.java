@@ -25,7 +25,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -52,6 +51,7 @@ public class NetworkingHandler {
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
 				unmoddedPlayers.remove(handler.player.getUUID());
+				isPlayerAttacking.remove(handler.player.getUUID());
 			}
 			moddedPlayers.remove(handler.player.getUUID());
 		});
@@ -186,11 +186,20 @@ public class NetworkingHandler {
 				Vec3 eyePos = player.getEyePosition(1.0f);
 				Vec3 viewVector = player.getViewVector(1.0f);
 				double reach = player.entityInteractionRange();
+				double sqrReach = reach * reach;
 				Vec3 adjPos = eyePos.add(viewVector.x * reach, viewVector.y * reach, viewVector.z * reach);
 				AABB rayBB = player.getBoundingBox().expandTowards(viewVector.scale(reach)).inflate(1.0, 1.0, 1.0);
-				EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(player, eyePos, adjPos, rayBB, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), reach * reach);
-				if (entityHitResult != null && player instanceof ServerPlayer serverPlayer)
-					serverPlayer.connection.handleInteract(ServerboundInteractPacket.createAttackPacket(entityHitResult.getEntity(), false));
+				HitResult hitResult = player.pick(reach, 1.0f, false);
+				double i = hitResult.getLocation().distanceToSqr(eyePos);
+				EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(player, eyePos, adjPos, rayBB, (entityx) -> !entityx.isSpectator() && entityx.isPickable(), sqrReach);
+				if (entityHitResult != null && entityHitResult.getLocation().distanceToSqr(eyePos) < i)
+					hitResult = entityHitResult;
+				else
+					MethodHandler.redirectResult(player, hitResult);
+				if (hitResult.getType() == HitResult.Type.ENTITY && player instanceof ServerPlayer serverPlayer) {
+					serverPlayer.connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), false));
+					return InteractionResult.FAIL;
+				}
 			}
 			return InteractionResult.PASS;
 		});

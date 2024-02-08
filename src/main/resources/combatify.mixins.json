@@ -51,7 +51,6 @@
   "client": [
     "AccessibilityOptionsMixin",
     "ControlsMixin",
-    "GameRendererMixin",
     "GuiMixin",
     "ItemInHandMixin",
     "LocalPlayerMixin",

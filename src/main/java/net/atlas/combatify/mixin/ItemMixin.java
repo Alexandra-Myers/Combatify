@@ -51,8 +51,8 @@ public abstract class ItemMixin implements ItemExtensions {
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(this);
+		if(Combatify.CONFIG != null && Combatify.CONFIG.configuredItems.containsKey(Item.class.cast(this))) {
+			ConfigurableItemData configurableItemData = Combatify.CONFIG.configuredItems.get(Item.class.cast(this));
 			if (configurableItemData.piercingLevel != null) {
 				return configurableItemData.piercingLevel;
 			}
