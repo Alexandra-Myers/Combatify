@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.util.PlayerData;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.players.PlayerList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,7 +18,7 @@ public class PlayerListMixin {
 	 *  Creates player data when they join the server
 	 */
 	@Inject(at = @At("HEAD"), method = "placeNewPlayer")
-	private void providePlayerData(Connection connection, ServerPlayer serverPlayer, CallbackInfo ci) {
+	private void providePlayerData(Connection connection, ServerPlayer serverPlayer, CommonListenerCookie commonListenerCookie, CallbackInfo ci) {
 		PlayerData.addPlayerData(serverPlayer);
 	}
 

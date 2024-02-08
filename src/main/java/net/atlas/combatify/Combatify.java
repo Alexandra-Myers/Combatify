@@ -35,7 +35,7 @@ import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
-	public static CombatifyBetaConfig CONFIG;
+	public static CombatifyBetaConfig CONFIG = new CombatifyBetaConfig();
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
@@ -52,7 +52,6 @@ public class Combatify implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		CONFIG = new CombatifyBetaConfig();
 		networkingHandler = new NetworkingHandler();
 		LOGGER.info("Init started.");
 		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
