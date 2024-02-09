@@ -85,7 +85,7 @@ public class NetworkingHandler {
 					return;
 				}
 				Combatify.unmoddedPlayers.add(handler.player.getUUID());
-				Combatify.isPlayerAttacking.put(handler.player.getUUID(), false);
+				Combatify.isPlayerAttacking.put(handler.player.getUUID(), true);
 				Combatify.LOGGER.info("Unmodded player joined: " + handler.player.getUUID());
 				return;
 			}

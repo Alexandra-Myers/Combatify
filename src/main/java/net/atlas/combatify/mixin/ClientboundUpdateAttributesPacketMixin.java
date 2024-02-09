@@ -26,7 +26,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		List<Integer> indexes = new ArrayList<>();
 		Map<Integer, AttributeModifier> modifierMap = new HashMap<>();
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
-			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED && Combatify.unmoddedPlayers.contains(reciever.getUUID())) {
+			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED) {
 				double speed = calculateValue(attributeSnapshot.base(), attributeSnapshot.modifiers(), attributeSnapshot.attribute());
 				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
 					if (vanillaMath(newSpeed) == CTSMath(speed) * 2) {

@@ -69,7 +69,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
 		super.swing(hand);
-		if(Combatify.unmoddedPlayers.contains(getUUID())) {
+		if (Combatify.unmoddedPlayers.contains(getUUID())) {
 			if (Combatify.isPlayerAttacking.get(getUUID())) {
 				handleInteract(false);
 			}
