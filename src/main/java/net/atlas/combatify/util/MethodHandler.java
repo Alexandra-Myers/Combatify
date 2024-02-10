@@ -34,6 +34,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class MethodHandler {
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -48,20 +50,20 @@ public class MethodHandler {
 		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
 
 		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
-			attributeInstanceBaseValue += attributeModifier.getAmount();
+			attributeInstanceBaseValue += attributeModifier.getAmount() + damageBonus;
 		}
 
-		double withDamageBonus = attributeInstanceBaseValue + damageBonus;
+		double attributeInstanceFinalValue = attributeInstanceBaseValue;
 
 		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
-			withDamageBonus += attributeInstanceBaseValue * attributeModifier2.getAmount();
+			attributeInstanceFinalValue += attributeInstanceBaseValue * attributeModifier2.getAmount();
 		}
 
 		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
-			withDamageBonus *= 1.0 + attributeModifier2.getAmount();
+			attributeInstanceFinalValue *= 1.0 + attributeModifier2.getAmount();
 		}
 
-		return attributeInstance.getAttribute().value().sanitizeValue(withDamageBonus);
+		return attributeInstance.getAttribute().value().sanitizeValue(attributeInstanceFinalValue);
 	}
 	public static float getFatigueForTime(int f) {
 		if (f < 60) {
@@ -185,15 +187,18 @@ public class MethodHandler {
 		double chargedBonus = 0;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
-		if (strengthScale > 1.95F && !player.isCrouching()) {
+		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
+			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf73"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADDITION);
+			if (strengthScale > 1.95 && !player.isCrouching()) {
+				attackRange.addOrUpdateTransientModifier(modifier);
+			} else {
+				attackRange.removeModifier(modifier);
+				chargedBonus = 0;
+			}
 		}
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
-	}
-	public static double getSquaredCurrentAttackReach(Player player, float baseTime) {
-		final var attackRange = getCurrentAttackReach(player,baseTime);
-		return attackRange * attackRange;
+		return (attackRange != null) ? baseAttackRange + attackRange.getValue() : baseAttackRange + chargedBonus;
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);

@@ -90,14 +90,16 @@ public abstract class GuiMixin {
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
 		assert minecraft.player != null;
 		if(var7 && isShieldCooldown) {
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		} else if(var7 && this.minecraft.player.isBlocking()) {
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		}
-		int j = guiGraphics.guiHeight() / 2 - 7 + 16;
-		int k = guiGraphics.guiWidth() / 2 - 8;
 		Options options = this.minecraft.options;
 		float maxIndicator =  ((IOptions)options).attackIndicatorValue().get().floatValue();
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
@@ -107,6 +109,8 @@ public abstract class GuiMixin {
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator) {
 			bl = this.minecraft.crosshairPickEntity.isAlive();
 		}
+		int j = guiGraphics.guiHeight() / 2 - 7 + 16;
+		int k = guiGraphics.guiWidth() / 2 - 8;
 		if (bl) {
 			guiGraphics.blit(CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, k, j, 68, 94, 16, 16);
 		} else if (attackStrengthScale > maxIndicator - 0.7 && attackStrengthScale < maxIndicator) {
@@ -115,6 +119,7 @@ public abstract class GuiMixin {
 			guiGraphics.blit(CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, k, j, 52, 94, l, 4);
 		}
 		RenderSystem.defaultBlendFunc();
+		RenderSystem.disableBlend();
 		ci.cancel();
 	}
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
