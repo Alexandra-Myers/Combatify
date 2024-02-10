@@ -104,4 +104,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public void removeCreativeReach(CallbackInfo ci) {
 		ci.cancel();
 	}
+
+	public boolean isRetainingAttack() {
+		return retainAttack;
+	}
+
+	public void setRetainAttack(boolean retain) {
+		retainAttack = retain;
+	}
 }
