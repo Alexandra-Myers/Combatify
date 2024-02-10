@@ -185,20 +185,21 @@ public class MethodHandler {
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		double chargedBonus = 0;
-		double baseAttackRange = Combatify.CONFIG.attackReach() ? 0 : 0.5;
+		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
 			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf73"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADDITION);
-			if (strengthScale > 1.95 && !player.isCrouching()) {
+			if (strengthScale > 1.95 && !player.isCrouching())
 				attackRange.addOrUpdateTransientModifier(modifier);
-			} else {
+			else
 				attackRange.removeModifier(modifier);
-				chargedBonus = 0;
-			}
 		}
-		return (attackRange != null) ? baseAttackRange + attackRange.getValue() : baseAttackRange + chargedBonus;
+		if (strengthScale < 1.95 || player.isCrouching()) {
+			chargedBonus = 0;
+		}
+		return (attackRange != null) ? attackRange.getValue() : baseAttackRange + chargedBonus;
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);

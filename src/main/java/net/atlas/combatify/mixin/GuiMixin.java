@@ -75,11 +75,10 @@ public abstract class GuiMixin {
 					int k = guiGraphics.guiWidth() / 2 - 8;
 					boolean isShieldCooldown = isShieldOnCooldown();
 					boolean var7 = ((IOptions) this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR;
-					if (var7 && isShieldCooldown) {
+					if (var7 && isShieldCooldown)
 						guiGraphics.blitSprite(CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, k, j, 16, 16);
-					} else if (var7 && this.minecraft.player.isBlocking()) {
+					else if (var7 && this.minecraft.player.isBlocking())
 						guiGraphics.blitSprite(CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, k, j, 16, 16);
-					}
 				}
 			}
 		}
@@ -106,17 +105,16 @@ public abstract class GuiMixin {
 		boolean bl = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator) {
+		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator)
 			bl = this.minecraft.crosshairPickEntity.isAlive();
-		}
 		int j = guiGraphics.guiHeight() / 2 - 7 + 16;
 		int k = guiGraphics.guiWidth() / 2 - 8;
-		if (bl) {
-			guiGraphics.blit(CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, k, j, 68, 94, 16, 16);
-		} else if (attackStrengthScale > maxIndicator - 0.7 && attackStrengthScale < maxIndicator) {
+		if (bl)
+			guiGraphics.blitSprite(CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, k, j, 16, 16);
+		else if (attackStrengthScale > maxIndicator - 0.7 && attackStrengthScale < maxIndicator) {
 			int l = (int)((attackStrengthScale - (maxIndicator - 0.7F)) / 0.70000005F * 17.0F);
-			guiGraphics.blit(CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, k, j, 36, 94, 16, 4);
-			guiGraphics.blit(CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, k, j, 52, 94, l, 4);
+			guiGraphics.blitSprite(CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, k, j, 16, 4);
+			guiGraphics.blitSprite(CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, k, j, l, 4);
 		}
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.disableBlend();
@@ -139,20 +137,18 @@ public abstract class GuiMixin {
 		ClientMethodHandler.redirectResult(minecraft.hitResult);
 		int n = guiGraphics.guiHeight() - 20;
 		int o = i + 91 + 6;
-		if (humanoidArm == HumanoidArm.RIGHT) {
+		if (humanoidArm == HumanoidArm.RIGHT)
 			o = i - 91 - 22;
-		}
 		float maxIndicator =  ((IOptions)minecraft.options).attackIndicatorValue().get().floatValue();
 		float g = this.minecraft.player.getAttackStrengthScale(0.0F);
 		boolean bl = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && g >= maxIndicator) {
+		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && g >= maxIndicator)
 			bl = this.minecraft.crosshairPickEntity.isAlive();
-		}
-		if (bl) {
+		if (bl)
 			guiGraphics.blitSprite(HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, o, n, 18, 18);
-		} else if (g > maxIndicator - 0.7F && g < maxIndicator) {
+		else if (g > maxIndicator - 0.7F && g < maxIndicator) {
 			int height = (int) ((g - (maxIndicator - 0.7F)) / 0.70000005F * 19.0F);
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			guiGraphics.blitSprite(HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, o, n, 18, 18);
@@ -167,16 +163,14 @@ public abstract class GuiMixin {
 		int n = guiGraphics.guiHeight() - 20;
 		int o = i + 91 + 6;
 		assert minecraft.player != null;
-		if (humanoidArm == HumanoidArm.RIGHT) {
+		if (humanoidArm == HumanoidArm.RIGHT)
 			o = i - 91 - 22;
-		}
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR;
 		boolean isShieldCooldown = isShieldOnCooldown();
-		if (var7 && isShieldCooldown) {
+		if (var7 && isShieldCooldown)
 			guiGraphics.blitSprite(HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE, o, n, 18, 18);
-		} else if (var7 && this.minecraft.player.isBlocking()) {
+		else if (var7 && this.minecraft.player.isBlocking())
 			guiGraphics.blitSprite(HOTBAR_SHIELD_INDICATOR_FULL_SPRITE, o, n, 18, 18);
-		}
 	}
 	@Unique
 	public boolean isShieldOnCooldown() {
