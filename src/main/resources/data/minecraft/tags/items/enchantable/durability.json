@@ -2,15 +2,15 @@
   "replace": false,
   "values": [
     {
-      "id": "combatify:golden_knife",
+      "id": "#combatify:knives",
       "required": false
     },
     {
-      "id": "combatify:golden_longsword",
+      "id": "#combatify:longswords",
       "required": false
     },
     {
-      "id": "combatify:golden_shield",
+      "id": "#combatify:tiered_shields",
       "required": false
     }
   ]

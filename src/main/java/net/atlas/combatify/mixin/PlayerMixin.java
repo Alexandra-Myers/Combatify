@@ -200,7 +200,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		bl3.set(isCrit);
 		if (isCrit)
 			attackDamage.set(attackDamage.get() * 1.5F);
-
 	}
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f) {
@@ -231,6 +230,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
+				Combatify.LOGGER.info("Swept");
 				betterSweepAttack(var9, var2, attackDamage, null);
 			}
 

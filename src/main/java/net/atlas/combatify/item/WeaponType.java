@@ -190,10 +190,7 @@ public enum WeaponType {
 			if (configurableWeaponData.hasSwordEnchants != null)
 				return configurableWeaponData.hasSwordEnchants;
 		}
-		return switch (this) {
-			case SWORD, AXE, LONGSWORD, KNIFE -> true;
-			default -> false;
-		};
+		return false;
 	}
 	public boolean isEmpty() {
 		return this == EMPTY;

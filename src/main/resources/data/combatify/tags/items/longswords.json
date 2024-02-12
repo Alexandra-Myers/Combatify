@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "combatify:wooden_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:stone_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:golden_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:iron_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:diamond_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:netherite_longsword",
+      "required": false
+    }
+  ]
+}

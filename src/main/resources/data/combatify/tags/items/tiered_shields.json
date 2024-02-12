@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "combatify:wooden_shield",
+      "required": false
+    },
+    {
+      "id": "combatify:golden_shield",
+      "required": false
+    },
+    {
+      "id": "combatify:iron_shield",
+      "required": false
+    },
+    {
+      "id": "combatify:diamond_shield",
+      "required": false
+    },
+    {
+      "id": "combatify:netherite_shield",
+      "required": false
+    }
+  ]
+}

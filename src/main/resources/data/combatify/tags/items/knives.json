@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "combatify:wooden_knife",
+      "required": false
+    },
+    {
+      "id": "combatify:stone_knife",
+      "required": false
+    },
+    {
+      "id": "combatify:golden_knife",
+      "required": false
+    },
+    {
+      "id": "combatify:iron_knife",
+      "required": false
+    },
+    {
+      "id": "combatify:diamond_knife",
+      "required": false
+    },
+    {
+      "id": "combatify:netherite_knife",
+      "required": false
+    }
+  ]
+}

@@ -1,6 +1,5 @@
 package net.atlas.combatify.enchantment;
 
-import net.atlas.combatify.extensions.CustomEnchantment;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -12,11 +11,11 @@ import net.minecraft.world.item.enchantment.TridentImpalerEnchantment;
 
 import static net.atlas.combatify.Combatify.id;
 
-public class PiercingEnchantment extends Enchantment implements CustomEnchantment {
+public class PiercingEnchantment extends Enchantment {
 	public static final Enchantment PIERCER = EnchantmentRegistry.registerEnchant(id("piercer"), new PiercingEnchantment());
 
 	public PiercingEnchantment() {
-		super(Rarity.VERY_RARE, ItemTags.WEAPON_ENCHANTABLE, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
+		super(Rarity.RARE, ItemTags.WEAPON_ENCHANTABLE, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
 	}
 
 	@Override
@@ -37,16 +36,6 @@ public class PiercingEnchantment extends Enchantment implements CustomEnchantmen
 	@Override
 	public boolean canEnchant(ItemStack stack) {
 		return stack.getItem() instanceof TieredItem || stack.getItem() instanceof TridentItem;
-	}
-
-	@Override
-	public boolean isAcceptibleConditions(ItemStack stack) {
-		return this.canEnchant(stack);
-	}
-
-	@Override
-	public boolean isAcceptibleAnvil(ItemStack stack) {
-		return this.canEnchant(stack);
 	}
 
 	@Override

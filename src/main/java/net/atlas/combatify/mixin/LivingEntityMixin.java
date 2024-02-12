@@ -71,6 +71,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	protected int useItemRemaining;
 
+	@Shadow
+	public abstract ItemStack getUseItem();
+
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
@@ -188,12 +191,15 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
-		if(thisEntity.isUsingItem() && thisEntity.getUseItem().isEdible() && !source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypeTags.WITCH_RESISTANT_TO) && !source.is(DamageTypeTags.IS_FALL) && !source.is(DamageTypes.STARVE) && Combatify.CONFIG.eatingInterruption()) {
-			useItemRemaining = thisEntity.getUseItem().getUseDuration();
-			if (level() instanceof ServerLevel serverLevel)
-				for (UUID playerUUID : Combatify.moddedPlayers)
-					if (serverLevel.getPlayerByUUID(playerUUID) instanceof ServerPlayer serverPlayer)
-						ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.RemainingUseSyncPacket(getId(), useItemRemaining));
+		Entity entity = source.getEntity();
+		if (entity instanceof LivingEntity) {
+			if (thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK) && Combatify.CONFIG.eatingInterruption()) {
+				useItemRemaining = thisEntity.getUseItem().getUseDuration();
+				if (level() instanceof ServerLevel serverLevel)
+					for (UUID playerUUID : Combatify.moddedPlayers)
+						if (serverLevel.getPlayerByUUID(playerUUID) instanceof ServerPlayer serverPlayer)
+							ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.RemainingUseSyncPacket(getId(), useItemRemaining));
+			}
 		}
 	}
 	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "floatValue=10.0F", ordinal = 0))
