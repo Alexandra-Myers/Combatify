@@ -7,7 +7,6 @@ import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -52,6 +51,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
 		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
+			customSwing(InteractionHand.MAIN_HAND);
 			Entity entity = getCamera();
 			if (entity == null)
 				entity = this.player;
@@ -67,34 +67,28 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			if (entityHitResult != null && entityHitResult.getLocation().distanceToSqr(eyePos) < i)
 				hitResult = entityHitResult;
 			else
-				MethodHandler.redirectResult(player, hitResult);
+				hitResult = MethodHandler.redirectResult(player, hitResult);
 			if (hitResult.getType() == HitResult.Type.ENTITY)
-				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult)hitResult).getEntity(), false));
+				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult)hitResult).getEntity(), isShiftKeyDown()));
 		}
 	}
 	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
 		super.swing(hand);
 		if (Combatify.unmoddedPlayers.contains(getUUID())) {
-			if (Combatify.isPlayerAttacking.get(getUUID())) {
-				handleInteract(false);
-			}
+			if (Combatify.isPlayerAttacking.get(getUUID()))
+				handleInteract();
 			Combatify.isPlayerAttacking.put(getUUID(), true);
 		}
 		ci.cancel();
 	}
 	@Unique
-	public void handleInteract(boolean hit) {
-		if (retainAttack) {
-			if(hit)
-				this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
+	public void handleInteract() {
+		if (retainAttack)
 			return;
-		}
 		if (!isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
-				if(hit)
-					this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 				resetAttackStrengthTicker(!getMissedAttackRecovery());
 				return;
 			}
