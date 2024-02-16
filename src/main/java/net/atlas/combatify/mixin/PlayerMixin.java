@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
@@ -86,7 +87,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "hurt", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
 	public void changeReturn(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		boolean bl = amount == 0.0F && oldDamage <= 0.0F;
- 		if(bl)
+ 		if(bl && Combatify.CONFIG.snowballKB())
 			cir.setReturnValue(super.hurt(source, amount));
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -176,7 +177,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
 		currentAttackReach = (float) MethodHandler.getCurrentAttackReach(player, 1.0F);
-		return 1.0F;
+		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker > 4.0F) ? 1.0F : Math.min(original, 1.0F);
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
 	public void reset(CallbackInfo ci) {
@@ -225,7 +226,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (this.isAttackAvailable(baseValue)) {
 			customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
-			if (attackDamage > 0.0F && this.checkSweepAttack()) {
+			if (attackDamage > 0.0F && this.checkSweepAttack() && Combatify.CONFIG.canSweepOnMiss()) {
 				float var2 = (float) MethodHandler.getCurrentAttackReach(player, 1.0F);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
@@ -233,7 +234,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				Combatify.LOGGER.info("Swept");
 				betterSweepAttack(var9, var2, attackDamage, null);
 			}
-
 			this.resetAttackStrengthTicker(false);
 		}
 	}
@@ -243,7 +243,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
-		this.missedAttackRecovery = !hit;
+		this.missedAttackRecovery = !hit && Combatify.CONFIG.missedAttackRecovery();
 		if (!Combatify.CONFIG.attackSpeed()) {
 			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 20) {
 				return;
@@ -252,7 +252,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (Combatify.CONFIG.instaAttack()) {
 			return;
 		}
-		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * 2;
+		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+		Combatify.LOGGER.info("Ticks for charge: " + var2);
 		if (var2 > this.attackStrengthTicker) {
 			this.attackStrengthStartValue = var2;
 			this.attackStrengthTicker = this.attackStrengthStartValue;
@@ -261,30 +262,35 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
-		float f = (float)(getAttributeValue(Attributes.ATTACK_SPEED)) - 1.5F;
+		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_UUID) != null;
+		float f = (float)(getAttributeValue(Attributes.ATTACK_SPEED) - 1.5f);
+		if (hasVanilla)
+			f += 1.5f;
 		f = Mth.clamp(f, 0.1F, 1024.0F);
-		cir.setReturnValue(1.0F / f * 20.0F + 0.5F);
+		cir.setReturnValue(1.0F / f * 20.0F + (hasVanilla ? 0 : 0.5F));
 	}
 
 	@Inject(method = "getAttackStrengthScale", at = @At(value = "HEAD"), cancellable = true)
 	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
+		float charge = Combatify.CONFIG.chargedAttacks() ? 2.0F : 1.0F;
 		if (this.attackStrengthStartValue == 0) {
-			cir.setReturnValue(2.0F);
+			cir.setReturnValue(charge);
 			return;
 		}
-		cir.setReturnValue(Mth.clamp(2.0F * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, 2.0F));
+		cir.setReturnValue(Mth.clamp(charge * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, charge));
 	}
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
-		if (getAttackStrengthScale(baseTime) < 1.0F) {
+		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
 			return (this.missedAttackRecovery && this.attackStrengthStartValue - (this.attackStrengthTicker - baseTime) > 4.0F);
 		}
 		return true;
 	}
 
 	protected boolean checkSweepAttack() {
-		return getAttackStrengthScale(baseValue) > 1.95F && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
+		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.95F;
+		return getAttackStrengthScale(baseValue) > charge && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
 	}
 
 	public void betterSweepAttack(AABB var1, float var2, float var3, Entity var4) {

@@ -12,6 +12,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,9 +20,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SwordItem.class)
-public class SwordItemMixin extends TieredItem implements ItemExtensions, DefaultedItemExtensions, WeaponWithType {
+public class SwordItemMixin extends TieredItem implements ItemExtensions, WeaponWithType {
 	@Shadow
 	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
+
+	@Shadow
+	@Final
+	private float attackDamage;
 
 	public SwordItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -29,15 +34,16 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 
 	@Override
 	public void modifyAttributeModifiers() {
+		if (!Combatify.CONFIG.weaponTypesEnabled())
+			return;
 		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
-		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+		defaultModifiers = var3.build();
 	}
 
 	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)
 	public void getDamage(CallbackInfoReturnable<Float> cir) {
-		cir.setReturnValue((float) getWeaponType().getDamage(getTier()));
+		cir.setReturnValue(Combatify.CONFIG.weaponTypesEnabled() ? (float) getWeaponType().getDamage(getTier()) : attackDamage);
 	}
 
 	@Override
@@ -60,11 +66,6 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 			}
 		}
 		return Combatify.registeredTypes.get("sword");
-	}
-
-	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
-		defaultModifiers = modifiers;
 	}
 
 	@Override

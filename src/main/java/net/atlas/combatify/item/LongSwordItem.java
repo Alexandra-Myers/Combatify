@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.util.BlockingType;
@@ -23,7 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponWithType, DefaultedItemExtensions {
+public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponWithType {
 	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 	public LongSwordItem(Tier tier, Properties properties) {
 		super(tier, properties);
@@ -33,10 +32,11 @@ public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponW
 	}
 	@Override
 	public void modifyAttributeModifiers() {
+		if (!Combatify.CONFIG.weaponTypesEnabled())
+			return;
 		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
-		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
-		this.setDefaultModifiers(output);
+		defaultModifiers = var3.build();
 	}
 
 	@Override
@@ -136,10 +136,5 @@ public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponW
 			}
 		}
 		return Combatify.EMPTY;
-	}
-
-	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
-		defaultModifiers = modifiers;
 	}
 }

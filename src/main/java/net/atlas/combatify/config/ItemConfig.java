@@ -208,6 +208,8 @@ public class ItemConfig extends AtlasConfig {
 							blockingType.setKbMechanics(getBoolean(jsonObject, "default_kb_mechanics"));
 						if (jsonObject.has("requires_sword_blocking"))
 							blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
+						if (jsonObject.has("has_shield_delay"))
+							blockingType.setDelay(getBoolean(jsonObject, "has_shield_delay"));
 						Combatify.registerBlockingType(blockingType);
 						return;
 					} else {
@@ -258,6 +260,8 @@ public class ItemConfig extends AtlasConfig {
 			blockingType.setKbMechanics(getBoolean(jsonObject, "default_kb_mechanics"));
 		if (jsonObject.has("requires_sword_blocking"))
 			blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
+		if (jsonObject.has("has_shield_delay"))
+			blockingType.setDelay(getBoolean(jsonObject, "has_shield_delay"));
 	}
 
 	public ItemConfig loadFromNetwork(FriendlyByteBuf buf) {
@@ -277,6 +281,7 @@ public class ItemConfig extends AtlasConfig {
 					blockingType.setToolBlocker(buf1.readBoolean());
 					blockingType.setRequireFullCharge(buf1.readBoolean());
 					blockingType.setSwordBlocking(buf1.readBoolean());
+					blockingType.setDelay(buf1.readBoolean());
 					Combatify.registerBlockingType(blockingType);
 					return blockingType;
 				} else {
@@ -386,6 +391,7 @@ public class ItemConfig extends AtlasConfig {
 			buf1.writeBoolean(blockingType.isToolBlocker());
 			buf1.writeBoolean(blockingType.requireFullCharge());
 			buf1.writeBoolean(blockingType.requiresSwordBlocking());
+			buf1.writeBoolean(blockingType.hasDelay());
 		});
 		buf.writeMap(configuredItems, (buf1, item) -> buf1.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)), (buf12, configurableItemData) -> {
 			buf12.writeDouble(configurableItemData.damage == null ? -10 : configurableItemData.damage);

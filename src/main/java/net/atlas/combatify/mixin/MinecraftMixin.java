@@ -1,6 +1,8 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
@@ -74,9 +76,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
-		if (screen != null) {
+		if (screen != null)
 			this.retainAttack = false;
-		}
 	}
 	@ModifyExpressionValue(method = "handleKeybinds",
 			slice = @Slice(
@@ -88,11 +89,9 @@ public abstract class MinecraftMixin implements IMinecraft {
 		if (player != null) {
 			ItemExtensions item = ((ItemExtensions) player.getUseItem().getItem());
 			boolean bl = item.getBlockingType().canBlockHit() && !item.getBlockingType().isEmpty();
-			if (bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F)) {
-				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
+			if (bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F))
+				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK)
 					startAttack();
-				}
-			}
 			return bl;
 		}
 		return true;
@@ -101,7 +100,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void checkIfCrouch(CallbackInfo ci) {
 		if (player != null) {
 			ItemExtensions item = (ItemExtensions) MethodHandler.getBlockingItem(player).getItem();
-			if (((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
+			if (Combatify.CONFIG.canInteractWhenCrouchShield() && ((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
 				while (options.keyUse.consumeClick()) {
 					startUseItem();
 				}
@@ -115,9 +114,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
 		Item blockingItem = MethodHandler.getBlockingItem(player).getItem();
 		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
-		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || !player.onGround()) {
+		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || !player.onGround())
 			instance.releaseUsingItem(player);
-		}
 	}
 	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 4))
 	public boolean redirectContinue(boolean original) {
@@ -132,9 +130,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 		if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
-				if (var1 < 0.8F) {
+				if (var1 < 0.8F)
 					return false;
-				}
 
 				if (var1 < 1.0F) {
 					this.retainAttack = true;
@@ -151,13 +148,18 @@ public abstract class MinecraftMixin implements IMinecraft {
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))
 	public boolean removeMissTime(boolean original) {
+		if (Combatify.CONFIG.hasMissTime())
+			return original;
 		return false;
 	}
-	@Redirect(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
-	public void redirectReset(LocalPlayer player) {
-		if (gameMode != null) {
-			((IPlayerGameMode) gameMode).swingInAir(player);
+	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
+	public void redirectReset(LocalPlayer instance, Operation<Void> original) {
+		if (!Combatify.CONFIG.missedAttackRecovery() && !Combatify.CONFIG.canSweepOnMiss()) {
+			original.call(instance);
+			return;
 		}
+		if (gameMode != null)
+			((IPlayerGameMode) gameMode).swingInAir(instance);
 	}
 	@Unique
 	@Override
@@ -183,9 +185,10 @@ public abstract class MinecraftMixin implements IMinecraft {
 		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
 		if (missTime <= 0) {
 			if (player != null && !this.player.isUsingItem()) {
+				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) : this.player.getAttackStrengthScale(-1.0F) >= 1.0F;
 				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
 					this.retainAttack = false;
-				} else if (bl1 && ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && bl2) {
+				} else if (bl1 && canAutoAttack && bl2) {
 					this.startAttack();
 					ci.cancel();
 				}

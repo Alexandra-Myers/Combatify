@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
@@ -20,7 +19,7 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(TridentItem.class)
-public class TridentItemMixin extends Item implements ItemExtensions, DefaultedItemExtensions, WeaponWithType {
+public class TridentItemMixin extends Item implements ItemExtensions, WeaponWithType {
 	@Mutable
 	@Shadow
 	@Final
@@ -31,20 +30,16 @@ public class TridentItemMixin extends Item implements ItemExtensions, DefaultedI
 	}
 	@Override
 	public void modifyAttributeModifiers() {
+		if (!Combatify.CONFIG.weaponTypesEnabled())
+			return;
 		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
-		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+        defaultModifiers = var3.build();
 	}
 
 	@Override
 	public void setStackSize(int stackSize) {
 		this.maxStackSize = stackSize;
-	}
-
-	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
-		defaultModifiers = modifiers;
 	}
 
 	@Override

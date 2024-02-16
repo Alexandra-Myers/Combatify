@@ -28,13 +28,24 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final OptionInstance<Boolean> rhythmicAttacks = OptionInstance.createBoolean("options.rhythmicAttack",true);
 	public static final OptionInstance<Boolean> protectionIndicator = OptionInstance.createBoolean("options.protIndicator",false);
 	public static final OptionInstance<Boolean> fishingRodLegacy = OptionInstance.createBoolean("options.fishingRodLegacy",false);
-	public static final OptionInstance<Double> attackIndicatorValue = new OptionInstance<>(
-		"options.attackIndicatorValue",
-		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorValue.tooltip")),
-		(optionText, value) -> value == 2.0 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorValue.default"))) : IOptions.doubleValueLabel(optionText, value),
+	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
+		"options.attackIndicatorMaxValue",
+		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),
+		(optionText, value) -> value == 2.0 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMaxValue.default"))) : IOptions.doubleValueLabel(optionText, value),
 		new OptionInstance.IntRange(1, 20).xmap(sliderValue -> (double)sliderValue / 10.0, value -> (int)(value * 10.0)),
 		Codec.doubleRange(0.1, 2.0),
 		2.0,
+		value -> {
+
+		}
+	);
+	public static final OptionInstance<Double> attackIndicatorMinValue = new OptionInstance<>(
+		"options.attackIndicatorMinValue",
+		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMinValue.tooltip")),
+		(optionText, value) -> value == 1.3 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMinValue.default"))) : IOptions.doubleValueLabel(optionText, value),
+		new OptionInstance.IntRange(0, 20).xmap(sliderValue -> (double)sliderValue / 10.0, value -> (int)(value * 10.0)),
+		Codec.doubleRange(0.0, 2.0),
+		1.3,
 		value -> {
 
 		}

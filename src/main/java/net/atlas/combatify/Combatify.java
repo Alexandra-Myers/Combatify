@@ -45,8 +45,9 @@ public class Combatify implements ModInitializer {
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
-	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
+	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true).setDelay(false));
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
+	public static final BlockingType CURRENT_SHIELD = registerBlockingType(new CurrentShieldBlockingType("current_shield")).setVanilla(true);
 	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
@@ -82,9 +83,8 @@ public class Combatify implements ModInitializer {
 		}
 		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
-		for(Item item : items) {
+		for(Item item : items)
 			((ItemExtensions) item).modifyAttributeModifiers();
-		}
 		MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 		MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 	}

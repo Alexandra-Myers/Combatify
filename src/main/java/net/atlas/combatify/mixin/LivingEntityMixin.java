@@ -86,24 +86,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double z = target.getZ() - this.getZ();
 		double x2 = this.getX() - target.getX();
 		double z2 = this.getZ() - target.getZ();
-		Item blockingItem = MethodHandler.getBlockingItem(target).getItem();
-		double piercingLevel = 0;
-		Item item = thisEntity.getMainHandItem().getItem();
-		piercingLevel += ((ItemExtensions)item).getPiercingLevel();
-		if (Combatify.CONFIG.piercer())
-			piercingLevel += CustomEnchantmentHelper.getPierce((LivingEntity) (Object) this) * 0.1;
-		boolean bl = item instanceof AxeItem || piercingLevel > 0;
-		ItemExtensions shieldItem = (ItemExtensions) blockingItem;
-		if (bl && shieldItem.getBlockingType().canBeDisabled()) {
-			if (piercingLevel > 0)
-				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
-			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(thisEntity) * Combatify.CONFIG.cleavingDisableTime());
-			if(Combatify.CONFIG.defender())
-				damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
-			if(target instanceof PlayerExtensions player)
-				player.ctsShieldDisable(damage, blockingItem);
-		}
-		if(shieldItem.getBlockingType().isToolBlocker()) {
+		ItemStack blockingItem = MethodHandler.getBlockingItem(target);
+		MethodHandler.disableShield(thisEntity, target, blockingItem);
+		if(((ItemExtensions)blockingItem.getItem()).getBlockingType().isToolBlocker()) {
 			ci.cancel();
 			return;
 		}
@@ -161,9 +146,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
 	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
+		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity);
 		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
-			if(MethodHandler.getBlockingItem(thisEntity).getItem() instanceof ItemExtensions shieldItem) {
-				shieldItem.getBlockingType().block(instance, null, MethodHandler.getBlockingItem(thisEntity), source, amount, f, g, bl);
+			if (itemStack.getItem() instanceof ItemExtensions shieldItem) {
+				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration() - instance.getUseItemRemainingTicks() >= Combatify.CONFIG.shieldDelay()) {
+					if (Combatify.CONFIG.disableDuringShieldDelay())
+						if (source.getDirectEntity() instanceof LivingEntity attacker)
+							MethodHandler.disableShield(attacker, instance, itemStack);
+					return false;
+				}
+				shieldItem.getBlockingType().block(instance, null, itemStack, source, amount, f, g, bl);
 			}
 		}
 		return false;
@@ -192,8 +184,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		Entity entity = source.getEntity();
-		if (entity instanceof LivingEntity) {
-			if (thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK) && Combatify.CONFIG.eatingInterruption()) {
+		if (entity instanceof LivingEntity && Combatify.CONFIG.eatingInterruption()) {
+			if (thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK)) {
 				useItemRemaining = thisEntity.getUseItem().getUseDuration();
 				if (level() instanceof ServerLevel serverLevel)
 					for (UUID playerUUID : Combatify.moddedPlayers)
@@ -208,11 +200,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0, argsOnly = true) final DamageSource source) {
-		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB())) {
+		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB()))
 			MethodHandler.projectileKnockback(thisEntity, 0.4, e, f);
-		} else {
+		else
 			MethodHandler.knockback(thisEntity, 0.4, e, f);
-		}
 	}
 
 	@Inject(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;calculateViewVector(FF)Lnet/minecraft/world/phys/Vec3;"), cancellable = true)

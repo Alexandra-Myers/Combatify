@@ -1,34 +1,29 @@
 package net.atlas.combatify.config;
 
 import com.google.gson.*;
-import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
-import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 import static net.atlas.combatify.Combatify.*;
 
 public class CombatifyBetaConfig extends AtlasConfig {
+	private BooleanHolder weaponTypesEnabled;
+	private BooleanHolder bowFatigue;
+	private BooleanHolder chargedAttacks;
+	private BooleanHolder canAttackEarly;
+	private BooleanHolder canSweepOnMiss;
+	private BooleanHolder chargedReach;
+	private BooleanHolder creativeReach;
+	private BooleanHolder attackDecay;
+	private BooleanHolder missedAttackRecovery;
+	private BooleanHolder disableDuringShieldDelay;
+	private BooleanHolder hasMissTime;
+	private BooleanHolder canInteractWhenCrouchShield;
+	private BooleanHolder bedrockImpaling;
+	private BooleanHolder snowballKB;
 	private BooleanHolder midairKB;
 	private BooleanHolder fishingHookKB;
 	private BooleanHolder fistDamage;
@@ -52,7 +47,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder ctsAttackBalancing;
 	private BooleanHolder eatingInterruption;
 	private BooleanHolder improvedMiscEntityAttacks;
-	private IntegerHolder swordProtectionEfficacy;
+	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder shieldDisableTime;
@@ -76,41 +71,60 @@ public class CombatifyBetaConfig extends AtlasConfig {
 
 	@Override
 	public void defineConfigHolders() {
-		midairKB = createBoolean("midairKB", false);
-		fishingHookKB = createBoolean("fishingHookKB", false);
-		fistDamage = createBoolean("fistDamage", false);
-		swordBlocking = createBoolean("swordBlocking", false);
-		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
-		sprintCritsEnabled = createBoolean("sprintCritsEnabled", true);
-		saturationHealing = createBoolean("saturationHealing", false);
-		fastHealing = createBoolean("fastHealing", false);
-		letVanillaConnect = createBoolean("letVanillaConnect", true);
-		oldSprintFoodRequirement = createBoolean("oldSprintFoodRequirement", false);
-		projectilesHaveIFrames = createBoolean("projectilesHaveIFrames", false);
-		magicHasIFrames = createBoolean("magicHasIFrames", true);
-		autoAttackAllowed = createBoolean("autoAttackAllowed", true);
-		configOnlyWeapons = createBoolean("configOnlyWeapons", false);
-		tieredShields = createBoolean("tieredShields", false);
-		piercer = createBoolean("piercer", false);
-		defender = createBoolean("defender", false);
+		attackDecay = createBoolean("attackDecay", false);
 		attackReach = createBoolean("attackReach", true);
-		attackSpeed = createBoolean("attackSpeed", true);
-		instaAttack = createBoolean("instaAttack", false);
+		autoAttackAllowed = createBoolean("autoAttackAllowed", true);
+		bedrockImpaling = createBoolean("bedrockImpaling", true);
+		bowFatigue = createBoolean("bowFatigue", true);
+		canAttackEarly = createBoolean("canAttackEarly", false);
+		canSweepOnMiss = createBoolean("canSweepOnMiss", true);
+		chargedAttacks = createBoolean("chargedAttacks", true);
+		chargedReach = createBoolean("chargedReach", true);
+		creativeReach = createBoolean("creativeReach", false);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
 		eatingInterruption = createBoolean("eatingInterruption", true);
-		improvedMiscEntityAttacks = createBoolean("improvedMiscEntityAttacks", false);
-		swordProtectionEfficacy = createInRange("swordProtectionEfficacy", 0, -3, 7);
+		fistDamage = createBoolean("fistDamage", false);
+		hasMissTime = createBoolean("hasMissTime", false);
+		missedAttackRecovery = createBoolean("missedAttackRecovery", true);
+		projectilesHaveIFrames = createBoolean("projectilesHaveIFrames", false);
+		fastHealing = createBoolean("fastHealing", false);
+		saturationHealing = createBoolean("saturationHealing", false);
+		snowballKB = createBoolean("snowballKB", true);
+		sprintCritsEnabled = createBoolean("sprintCritsEnabled", true);
+		weaponTypesEnabled = createBoolean("weaponTypesEnabled", true);
+
+		shieldDelay = createInRange("shieldDelay", 0, 0, 100);
 		instantHealthBonus = createInRange("instantHealthBonus", 6, 1, 1000);
-		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
-		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
-		cleavingDisableTime = createInRange("cleavingDisableTime", 0.5, 0, 10);
-		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
-		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
-		eggDamage = createInRange("eggDamage", 0, 0, 40D);
-		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
-		bowUncertainty = createInRange("bowUncertainty", 0.25, 0, 4);
+
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
+		bowUncertainty = createInRange("bowUncertainty", 0.25, 0, 4);
+		cleavingDisableTime = createInRange("cleavingDisableTime", 0.5, 0, 10);
+		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
 		minHitboxSize = createInRange("minHitboxSize", 0.9, 0, 5);
+
+		attackSpeed = createBoolean("attackSpeed", true);
+		canInteractWhenCrouchShield = createBoolean("canInteractWhenCrouchShield", true);
+		configOnlyWeapons = createBoolean("configOnlyWeapons", false);
+		defender = createBoolean("defender", false);
+		piercer = createBoolean("piercer", false);
+		tieredShields = createBoolean("tieredShields", false);
+		disableDuringShieldDelay = createBoolean("disableDuringShieldDelay", false);
+		fishingHookKB = createBoolean("fishingHookKB", false);
+		improvedMiscEntityAttacks = createBoolean("improvedMiscEntityAttacks", false);
+		instaAttack = createBoolean("instaAttack", false);
+		letVanillaConnect = createBoolean("letVanillaConnect", true);
+		magicHasIFrames = createBoolean("magicHasIFrames", true);
+		midairKB = createBoolean("midairKB", false);
+		oldSprintFoodRequirement = createBoolean("oldSprintFoodRequirement", false);
+		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
+		swordBlocking = createBoolean("swordBlocking", false);
+
+		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
+
+		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
+		eggDamage = createInRange("eggDamage", 0, 0, 40D);
+		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
+		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
 	}
 
 	@Override
@@ -126,6 +140,48 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	@Override
 	public void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 
+	}
+	public Boolean weaponTypesEnabled() {
+		return weaponTypesEnabled.get();
+	}
+	public Boolean bowFatigue() {
+		return bowFatigue.get();
+	}
+	public Boolean canAttackEarly() {
+		return canAttackEarly.get();
+	}
+	public Boolean chargedAttacks() {
+		return chargedAttacks.get();
+	}
+	public Boolean chargedReach() {
+		return chargedReach.get();
+	}
+	public Boolean creativeReach() {
+		return creativeReach.get();
+	}
+	public Boolean attackDecay() {
+		return attackDecay.get();
+	}
+	public Boolean missedAttackRecovery() {
+		return missedAttackRecovery.get();
+	}
+	public Boolean canSweepOnMiss() {
+		return canSweepOnMiss.get();
+	}
+	public Boolean canInteractWhenCrouchShield() {
+		return canInteractWhenCrouchShield.get();
+	}
+	public Boolean hasMissTime() {
+		return hasMissTime.get();
+	}
+	public Boolean disableDuringShieldDelay() {
+		return disableDuringShieldDelay.get();
+	}
+	public Boolean bedrockImpaling() {
+		return bedrockImpaling.get();
+	}
+	public Boolean snowballKB() {
+		return snowballKB.get();
 	}
 	public Boolean midairKB() {
 		return midairKB.get();
@@ -196,8 +252,8 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public Boolean improvedMiscEntityAttacks() {
 		return improvedMiscEntityAttacks.get();
 	}
-	public Integer swordProtectionEfficacy() {
-		return swordProtectionEfficacy.get();
+	public Integer shieldDelay() {
+		return shieldDelay.get();
 	}
 	public Integer instantHealthBonus() {
 		return instantHealthBonus.get();

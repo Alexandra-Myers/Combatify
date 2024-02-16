@@ -2,7 +2,6 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.AtlasConfig;
-import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ItemExtensions;

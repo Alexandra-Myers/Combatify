@@ -17,12 +17,13 @@ public class AccessibilityOptionsMixin {
 
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "options", at = @At("RETURN"))
-	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0) Options options) {
+	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0, argsOnly = true) Options options) {
 		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());
 
 		optionInstance.addAll(((IOptions)options).autoAttack(),
 			((IOptions)options).shieldCrouch(),
-			((IOptions)options).attackIndicatorValue(),
+			((IOptions)options).attackIndicatorMinValue(),
+			((IOptions)options).attackIndicatorMaxValue(),
 			((IOptions)options).fishingRodLegacy());
 
 		return optionInstance.toArray(new OptionInstance[0]);

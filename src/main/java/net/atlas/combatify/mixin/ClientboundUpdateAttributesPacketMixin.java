@@ -5,9 +5,11 @@ import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,8 +29,12 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
 			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED) {
 				double speed = calculateValue(attributeSnapshot.base(), attributeSnapshot.modifiers(), attributeSnapshot.attribute());
+				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
+					.filter(attributeModifier -> attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID)
+					.toList()
+					.isEmpty();
 				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
-					if (vanillaMath(newSpeed) == CTSMath(speed) * 2) {
+					if (vanillaMath(newSpeed) == CTSMath(speed, hasVanilla) * 2) {
 						if (newSpeed - 2.5 != 0)
 							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Calculated client modifier", newSpeed - 2.5, AttributeModifier.Operation.ADDITION));
 						break;
@@ -74,9 +80,12 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 
 		return attribute.value().sanitizeValue(attributeInstanceBaseValue);
 	}
-	private static int CTSMath(double attackSpeed) {
+	private static int CTSMath(double attackSpeed, boolean hasVanilla) {
 		double d = attackSpeed - 1.5;
-		d = 1.0 / d * 20.0 + 0.5;
+		if (hasVanilla)
+			d += 1.5f;
+		d = Mth.clamp(d, 0.1F, 1024.0F);
+		d = 1.0 / d * 20.0 + (hasVanilla ? 0 : 0.5);
 		return (int) (d);
 	}
 	private static int vanillaMath(double attackSpeed) {

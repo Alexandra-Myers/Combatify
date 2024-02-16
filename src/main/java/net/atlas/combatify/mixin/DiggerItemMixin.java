@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.DefaultedItemExtensions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
@@ -21,10 +20,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.util.function.Consumer;
-
 @Mixin(DiggerItem.class)
-public abstract class DiggerItemMixin extends TieredItem implements ItemExtensions, DefaultedItemExtensions, WeaponWithType {
+public abstract class DiggerItemMixin extends TieredItem implements ItemExtensions, WeaponWithType {
 	@Shadow
 	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 	public DiggerItemMixin(Tier tier, Properties properties) {
@@ -32,12 +29,11 @@ public abstract class DiggerItemMixin extends TieredItem implements ItemExtensio
 	}
 	@Override
 	public void modifyAttributeModifiers() {
-		if (getWeaponType().isEmpty())
+		if (getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
 			return;
 		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
-		ImmutableMultimap<Holder<Attribute>, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+		defaultModifiers = var3.build();
 	}
 	@Redirect(method = "hurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
@@ -47,11 +43,6 @@ public abstract class DiggerItemMixin extends TieredItem implements ItemExtensio
 			amount -= 1;
 		}
 		instance.hurtAndBreak(amount, livingEntity, equipmentSlot);
-	}
-
-	@Override
-	public void setDefaultModifiers(ImmutableMultimap<Holder<Attribute>, AttributeModifier> modifiers) {
-		defaultModifiers = modifiers;
 	}
 
 	@Override

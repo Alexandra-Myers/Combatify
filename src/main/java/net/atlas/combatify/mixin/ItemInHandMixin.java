@@ -45,7 +45,8 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			from = @At(value = "JUMP", ordinal = 3)
 	), at = @At(value = "FIELD", ordinal = 0))
 	public float modifyArmHeight(float f) {
-		f *= 0.5;
+		if (Combatify.CONFIG.chargedAttacks())
+			f *= 0.5;
 		f = f * f * f * 0.25F + 0.75F;
 		return f;
 	}

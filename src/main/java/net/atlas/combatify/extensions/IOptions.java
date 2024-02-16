@@ -15,9 +15,11 @@ public interface IOptions {
 
 	OptionInstance<ShieldIndicatorStatus> shieldIndicator();
 
-    OptionInstance<Double> attackIndicatorValue();
-
 	static Component doubleValueLabel(Component optionText, double value) {
 		return Component.translatable("options.double_value", optionText, value);
 	}
+
+	OptionInstance<Double> attackIndicatorMinValue();
+
+	OptionInstance<Double> attackIndicatorMaxValue();
 }

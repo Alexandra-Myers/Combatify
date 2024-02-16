@@ -9,6 +9,9 @@
 //@Config(name = "combatify-config", wrapperName = "CombatifyConfig")
 //public class CombatifyConfigModel {
 //	@SectionHeader("Booleans")
+//	public boolean weaponTypesEnabled = true;
+//	public boolean bowFatigue = true;
+//	public boolean chargedAttacks = true;
 //	public boolean midairKB = false;
 //	public boolean fishingHookKB = false;
 //	public boolean fistDamage = false;
@@ -37,8 +40,6 @@
 //	public boolean eatingInterruption = true;
 //	public boolean improvedMiscEntityAttacks = false;
 //	@SectionHeader("Integers")
-//	@RangeConstraint(min = -3, max = 7)
-//	public int swordProtectionEfficacy = 0;
 //	@RangeConstraint(min = 1, max = 1000)
 //	public int instantHealthBonus = 6;
 //	@RangeConstraint(min = 1, max = 200)
@@ -51,21 +52,15 @@
 //	@RangeConstraint(min = 0, max = 10)
 //	public float defenderDisableReduction = 0.5F;
 //	@RangeConstraint(min = 0, max = 40)
+//	public float eggDamage = 0.0F;
+//	@RangeConstraint(min = 0, max = 40)
 //	public float snowballDamage = 0.0F;
 //	@RangeConstraint(min = 0, max = 40)
-//	public float eggDamage = 0.0F;
+//	public float windChargeDamage = 0.0F;
 //	@RangeConstraint(min = 0, max = 4)
 //	public float bowUncertainty = 0.25F;
 //	@RangeConstraint(min = 2.5, max = 20)
 //	public float baseHandAttackSpeed = 2.5F;
-//	@RangeConstraint(min = -1, max = 17.5F)
-//	public float slowestToolAttackSpeed = -1F;
-//	@RangeConstraint(min = -1, max = 17.5F)
-//	public float slowToolAttackSpeed = -0.5F;
-//	@RangeConstraint(min = -1, max = 17.5F)
-//	public float fastToolAttackSpeed = 0.5F;
-//	@RangeConstraint(min = -1, max = 17.5F)
-//	public float fastestToolAttackSpeed = 1F;
 //	@RangeConstraint(min = 0, max = 5)
 //	public float minHitboxSize = 0.9F;
 //	public static class UseDurations {

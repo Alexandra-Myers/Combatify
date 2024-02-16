@@ -26,7 +26,7 @@ public enum WeaponType {
 	KNIFE,
     TRIDENT;
 
-    public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+    public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4110-4865-B01B-901007a318e1");
     public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
 
     WeaponType() {

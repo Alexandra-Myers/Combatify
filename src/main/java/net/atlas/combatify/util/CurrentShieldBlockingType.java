@@ -4,11 +4,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
-import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -16,16 +12,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ShieldBlockingType extends BlockingType {
-	public ShieldBlockingType(String name) {
+public class CurrentShieldBlockingType extends BlockingType {
+	public CurrentShieldBlockingType(String name) {
 		super(name);
 	}
 
@@ -33,38 +27,19 @@ public class ShieldBlockingType extends BlockingType {
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
 		if (instance instanceof Player player && player.getCooldowns().isOnCooldown(blockingItem.getItem()))
 			return;
-		float blockStrength = this.getShieldBlockDamageValue(blockingItem);
-		boolean hurt = false;
-		g.set(Math.min(blockStrength, amount.get()));
-		if (!source.is(DamageTypeTags.IS_PROJECTILE) && !source.is(DamageTypeTags.IS_EXPLOSION)) {
-			entity = source.getDirectEntity();
-			if (entity instanceof LivingEntity) {
-				instance.hurtCurrentlyUsedShield(g.get());
-				hurt = true;
-				instance.blockUsingShield((LivingEntity) entity);
-			}
-		} else
-			g.set(amount.get());
-
-		if (!hurt)
-			instance.hurtCurrentlyUsedShield(g.get());
-		amount.set(amount.get() - g.get());
+		instance.hurtCurrentlyUsedShield(amount.get());
+		g.set(amount.get());
+		amount.set(0.0f);
+		if (!source.is(DamageTypeTags.IS_PROJECTILE) && (entity = source.getDirectEntity()) instanceof LivingEntity) {
+			LivingEntity livingEntity = (LivingEntity)entity;
+			instance.blockUsingShield(livingEntity);
+		}
 		bl.set(true);
 	}
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
-			if (configurableItemData.blockStrength != null) {
-				return configurableItemData.blockStrength.floatValue();
-			}
-		}
-		float f = stack.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
-		if(Combatify.CONFIG.defender()) {
-			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
-		}
-		return f;
+		return 1;
 	}
 
 	@Override
@@ -75,7 +50,7 @@ public class ShieldBlockingType extends BlockingType {
 				return configurableItemData.blockKbRes;
 			}
 		}
-		return stack.getTagElement("BlockEntityTag") != null ? 0.8 : 0.5;
+		return 0;
 	}
 
 	@Override

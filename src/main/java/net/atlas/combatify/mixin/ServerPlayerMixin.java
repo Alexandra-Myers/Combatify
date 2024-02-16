@@ -105,16 +105,18 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		double chargedBonus;
 		float strengthScale = player.getAttackStrengthScale(1.0F);
+		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.95F;
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
-			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf73"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADDITION);
-			if (strengthScale > 1.95 && !player.isCrouching())
+			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf74"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADDITION);
+			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
 			else
 				attackRange.removeModifier(modifier);
 		}
-		ci.cancel();
+		if (!Combatify.CONFIG.creativeReach())
+			ci.cancel();
 	}
 
 	public boolean isRetainingAttack() {

@@ -19,6 +19,7 @@ import static net.atlas.combatify.Combatify.EMPTY;
 
 public abstract class BlockingType {
 	private final String name;
+	private boolean vanilla = false;
 	private boolean canBeDisabled = true;
 	private boolean canCrouchBlock = true;
 	private boolean isToolBlocker = false;
@@ -27,6 +28,14 @@ public abstract class BlockingType {
 	private boolean requiresSwordBlocking = false;
 	private boolean requireFullCharge = true;
 	private boolean defaultKbMechanics = true;
+	private boolean hasDelay = true;
+	public boolean isVanilla() {
+		return vanilla;
+	}
+	public BlockingType setVanilla(boolean vanilla) {
+		this.vanilla = vanilla;
+		return this;
+	}
 	public boolean canCrouchBlock() {
 		return canCrouchBlock;
 	}
@@ -82,6 +91,13 @@ public abstract class BlockingType {
 	}
 	public BlockingType setSwordBlocking(boolean requiresSwordBlocking) {
 		this.requiresSwordBlocking = requiresSwordBlocking;
+		return this;
+	}
+	public boolean hasDelay() {
+		return hasDelay;
+	}
+	public BlockingType setDelay(boolean hasDelay) {
+		this.hasDelay = hasDelay;
 		return this;
 	}
 

@@ -208,9 +208,8 @@ public class NetworkingHandler {
 
 			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
 
-			for(Item item : items) {
+			for(Item item : items)
 				((ItemExtensions) item).modifyAttributeModifiers();
-			}
 			for(Item item : Combatify.ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)

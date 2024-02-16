@@ -53,7 +53,6 @@ public class SwordBlockingType extends BlockingType {
 		if (stack.getItem() instanceof Tierable tierable)
 			var2 = tierable.getTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
-		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy();
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		if(Combatify.CONFIG.defender())
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);

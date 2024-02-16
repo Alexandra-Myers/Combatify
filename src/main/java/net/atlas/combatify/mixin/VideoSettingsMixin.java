@@ -26,7 +26,8 @@ public class VideoSettingsMixin {
 		int i = optionInstance.indexOf(Minecraft.getInstance().options.attackIndicator());
 
 		optionInstance.add(i + 1, CombatifyClient.shieldIndicator);
-		optionInstance.addAll(CombatifyClient.attackIndicatorValue,
+		optionInstance.addAll(CombatifyClient.attackIndicatorMinValue,
+			CombatifyClient.attackIndicatorMaxValue,
 			CombatifyClient.rhythmicAttacks,
 			CombatifyClient.fishingRodLegacy);
 

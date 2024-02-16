@@ -49,7 +49,7 @@ public abstract class ItemStackMixin {
 	@Inject(method = "getTooltipLines", at = @At("RETURN"))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
-		if (!item.getBlockingType().isEmpty()) {
+		if (!item.getBlockingType().isEmpty() && !item.getBlockingType().isVanilla()) {
 			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
 				float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
 				double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));

@@ -44,7 +44,7 @@ public class FoodDataMixin {
 			return;
 		}
 		int randomNumber = Mth.randomBetweenInclusive(RandomSource.create(), 1, 2);
-		if(randomNumber == 2) {
+		if (randomNumber == 2) {
 			--foodLevel;
 		}
 	}
