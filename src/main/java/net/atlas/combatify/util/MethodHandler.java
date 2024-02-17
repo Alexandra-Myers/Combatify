@@ -26,7 +26,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
@@ -69,13 +68,16 @@ public class MethodHandler {
 		return attributeInstance.getAttribute().value().sanitizeValue(attributeInstanceFinalValue);
 	}
 	public static float getFatigueForTime(int f) {
-		if (f < 60 || !Combatify.CONFIG.bowFatigue()) {
+		if (f < 60 || !Combatify.CONFIG.bowFatigue())
 			return 0.5F;
-		} else {
+		else
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
-		}
 	}
 	public static void knockback(LivingEntity entity, double strength, double x, double z) {
+		if (!Combatify.CONFIG.ctsKB()) {
+			entity.knockback(strength, x, z);
+			return;
+		}
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity);
 		if (!blockingItem.isEmpty()) {
@@ -137,7 +139,7 @@ public class MethodHandler {
 		);
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
-		if(instance.getType() == HitResult.Type.BLOCK) {
+		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			Level level = player.level();
@@ -166,16 +168,15 @@ public class MethodHandler {
 	}
 	public static void disableShield(LivingEntity attacker, LivingEntity target, ItemStack blockingItem) {
 		double piercingLevel = 0;
-		Item item = attacker.getMainHandItem().getItem();
-		piercingLevel += ((ItemExtensions)item).getPiercingLevel();
+		piercingLevel += ((ItemExtensions)attacker.getMainHandItem().getItem()).getPiercingLevel();
 		if (Combatify.CONFIG.piercer())
-			piercingLevel += net.atlas.combatify.enchantment.CustomEnchantmentHelper.getPierce(attacker) * 0.1;
-		boolean canDisable = item instanceof AxeItem || piercingLevel > 0;
+			piercingLevel += CustomEnchantmentHelper.getPierce(attacker) * 0.1;
+		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;
 		ItemExtensions shieldItem = (ItemExtensions) blockingItem.getItem();
 		if (canDisable && shieldItem.getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0)
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
-			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) net.atlas.combatify.enchantment.CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime());
+			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime());
 			if(Combatify.CONFIG.defender())
 				damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
 			if(target instanceof PlayerExtensions player)
@@ -192,7 +193,7 @@ public class MethodHandler {
 				ItemStack var1 = entity.getItemInHand(hand);
 				Item blockingItem = var1.getItem();
 				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
+				if (!bl && !var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock()) {
 					return var1;
 				}
 			}
@@ -208,7 +209,7 @@ public class MethodHandler {
 		double chargedBonus = 0;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
-		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.95F;
+		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
@@ -225,7 +226,7 @@ public class MethodHandler {
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
-		if(trident.getY() <= -65 && j > 0) {
+		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() <= -65 && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
 			} else {
@@ -272,5 +273,10 @@ public class MethodHandler {
 			}
 		}
 		return amount;
+	}
+	public static Vec3 project(Vec3 originalVec, Vec3 newVec) {
+	    Vec3 normalized = newVec.normalize();
+	    double d = originalVec.dot(newVec);
+	    return normalized.multiply(d, d, d);
 	}
 }

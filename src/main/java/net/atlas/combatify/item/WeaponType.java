@@ -192,6 +192,17 @@ public enum WeaponType {
 		}
 		return false;
 	}
+	public boolean canSweep() {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
+			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+			if (configurableWeaponData.canSweep != null)
+				return configurableWeaponData.canSweep;
+		}
+		return switch (this) {
+			case SWORD, LONGSWORD, KNIFE -> true;
+			default -> false;
+		};
+	}
 	public boolean isEmpty() {
 		return this == EMPTY;
 	}

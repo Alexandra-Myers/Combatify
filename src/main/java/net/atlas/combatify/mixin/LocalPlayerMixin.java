@@ -44,14 +44,14 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if(thisPlayer.onGround() && this.hasEnabledShieldOnCrouch()) {
+		if (this.hasEnabledShieldOnCrouch()) {
 			for (InteractionHand interactionHand : InteractionHand.values()) {
-				if (thisPlayer.isCrouching() && !thisPlayer.isUsingItem()) {
+				if ((thisPlayer.isCrouching() && thisPlayer.onGround() || isPassenger()) && !thisPlayer.isUsingItem()) {
 					ItemStack itemStack = MethodHandler.getBlockingItem(thisPlayer);
 
 					Item blockingItem = itemStack.getItem();
 					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-					if (!itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && !((ItemExtensions) blockingItem).getBlockingType().isEmpty() && thisPlayer.isCrouching() && thisPlayer.onGround() && thisPlayer.getItemInHand(interactionHand) == itemStack && !bl) {
+					if (!bl && !itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
 							((IMinecraft) minecraft).startUseItem(interactionHand);
 							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
@@ -108,7 +108,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 			}
 
 			float var3 = this.oAttackAnim + var2 * tickDelta;
-			float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.95F;
+			float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 			return var3 > 0.4F && this.getAttackStrengthScale(tickDelta) < charge ? 0.4F + 0.6F * (float)Math.pow((var3 - 0.4F) / 0.6F, 4.0) : var3;
 		}
 		return super.getAttackAnim(tickDelta);

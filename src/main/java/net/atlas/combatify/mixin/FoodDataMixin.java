@@ -34,7 +34,7 @@ public class FoodDataMixin {
 
 	@ModifyConstant(method = "tick", constant = @Constant(intValue = 80,ordinal = 0))
 	public int redirectTickTimer(int constant) {
-		return 40;
+		return (int) (Combatify.CONFIG.healingTime() * 20);
 	}
 
 	@Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V",ordinal = 1))

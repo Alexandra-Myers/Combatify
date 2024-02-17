@@ -24,6 +24,16 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder canInteractWhenCrouchShield;
 	private BooleanHolder bedrockImpaling;
 	private BooleanHolder snowballKB;
+	private BooleanHolder resetOnItemChange;
+	private BooleanHolder vanillaSweep;
+	private BooleanHolder sweepWithSweeping;
+	private BooleanHolder sweepingNegatedForTamed;
+	private BooleanHolder ctsMomentumPassedToProjectiles;
+	private BooleanHolder swingThroughGrass;
+	private BooleanHolder strengthAppliesToEnchants;
+	private BooleanHolder percentageDamageEffects;
+	private BooleanHolder ctsKB;
+	private BooleanHolder tridentVoidReturn;
 	private BooleanHolder midairKB;
 	private BooleanHolder fishingHookKB;
 	private BooleanHolder fistDamage;
@@ -50,6 +60,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
+	private DoubleHolder healingTime;
 	private DoubleHolder shieldDisableTime;
 	private DoubleHolder cleavingDisableTime;
 	private DoubleHolder defenderDisableReduction;
@@ -59,6 +70,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder bowUncertainty;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
+	private DoubleHolder thrownTridentDamage;
 
 	public CombatifyBetaConfig() {
 		super(id("combatify-beta"));
@@ -82,15 +94,24 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		chargedReach = createBoolean("chargedReach", true);
 		creativeReach = createBoolean("creativeReach", false);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
+		ctsKB = createBoolean("ctsKB", true);
+		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		eatingInterruption = createBoolean("eatingInterruption", true);
 		fistDamage = createBoolean("fistDamage", false);
 		hasMissTime = createBoolean("hasMissTime", false);
 		missedAttackRecovery = createBoolean("missedAttackRecovery", true);
+		percentageDamageEffects = createBoolean("percentageDamageEffects", true);
 		projectilesHaveIFrames = createBoolean("projectilesHaveIFrames", false);
+		resetOnItemChange = createBoolean("resetOnItemChange", false);
 		fastHealing = createBoolean("fastHealing", false);
 		saturationHealing = createBoolean("saturationHealing", false);
 		snowballKB = createBoolean("snowballKB", true);
 		sprintCritsEnabled = createBoolean("sprintCritsEnabled", true);
+		strengthAppliesToEnchants = createBoolean("strengthAppliesToEnchants", true);
+		sweepWithSweeping = createBoolean("sweepWithSweeping", true);
+		swingThroughGrass = createBoolean("swingThroughGrass", true);
+		tridentVoidReturn = createBoolean("tridentVoidReturn", true);
+		vanillaSweep = createBoolean("vanillaSweep", false);
 		weaponTypesEnabled = createBoolean("weaponTypesEnabled", true);
 
 		shieldDelay = createInRange("shieldDelay", 0, 0, 100);
@@ -98,6 +119,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
 		bowUncertainty = createInRange("bowUncertainty", 0.25, 0, 4);
+		healingTime = createInRange("healingTime", 2, 0, 100D);
 		cleavingDisableTime = createInRange("cleavingDisableTime", 0.5, 0, 10);
 		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
 		minHitboxSize = createInRange("minHitboxSize", 0.9, 0, 5);
@@ -117,6 +139,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		midairKB = createBoolean("midairKB", false);
 		oldSprintFoodRequirement = createBoolean("oldSprintFoodRequirement", false);
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
+		sweepingNegatedForTamed = createBoolean("sweepingNegatedForTamed", false);
 		swordBlocking = createBoolean("swordBlocking", false);
 
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
@@ -125,6 +148,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		eggDamage = createInRange("eggDamage", 0, 0, 40D);
 		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
 		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
+		thrownTridentDamage = createInRange("thrownTridentDamage", 8, 0, 40D);
 	}
 
 	@Override
@@ -182,6 +206,36 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Boolean snowballKB() {
 		return snowballKB.get();
+	}
+	public Boolean resetOnItemChange() {
+		return resetOnItemChange.get();
+	}
+	public Boolean vanillaSweep() {
+		return vanillaSweep.get();
+	}
+	public Boolean sweepWithSweeping() {
+		return sweepWithSweeping.get();
+	}
+	public Boolean sweepingNegatedForTamed() {
+		return sweepingNegatedForTamed.get();
+	}
+	public Boolean ctsMomentumPassedToProjectiles() {
+		return ctsMomentumPassedToProjectiles.get();
+	}
+	public Boolean swingThroughGrass() {
+		return swingThroughGrass.get();
+	}
+	public Boolean strengthAppliesToEnchants() {
+		return strengthAppliesToEnchants.get();
+	}
+	public Boolean percentageDamageEffects() {
+		return percentageDamageEffects.get();
+	}
+	public Boolean ctsKB() {
+		return ctsKB.get();
+	}
+	public Boolean tridentVoidReturn() {
+		return tridentVoidReturn.get();
 	}
 	public Boolean midairKB() {
 		return midairKB.get();
@@ -261,6 +315,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();
 	}
+	public Double healingTime() {
+		return healingTime.get();
+	}
 	public Double shieldDisableTime() {
 		return shieldDisableTime.get();
 	}
@@ -278,6 +335,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Double windChargeDamage() {
 		return windChargeDamage.get();
+	}
+	public Double thrownTridentDamage() {
+		return thrownTridentDamage.get();
 	}
 	public Double bowUncertainty() {
 		return bowUncertainty.get();

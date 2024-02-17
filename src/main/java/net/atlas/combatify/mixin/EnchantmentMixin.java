@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.WeaponWithType;
+import net.atlas.combatify.item.WeaponType;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
@@ -27,6 +28,9 @@ public abstract class EnchantmentMixin {
 			hasSwordEnchants = weaponWithType.getWeaponType().hasSwordEnchants();
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+			WeaponType type;
+			if ((type = configurableItemData.type) != null)
+				hasSwordEnchants = type.hasSwordEnchants();
 			if (configurableItemData.hasSwordEnchants != null)
 				hasSwordEnchants = configurableItemData.hasSwordEnchants;
 		}

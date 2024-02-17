@@ -77,6 +77,21 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	}
 
 	@Override
+	public boolean canSweep() {
+		Item item = this;
+		boolean canSweep = false;
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			WeaponType type;
+			if ((type = configurableItemData.type) != null)
+				canSweep = type.canSweep();
+			if (configurableItemData.canSweep != null)
+				canSweep = configurableItemData.canSweep;
+		}
+		return canSweep;
+	}
+
+	@Override
 	public BlockingType getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);

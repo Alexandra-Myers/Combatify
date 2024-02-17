@@ -2,6 +2,7 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.atlas.combatify.Combatify;
 import net.minecraft.world.item.enchantment.SweepingEdgeEnchantment;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,6 +12,6 @@ public class SweepingEdgeEnchantmentMixin {
 
 	@ModifyReturnValue(method = "getSweepingDamageRatio", at = @At(value = "RETURN"))
 	private static float getSweepingDamageRatio(float original, @Local(ordinal = 0, argsOnly = true) int lvl) {
-		return 0.5F - 0.5F / (float)(lvl + 1);
+		return Combatify.CONFIG.vanillaSweep() ? original : 0.5F - 0.5F / (float)(lvl + 1);
 	}
 }

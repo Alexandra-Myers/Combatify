@@ -4,6 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +33,21 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 				chargedBonus = configurableItemData.chargedReach;
 		}
 		return chargedBonus;
+	}
+
+	@Override
+	public boolean canSweep() {
+		Item item = this;
+		boolean canSweep = false;
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			WeaponType type;
+			if ((type = configurableItemData.type) != null)
+				canSweep = type.canSweep();
+			if (configurableItemData.canSweep != null)
+				canSweep = configurableItemData.canSweep;
+		}
+		return canSweep;
 	}
 
 	@Override

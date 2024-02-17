@@ -1,5 +1,6 @@
 package net.atlas.combatify.util;
 
+import net.atlas.combatify.Combatify;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -23,7 +24,7 @@ public class ClientMethodHandler {
 		if (instance == null)
 			return;
 		Minecraft minecraft = Minecraft.getInstance();
-		if(instance.getType() == HitResult.Type.BLOCK) {
+		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			Level level = Objects.requireNonNull(minecraft.level);

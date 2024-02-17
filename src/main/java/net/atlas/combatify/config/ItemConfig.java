@@ -85,6 +85,7 @@ public class ItemConfig extends AtlasConfig {
 					Boolean tierable;
 					Boolean hasSwordEnchants = null;
 					Double piercingLevel = null;
+					Boolean canSweep = null;
 					if (jsonObject.has("tierable"))
 						tierable = getBoolean(jsonObject, "tierable");
 					else
@@ -113,7 +114,9 @@ public class ItemConfig extends AtlasConfig {
 						hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
 					if (jsonObject.has("armor_piercing"))
 						piercingLevel = getDouble(jsonObject, "armor_piercing");
-					ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants, piercingLevel);
+					if (jsonObject.has("can_sweep"))
+						canSweep = getBoolean(jsonObject, "can_sweep");
+					ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants, piercingLevel, canSweep);
 					configuredWeapons.put(type, configurableWeaponData);
 				} else
 					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
@@ -319,6 +322,8 @@ public class ItemConfig extends AtlasConfig {
 			Boolean hasSwordEnchants = null;
 			Integer useDuration = buf1.readInt();
 			Double piercingLevel = buf1.readDouble();
+			int canSweepAsInt = buf1.readInt();
+			Boolean canSweep = null;
 			if(damage == -10)
 				damage = null;
 			if(speed == -10)
@@ -345,10 +350,12 @@ public class ItemConfig extends AtlasConfig {
 				useDuration = null;
 			if (piercingLevel == -10)
 				piercingLevel = null;
+			if (canSweepAsInt != -10)
+				canSweep = canSweepAsInt == 1;
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -361,6 +368,8 @@ public class ItemConfig extends AtlasConfig {
 			int hasSwordEnchantsAsInt = buf1.readInt();
 			Boolean hasSwordEnchants = null;
 			Double piercingLevel = buf1.readDouble();
+			int canSweepAsInt = buf1.readInt();
+			Boolean canSweep = null;
 			if (damageOffset == -10)
 				damageOffset = null;
 			if (speed == -10)
@@ -373,7 +382,9 @@ public class ItemConfig extends AtlasConfig {
 				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
 			if (piercingLevel == -10)
 				piercingLevel = null;
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, piercingLevel);
+			if (canSweepAsInt != -10)
+				canSweep = canSweepAsInt == 1;
+			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, piercingLevel, canSweep);
 		});
 		return this;
 	}
@@ -411,6 +422,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeInt(configurableItemData.hasSwordEnchants == null ? -10 : configurableItemData.hasSwordEnchants ? 1 : 0);
 			buf12.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
 			buf12.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
+			buf12.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -421,6 +433,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
 			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
 			buf12.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
+			buf12.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
 		});
 	}
 
@@ -458,6 +471,7 @@ public class ItemConfig extends AtlasConfig {
 		Boolean hasSwordEnchants = null;
 		Integer useDuration = null;
 		Double piercingLevel = null;
+		Boolean canSweep = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -476,6 +490,7 @@ public class ItemConfig extends AtlasConfig {
 			hasSwordEnchants = oldData.hasSwordEnchants;
 			useDuration = oldData.useDuration;
 			piercingLevel = oldData.piercingLevel;
+			canSweep = oldData.canSweep;
 		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
@@ -535,7 +550,9 @@ public class ItemConfig extends AtlasConfig {
 			useDuration = getInt(jsonObject, "use_duration");
 		if (jsonObject.has("armor_piercing"))
 			piercingLevel = getDouble(jsonObject, "armor_piercing");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
+		if (jsonObject.has("can_sweep"))
+			canSweep = getBoolean(jsonObject, "can_sweep");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep);
 		configuredItems.put(item, configurableItemData);
 	}
 }

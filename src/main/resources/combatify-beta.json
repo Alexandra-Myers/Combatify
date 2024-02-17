@@ -10,15 +10,24 @@
   "chargedReach": true,
   "creativeReach": false,
   "ctsAttackBalancing": true,
+  "ctsKB": true,
+  "ctsMomentumPassedToProjectiles": true,
   "eatingInterruption": true,
   "fistDamage": false,
   "hasMissTime": false,
   "missedAttackRecovery": true,
+  "percentageDamageEffects": true,
   "projectilesHaveIFrames": false,
+  "resetOnItemChange": false,
   "fastHealing": false,
   "saturationHealing": false,
   "snowballKB": true,
   "sprintCritsEnabled": true,
+  "strengthAppliesToEnchants": true,
+  "sweepWithSweeping": true,
+  "swingThroughGrass": true,
+  "tridentVoidReturn": true,
+  "vanillaSweep": false,
   "weaponTypesEnabled": true,
 
   "shieldDelay": 0,
@@ -26,6 +35,7 @@
 
   "baseHandAttackSpeed": 2.5,
   "bowUncertainty": 0.25,
+  "healingTime": 2,
   "cleavingDisableTime": 0.5,
   "shieldDisableTime": 1.6,
   "minHitboxSize": 0.9,
@@ -45,6 +55,7 @@
   "midairKB": false,
   "oldSprintFoodRequirement": false,
   "shieldOnlyWhenCharged": false,
+  "sweepingNegatedForTamed": false,
   "swordBlocking": false,
 
   "shieldChargePercentage": 195,
@@ -52,5 +63,6 @@
   "defenderDisableReduction": 0.5,
   "eggDamage": 0.0,
   "snowballDamage": 0.0,
-  "windChargeDamage": 1.0
+  "windChargeDamage": 1.0,
+  "thrownTridentDamage": 8.0
 }

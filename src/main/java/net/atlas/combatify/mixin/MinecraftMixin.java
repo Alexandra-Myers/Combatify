@@ -100,7 +100,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void checkIfCrouch(CallbackInfo ci) {
 		if (player != null) {
 			ItemExtensions item = (ItemExtensions) MethodHandler.getBlockingItem(player).getItem();
-			if (Combatify.CONFIG.canInteractWhenCrouchShield() && ((PlayerExtensions) player).hasEnabledShieldOnCrouch() && player.isCrouching() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
+			if (Combatify.CONFIG.canInteractWhenCrouchShield() && ((PlayerExtensions) player).hasEnabledShieldOnCrouch() && (player.isCrouching() || player.isPassenger()) && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
 				while (options.keyUse.consumeClick()) {
 					startUseItem();
 				}
@@ -114,7 +114,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
 		Item blockingItem = MethodHandler.getBlockingItem(player).getItem();
 		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
-		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || !player.isCrouching() || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || !player.onGround())
+		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || (!player.isCrouching() && !player.isPassenger()) || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || (!player.onGround() && !player.isPassenger()))
 			instance.releaseUsingItem(player);
 	}
 	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 4))
@@ -154,10 +154,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer instance, Operation<Void> original) {
-		if (!Combatify.CONFIG.missedAttackRecovery() && !Combatify.CONFIG.canSweepOnMiss()) {
-			original.call(instance);
-			return;
-		}
 		if (gameMode != null)
 			((IPlayerGameMode) gameMode).swingInAir(instance);
 	}

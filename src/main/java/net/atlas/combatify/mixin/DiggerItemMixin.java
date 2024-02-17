@@ -72,6 +72,18 @@ public abstract class DiggerItemMixin extends TieredItem implements ItemExtensio
 	}
 
 	@Override
+	public boolean canSweep() {
+		Item item = this;
+		boolean canSweep = getWeaponType().canSweep();
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			if (configurableItemData.canSweep != null)
+				canSweep = configurableItemData.canSweep;
+		}
+		return canSweep;
+	}
+
+	@Override
 	public BlockingType getBlockingType() {
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);

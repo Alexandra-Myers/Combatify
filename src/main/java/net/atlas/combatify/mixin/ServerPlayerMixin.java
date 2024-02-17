@@ -105,7 +105,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		double chargedBonus;
 		float strengthScale = player.getAttackStrengthScale(1.0F);
-		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.95F;
+		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();

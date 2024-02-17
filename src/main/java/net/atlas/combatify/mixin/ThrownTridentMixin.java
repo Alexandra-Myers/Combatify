@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.*;
@@ -47,5 +49,9 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	public float dealtDamage(ItemStack p_44834_, EntityType<?> p_44835_) {
 		return CustomEnchantmentHelper.getDamageBonus(getPickupItemStackOrigin(), livingEntity);
 	}
-
+	@ModifyExpressionValue(method = "onHitEntity", at = @At(value = "CONSTANT", args = "floatValue=8.0"))
+	public float editTridentDamage(float original) {
+		float diff = (float) (original - Combatify.CONFIG.thrownTridentDamage());
+		return original - diff;
+	}
 }

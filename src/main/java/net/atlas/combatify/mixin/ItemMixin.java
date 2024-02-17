@@ -4,6 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,14 +23,28 @@ public abstract class ItemMixin implements ItemExtensions {
 		double chargedBonus = 1.0;
 		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-			if (configurableItemData.type != null)
-				if (Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type))
-					if (Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach != null)
-						chargedBonus = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach;
+			WeaponType type;
+			if ((type = configurableItemData.type) != null)
+				chargedBonus = type.getChargedReach();
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
 		return chargedBonus;
+	}
+
+	@Override
+	public boolean canSweep() {
+		Item item = Item.class.cast(this);
+		boolean canSweep = false;
+		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+			WeaponType type;
+			if ((type = configurableItemData.type) != null)
+				canSweep = type.canSweep();
+			if (configurableItemData.canSweep != null)
+				canSweep = configurableItemData.canSweep;
+		}
+		return canSweep;
 	}
 
 	@Override

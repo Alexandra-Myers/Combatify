@@ -19,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -52,26 +53,12 @@ public class NetworkingHandler {
 			moddedPlayers.remove(handler.player.getUUID());
 		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, context) -> {
-			ServerPlayer player = context.player();
+			ServerPlayer player = context.player().connection.getPlayer();
 			final ServerLevel serverLevel = player.serverLevel();
 			player.resetLastActionTime();
-			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition())) {
+			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition()))
 				return;
-			}
-			double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
-			d *= d;
-			if(!player.hasLineOfSight(player)) {
-				d = 6.25;
-			}
-
-			AABB aABB = player.getBoundingBox();
-			Vec3 eyePos = player.getEyePosition(0.0F);
-			eyePos.distanceToSqr(MethodHandler.getNearestPointTo(aABB, eyePos));
-			double dist = 0;
-			if (dist < d) {
-				((PlayerExtensions)player).attackAir();
-			}
-
+			((PlayerExtensions)player).attackAir();
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
