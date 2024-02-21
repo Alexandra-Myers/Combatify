@@ -80,7 +80,8 @@ public class MethodHandler {
 		}
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity);
-		if (!blockingItem.isEmpty()) {
+		boolean delay = ((ItemExtensions) blockingItem.getItem()).getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration() - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));

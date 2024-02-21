@@ -297,7 +297,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	protected boolean checkSweepAttack() {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-		boolean sweepingItem = ((ItemExtensions)getMainHandItem().getItem()).canSweep() && (!Combatify.CONFIG.sweepWithSweeping() || Combatify.CONFIG.vanillaSweep());
+		boolean sweepingItem = ((ItemExtensions)getMainHandItem().getItem()).canSweep();
 		boolean sweep = getAttackStrengthScale(baseValue) > charge && (EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F || sweepingItem);
 		if (!Combatify.CONFIG.sweepWithSweeping())
 			return sweepingItem && sweep;

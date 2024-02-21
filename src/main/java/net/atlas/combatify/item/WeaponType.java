@@ -198,10 +198,7 @@ public enum WeaponType {
 			if (configurableWeaponData.canSweep != null)
 				return configurableWeaponData.canSweep;
 		}
-		return switch (this) {
-			case SWORD, LONGSWORD, KNIFE -> true;
-			default -> false;
-		};
+		return false;
 	}
 	public boolean isEmpty() {
 		return this == EMPTY;
