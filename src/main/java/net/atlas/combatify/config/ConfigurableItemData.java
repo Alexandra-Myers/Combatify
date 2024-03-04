@@ -26,7 +26,7 @@ public class ConfigurableItemData {
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
 		this.chargedReach = clamp(chargedReach, 0, 10);
-		this.stackSize = clamp(stackSize, 1, 64);
+		this.stackSize = clamp(stackSize, 1, 128);
 		this.cooldown = clamp(cooldown, 1, 1000);
 		this.cooldownAfter = cooldownAfter;
 		type = weaponType;

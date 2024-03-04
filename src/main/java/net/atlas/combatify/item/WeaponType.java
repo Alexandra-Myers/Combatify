@@ -1,15 +1,13 @@
 package net.atlas.combatify.item;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMultimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.minecraft.core.Holder;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import java.util.UUID;
 
@@ -32,32 +30,18 @@ public enum WeaponType {
     WeaponType() {
     }
 
-    public void addCombatAttributes(Tier tier, ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> attributeModifiers) {
+    public void addCombatAttributes(Tier tier, ItemAttributeModifiers.Builder attributeModifiers) {
 		if (isEmpty())
 			return;
         double speed = this.getSpeed(tier);
         double damage = this.getDamage(tier);
         double reach = this.getReach();
-        attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
+        attributeModifiers.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 		if (!Combatify.CONFIG.instaAttack())
-			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
-        if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
-            attributeModifiers.put(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
-        }
+			attributeModifiers.add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        if (reach != 0.0F && Combatify.CONFIG.attackReach())
+            attributeModifiers.add(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
     }
-	public void addCombatAttributes(Tier tier, ArrayListMultimap<Holder<Attribute>, AttributeModifier> attributeModifiers) {
-		if (isEmpty())
-			return;
-		double speed = this.getSpeed(tier);
-		double damage = this.getDamage(tier);
-		double reach = this.getReach();
-		attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
-		if (!Combatify.CONFIG.instaAttack())
-			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
-		if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
-			attributeModifiers.put(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
-		}
-	}
 
 	public double getDamage(Tier tier) {
 		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;

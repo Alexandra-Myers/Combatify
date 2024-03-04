@@ -1,7 +1,5 @@
 package net.atlas.combatify.item;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
@@ -9,34 +7,32 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 
 public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponWithType {
-	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 	public LongSwordItem(Tier tier, Properties properties) {
-		super(tier, properties);
-		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(getTier(), var3);
-		defaultModifiers = var3.build();
+		super(tier, properties.attributes(baseAttributeModifiers(tier)));
 	}
+
+	public static ItemAttributeModifiers baseAttributeModifiers(Tier tier) {
+		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+		WeaponType.KNIFE.addCombatAttributes(tier, builder);
+		return builder.build();
+	}
+
 	@Override
-	public void modifyAttributeModifiers() {
-		if (!Combatify.CONFIG.weaponTypesEnabled())
-			return;
-		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(getTier(), var3);
-		defaultModifiers = var3.build();
+	public ItemAttributeModifiers modifyAttributeModifiers() {
+		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+		getWeaponType().addCombatAttributes(getTier(), builder);
+		return builder.build();
 	}
 
 	@Override
@@ -71,11 +67,6 @@ public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponW
 	@Override
 	public boolean isCorrectToolForDrops(BlockState state) {
 		return state.is(Blocks.COBWEB);
-	}
-
-	@Override
-	public @NotNull Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
-		return slot == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(slot);
 	}
 
 	@Override

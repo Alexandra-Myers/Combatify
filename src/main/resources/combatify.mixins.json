@@ -28,6 +28,7 @@
     "PlayerListMixin",
     "PlayerMixin",
     "ProjectileMixin",
+    "PropertiesMixin",
     "RamTargetMixin",
     "ResourceLocationMixin",
     "ServerEntityMixin",

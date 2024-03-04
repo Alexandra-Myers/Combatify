@@ -1,7 +1,5 @@
 package net.atlas.combatify.mixin;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
@@ -9,39 +7,33 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
-import net.minecraft.core.Holder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(DiggerItem.class)
 public abstract class DiggerItemMixin extends TieredItem implements ItemExtensions, WeaponWithType {
-	@Shadow
-	private Multimap<Holder<Attribute>, AttributeModifier> defaultModifiers;
 	public DiggerItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
 	@Override
-	public void modifyAttributeModifiers() {
+	public ItemAttributeModifiers modifyAttributeModifiers() {
 		if (getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
-			return;
-		ImmutableMultimap.Builder<Holder<Attribute>, AttributeModifier> var3 = ImmutableMultimap.builder();
-		getWeaponType().addCombatAttributes(getTier(), var3);
-		defaultModifiers = var3.build();
+			return null;
+		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+		getWeaponType().addCombatAttributes(getTier(), builder);
+		return builder.build();
 	}
 	@Redirect(method = "hurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
 	public <T extends LivingEntity> void damage(ItemStack instance, int amount, LivingEntity livingEntity, EquipmentSlot equipmentSlot) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
-		if (bl) {
+		if (bl)
 			amount -= 1;
-		}
 		instance.hurtAndBreak(amount, livingEntity, equipmentSlot);
 	}
 
@@ -87,15 +79,13 @@ public abstract class DiggerItemMixin extends TieredItem implements ItemExtensio
 	public BlockingType getBlockingType() {
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.blockingType != null) {
+			if (configurableItemData.blockingType != null)
 				return configurableItemData.blockingType;
-			}
 		}
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.blockingType != null) {
+			if (configurableWeaponData.blockingType != null)
 				return configurableWeaponData.blockingType;
-			}
 		}
 		return Combatify.EMPTY;
 	}
@@ -104,15 +94,13 @@ public abstract class DiggerItemMixin extends TieredItem implements ItemExtensio
 	public double getPiercingLevel() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.piercingLevel != null) {
+			if (configurableItemData.piercingLevel != null)
 				return configurableItemData.piercingLevel;
-			}
 		}
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.piercingLevel != null) {
+			if (configurableWeaponData.piercingLevel != null)
 				return configurableWeaponData.piercingLevel;
-			}
 		}
 		return 0;
 	}

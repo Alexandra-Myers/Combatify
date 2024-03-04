@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
-import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
@@ -76,19 +75,13 @@ public class Combatify implements ModInitializer {
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
-		if(CONFIG.piercer()) {
+		if(CONFIG.piercer())
 			PiercingEnchantment.registerEnchants();
-		}
-		if(CONFIG.defender()) {
+		if(CONFIG.defender())
 			DefendingEnchantment.registerEnchants();
-		}
-		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
-
-		for(Item item : items)
-			((ItemExtensions) item).modifyAttributeModifiers();
 		if (Combatify.CONFIG.percentageDamageEffects()) {
-			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
-			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
+			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 		}
 	}
 	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
