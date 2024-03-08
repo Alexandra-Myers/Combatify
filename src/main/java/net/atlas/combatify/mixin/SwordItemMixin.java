@@ -6,6 +6,7 @@ import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.extensions.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,11 +19,18 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Weapon
 	}
 
 	@Override
-	public ItemAttributeModifiers modifyAttributeModifiers() {
+	public ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		if (!Combatify.CONFIG.weaponTypesEnabled())
-			return null;
+			return original;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
 		getWeaponType().addCombatAttributes(getTier(), builder);
+		original.modifiers().forEach(entry -> {
+			boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
+				|| entry.attribute().is(Attributes.ATTACK_SPEED)
+				|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
+			if (!bl)
+				builder.add(entry.attribute(), entry.modifier(), entry.slot());
+		});
 		return builder.build();
 	}
 

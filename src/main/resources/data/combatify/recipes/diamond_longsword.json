@@ -15,7 +15,8 @@
     }
   },
   "result": {
-    "item": "combatify:diamond_longsword"
+    "count": 1,
+    "id": "combatify:diamond_longsword"
   },
   "show_notification": true
 }

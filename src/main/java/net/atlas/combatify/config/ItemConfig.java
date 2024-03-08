@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -441,10 +440,6 @@ public class ItemConfig extends AtlasConfig {
 	public void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 		LOGGER.info("Loading config details from buffer.");
 
-		List<Item> items = BuiltInRegistries.ITEM.stream().toList();
-
-		for(Item item : items)
-			((ItemExtensions) item).modifyAttributeModifiers();
 		for (Item item : Combatify.ITEMS.configuredItems.keySet()) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 			if (configurableItemData.stackSize != null)

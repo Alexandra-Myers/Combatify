@@ -15,7 +15,8 @@
     }
   },
   "result": {
-    "item": "combatify:iron_shield"
+    "count": 1,
+    "id": "combatify:iron_shield"
   },
   "show_notification": true
 }

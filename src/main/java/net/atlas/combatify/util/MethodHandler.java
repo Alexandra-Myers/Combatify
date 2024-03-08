@@ -1,11 +1,15 @@
 package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.extensions.Tierable;
+import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -19,6 +23,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,9 +31,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -37,6 +41,9 @@ import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static net.atlas.combatify.Combatify.CONFIG;
 
 public class MethodHandler {
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
@@ -46,23 +53,97 @@ public class MethodHandler {
 
 		return new Vec3(x, y, z);
 	}
+
+	public static void updateModifiers(ItemStack itemStack) {
+		ItemAttributeModifiers modifier = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+		ItemAttributeModifiers newModifiers = ((ItemExtensions)itemStack.getItem()).modifyAttributeModifiers(modifier);
+		itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, newModifiers);
+		modifier = newModifiers;
+		if (modifier != null && Combatify.ITEMS != null) {
+			Item item = itemStack.getItem();
+			if (Combatify.ITEMS.configuredItems.containsKey(item)) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+				if (configurableItemData.type != null) {
+					ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier()
+						: item instanceof Tierable tierable ? tierable.getTier()
+						: Tiers.NETHERITE, builder);
+					modifier.modifiers().forEach(entry -> {
+						boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
+							|| entry.attribute().is(Attributes.ATTACK_SPEED)
+							|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
+						if (!bl)
+							builder.add(entry.attribute(), entry.modifier(), entry.slot());
+					});
+					itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.build());
+					modifier = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
+				}
+				ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+				boolean modDamage = false;
+				AtomicReference<ItemAttributeModifiers.Entry> damage = new AtomicReference<>();
+				boolean modSpeed = false;
+				AtomicReference<ItemAttributeModifiers.Entry> speed = new AtomicReference<>();
+				boolean modReach = false;
+				AtomicReference<ItemAttributeModifiers.Entry> reach = new AtomicReference<>();
+				modifier.modifiers().forEach(entry -> {
+					boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
+						|| entry.attribute().is(Attributes.ATTACK_SPEED)
+						|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
+					if (!bl)
+						builder.add(entry.attribute(), entry.modifier(), entry.slot());
+					else if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+						damage.set(entry);
+					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
+						reach.set(entry);
+					else
+						speed.set(entry);
+				});
+				if (configurableItemData.damage != null) {
+					modDamage = true;
+					builder.add(Attributes.ATTACK_DAMAGE,
+						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
+						EquipmentSlotGroup.MAINHAND);
+				}
+				if (configurableItemData.speed != null) {
+					modSpeed = true;
+					builder.add(Attributes.ATTACK_SPEED,
+						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
+						EquipmentSlotGroup.MAINHAND);
+				}
+				if (configurableItemData.reach != null) {
+					modReach = true;
+					builder.add(Attributes.ENTITY_INTERACTION_RANGE,
+						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
+						EquipmentSlotGroup.MAINHAND);
+				}
+				if (!modDamage && damage.get() != null)
+					builder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
+				if (!modSpeed && speed.get() != null)
+					builder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
+				if (!modReach && reach.get() != null)
+					builder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
+				if (modDamage || modSpeed || modReach)
+					itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.build());
+			}
+		}
+	}
 	public static double calculateValue(@Nullable AttributeInstance attributeInstance, float damageBonus) {
 		if(attributeInstance == null)
 			return damageBonus;
 		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
 
-		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADDITION)) {
-			attributeInstanceBaseValue += attributeModifier.getAmount() + damageBonus;
+		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
+			attributeInstanceBaseValue += attributeModifier.amount() + damageBonus;
 		}
 
 		double attributeInstanceFinalValue = attributeInstanceBaseValue;
 
-		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_BASE)) {
-			attributeInstanceFinalValue += attributeInstanceBaseValue * attributeModifier2.getAmount();
+		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
+			attributeInstanceFinalValue += attributeInstanceBaseValue * attributeModifier2.amount();
 		}
 
-		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
-			attributeInstanceFinalValue *= 1.0 + attributeModifier2.getAmount();
+		for(AttributeModifier attributeModifier2 : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
+			attributeInstanceFinalValue *= 1.0 + attributeModifier2.amount();
 		}
 
 		return attributeInstance.getAttribute().value().sanitizeValue(attributeInstanceFinalValue);
@@ -214,7 +295,7 @@ public class MethodHandler {
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
-			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf74"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADDITION);
+			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf74"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADD_VALUE);
 			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
 			else

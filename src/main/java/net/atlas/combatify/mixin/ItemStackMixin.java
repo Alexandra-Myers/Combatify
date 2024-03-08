@@ -46,14 +46,14 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Shadow
 	public abstract String toString();
 
-	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;getOperation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
+	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
 	public void addAttackReach(Consumer<Component> consumer, Player player, Holder<Attribute> holder, AttributeModifier attributeModifier, CallbackInfo ci, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl) {
 		if (player != null) {
-			if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID) {
+			if (attributeModifier.id() == WeaponType.BASE_ATTACK_SPEED_UUID) {
 				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
 				bl.set(true);
 			}
-			if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
+			if (attributeModifier.id() == WeaponType.BASE_ATTACK_REACH_UUID) {
 				d.set(d.get() + player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE) + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
 				bl.set(true);
 			}

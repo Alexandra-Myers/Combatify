@@ -12,7 +12,8 @@
     }
   },
   "result": {
-    "item": "combatify:golden_shield"
+    "count": 1,
+    "id": "combatify:golden_shield"
   },
   "show_notification": true
 }

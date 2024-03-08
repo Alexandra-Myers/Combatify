@@ -15,7 +15,8 @@
     }
   },
   "result": {
-    "item": "combatify:wooden_longsword"
+    "count": 1,
+    "id": "combatify:wooden_longsword"
   },
   "show_notification": true
 }

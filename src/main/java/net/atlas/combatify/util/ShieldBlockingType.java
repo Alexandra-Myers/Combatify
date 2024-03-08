@@ -9,6 +9,7 @@ import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -17,10 +18,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,7 +63,9 @@ public class ShieldBlockingType extends BlockingType {
 				return configurableItemData.blockStrength.floatValue();
 			}
 		}
-		float f = stack.getTagElement("BlockEntityTag") != null ? 10.0F : 5.0F;
+		BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+		DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+		float f = !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 10.0F : 5.0F;
 		if(Combatify.CONFIG.defender()) {
 			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 		}
@@ -75,7 +80,9 @@ public class ShieldBlockingType extends BlockingType {
 				return configurableItemData.blockKbRes;
 			}
 		}
-		return stack.getTagElement("BlockEntityTag") != null ? 0.8 : 0.5;
+		BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+		DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+		return !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 0.8 : 0.5;
 	}
 
 	@Override

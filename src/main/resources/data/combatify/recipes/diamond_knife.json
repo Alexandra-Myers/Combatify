@@ -14,7 +14,8 @@
     }
   },
   "result": {
-    "item": "combatify:diamond_knife"
+    "count": 1,
+    "id": "combatify:diamond_knife"
   },
   "show_notification": true
 }

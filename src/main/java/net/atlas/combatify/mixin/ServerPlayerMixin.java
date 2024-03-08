@@ -109,7 +109,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
-			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf74"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADDITION);
+			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf74"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADD_VALUE);
 			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
 			else

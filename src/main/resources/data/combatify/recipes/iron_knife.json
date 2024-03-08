@@ -14,7 +14,8 @@
     }
   },
   "result": {
-    "item": "combatify:iron_knife"
+    "count": 1,
+    "id": "combatify:iron_knife"
   },
   "show_notification": true
 }

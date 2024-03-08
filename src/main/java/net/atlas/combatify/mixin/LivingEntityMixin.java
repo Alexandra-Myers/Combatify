@@ -74,6 +74,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract ItemStack getUseItem();
 
+	@Shadow
+	public abstract void stopUsingItem();
+
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {

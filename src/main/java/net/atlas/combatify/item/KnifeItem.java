@@ -29,7 +29,7 @@ public class KnifeItem extends TieredItem implements ItemExtensions, WeaponWithT
 	}
 
 	@Override
-	public ItemAttributeModifiers modifyAttributeModifiers() {
+	public ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
 		getWeaponType().addCombatAttributes(getTier(), builder);
 		return builder.build();

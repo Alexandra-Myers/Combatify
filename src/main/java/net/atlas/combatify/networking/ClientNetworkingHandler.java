@@ -10,11 +10,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
-
-import java.util.List;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -38,10 +35,6 @@ public class ClientNetworkingHandler {
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
 			ITEMS = new ItemConfig();
 
-			List<Item> items = BuiltInRegistries.ITEM.stream().toList();
-
-			for(Item item : items)
-				((ItemExtensions) item).modifyAttributeModifiers();
 			for(Item item : Combatify.ITEMS.configuredItems.keySet()) {
 				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.stackSize != null)

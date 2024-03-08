@@ -29,7 +29,7 @@ public class LongSwordItem extends TieredItem implements ItemExtensions, WeaponW
 	}
 
 	@Override
-	public ItemAttributeModifiers modifyAttributeModifiers() {
+	public ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
 		getWeaponType().addCombatAttributes(getTier(), builder);
 		return builder.build();

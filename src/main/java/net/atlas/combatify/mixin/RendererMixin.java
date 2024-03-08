@@ -2,7 +2,6 @@ package net.atlas.combatify.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.datafixers.util.Pair;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -15,14 +14,12 @@ import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.level.block.entity.BannerBlockEntity;
-import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 @Mixin(BlockEntityWithoutLevelRenderer.class)
@@ -71,78 +68,83 @@ public class RendererMixin {
 	private void mainRender(ItemStack stack, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, int j, CallbackInfo ci) {
 		if (Combatify.CONFIG.tieredShields()) {
 			if (stack.is(TieredShieldItem.WOODEN_SHIELD)) {
-				boolean bl = stack.getTagElement("BlockEntityTag") != null;
+				BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+				DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+				boolean bl = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
-				Material spriteIdentifier = bl ? WOODEN_SHIELD_BASE : WOODEN_SHIELD_BASE_NO_PATTERN;
-				VertexConsumer vertexConsumer = spriteIdentifier.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, modelWoodenShield.renderType(spriteIdentifier.atlasLocation()), true, stack.hasFoil()));
-				modelWoodenShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				if (bl) {
-					List<Pair<Holder<BannerPattern>, DyeColor>> list = BannerBlockEntity.createPatterns(ShieldItem.getColor(stack), BannerBlockEntity.getItemPatterns(stack));
-					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, modelWoodenShield.plate(), spriteIdentifier, false, list, stack.hasFoil());
-				} else {
-					modelWoodenShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				}
+				Material material = bl ? WOODEN_SHIELD_BASE : WOODEN_SHIELD_BASE_NO_PATTERN;
+				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelWoodenShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
+				this.modelWoodenShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				if (bl)
+					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelWoodenShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
+				else
+					this.modelWoodenShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+
 				poseStack.popPose();
 			}
 			if (stack.is(TieredShieldItem.IRON_SHIELD)) {
-				boolean bl = stack.getTagElement("BlockEntityTag") != null;
+				BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+				DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+				boolean bl = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
-				Material spriteIdentifier = bl ? IRON_SHIELD_BASE : IRON_SHIELD_BASE_NO_PATTERN;
-				VertexConsumer vertexConsumer = spriteIdentifier.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, modelIronShield.renderType(spriteIdentifier.atlasLocation()), true, stack.hasFoil()));
-				modelIronShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				if (bl) {
-					List<Pair<Holder<BannerPattern>, DyeColor>> list = BannerBlockEntity.createPatterns(ShieldItem.getColor(stack), BannerBlockEntity.getItemPatterns(stack));
-					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, modelIronShield.plate(), spriteIdentifier, false, list, stack.hasFoil());
-				} else {
-					modelIronShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				}
+				Material material = bl ? IRON_SHIELD_BASE : IRON_SHIELD_BASE_NO_PATTERN;
+				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelIronShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
+				this.modelIronShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				if (bl)
+					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelIronShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
+				else
+					this.modelIronShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+
 				poseStack.popPose();
 			}
 			if (stack.is(TieredShieldItem.GOLD_SHIELD)) {
-				boolean bl = stack.getTagElement("BlockEntityTag") != null;
+				BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+				DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+				boolean bl = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
-				Material spriteIdentifier = bl ? GOLDEN_SHIELD_BASE : GOLDEN_SHIELD_BASE_NO_PATTERN;
-				VertexConsumer vertexConsumer = spriteIdentifier.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, modelGoldenShield.renderType(spriteIdentifier.atlasLocation()), true, stack.hasFoil()));
-				modelGoldenShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				if (bl) {
-					List<Pair<Holder<BannerPattern>, DyeColor>> list = BannerBlockEntity.createPatterns(ShieldItem.getColor(stack), BannerBlockEntity.getItemPatterns(stack));
-					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, modelGoldenShield.plate(), spriteIdentifier, false, list, stack.hasFoil());
-				} else {
-					modelGoldenShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				}
+				Material material = bl ? GOLDEN_SHIELD_BASE : GOLDEN_SHIELD_BASE_NO_PATTERN;
+				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelGoldenShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
+				this.modelGoldenShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				if (bl)
+					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelGoldenShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
+				else
+					this.modelGoldenShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+
 				poseStack.popPose();
 			}
 			if (stack.is(TieredShieldItem.DIAMOND_SHIELD)) {
-				boolean bl = stack.getTagElement("BlockEntityTag") != null;
+				BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+				DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+				boolean bl = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
-				Material spriteIdentifier = bl ? DIAMOND_SHIELD_BASE : DIAMOND_SHIELD_BASE_NO_PATTERN;
-				VertexConsumer vertexConsumer = spriteIdentifier.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, modelDiamondShield.renderType(spriteIdentifier.atlasLocation()), true, stack.hasFoil()));
-				modelDiamondShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				if (bl) {
-					List<Pair<Holder<BannerPattern>, DyeColor>> list = BannerBlockEntity.createPatterns(ShieldItem.getColor(stack), BannerBlockEntity.getItemPatterns(stack));
-					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, modelDiamondShield.plate(), spriteIdentifier, false, list, stack.hasFoil());
-				} else {
-					modelDiamondShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				}
+				Material material = bl ? DIAMOND_SHIELD_BASE : DIAMOND_SHIELD_BASE_NO_PATTERN;
+				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelDiamondShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
+				this.modelDiamondShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				if (bl)
+					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelDiamondShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
+				else
+					this.modelDiamondShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+
 				poseStack.popPose();
 			}
 			if (stack.is(TieredShieldItem.NETHERITE_SHIELD)) {
-				boolean bl = stack.getTagElement("BlockEntityTag") != null;
+				BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+				DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
+				boolean bl = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
 				poseStack.pushPose();
 				poseStack.scale(1.0F, -1.0F, -1.0F);
-				Material spriteIdentifier = bl ? NETHERITE_SHIELD_BASE : NETHERITE_SHIELD_BASE_NO_PATTERN;
-				VertexConsumer vertexConsumer = spriteIdentifier.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, modelNetheriteShield.renderType(spriteIdentifier.atlasLocation()), true, stack.hasFoil()));
-				modelNetheriteShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				if (bl) {
-					List<Pair<Holder<BannerPattern>, DyeColor>> list = BannerBlockEntity.createPatterns(ShieldItem.getColor(stack), BannerBlockEntity.getItemPatterns(stack));
-					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, modelNetheriteShield.plate(), spriteIdentifier, false, list, stack.hasFoil());
-				} else {
-					modelNetheriteShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
-				}
+				Material material = bl ? NETHERITE_SHIELD_BASE : NETHERITE_SHIELD_BASE_NO_PATTERN;
+				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelNetheriteShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
+				this.modelNetheriteShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				if (bl)
+					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelNetheriteShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
+				else
+					this.modelNetheriteShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+
 				poseStack.popPose();
 			}
 		}

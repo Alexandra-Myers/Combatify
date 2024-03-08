@@ -10,8 +10,10 @@ import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.Combatify.shields;
@@ -26,7 +28,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), new TieredShieldItem(Tiers.NETHERITE, new Item.Properties().durability(Tiers.NETHERITE.getUses() * 2).fireResistant()));
 
 	public TieredShieldItem(Tier tier, Properties properties) {
-		super(properties);
+		super(properties.component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
 		this.tier = tier;
 		shields.add(this);
 		if(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)

@@ -30,13 +30,13 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED) {
 				double speed = calculateValue(attributeSnapshot.base(), attributeSnapshot.modifiers(), attributeSnapshot.attribute());
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
-					.filter(attributeModifier -> attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID)
+					.filter(attributeModifier -> attributeModifier.id() == Item.BASE_ATTACK_SPEED_UUID)
 					.toList()
 					.isEmpty();
 				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
 					if (vanillaMath(newSpeed) == CTSMath(speed, hasVanilla) * 2) {
 						if (newSpeed - 2.5 != 0)
-							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Calculated client modifier", newSpeed - 2.5, AttributeModifier.Operation.ADDITION));
+							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Calculated client modifier", newSpeed - 2.5, AttributeModifier.Operation.ADD_VALUE));
 						break;
 					}
 				}
@@ -55,27 +55,27 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		double attributeInstanceBaseValue = baseValue;
 		List<AttributeModifier> additionList = modifiers
 			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.ADDITION)
+			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_VALUE)
 			.toList();
 		List<AttributeModifier> multiplyBaseList = modifiers
 			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE)
+			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
 			.toList();
 		List<AttributeModifier> multiplyTotalList = modifiers
 			.stream()
-			.filter(attributeModifier -> attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE)
+			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
 			.toList();
 
 		for(AttributeModifier attributeModifier : additionList) {
-			attributeInstanceBaseValue += attributeModifier.getAmount();
+			attributeInstanceBaseValue += attributeModifier.amount();
 		}
 
 		for(AttributeModifier attributeModifier2 : multiplyBaseList) {
-			attributeInstanceBaseValue += attributeInstanceBaseValue * attributeModifier2.getAmount();
+			attributeInstanceBaseValue += attributeInstanceBaseValue * attributeModifier2.amount();
 		}
 
 		for(AttributeModifier attributeModifier2 : multiplyTotalList) {
-			attributeInstanceBaseValue *= 1.0 + attributeModifier2.getAmount();
+			attributeInstanceBaseValue *= 1.0 + attributeModifier2.amount();
 		}
 
 		return attribute.value().sanitizeValue(attributeInstanceBaseValue);

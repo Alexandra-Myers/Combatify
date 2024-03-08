@@ -9,6 +9,7 @@ import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,11 +22,18 @@ public abstract class DiggerItemMixin extends TieredItem implements ItemExtensio
 		super(tier, properties);
 	}
 	@Override
-	public ItemAttributeModifiers modifyAttributeModifiers() {
+	public ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		if (getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
-			return null;
+			return original;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
 		getWeaponType().addCombatAttributes(getTier(), builder);
+		original.modifiers().forEach(entry -> {
+			boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
+				|| entry.attribute().is(Attributes.ATTACK_SPEED)
+				|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
+			if (!bl)
+				builder.add(entry.attribute(), entry.modifier(), entry.slot());
+		});
 		return builder.build();
 	}
 	@Redirect(method = "hurtEnemy",

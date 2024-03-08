@@ -12,7 +12,8 @@
     }
   },
   "result": {
-    "item": "combatify:diamond_shield"
+    "count": 1,
+    "id": "combatify:diamond_shield"
   },
   "show_notification": true
 }

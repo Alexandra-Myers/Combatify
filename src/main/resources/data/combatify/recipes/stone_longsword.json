@@ -15,7 +15,8 @@
     }
   },
   "result": {
-    "item": "combatify:stone_longsword"
+    "count": 1,
+    "id": "combatify:stone_longsword"
   },
   "show_notification": true
 }

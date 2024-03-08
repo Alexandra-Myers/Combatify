@@ -7,7 +7,8 @@
     "item": "combatify:diamond_shield"
   },
   "result": {
-    "item": "combatify:netherite_shield"
+    "count": 1,
+    "id": "combatify:netherite_shield"
   },
   "template": {
     "item": "minecraft:netherite_upgrade_smithing_template"

@@ -14,7 +14,8 @@
     }
   },
   "result": {
-    "item": "combatify:golden_knife"
+    "count": 1,
+    "id": "combatify:golden_knife"
   },
   "show_notification": true
 }

@@ -14,7 +14,8 @@
     }
   },
   "result": {
-    "item": "combatify:stone_knife"
+    "count": 1,
+    "id": "combatify:stone_knife"
   },
   "show_notification": true
 }

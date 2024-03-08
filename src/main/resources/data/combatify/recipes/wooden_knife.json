@@ -14,7 +14,8 @@
     }
   },
   "result": {
-    "item": "combatify:wooden_knife"
+    "count": 1,
+    "id": "combatify:wooden_knife"
   },
   "show_notification": true
 }

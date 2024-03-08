@@ -15,7 +15,8 @@
     }
   },
   "result": {
-    "item": "combatify:golden_longsword"
+    "count": 1,
+    "id": "combatify:golden_longsword"
   },
   "show_notification": true
 }

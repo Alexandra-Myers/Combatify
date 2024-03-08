@@ -5,8 +5,8 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public interface ItemExtensions {
 
-	default ItemAttributeModifiers modifyAttributeModifiers() {
-		return null;
+	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
+		return original;
 	}
 
 	void setStackSize(int stackSize);

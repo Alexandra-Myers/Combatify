@@ -7,7 +7,8 @@
     "item": "combatify:diamond_knife"
   },
   "result": {
-    "item": "combatify:netherite_knife"
+    "count": 1,
+    "id": "combatify:netherite_knife"
   },
   "template": {
     "item": "minecraft:netherite_upgrade_smithing_template"
