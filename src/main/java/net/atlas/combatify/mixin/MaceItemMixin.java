@@ -3,13 +3,14 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.MaceItem;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(TridentItem.class)
-public class TridentItemMixin extends Item implements WeaponWithType {
+@Mixin(MaceItem.class)
+public class MaceItemMixin extends Item implements WeaponWithType {
 
-	public TridentItemMixin(Item.Properties properties) {
+	public MaceItemMixin(Properties properties) {
 		super(properties);
 	}
 
@@ -20,7 +21,7 @@ public class TridentItemMixin extends Item implements WeaponWithType {
 			if (type != null)
 				return type;
 		}
-		return WeaponType.TRIDENT;
+		return WeaponType.MACE;
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_UUID;
 public enum WeaponType {
 	EMPTY,
     SWORD,
+	MACE,
 	LONGSWORD,
     AXE,
     PICKAXE,
@@ -52,45 +53,39 @@ public enum WeaponType {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
 			if (configurableWeaponData.damageOffset != null) {
 				if (configurableWeaponData.tierable) {
-					if (isCTSNotT1) {
+					if (isCTSNotT1)
 						return damageBonus + configurableWeaponData.damageOffset;
-					} else {
+					else
 						return damageBonus + configurableWeaponData.damageOffset + 1.0;
-					}
-				} else {
+				} else
 					return modifier + configurableWeaponData.damageOffset;
-				}
 			}
 		}
 		switch (this) {
 			case KNIFE, PICKAXE -> {
-				if (isCTSNotT1) {
+				if (isCTSNotT1)
 					return damageBonus;
-				} else {
+				else
 					return damageBonus + 1.0;
-				}
 			}
-			case SWORD -> {
-				if (isCTSNotT1) {
+			case SWORD, MACE -> {
+				if (isCTSNotT1)
 					return damageBonus + 1.0;
-				} else {
+				else
 					return damageBonus + 2.0;
-				}
 			}
 			case AXE -> {
-				if (!Combatify.CONFIG.ctsAttackBalancing()) {
+				if (!Combatify.CONFIG.ctsAttackBalancing())
 					return (isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
-				} else if (isCTSNotT1) {
+				else if (isCTSNotT1)
 					return damageBonus + 2;
-				} else {
-					return damageBonus + 3.0;
-				}
+				else
+					return damageBonus + 3;
 			}
 			case LONGSWORD, HOE -> {
 				if (tier != Tiers.IRON && tier != Tiers.DIAMOND) {
-					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4) {
+					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4)
 						return tier == Tiers.NETHERITE ? 2 + modifier : 2 + damageBonus - 4 + modifier;
-					}
 
 					return modifier;
 				}
@@ -100,7 +95,10 @@ public enum WeaponType {
 				return damageBonus;
 			}
 			case TRIDENT -> {
-				return 5 + modifier + (Combatify.CONFIG.ctsAttackBalancing() ? 0 : 2);
+				if (isCTSNotT1)
+					return damageBonus + 2;
+				else
+					return damageBonus + 3.0;
 			}
 			default -> {
 				return 0.0 + modifier;
@@ -111,34 +109,28 @@ public enum WeaponType {
     public double getSpeed(Tier tier) {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
-			if (configurableWeaponData.speed != null) {
+			if (configurableWeaponData.speed != null)
 				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed();
-			}
 		}
 		switch (this) {
 			case KNIFE -> {
 				return 1.0;
 			}
-			case LONGSWORD, SWORD -> {
+			case LONGSWORD, SWORD, MACE -> {
 				return 0.5;
 			}
 			case AXE, SHOVEL, TRIDENT -> {
 				return -0.5;
 			}
 			case HOE -> {
-				if (tier == Tiers.WOOD) {
+				if (tier == Tiers.WOOD)
 					return -0.5;
-				} else if (tier == Tiers.IRON) {
+				else if (tier == Tiers.IRON)
 					return 0.5;
-				} else if (tier == Tiers.DIAMOND || tier == Tiers.GOLD) {
+				else if (tier == Tiers.DIAMOND || tier == Tiers.GOLD || tier == Tiers.NETHERITE || tier.getLevel() >= 4)
 					return 1.0;
-				} else {
-					if (tier == Tiers.NETHERITE || tier.getLevel() >= 4) {
-						return 1.0;
-					}
-
+				else
 					return 0;
-				}
 			}
 			default -> {
 				return 0.0;
@@ -149,9 +141,8 @@ public enum WeaponType {
     public double getReach() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
 			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
-			if (configurableWeaponData.reach != null) {
+			if (configurableWeaponData.reach != null)
 				return configurableWeaponData.reach - 2.5;
-			}
 		}
 		return switch (this) {
 			case KNIFE -> 0.25;

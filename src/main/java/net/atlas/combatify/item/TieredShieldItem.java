@@ -4,7 +4,6 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.Tierable;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
@@ -19,7 +18,7 @@ import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.Combatify.shields;
 import static net.atlas.combatify.item.ItemRegistry.registerItem;
 
-public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtensions {
+public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 	public final Tier tier;
 	public static final Item WOODEN_SHIELD = registerItem(id("wooden_shield"), new TieredShieldItem(Tiers.WOOD, new Item.Properties().durability(Tiers.WOOD.getUses() * 6)));
 	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), new TieredShieldItem(Tiers.IRON, new Item.Properties().durability(Tiers.IRON.getUses() * 3)));
@@ -42,55 +41,29 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 
 
 	public int getEnchantmentValue() {
-		return this.tier.getEnchantmentValue();
+		return getConfigTier().getEnchantmentValue();
 	}
 
 	public boolean isValidRepairItem(ItemStack itemStack, ItemStack itemStack2) {
-		return this.tier.getRepairIngredient().test(itemStack2);
+		return getConfigTier().getRepairIngredient().test(itemStack2) || super.isValidRepairItem(itemStack, itemStack2);
 	}
 
 	@Override
-	public Tier getTier() {
+	public Item self() {
+		return this;
+	}
+
+	@Override
+	public Tier getConfigTier() {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
+			if (configurableItemData.tier != null)
+				return configurableItemData.tier;
+		}
 		return tier;
 	}
 	public static void init() {
 
-	}
-
-	@Override
-	public void setStackSize(int stackSize) {
-		this.maxStackSize = stackSize;
-	}
-
-	@Override
-	public double getChargedAttackBonus() {
-		Item item = this;
-		double chargedBonus = 1.0;
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-			if (configurableItemData.type != null)
-				if (Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type))
-					if (Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach != null)
-						chargedBonus = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type).chargedReach;
-			if (configurableItemData.chargedReach != null)
-				chargedBonus = configurableItemData.chargedReach;
-		}
-		return chargedBonus;
-	}
-
-	@Override
-	public boolean canSweep() {
-		Item item = this;
-		boolean canSweep = false;
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-			WeaponType type;
-			if ((type = configurableItemData.type) != null)
-				canSweep = type.canSweep();
-			if (configurableItemData.canSweep != null)
-				canSweep = configurableItemData.canSweep;
-		}
-		return canSweep;
 	}
 
 	@Override
@@ -108,22 +81,5 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 			}
 		}
 		return Combatify.registeredTypes.get("new_shield");
-	}
-
-	@Override
-	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.piercingLevel != null) {
-				return configurableItemData.piercingLevel;
-			}
-			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
-				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
-				if (configurableWeaponData.piercingLevel != null) {
-					return configurableWeaponData.piercingLevel;
-				}
-			}
-		}
-		return 0;
 	}
 }

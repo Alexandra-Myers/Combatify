@@ -1,11 +1,7 @@
 package net.atlas.combatify.item;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.WeaponWithType;
-import net.atlas.combatify.util.BlockingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class KnifeItem extends TieredItem implements ItemExtensions, WeaponWithType {
+public class KnifeItem extends TieredItem implements WeaponWithType {
 	public KnifeItem(Tier tier, Properties properties) {
 		super(tier, properties.attributes(baseAttributeModifiers(tier)));
 	}
@@ -80,65 +76,7 @@ public class KnifeItem extends TieredItem implements ItemExtensions, WeaponWithT
 	}
 
 	@Override
-	public void setStackSize(int stackSize) {
-		this.maxStackSize = stackSize;
-	}
-
-	@Override
-	public double getChargedAttackBonus() {
-		Item item = this;
-		double chargedBonus = getWeaponType().getChargedReach();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-			if (configurableItemData.chargedReach != null)
-				chargedBonus = configurableItemData.chargedReach;
-		}
-		return chargedBonus;
-	}
-
-	@Override
-	public boolean canSweep() {
-		Item item = this;
-		boolean canSweep = getWeaponType().canSweep();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-			if (configurableItemData.canSweep != null)
-				canSweep = configurableItemData.canSweep;
-		}
-		return canSweep;
-	}
-
-	@Override
-	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.blockingType != null) {
-				return configurableItemData.blockingType;
-			}
-		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.blockingType != null) {
-				return configurableWeaponData.blockingType;
-			}
-		}
-		return Combatify.EMPTY;
-	}
-
-	@Override
-	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.piercingLevel != null) {
-				return configurableItemData.piercingLevel;
-			}
-		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.piercingLevel != null) {
-				return configurableWeaponData.piercingLevel;
-			}
-		}
-		return 0;
+	public Item self() {
+		return this;
 	}
 }

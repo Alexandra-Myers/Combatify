@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
-import net.atlas.combatify.extensions.Tierable;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -50,8 +50,8 @@ public class SwordBlockingType extends BlockingType {
 			}
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
-		if (stack.getItem() instanceof Tierable tierable)
-			var2 = tierable.getTier();
+		if (stack.getItem() instanceof ItemExtensions tierable)
+			var2 = tierable.getConfigTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		if(Combatify.CONFIG.defender())

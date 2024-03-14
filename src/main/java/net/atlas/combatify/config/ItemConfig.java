@@ -1,5 +1,7 @@
 package net.atlas.combatify.config;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.gson.*;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -17,6 +19,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.crafting.Ingredient;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -24,12 +30,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static net.atlas.combatify.Combatify.*;
 
 public class ItemConfig extends AtlasConfig {
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
+	public BiMap<String, Tier> tiers;
 
 	public ItemConfig() {
 		super(id("combatify-items"));
@@ -46,6 +54,17 @@ public class ItemConfig extends AtlasConfig {
 		if (!object.has("blocking_types"))
 			object.add("blocking_types", new JsonArray());
 		JsonElement defenders = object.get("blocking_types");
+		if (!object.has("tiers"))
+			object.add("tiers", new JsonArray());
+		JsonElement tiers = object.get("tiers");
+		if (tiers instanceof JsonArray typeArray) {
+			typeArray.asList().forEach(jsonElement -> {
+				if (jsonElement instanceof JsonObject jsonObject) {
+					parseTiers(jsonObject);
+				} else
+					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Tiers"));
+			});
+		}
 		if (defenders instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
@@ -131,6 +150,7 @@ public class ItemConfig extends AtlasConfig {
 	public void defineConfigHolders() {
 		configuredItems = new HashMap<>();
 		configuredWeapons = new HashMap<>();
+		tiers = HashBiMap.create();
 	}
 
 	@Override
@@ -144,6 +164,10 @@ public class ItemConfig extends AtlasConfig {
 
 	public static Integer getInt(JsonObject element, String name) {
 		return element.get(name).getAsInt();
+	}
+
+	public static Float getFloat(JsonObject element, String name) {
+		return element.get(name).getAsFloat();
 	}
 
 	public static Double getDouble(JsonObject element, String name) {
@@ -265,6 +289,69 @@ public class ItemConfig extends AtlasConfig {
 		if (jsonObject.has("has_shield_delay"))
 			blockingType.setDelay(getBoolean(jsonObject, "has_shield_delay"));
 	}
+	public void parseTiers(JsonObject jsonObject) {
+		if (!jsonObject.has("name"))
+			throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("An added tier does not possess a name. This is due to an incorrectly written config file."), "Configuring Tiers"));
+		String name = getString(jsonObject, "name");
+		if (!jsonObject.has("base_tier"))
+			throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("An added tier by the name of " + name + " has no tier to base off of. This is required for a tier to function."), "Configuring Tiers"));
+		Tier baseTier = getTier(getString(jsonObject, "base_tier"));
+		int uses = baseTier.getUses();
+		if (jsonObject.has("uses"))
+			uses = getInt(jsonObject, "uses");
+		float speed = baseTier.getSpeed();
+		if (jsonObject.has("mining_speed"))
+			speed = getFloat(jsonObject, "mining_speed");
+		float damage = baseTier.getAttackDamageBonus();
+		if (jsonObject.has("damage_bonus"))
+			damage = getFloat(jsonObject, "damage_bonus");
+		int level = baseTier.getLevel();
+		if (jsonObject.has("mining_level"))
+			level = getInt(jsonObject, "mining_level");
+		int enchantLevel = baseTier.getEnchantmentValue();
+		if (jsonObject.has("enchant_level"))
+			enchantLevel = getInt(jsonObject, "enchant_level");
+		Ingredient repairIngredient = baseTier.getRepairIngredient();
+		if (jsonObject.has("repair_ingredient"))
+			repairIngredient = Ingredient.of(itemFromName(getString(jsonObject, "repair_ingredient")));
+		int finalUses = uses;
+		float finalSpeed = speed;
+		float finalDamage = damage;
+		int finalLevel = level;
+		int finalEnchantLevel = enchantLevel;
+		Ingredient finalRepairIngredient = repairIngredient;
+		tiers.put(name, new Tier() {
+			@Override
+			public int getUses() {
+				return finalUses;
+			}
+
+			@Override
+			public float getSpeed() {
+				return finalSpeed;
+			}
+
+			@Override
+			public float getAttackDamageBonus() {
+				return finalDamage;
+			}
+
+			@Override
+			public int getLevel() {
+				return finalLevel;
+			}
+
+			@Override
+			public int getEnchantmentValue() {
+				return finalEnchantLevel;
+			}
+
+			@Override
+			public @NotNull Ingredient getRepairIngredient() {
+				return finalRepairIngredient;
+			}
+		});
+	}
 
 	public ItemConfig loadFromNetwork(FriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
@@ -323,6 +410,7 @@ public class ItemConfig extends AtlasConfig {
 			Double piercingLevel = buf1.readDouble();
 			int canSweepAsInt = buf1.readInt();
 			Boolean canSweep = null;
+			Tier tier = getTier(buf1.readUtf());
 			if(damage == -10)
 				damage = null;
 			if(speed == -10)
@@ -352,9 +440,9 @@ public class ItemConfig extends AtlasConfig {
 			if (canSweepAsInt != -10)
 				canSweep = canSweepAsInt == 1;
 			switch (weaponType) {
-				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
+				case "SWORD", "MACE", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep, tier);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -385,7 +473,75 @@ public class ItemConfig extends AtlasConfig {
 				canSweep = canSweepAsInt == 1;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, piercingLevel, canSweep);
 		});
+		tiers = HashBiMap.create(buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
+			int uses = buf1.readVarInt();
+			float speed = buf1.readFloat();
+			float damage = buf1.readFloat();
+			int level = buf1.readVarInt();
+			int enchantLevel = buf1.readVarInt();
+			Ingredient ingredient = Ingredient.of(BuiltInRegistries.ITEM.get(buf1.readResourceLocation()));
+			return new Tier() {
+				@Override
+				public int getUses() {
+					return uses;
+				}
+
+				@Override
+				public float getSpeed() {
+					return speed;
+				}
+
+				@Override
+				public float getAttackDamageBonus() {
+					return damage;
+				}
+
+				@Override
+				public int getLevel() {
+					return level;
+				}
+
+				@Override
+				public int getEnchantmentValue() {
+					return enchantLevel;
+				}
+
+				@Override
+				public @NotNull Ingredient getRepairIngredient() {
+					return ingredient;
+				}
+			};
+		}));
 		return this;
+	}
+
+	public Tier getTier(String s) {
+		return switch (s.toLowerCase()) {
+			case "wood", "wooden" -> Tiers.WOOD;
+			case "stone" -> Tiers.STONE;
+			case "iron" -> Tiers.IRON;
+			case "gold", "golden" -> Tiers.GOLD;
+			case "diamond" -> Tiers.DIAMOND;
+			case "netherite" -> Tiers.NETHERITE;
+			default -> getTierRaw(s);
+		};
+	}
+	private String getTierName(Tier tier) {
+		if (tier instanceof Tiers vanilla) {
+			return switch (vanilla) {
+				case WOOD -> "wood";
+				case GOLD -> "gold";
+				case STONE -> "stone";
+				case IRON -> "iron";
+				case DIAMOND -> "diamond";
+				case NETHERITE -> "netherite";
+			};
+		}
+		return tiers.inverse().get(tier);
+	}
+	private Tier getTierRaw(String s) {
+		if (!tiers.containsKey(s) || Objects.equals(s, "empty")) return null;
+		return tiers.get(s);
 	}
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
@@ -422,6 +578,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
 			buf12.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
 			buf12.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
+			buf12.writeUtf(configurableItemData.tier == null ? "empty" : getTierName(configurableItemData.tier));
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -433,6 +590,14 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
 			buf12.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
 			buf12.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
+		});
+		buf.writeMap(tiers, FriendlyByteBuf::writeUtf, (buf1, tier) -> {
+			buf1.writeVarInt(tier.getUses());
+			buf1.writeFloat(tier.getSpeed());
+			buf1.writeFloat(tier.getAttackDamageBonus());
+			buf1.writeVarInt(tier.getLevel());
+			buf1.writeVarInt(tier.getEnchantmentValue());
+			buf1.writeResourceLocation(BuiltInRegistries.ITEM.getKey(tier.getRepairIngredient().getItems()[0].getItem()));
 		});
 	}
 
@@ -467,6 +632,7 @@ public class ItemConfig extends AtlasConfig {
 		Integer useDuration = null;
 		Double piercingLevel = null;
 		Boolean canSweep = null;
+		Tier tier = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -486,6 +652,7 @@ public class ItemConfig extends AtlasConfig {
 			useDuration = oldData.useDuration;
 			piercingLevel = oldData.piercingLevel;
 			canSweep = oldData.canSweep;
+			tier = oldData.tier;
 		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
@@ -547,7 +714,9 @@ public class ItemConfig extends AtlasConfig {
 			piercingLevel = getDouble(jsonObject, "armor_piercing");
 		if (jsonObject.has("can_sweep"))
 			canSweep = getBoolean(jsonObject, "can_sweep");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep);
+		if (jsonObject.has("tier"))
+			tier = getTier(getString(jsonObject, "tier"));
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep, tier);
 		configuredItems.put(item, configurableItemData);
 	}
 }

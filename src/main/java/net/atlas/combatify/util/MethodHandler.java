@@ -6,7 +6,6 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
-import net.atlas.combatify.extensions.Tierable;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -65,9 +64,7 @@ public class MethodHandler {
 				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.type != null) {
 					ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
-					configurableItemData.type.addCombatAttributes(item instanceof TieredItem tieredItem ? tieredItem.getTier()
-						: item instanceof Tierable tierable ? tierable.getTier()
-						: Tiers.NETHERITE, builder);
+					configurableItemData.type.addCombatAttributes(((ItemExtensions)item).getConfigTier(), builder);
 					modifier.modifiers().forEach(entry -> {
 						boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
 							|| entry.attribute().is(Attributes.ATTACK_SPEED)

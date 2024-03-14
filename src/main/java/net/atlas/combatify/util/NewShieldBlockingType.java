@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
-import net.atlas.combatify.extensions.Tierable;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -58,8 +58,8 @@ public class NewShieldBlockingType extends BlockingType {
 			}
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
-		if (stack.getItem() instanceof Tierable tierable)
-			var2 = tierable.getTier();
+		if (stack.getItem() instanceof ItemExtensions tierable)
+			var2 = tierable.getConfigTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		if(Combatify.CONFIG.defender()) {
@@ -77,8 +77,8 @@ public class NewShieldBlockingType extends BlockingType {
 			}
 		}
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
-		if (stack.getItem() instanceof Tierable tierable)
-			var2 = tierable.getTier();
+		if (stack.getItem() instanceof ItemExtensions tierable)
+			var2 = tierable.getConfigTier();
 		if (var2.getLevel() >= 4)
 			return 0.5;
 		return 0.25;

@@ -21,6 +21,7 @@
     "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
+    "MaceItemMixin",
     "MobEffectMixin",
     "MobMixin",
     "PickaxeItemMixin",
@@ -42,6 +43,7 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
+    "TieredItemMixin",
     "TridentItemMixin"
   ],
   "injectors": {
