@@ -195,7 +195,7 @@ public class ItemConfig extends AtlasConfig {
 		String weapon_type = GsonHelper.getAsString(jsonObject, "name");
 		weapon_type = weapon_type.toUpperCase(Locale.ROOT);
 		return switch (weapon_type) {
-			case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> WeaponType.fromID(weapon_type);
+			case "SWORD", "MACE", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> WeaponType.fromID(weapon_type);
 			default -> {
 				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Getting Weapon Type");
 				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
@@ -670,7 +670,7 @@ public class ItemConfig extends AtlasConfig {
 			String weapon_type = getString(jsonObject, "weapon_type");
 			weapon_type = weapon_type.toUpperCase(Locale.ROOT);
 			switch (weapon_type) {
-				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" ->
+				case "SWORD", "MACE", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" ->
 					type = WeaponType.fromID(weapon_type);
 				default -> {
 					CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Applying Item Weapon Type");
