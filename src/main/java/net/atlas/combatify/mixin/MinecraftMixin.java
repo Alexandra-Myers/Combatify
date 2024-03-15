@@ -110,23 +110,23 @@ public abstract class MinecraftMixin implements IMinecraft {
 			}
 		}
 	}
-	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
-	public void checkIfCrouch(MultiPlayerGameMode instance, Player player) {
+	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
+	public void checkIfCrouch(MultiPlayerGameMode instance, Player player, Operation<Void> original) {
 		Item blockingItem = MethodHandler.getBlockingItem(player).getItem();
 		boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions)blockingItem).getBlockingType().requireFullCharge();
 		if(!((PlayerExtensions) player).hasEnabledShieldOnCrouch() || (!player.isCrouching() && !player.isPassenger()) || !((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() || ((ItemExtensions) blockingItem).getBlockingType().isEmpty() || bl || (!player.onGround() && !player.isPassenger()))
-			instance.releaseUsingItem(player);
+			original.call(instance, player);
 	}
 	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z", ordinal = 4))
 	public boolean redirectContinue(boolean original) {
 		return original || retainAttack;
 	}
-	@Redirect(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
-	public boolean redirectAttack(Minecraft instance) {
-		if(hitResult != null)
+	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
+	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
+		if (hitResult != null)
 			ClientMethodHandler.redirectResult(hitResult);
 		if (player == null)
-			return startAttack();
+			return original.call(instance);
 		if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
@@ -139,7 +139,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 			}
 		}
-		return startAttack();
+		return original.call(instance);
 	}
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
@@ -167,9 +167,8 @@ public abstract class MinecraftMixin implements IMinecraft {
 					LOGGER.warn("Null returned as 'hitResult', this shouldn't happen!");
 				}
 				ItemStack itemStack = this.player.getItemInHand(interactionHand);
-				if (!itemStack.isEmpty()) {
+				if (!itemStack.isEmpty())
 					this.gameMode.useItem(this.player, interactionHand);
-				}
 			}
 		}
 	}
@@ -191,18 +190,16 @@ public abstract class MinecraftMixin implements IMinecraft {
 			}
 		}
 	}
-	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
-	public InteractionResult addRequirement(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, @Local ItemStack stack) {
-		if(Combatify.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
+	@WrapOperation(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
+	public InteractionResult addRequirement(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, Operation<InteractionResult> original, @Local ItemStack stack) {
+		if(Combatify.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge())
 			return InteractionResult.PASS;
-		}
-		return instance.useItemOn(localPlayer, interactionHand, blockHitResult);
+		return original.call(instance, localPlayer, interactionHand, blockHitResult);
 	}
-	@Redirect(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItem(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"))
-	public InteractionResult addRequirement1(MultiPlayerGameMode instance, Player player, InteractionHand interactionHand, @Local ItemStack stack) {
-		if(Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge()) {
+	@WrapOperation(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItem(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"))
+	public InteractionResult addRequirement1(MultiPlayerGameMode instance, Player player, InteractionHand interactionHand, Operation<InteractionResult> original, @Local ItemStack stack) {
+		if(Combatify.CONFIG.shieldOnlyWhenCharged() && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge())
 			return InteractionResult.PASS;
-		}
-		return instance.useItem(player, interactionHand);
+		return original.call(instance, player, interactionHand);
 	}
 }

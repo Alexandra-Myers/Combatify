@@ -222,8 +222,6 @@ public class ItemConfig extends AtlasConfig {
 							blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
 						if (jsonObject.has("is_tool"))
 							blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
-						if (jsonObject.has("is_percentage"))
-							blockingType.setPercentage(getBoolean(jsonObject, "is_percentage"));
 						if (jsonObject.has("can_block_hit"))
 							blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
 						if (jsonObject.has("can_crouch_block"))
@@ -274,8 +272,6 @@ public class ItemConfig extends AtlasConfig {
 			blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
 		if (jsonObject.has("is_tool"))
 			blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
-		if (jsonObject.has("is_percentage"))
-			blockingType.setPercentage(getBoolean(jsonObject, "is_percentage"));
 		if (jsonObject.has("can_block_hit"))
 			blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
 		if (jsonObject.has("can_crouch_block"))
@@ -366,7 +362,6 @@ public class ItemConfig extends AtlasConfig {
 					blockingType.setBlockHit(buf1.readBoolean());
 					blockingType.setCrouchable(buf1.readBoolean());
 					blockingType.setKbMechanics(buf1.readBoolean());
-					blockingType.setPercentage(buf1.readBoolean());
 					blockingType.setToolBlocker(buf1.readBoolean());
 					blockingType.setRequireFullCharge(buf1.readBoolean());
 					blockingType.setSwordBlocking(buf1.readBoolean());
@@ -553,7 +548,6 @@ public class ItemConfig extends AtlasConfig {
 			buf1.writeBoolean(blockingType.canBlockHit());
 			buf1.writeBoolean(blockingType.canCrouchBlock());
 			buf1.writeBoolean(blockingType.defaultKbMechanics());
-			buf1.writeBoolean(blockingType.isPercentage());
 			buf1.writeBoolean(blockingType.isToolBlocker());
 			buf1.writeBoolean(blockingType.requireFullCharge());
 			buf1.writeBoolean(blockingType.requiresSwordBlocking());

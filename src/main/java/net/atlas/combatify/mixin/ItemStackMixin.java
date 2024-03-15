@@ -76,27 +76,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 							Component.translatable("attribute.name.generic.longsword_piercing"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
 			ItemExtensions item = (ItemExtensions) getItem();
-			if (!item.getBlockingType().isEmpty() && !item.getBlockingType().isVanilla()) {
-				if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()) {
-					float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
-					double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
-					if (!item.getBlockingType().isPercentage())
-						consumer.accept(CommonComponents.space().append(
-							Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
-								ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(f),
-								Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-					else
-						consumer.accept(CommonComponents.space().append(
-							Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),
-								ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100),
-								Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-					if (g > 0.0)
-						consumer.accept(CommonComponents.space().append(
-							Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
-								ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
-								Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-				}
-			}
+			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking())
+				item.getBlockingType().appendTooltipInfo(consumer, player, ItemStack.class.cast(this));
 		}
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))

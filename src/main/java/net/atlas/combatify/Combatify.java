@@ -4,7 +4,6 @@ import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.enchantment.PiercingEnchantment;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.networking.NetworkingHandler;
@@ -14,7 +13,6 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -45,10 +43,10 @@ public class Combatify implements ModInitializer {
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
-	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true).setDelay(false));
+	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
-	public static final BlockingType CURRENT_SHIELD = registerBlockingType(new CurrentShieldBlockingType("current_shield")).setVanilla(true);
-	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
+	public static final BlockingType CURRENT_SHIELD = registerBlockingType(new CurrentShieldBlockingType("current_shield"));
+	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
 	@Override

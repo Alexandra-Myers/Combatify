@@ -3,16 +3,23 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class EmptyBlockingType extends BlockingType {
 	public EmptyBlockingType(String name) {
@@ -42,5 +49,10 @@ public class EmptyBlockingType extends BlockingType {
 	@Override
 	public boolean canUse(Level world, Player user, InteractionHand hand) {
 		return false;
+	}
+
+	@Override
+	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
+
 	}
 }

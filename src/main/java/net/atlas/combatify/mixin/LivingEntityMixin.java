@@ -74,9 +74,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract ItemStack getUseItem();
 
-	@Shadow
-	public abstract void stopUsingItem();
-
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
@@ -163,26 +160,22 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 		return false;
 	}
-	@ModifyConstant(method = "hurt", constant = @Constant(intValue = 20, ordinal = 0))
-	public int changeIFrames(int constant, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
+	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
+	public int changeIFrames(int original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
 		Entity entity2 = source.getEntity();
-		int invulnerableTime = 10;
+		int invulnerableTime = original - 10;
 		if (entity2 instanceof Player player) {
 			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
 			invulnerableTime = base >= 4 ? base - 2 : base;
 			if(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 15 || Combatify.CONFIG.instaAttack())
-				invulnerableTime = 5;
+				invulnerableTime = original - 10;
 		}
 
-		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames()) {
+		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
 			invulnerableTime = 0;
-		}
-
-		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames()) {
+		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames())
 			invulnerableTime = 0;
-		}
 		return invulnerableTime;
-
 	}
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {

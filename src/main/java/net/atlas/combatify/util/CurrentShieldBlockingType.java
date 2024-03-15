@@ -5,18 +5,25 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class CurrentShieldBlockingType extends BlockingType {
 	public CurrentShieldBlockingType(String name) {
@@ -46,9 +53,8 @@ public class CurrentShieldBlockingType extends BlockingType {
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
-			if (configurableItemData.blockKbRes != null) {
+			if (configurableItemData.blockKbRes != null)
 				return configurableItemData.blockKbRes;
-			}
 		}
 		return 0;
 	}
@@ -63,5 +69,10 @@ public class CurrentShieldBlockingType extends BlockingType {
 	@Override
 	public boolean canUse(Level world, Player user, InteractionHand hand) {
 		return true;
+	}
+
+	@Override
+	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
+
 	}
 }

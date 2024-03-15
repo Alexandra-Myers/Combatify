@@ -1,6 +1,8 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
@@ -80,32 +82,29 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	public float modifyFoodRequirement(float original) {
 		return Combatify.CONFIG.oldSprintFoodRequirement() ? -1.0F : original;
 	}
-    @Redirect(method="hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
+    @Redirect(method = "hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {
         player.invulnerableTime = x / 2;
     }
 
-	@Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
-	private void isShieldCrouching(Input instance, boolean b, float v) {
+	@WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
+	private void isShieldCrouching(Input instance, boolean b, float v, Operation<Void> original) {
 		Item item = MethodHandler.getBlockingItem(thisPlayer).getItem();
-		if (thisPlayer.getCooldowns().isOnCooldown(item)) {
-			instance.tick(b, v);
-		} else if(((ItemExtensions) item).getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
-			if(v < 1.0F) {
+		if (thisPlayer.getCooldowns().isOnCooldown(item))
+			original.call(instance, b, v);
+		else if (((ItemExtensions) item).getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
+			if (v < 1.0F)
 				v = 1.0F;
-			}
-			instance.tick(false, v);
-		} else {
-			instance.tick(b, v);
-		}
+			original.call(instance, false, v);
+		} else
+			original.call(instance, b, v);
 	}
 	@Override
 	public float getAttackAnim(float tickDelta) {
 		if(((IOptions)Minecraft.getInstance().options).rhythmicAttacks().get()) {
 			float var2 = this.attackAnim - this.oAttackAnim;
-			if (var2 < 0.0F) {
+			if (var2 < 0.0F)
 				++var2;
-			}
 
 			float var3 = this.oAttackAnim + var2 * tickDelta;
 			float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
