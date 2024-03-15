@@ -390,7 +390,7 @@ public class ItemConfig extends AtlasConfig {
 			Double speed = buf1.readDouble();
 			Double reach = buf1.readDouble();
 			Double chargedReach = buf1.readDouble();
-			Integer stackSize = buf1.readInt();
+			Integer stackSize = buf1.readVarInt();
 			Integer cooldown = buf1.readInt();
 			Boolean cooldownAfter = null;
 			if(cooldown != -10)
@@ -564,7 +564,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeDouble(configurableItemData.speed == null ? -10 : configurableItemData.speed);
 			buf12.writeDouble(configurableItemData.reach == null ? -10 : configurableItemData.reach);
 			buf12.writeDouble(configurableItemData.chargedReach == null ? -10 : configurableItemData.chargedReach);
-			buf12.writeInt(configurableItemData.stackSize == null ? -10 : configurableItemData.stackSize);
+			buf12.writeVarInt(configurableItemData.stackSize == null ? -10 : configurableItemData.stackSize);
 			buf12.writeInt(configurableItemData.cooldown == null ? -10 : configurableItemData.cooldown);
 			if(configurableItemData.cooldown != null)
 				buf12.writeBoolean(configurableItemData.cooldownAfter);

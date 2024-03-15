@@ -67,6 +67,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder snowballDamage;
 	private DoubleHolder eggDamage;
 	private DoubleHolder windChargeDamage;
+	private DoubleHolder maceDamageMultiplier;
 	private DoubleHolder bowUncertainty;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
@@ -145,6 +146,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
 
 		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
+		maceDamageMultiplier = createInRange("maceDamageMultiplier", 0.5, 0, 1);
 		eggDamage = createInRange("eggDamage", 0, 0, 40D);
 		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
 		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
@@ -326,6 +328,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Double defenderDisableReduction() {
 		return defenderDisableReduction.get();
+	}
+	public Double maceDamageMultiplier() {
+		return maceDamageMultiplier.get();
 	}
 	public Double snowballDamage() {
 		return snowballDamage.get();

@@ -61,6 +61,7 @@
   "shieldChargePercentage": 195,
 
   "defenderDisableReduction": 0.5,
+  "maceDamageMultiplier": 0.5,
   "eggDamage": 0.0,
   "snowballDamage": 0.0,
   "windChargeDamage": 1.0,

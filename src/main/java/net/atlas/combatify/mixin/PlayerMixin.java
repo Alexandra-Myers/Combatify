@@ -182,6 +182,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float redirectStrengthCheck(float original) {
 		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker > 4.0F) ? 1.0F : Math.min(original, 1.0F);
 	}
+	@ModifyExpressionValue(method = "attack", at = @At(value = "CONSTANT", args = "floatValue=0.5F", ordinal = 1))
+	public float maceMul(float original) {
+		return original + (Combatify.CONFIG.maceDamageMultiplier().floatValue() - original);
+	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
 	public void reset(CallbackInfo ci) {
 		ci.cancel();
