@@ -51,14 +51,13 @@ public interface ItemExtensions {
 	default BlockingType getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.blockingType != null) {
+			if (configurableItemData.blockingType != null)
 				return configurableItemData.blockingType;
-			}
-			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
-				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
-				if (configurableWeaponData.blockingType != null) {
-					return configurableWeaponData.blockingType;
-				}
+			WeaponType type;
+			if ((type = configurableItemData.type) != null && Combatify.ITEMS.configuredWeapons.containsKey(type)) {
+				BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(type).blockingType;
+				if (blockingType != null)
+					return blockingType;
 			}
 		}
 		return Combatify.EMPTY;
@@ -67,14 +66,13 @@ public interface ItemExtensions {
 	default double getPiercingLevel() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.piercingLevel != null) {
+			if (configurableItemData.piercingLevel != null)
 				return configurableItemData.piercingLevel;
-			}
-			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
-				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
-				if (configurableWeaponData.piercingLevel != null) {
-					return configurableWeaponData.piercingLevel;
-				}
+			WeaponType type;
+			if ((type = configurableItemData.type) != null && Combatify.ITEMS.configuredWeapons.containsKey(type)) {
+				Double piercingLevel = Combatify.ITEMS.configuredWeapons.get(type).piercingLevel;
+				if (piercingLevel != null)
+					return piercingLevel;
 			}
 		}
 		return 0;
@@ -83,11 +81,13 @@ public interface ItemExtensions {
 	Item self();
 
 	default Tier getConfigTier() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.tier != null)
-				return configurableItemData.tier;
-		}
+		Tier tier = getTierFromConfig();
+		if (tier != null) return tier;
 		return Tiers.DIAMOND;
+	}
+	default Tier getTierFromConfig() {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self()))
+            return Combatify.ITEMS.configuredItems.get(self()).tier;
+		return null;
 	}
 }

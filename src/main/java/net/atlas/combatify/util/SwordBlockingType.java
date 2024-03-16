@@ -54,7 +54,7 @@ public class SwordBlockingType extends BlockingType {
 				return (float) (configurableItemData.blockStrength / 100.0) + (Combatify.CONFIG.defender() ? EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F : 0);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = (tier.getAttackDamageBonus()) / 2F - 2F;
+		float strengthIncrease = (tier.getLevel()) / 2F - 2F;
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		if(Combatify.CONFIG.defender())
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);

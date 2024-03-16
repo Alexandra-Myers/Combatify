@@ -10,6 +10,7 @@ public class ConfigurableItemData {
 	public final Double reach;
 	public final Double chargedReach;
 	public final Integer stackSize;
+	public final Integer durability;
 	public final Integer cooldown;
 	public final Boolean cooldownAfter;
 	public final WeaponType type;
@@ -23,12 +24,13 @@ public class ConfigurableItemData {
 	public final Double piercingLevel;
 	public final Boolean canSweep;
 	public final Tier tier;
-	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier) {
+	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, Integer durability) {
 		damage = clamp(attackDamage, -10, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
 		this.chargedReach = clamp(chargedReach, 0, 10);
 		this.stackSize = clamp(stackSize, 1, 128);
+		this.durability = max(durability, 1);
 		this.cooldown = clamp(cooldown, 1, 1000);
 		this.cooldownAfter = cooldownAfter;
 		type = weaponType;
@@ -43,6 +45,12 @@ public class ConfigurableItemData {
 		this.canSweep = canSweep;
         this.tier = tier;
     }
+	public static Integer max(Integer value, int min) {
+		if (value == null)
+			return null;
+		return Math.max(value, min);
+	}
+
 	public static Integer clamp(Integer value, int min, int max) {
 		if (value == null)
 			return null;

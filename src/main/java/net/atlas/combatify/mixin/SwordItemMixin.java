@@ -18,17 +18,15 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 
 	@Override
 	public BlockingType getBlockingType() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.blockingType != null) {
-				return configurableWeaponData.blockingType;
-			}
-		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.blockingType != null) {
-				return configurableItemData.blockingType;
-			}
+			BlockingType blockingType = Combatify.ITEMS.configuredItems.get(this).blockingType;
+			if (blockingType != null)
+				return blockingType;
+		}
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).blockingType;
+			if (blockingType != null)
+				return blockingType;
 		}
 		return Combatify.registeredTypes.get("sword");
 	}

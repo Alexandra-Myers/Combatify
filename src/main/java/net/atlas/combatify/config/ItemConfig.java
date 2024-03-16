@@ -73,24 +73,6 @@ public class ItemConfig extends AtlasConfig {
 					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Blocking Types"));
 			});
 		}
-		if (items instanceof JsonArray itemArray) {
-			itemArray.asList().forEach(jsonElement -> {
-				if (jsonElement instanceof JsonObject jsonObject) {
-					if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) {
-						itemsWithConfig.asList().forEach(
-							itemName -> {
-								Item item = itemFromName(itemName.getAsString());
-								parseItemConfig(item, jsonObject);
-							}
-						);
-					} else {
-						Item item = itemFromJson(jsonObject);
-						parseItemConfig(item, jsonObject);
-					}
-				} else
-					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
-			});
-		}
 		if (weapons instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
@@ -114,6 +96,11 @@ public class ItemConfig extends AtlasConfig {
 						speed = getDouble(jsonObject, "speed");
 					if (jsonObject.has("reach"))
 						reach = getDouble(jsonObject, "reach");
+					if (type == null) {
+						if (damageOffset == null || speed == null || reach == null)
+							throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the weapon type's attributes if a new weapon type is added!"), "Configuring Weapon Types"));
+						type = tierable ? WeaponType.createBasic(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach) : WeaponType.createBasicUntierable(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach);
+					}
 					if (jsonObject.has("charged_reach"))
 						chargedReach = getDouble(jsonObject, "charged_reach");
 					if (jsonObject.has("blocking_type")) {
@@ -138,6 +125,24 @@ public class ItemConfig extends AtlasConfig {
 					configuredWeapons.put(type, configurableWeaponData);
 				} else
 					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
+			});
+		}
+		if (items instanceof JsonArray itemArray) {
+			itemArray.asList().forEach(jsonElement -> {
+				if (jsonElement instanceof JsonObject jsonObject) {
+					if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) {
+						itemsWithConfig.asList().forEach(
+							itemName -> {
+								Item item = itemFromName(itemName.getAsString());
+								parseItemConfig(item, jsonObject);
+							}
+						);
+					} else {
+						Item item = itemFromJson(jsonObject);
+						parseItemConfig(item, jsonObject);
+					}
+				} else
+					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
 			});
 		}
 	}
@@ -193,17 +198,10 @@ public class ItemConfig extends AtlasConfig {
 
 	public static WeaponType typeFromJson(JsonObject jsonObject) {
 		String weapon_type = GsonHelper.getAsString(jsonObject, "name");
-		weapon_type = weapon_type.toUpperCase(Locale.ROOT);
-		return switch (weapon_type) {
-			case "SWORD", "MACE", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> WeaponType.fromID(weapon_type);
-			default -> {
-				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Getting Weapon Type");
-				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
-				crashReportCategory.setDetail("Type name", weapon_type);
-				crashReportCategory.setDetail("Json Object", jsonObject);
-				throw new ReportedException(report);
-			}
-		};
+		weapon_type = weapon_type.toLowerCase(Locale.ROOT);
+		if (!registeredWeaponTypes.containsKey(weapon_type))
+			return null;
+		return WeaponType.fromID(weapon_type);
 	}
 
 	public static void parseBlockingType(JsonObject jsonObject) {
@@ -351,123 +349,6 @@ public class ItemConfig extends AtlasConfig {
 
 	public ItemConfig loadFromNetwork(FriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
-		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
-			try {
-				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
-				Constructor<?> constructor = clazz.getConstructor(String.class);
-				String name = buf1.readUtf();
-				Object object = constructor.newInstance(name);
-				if (object instanceof BlockingType blockingType) {
-					blockingType.setDisablement(buf1.readBoolean());
-					blockingType.setBlockHit(buf1.readBoolean());
-					blockingType.setCrouchable(buf1.readBoolean());
-					blockingType.setKbMechanics(buf1.readBoolean());
-					blockingType.setToolBlocker(buf1.readBoolean());
-					blockingType.setRequireFullCharge(buf1.readBoolean());
-					blockingType.setSwordBlocking(buf1.readBoolean());
-					blockingType.setDelay(buf1.readBoolean());
-					Combatify.registerBlockingType(blockingType);
-					return blockingType;
-				} else {
-					CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
-					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
-					crashReportCategory.setDetail("Class", clazz.getName());
-					crashReportCategory.setDetail("Type Name", name);
-					throw new ReportedException(report);
-				}
-			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-					 ClassNotFoundException | NoSuchMethodException e) {
-				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
-			}
-		});
-		configuredItems = buf.readMap(buf12 -> BuiltInRegistries.ITEM.get(buf12.readResourceLocation()), buf1 -> {
-			Double damage = buf1.readDouble();
-			Double speed = buf1.readDouble();
-			Double reach = buf1.readDouble();
-			Double chargedReach = buf1.readDouble();
-			Integer stackSize = buf1.readVarInt();
-			Integer cooldown = buf1.readInt();
-			Boolean cooldownAfter = null;
-			if(cooldown != -10)
-				cooldownAfter = buf1.readBoolean();
-			String weaponType = buf1.readUtf();
-			WeaponType type = null;
-			String blockingType = buf1.readUtf();
-			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Double blockStrength = buf1.readDouble();
-			Double blockKbRes = buf1.readDouble();
-			Integer enchantlevel = buf1.readInt();
-			int isEnchantableAsInt = buf1.readInt();
-			int hasSwordEnchantsAsInt = buf1.readInt();
-			Boolean isEnchantable = null;
-			Boolean hasSwordEnchants = null;
-			Integer useDuration = buf1.readInt();
-			Double piercingLevel = buf1.readDouble();
-			int canSweepAsInt = buf1.readInt();
-			Boolean canSweep = null;
-			Tier tier = getTier(buf1.readUtf());
-			if(damage == -10)
-				damage = null;
-			if(speed == -10)
-				speed = null;
-			if(reach == -10)
-				reach = null;
-			if(chargedReach == -10)
-				chargedReach = null;
-			if(stackSize == -10)
-				stackSize = null;
-			if(cooldown == -10)
-				cooldown = null;
-			if(blockStrength == -10)
-				blockStrength = null;
-			if(blockKbRes == -10)
-				blockKbRes = null;
-			if(enchantlevel == -10)
-				enchantlevel = null;
-			if (isEnchantableAsInt != -10)
-				isEnchantable = isEnchantableAsInt == 1;
-			if (hasSwordEnchantsAsInt != -10)
-				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-			if (useDuration == -10)
-				useDuration = null;
-			if (piercingLevel == -10)
-				piercingLevel = null;
-			if (canSweepAsInt != -10)
-				canSweep = canSweepAsInt == 1;
-			switch (weaponType) {
-				case "SWORD", "MACE", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
-			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep, tier);
-		});
-		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
-			Double damageOffset = buf1.readDouble();
-			Double speed = buf1.readDouble();
-			Double reach = buf1.readDouble();
-			Double chargedReach = buf1.readDouble();
-			Boolean tierable = buf1.readBoolean();
-			String blockingType = buf1.readUtf();
-			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			int hasSwordEnchantsAsInt = buf1.readInt();
-			Boolean hasSwordEnchants = null;
-			Double piercingLevel = buf1.readDouble();
-			int canSweepAsInt = buf1.readInt();
-			Boolean canSweep = null;
-			if (damageOffset == -10)
-				damageOffset = null;
-			if (speed == -10)
-				speed = null;
-			if (reach == -10)
-				reach = null;
-			if (chargedReach == -10)
-				chargedReach = null;
-			if (hasSwordEnchantsAsInt != -10)
-				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-			if (piercingLevel == -10)
-				piercingLevel = null;
-			if (canSweepAsInt != -10)
-				canSweep = canSweepAsInt == 1;
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, piercingLevel, canSweep);
-		});
 		tiers = HashBiMap.create(buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
 			int uses = buf1.readVarInt();
 			float speed = buf1.readFloat();
@@ -507,15 +388,145 @@ public class ItemConfig extends AtlasConfig {
 				}
 			};
 		}));
+		registeredWeaponTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
+			String name = buf1.readUtf();
+			double damageOffset = buf1.readDouble();
+			double speed = buf1.readDouble();
+			double reach = buf1.readDouble();
+			boolean useAxeDamage = buf1.readBoolean();
+			boolean useHoeDamage = buf1.readBoolean();
+			boolean useHoeSpeed = buf1.readBoolean();
+			boolean tierable = buf1.readBoolean();
+			return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, true);
+		});
+		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
+			try {
+				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
+				Constructor<?> constructor = clazz.getConstructor(String.class);
+				String name = buf1.readUtf();
+				Object object = constructor.newInstance(name);
+				if (object instanceof BlockingType blockingType) {
+					blockingType.setDisablement(buf1.readBoolean());
+					blockingType.setBlockHit(buf1.readBoolean());
+					blockingType.setCrouchable(buf1.readBoolean());
+					blockingType.setKbMechanics(buf1.readBoolean());
+					blockingType.setToolBlocker(buf1.readBoolean());
+					blockingType.setRequireFullCharge(buf1.readBoolean());
+					blockingType.setSwordBlocking(buf1.readBoolean());
+					blockingType.setDelay(buf1.readBoolean());
+					Combatify.registerBlockingType(blockingType);
+					return blockingType;
+				} else {
+					CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
+					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
+					crashReportCategory.setDetail("Class", clazz.getName());
+					crashReportCategory.setDetail("Type Name", name);
+					throw new ReportedException(report);
+				}
+			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+					 ClassNotFoundException | NoSuchMethodException e) {
+				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
+			}
+		});
+		configuredItems = buf.readMap(buf12 -> BuiltInRegistries.ITEM.get(buf12.readResourceLocation()), buf1 -> {
+			Double damage = buf1.readDouble();
+			Double speed = buf1.readDouble();
+			Double reach = buf1.readDouble();
+			Double chargedReach = buf1.readDouble();
+			Integer stackSize = buf1.readVarInt();
+			Integer durability = buf1.readVarInt();
+			Integer cooldown = buf1.readInt();
+			Boolean cooldownAfter = null;
+			if (cooldown != -10)
+				cooldownAfter = buf1.readBoolean();
+			String weaponType = buf1.readUtf();
+			WeaponType type = null;
+			String blockingType = buf1.readUtf();
+			BlockingType bType = Combatify.registeredTypes.get(blockingType);
+			Double blockStrength = buf1.readDouble();
+			Double blockKbRes = buf1.readDouble();
+			Integer enchantlevel = buf1.readInt();
+			int isEnchantableAsInt = buf1.readInt();
+			int hasSwordEnchantsAsInt = buf1.readInt();
+			Boolean isEnchantable = null;
+			Boolean hasSwordEnchants = null;
+			Integer useDuration = buf1.readInt();
+			Double piercingLevel = buf1.readDouble();
+			int canSweepAsInt = buf1.readInt();
+			Boolean canSweep = null;
+			Tier tier = getTier(buf1.readUtf());
+			if (damage == -10)
+				damage = null;
+			if (speed == -10)
+				speed = null;
+			if (reach == -10)
+				reach = null;
+			if (chargedReach == -10)
+				chargedReach = null;
+			if (stackSize == -10)
+				stackSize = null;
+			if (durability == -10)
+				durability = null;
+			if (cooldown == -10)
+				cooldown = null;
+			if (blockStrength == -10)
+				blockStrength = null;
+			if (blockKbRes == -10)
+				blockKbRes = null;
+			if (enchantlevel == -10)
+				enchantlevel = null;
+			if (isEnchantableAsInt != -10)
+				isEnchantable = isEnchantableAsInt == 1;
+			if (hasSwordEnchantsAsInt != -10)
+				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
+			if (useDuration == -10)
+				useDuration = null;
+			if (piercingLevel == -10)
+				piercingLevel = null;
+			if (canSweepAsInt != -10)
+				canSweep = canSweepAsInt == 1;
+			if (registeredWeaponTypes.containsKey(weaponType))
+				type = WeaponType.fromID(weaponType);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability);
+		});
+		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
+			Double damageOffset = buf1.readDouble();
+			Double speed = buf1.readDouble();
+			Double reach = buf1.readDouble();
+			Double chargedReach = buf1.readDouble();
+			Boolean tierable = buf1.readBoolean();
+			String blockingType = buf1.readUtf();
+			BlockingType bType = Combatify.registeredTypes.get(blockingType);
+			int hasSwordEnchantsAsInt = buf1.readInt();
+			Boolean hasSwordEnchants = null;
+			Double piercingLevel = buf1.readDouble();
+			int canSweepAsInt = buf1.readInt();
+			Boolean canSweep = null;
+			if (damageOffset == -10)
+				damageOffset = null;
+			if (speed == -10)
+				speed = null;
+			if (reach == -10)
+				reach = null;
+			if (chargedReach == -10)
+				chargedReach = null;
+			if (hasSwordEnchantsAsInt != -10)
+				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
+			if (piercingLevel == -10)
+				piercingLevel = null;
+			if (canSweepAsInt != -10)
+				canSweep = canSweepAsInt == 1;
+			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, piercingLevel, canSweep);
+		});
 		return this;
 	}
 
 	public Tier getTier(String s) {
 		return switch (s.toLowerCase()) {
-			case "wood", "wooden" -> Tiers.WOOD;
+			case "wood" -> Tiers.WOOD;
 			case "stone" -> Tiers.STONE;
 			case "iron" -> Tiers.IRON;
-			case "gold", "golden" -> Tiers.GOLD;
+			case "gold" -> Tiers.GOLD;
 			case "diamond" -> Tiers.DIAMOND;
 			case "netherite" -> Tiers.NETHERITE;
 			default -> getTierRaw(s);
@@ -541,6 +552,24 @@ public class ItemConfig extends AtlasConfig {
 
 	public void saveToNetwork(FriendlyByteBuf buf) {
 		super.saveToNetwork(buf);
+		buf.writeMap(tiers, FriendlyByteBuf::writeUtf, (buf1, tier) -> {
+			buf1.writeVarInt(tier.getUses());
+			buf1.writeFloat(tier.getSpeed());
+			buf1.writeFloat(tier.getAttackDamageBonus());
+			buf1.writeVarInt(tier.getLevel());
+			buf1.writeVarInt(tier.getEnchantmentValue());
+			buf1.writeResourceLocation(BuiltInRegistries.ITEM.getKey(tier.getRepairIngredient().getItems()[0].getItem()));
+		});
+		buf.writeMap(registeredWeaponTypes, FriendlyByteBuf::writeUtf, (buf1, weaponType) -> {
+			buf1.writeUtf(weaponType.name);
+			buf1.writeDouble(weaponType.damageOffset);
+			buf1.writeDouble(weaponType.speed);
+			buf1.writeDouble(weaponType.reach);
+			buf1.writeBoolean(weaponType.useAxeDamage);
+			buf1.writeBoolean(weaponType.useHoeDamage);
+			buf1.writeBoolean(weaponType.useHoeSpeed);
+			buf1.writeBoolean(weaponType.tierable);
+		});
 		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeUtf, (buf1, blockingType) -> {
 			buf1.writeUtf(blockingType.getClass().getName());
 			buf1.writeUtf(blockingType.getName());
@@ -559,10 +588,11 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeDouble(configurableItemData.reach == null ? -10 : configurableItemData.reach);
 			buf12.writeDouble(configurableItemData.chargedReach == null ? -10 : configurableItemData.chargedReach);
 			buf12.writeVarInt(configurableItemData.stackSize == null ? -10 : configurableItemData.stackSize);
+			buf12.writeVarInt(configurableItemData.durability == null ? -10 : configurableItemData.durability);
 			buf12.writeInt(configurableItemData.cooldown == null ? -10 : configurableItemData.cooldown);
 			if(configurableItemData.cooldown != null)
 				buf12.writeBoolean(configurableItemData.cooldownAfter);
-			buf12.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name());
+			buf12.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name);
 			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName());
 			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
 			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
@@ -574,7 +604,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
 			buf12.writeUtf(configurableItemData.tier == null ? "empty" : getTierName(configurableItemData.tier));
 		});
-		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name()), (buf12, configurableWeaponData) -> {
+		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
 			buf12.writeDouble(configurableWeaponData.speed == null ? -10 : configurableWeaponData.speed);
 			buf12.writeDouble(configurableWeaponData.reach == null ? -10 : configurableWeaponData.reach);
@@ -584,14 +614,6 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
 			buf12.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
 			buf12.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
-		});
-		buf.writeMap(tiers, FriendlyByteBuf::writeUtf, (buf1, tier) -> {
-			buf1.writeVarInt(tier.getUses());
-			buf1.writeFloat(tier.getSpeed());
-			buf1.writeFloat(tier.getAttackDamageBonus());
-			buf1.writeVarInt(tier.getLevel());
-			buf1.writeVarInt(tier.getEnchantmentValue());
-			buf1.writeResourceLocation(BuiltInRegistries.ITEM.getKey(tier.getRepairIngredient().getItems()[0].getItem()));
 		});
 	}
 
@@ -627,6 +649,7 @@ public class ItemConfig extends AtlasConfig {
 		Double piercingLevel = null;
 		Boolean canSweep = null;
 		Tier tier = null;
+		Integer durability = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -647,6 +670,7 @@ public class ItemConfig extends AtlasConfig {
 			piercingLevel = oldData.piercingLevel;
 			canSweep = oldData.canSweep;
 			tier = oldData.tier;
+			durability = oldData.durability;
 		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
@@ -662,18 +686,15 @@ public class ItemConfig extends AtlasConfig {
 			cooldown = getInt(jsonObject, "cooldown");
 		if (jsonObject.has("weapon_type")) {
 			String weapon_type = getString(jsonObject, "weapon_type");
-			weapon_type = weapon_type.toUpperCase(Locale.ROOT);
-			switch (weapon_type) {
-				case "SWORD", "MACE", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" ->
-					type = WeaponType.fromID(weapon_type);
-				default -> {
-					CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Applying Item Weapon Type");
-					CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
-					crashReportCategory.setDetail("Type name", weapon_type);
-					crashReportCategory.setDetail("Json Object", jsonObject);
-					throw new ReportedException(report);
-				}
+			weapon_type = weapon_type.toLowerCase(Locale.ROOT);
+			if (!registeredWeaponTypes.containsKey(weapon_type)) {
+				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Applying Item Weapon Type");
+				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+				crashReportCategory.setDetail("Type name", weapon_type);
+				crashReportCategory.setDetail("Json Object", jsonObject);
+				throw new ReportedException(report);
 			}
+			type = WeaponType.fromID(weapon_type);
 		}
 		if (jsonObject.has("blocking_type")) {
 			String blocking_type = getString(jsonObject, "blocking_type");
@@ -710,7 +731,9 @@ public class ItemConfig extends AtlasConfig {
 			canSweep = getBoolean(jsonObject, "can_sweep");
 		if (jsonObject.has("tier"))
 			tier = getTier(getString(jsonObject, "tier"));
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep, tier);
+		if (jsonObject.has("durability"))
+			durability = getInt(jsonObject, "durability");
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability);
 		configuredItems.put(item, configurableItemData);
 	}
 }

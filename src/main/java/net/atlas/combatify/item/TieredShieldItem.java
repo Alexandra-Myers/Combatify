@@ -2,7 +2,6 @@ package net.atlas.combatify.item;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
@@ -55,12 +54,9 @@ public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 
 	@Override
 	public Tier getConfigTier() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.tier != null)
-				return configurableItemData.tier;
-		}
-		return tier;
+		Tier tier = getTierFromConfig();
+		if (tier != null) return tier;
+		return this.tier;
 	}
 	public static void init() {
 
@@ -70,14 +66,13 @@ public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 	public BlockingType getBlockingType() {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.blockingType != null) {
+			if (configurableItemData.blockingType != null)
 				return configurableItemData.blockingType;
-			}
-			if (configurableItemData.type != null && Combatify.ITEMS.configuredWeapons.containsKey(configurableItemData.type)) {
-				ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(configurableItemData.type);
-				if (configurableWeaponData.blockingType != null) {
-					return configurableWeaponData.blockingType;
-				}
+			WeaponType type;
+			if ((type = configurableItemData.type) != null && Combatify.ITEMS.configuredWeapons.containsKey(type)) {
+				BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(type).blockingType;
+				if (blockingType != null)
+					return blockingType;
 			}
 		}
 		return Combatify.registeredTypes.get("new_shield");

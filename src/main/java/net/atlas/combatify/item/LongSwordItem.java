@@ -69,19 +69,19 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 
 	@Override
 	public double getPiercingLevel() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.piercingLevel != null) {
-				return configurableWeaponData.piercingLevel;
-			}
-		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
-			if (configurableItemData.piercingLevel != null) {
-				return configurableItemData.piercingLevel;
-			}
+			Double piercingLevel = Combatify.ITEMS.configuredItems.get(this).piercingLevel;
+			if (piercingLevel != null)
+				return piercingLevel;
 		}
-		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.2 : getTier() == Tiers.GOLD || getTier() == Tiers.WOOD || getTier() == Tiers.STONE || getTier().getAttackDamageBonus() <= 1 ? 0.0 : (0.1 * (getTier().getLevel() - 1));
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			Double piercingLevel = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).piercingLevel;
+			if (piercingLevel != null)
+				return piercingLevel;
+		}
+		return getTier() == Tiers.NETHERITE || getTier().getLevel() >= 4 ? 0.2
+			: getTier() == Tiers.GOLD || getTier() == Tiers.WOOD || getTier() == Tiers.STONE || getTier().getLevel() <= 1 ? 0.0
+			: (0.1 * (getTier().getLevel() - 1));
 	}
 
 	@Override

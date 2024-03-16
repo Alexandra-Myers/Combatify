@@ -32,12 +32,10 @@ public abstract class TieredItemMixin extends Item implements WeaponWithType {
 
 	@Override
 	public Tier getConfigTier() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.tier != null) {
-				tier = configurableItemData.tier;
-				return configurableItemData.tier;
-			}
+		Tier tier = getTierFromConfig();
+		if (tier != null) {
+			this.tier = tier;
+			return tier;
 		}
 		return getTier();
 	}

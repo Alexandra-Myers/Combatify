@@ -44,6 +44,7 @@
     "SwordItemMixin",
     "ThrownTridentMixin",
     "TieredItemMixin",
+    "TiersMixin",
     "TridentItemMixin"
   ],
   "injectors": {

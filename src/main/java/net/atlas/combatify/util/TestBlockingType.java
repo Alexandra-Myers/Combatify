@@ -62,7 +62,7 @@ public class TestBlockingType extends BlockingType {
 				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = (tier.getAttackDamageBonus()) / 2F - 2F;
+		float strengthIncrease = (tier.getLevel()) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		if (Combatify.CONFIG.defender())
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);

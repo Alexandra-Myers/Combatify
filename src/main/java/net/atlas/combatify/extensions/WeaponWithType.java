@@ -2,7 +2,6 @@ package net.atlas.combatify.extensions;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -60,32 +59,30 @@ public interface WeaponWithType extends ItemExtensions {
 
 	@Override
 	default BlockingType getBlockingType() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.blockingType != null)
-				return configurableWeaponData.blockingType;
-		}
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.blockingType != null)
-				return configurableItemData.blockingType;
+			BlockingType blockingType = Combatify.ITEMS.configuredItems.get(self()).blockingType;
+			if (blockingType != null)
+				return blockingType;
+		}
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).blockingType;
+			if (blockingType != null)
+				return blockingType;
 		}
 		return Combatify.EMPTY;
 	}
 
 	@Override
 	default double getPiercingLevel() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(getWeaponType());
-			if (configurableWeaponData.piercingLevel != null) {
-				return configurableWeaponData.piercingLevel;
-			}
-		}
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			if (configurableItemData.piercingLevel != null) {
-				return configurableItemData.piercingLevel;
-			}
+			Double piercingLevel = Combatify.ITEMS.configuredItems.get(self()).piercingLevel;
+			if (piercingLevel != null)
+				return piercingLevel;
+		}
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
+			Double piercingLevel = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).piercingLevel;
+			if (piercingLevel != null)
+				return piercingLevel;
 		}
 		return 0;
 	}
