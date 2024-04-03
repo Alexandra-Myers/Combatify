@@ -40,7 +40,6 @@
     "ShieldItemMixin",
     "ShovelItemMixin",
     "SnowballMixin",
-    "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
     "TieredItemMixin",

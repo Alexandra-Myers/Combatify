@@ -23,6 +23,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder hasMissTime;
 	private BooleanHolder canInteractWhenCrouchShield;
 	private BooleanHolder bedrockImpaling;
+	private BooleanHolder dispensableTridents;
 	private BooleanHolder snowballKB;
 	private BooleanHolder resetOnItemChange;
 	private BooleanHolder vanillaSweep;
@@ -67,7 +68,6 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder snowballDamage;
 	private DoubleHolder eggDamage;
 	private DoubleHolder windChargeDamage;
-	private DoubleHolder maceDamageMultiplier;
 	private DoubleHolder bowUncertainty;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
@@ -97,6 +97,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
 		ctsKB = createBoolean("ctsKB", true);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
+		dispensableTridents = createBoolean("dispensableTridents", true);
 		eatingInterruption = createBoolean("eatingInterruption", true);
 		fistDamage = createBoolean("fistDamage", false);
 		hasMissTime = createBoolean("hasMissTime", false);
@@ -146,7 +147,6 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
 
 		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
-		maceDamageMultiplier = createInRange("maceDamageMultiplier", 0.5, 0, 1);
 		eggDamage = createInRange("eggDamage", 0, 0, 40D);
 		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
 		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
@@ -239,6 +239,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public Boolean tridentVoidReturn() {
 		return tridentVoidReturn.get();
 	}
+	public Boolean dispensableTridents() {
+		return dispensableTridents.get();
+	}
 	public Boolean midairKB() {
 		return midairKB.get();
 	}
@@ -328,9 +331,6 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Double defenderDisableReduction() {
 		return defenderDisableReduction.get();
-	}
-	public Double maceDamageMultiplier() {
-		return maceDamageMultiplier.get();
 	}
 	public Double snowballDamage() {
 		return snowballDamage.get();

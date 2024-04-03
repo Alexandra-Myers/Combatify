@@ -8,8 +8,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.TieredShieldItem;
-import net.atlas.combatify.util.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
@@ -182,21 +182,17 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float redirectStrengthCheck(float original) {
 		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker > 4.0F) ? 1.0F : Math.min(original, 1.0F);
 	}
-	@ModifyExpressionValue(method = "attack", at = @At(value = "CONSTANT", args = "floatValue=0.5F", ordinal = 1))
-	public float maceMul(float original) {
-		return original + (Combatify.CONFIG.maceDamageMultiplier().floatValue() - original);
-	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
 	public void reset(CallbackInfo ci) {
 		ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;walkDist:F"))
-	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 3)LocalBooleanRef bl4) {
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 2)LocalBooleanRef bl3) {
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
 			attackDamage.set(attackDamage.get() - attackDamageBonus);
 		if (Combatify.CONFIG.attackDecay() && !Combatify.CONFIG.sprintCritsEnabled())
 			return;
-		if (bl4.get())
+		if (bl3.get())
 			attackDamage.set(attackDamage.get() / 1.5F);
 		boolean isCrit = player.fallDistance > 0.0F
 			&& !player.onGround()
@@ -209,7 +205,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			isCrit &= !isSprinting();
 		if (!Combatify.CONFIG.attackDecay())
 			isCrit &= player.getAttackStrengthScale(0.5F) > 0.9;
-		bl4.set(isCrit);
+		bl3.set(isCrit);
 		if (isCrit)
 			attackDamage.set(attackDamage.get() * 1.5F);
 	}
@@ -218,19 +214,19 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		MethodHandler.knockback(instance, d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
-	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 3) final boolean bl4, @Local(ordinal = 4) LocalBooleanRef bl5, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
-		bl5.set(false);
-		if (!bl4 && !bl2 && this.onGround() && d < (double)this.getSpeed())
-			bl5.set(checkSweepAttack());
-		if(bl5.get()) {
+	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
+		bl4.set(false);
+		if (!bl3 && !bl2 && this.onGround() && d < (double)this.getSpeed())
+			bl4.set(checkSweepAttack());
+		if(bl4.get()) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 			this.betterSweepAttack(box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, target);
-			bl5.set(false);
+			bl4.set(false);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
-	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 4) LocalBooleanRef bl5) {
-		bl5.set(checkSweepAttack());
+	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4) {
+		bl4.set(checkSweepAttack());
 	}
 	@Override
 	public void attackAir() {

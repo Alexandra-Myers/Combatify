@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
@@ -33,5 +34,11 @@ public abstract class EnchantmentHelperMixin {
 				original = configurableItemData.isEnchantable ? 14 : 0;
 		}
 		return original;
+	}
+
+
+	@ModifyReturnValue(method = "getSweepingDamageRatio(I)F", at = @At(value = "RETURN"))
+	private static float getSweepingDamageRatio(float original, @Local(ordinal = 0, argsOnly = true) int lvl) {
+		return Combatify.CONFIG.vanillaSweep() ? original : 0.5F - 0.5F / (float)(lvl + 1);
 	}
 }

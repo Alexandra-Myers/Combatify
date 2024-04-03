@@ -12,21 +12,13 @@ import net.atlas.combatify.util.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.core.Position;
-import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import org.apache.logging.log4j.LogManager;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -55,16 +47,8 @@ public class Combatify implements ModInitializer {
 	public void onInitialize() {
 		networkingHandler = new NetworkingHandler();
 		LOGGER.info("Init started.");
-		DispenserBlock.registerBehavior(Items.TRIDENT, new AbstractProjectileDispenseBehavior() {
-			@Override
-			protected @NotNull Projectile getProjectile(Level world, Position position, ItemStack stack) {
-				ThrownTrident trident = new ThrownTrident(EntityType.TRIDENT, world);
-				trident.pickupItemStack = stack.copy();
-				trident.setPosRaw(position.x(), position.y(), position.z());
-				trident.pickup = AbstractArrow.Pickup.ALLOWED;
-				return trident;
-			}
-		});
+		if (CONFIG.dispensableTridents())
+ 			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);

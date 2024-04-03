@@ -220,7 +220,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			hurtArmor(source, (float) (amount * (1 + piercingLevel)));
 			double armourStrength = getArmorValue();
 			double toughness = getAttributeValue(Attributes.ARMOR_TOUGHNESS);
-			amount = CombatRules.getDamageAfterAbsorb(amount, (float) (armourStrength - (armourStrength * piercingLevel)), (float) (toughness - (toughness * piercingLevel)));
+			amount = CombatRules.getDamageAfterAbsorb(amount, source, (float) (armourStrength - (armourStrength * piercingLevel)), (float) (toughness - (toughness * piercingLevel)));
 		}
 
 		return amount;

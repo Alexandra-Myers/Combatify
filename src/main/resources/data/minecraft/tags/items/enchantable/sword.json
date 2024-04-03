@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#minecraft:axes",
     {
       "id": "#combatify:knives",
       "required": false

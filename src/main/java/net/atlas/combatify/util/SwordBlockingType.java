@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
@@ -54,7 +55,7 @@ public class SwordBlockingType extends BlockingType {
 				return (float) (configurableItemData.blockStrength / 100.0) + (Combatify.CONFIG.defender() ? EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F : 0);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = (tier.getLevel()) / 2F - 2F;
+		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		if(Combatify.CONFIG.defender())
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);

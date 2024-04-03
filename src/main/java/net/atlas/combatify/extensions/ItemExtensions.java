@@ -2,7 +2,6 @@ package net.atlas.combatify.extensions;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.Item;
@@ -14,10 +13,6 @@ public interface ItemExtensions {
 
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		return original;
-	}
-
-	default void setStackSize(int stackSize) {
-		self().maxStackSize = stackSize;
 	}
 
 	default double getChargedAttackBonus() {

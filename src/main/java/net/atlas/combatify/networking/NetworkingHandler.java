@@ -2,7 +2,6 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.AtlasConfig;
-import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
@@ -20,7 +19,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.*;
 
 import static net.atlas.combatify.Combatify.*;
@@ -96,15 +94,7 @@ public class NetworkingHandler {
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		});
-		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
-			Combatify.ITEMS = new ItemConfig();
-
-			for(Item item : Combatify.ITEMS.configuredItems.keySet()) {
-				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-				if (configurableItemData.stackSize != null)
-					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
-			}
-		});
+		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> Combatify.ITEMS = new ItemConfig());
 	}
 	public record AtlasConfigPacket(AtlasConfig config) implements CustomPacketPayload {
 		public static final Type<AtlasConfigPacket> TYPE = CustomPacketPayload.createType(Combatify.id("atlas_config").toString());

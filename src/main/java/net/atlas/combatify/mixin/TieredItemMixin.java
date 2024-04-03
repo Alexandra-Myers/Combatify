@@ -1,7 +1,5 @@
 package net.atlas.combatify.mixin;
 
-import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;

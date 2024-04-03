@@ -13,17 +13,7 @@ public class DefendingEnchantment extends Enchantment {
 	public static final Enchantment DEFENDER = EnchantmentRegistry.registerEnchant(id("defender"), new DefendingEnchantment());
 
 	public DefendingEnchantment() {
-		super(Rarity.VERY_RARE, ItemTags.WEAPON_ENCHANTABLE, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
-	}
-
-	@Override
-	public int getMinCost(int level) {
-		return level * 25;
-	}
-
-	@Override
-	public int getMaxCost(int level) {
-		return this.getMinCost(level) + 50;
+		super(Enchantment.definition(ItemTags.WEAPON_ENCHANTABLE, 1, 3, Enchantment.dynamicCost(25, 25), Enchantment.dynamicCost(75, 25), 3, EquipmentSlot.MAINHAND));
 	}
 
 	@Override

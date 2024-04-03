@@ -2,16 +2,13 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.AtlasConfig;
-import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.Item;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -35,11 +32,6 @@ public class ClientNetworkingHandler {
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
 			ITEMS = new ItemConfig();
 
-			for(Item item : Combatify.ITEMS.configuredItems.keySet()) {
-				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-				if (configurableItemData.stackSize != null)
-					((ItemExtensions) item).setStackSize(configurableItemData.stackSize);
-			}
 			Combatify.LOGGER.info("Loaded items config.");
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AtlasConfig.configs.forEach((resourceLocation, atlasConfig) -> atlasConfig.load()));

@@ -12,6 +12,7 @@
   "ctsAttackBalancing": true,
   "ctsKB": true,
   "ctsMomentumPassedToProjectiles": true,
+  "dispensableTridents": true,
   "eatingInterruption": true,
   "fistDamage": false,
   "hasMissTime": false,
@@ -61,7 +62,6 @@
   "shieldChargePercentage": 195,
 
   "defenderDisableReduction": 0.5,
-  "maceDamageMultiplier": 0.5,
   "eggDamage": 0.0,
   "snowballDamage": 0.0,
   "windChargeDamage": 1.0,

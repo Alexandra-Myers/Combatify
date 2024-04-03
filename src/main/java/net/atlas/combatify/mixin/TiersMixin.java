@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tiers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +21,7 @@ public class TiersMixin {
 	private float damage;
 
 	@Inject(method = "<init>", at = @At("RETURN"))
-	public void modifyDamage(String string, int i, int j, int k, float f, float g, int l, Supplier supplier, CallbackInfo ci) {
+	public void modifyDamage(String string, int i, TagKey tagKey, int j, float f, float g, int k, Supplier supplier, CallbackInfo ci) {
 		if (damage > 0 && Combatify.CONFIG.ctsAttackBalancing()) {
 			damage -= 1;
 		}

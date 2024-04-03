@@ -55,9 +55,8 @@ public class MethodHandler {
 
 	public static void updateModifiers(ItemStack itemStack) {
 		ItemAttributeModifiers modifier = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		ItemAttributeModifiers newModifiers = ((ItemExtensions)itemStack.getItem()).modifyAttributeModifiers(modifier);
-		itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, newModifiers);
-		modifier = newModifiers;
+		modifier = ((ItemExtensions)itemStack.getItem()).modifyAttributeModifiers(modifier);
+		itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
 		if (modifier != null && Combatify.ITEMS != null) {
 			Item item = itemStack.getItem();
 			if (Combatify.ITEMS.configuredItems.containsKey(item)) {

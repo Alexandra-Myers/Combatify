@@ -19,7 +19,7 @@ import static net.atlas.combatify.util.MethodHandler.getFatigueForTime;
 public class ProjectileWeaponItemMixin {
 	@Inject(method = "createProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getItemEnchantmentLevel(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I", ordinal = 0))
 	public void createProjectile(Level level, LivingEntity livingEntity, ItemStack itemStack, ItemStack itemStack2, boolean bl, CallbackInfoReturnable<Projectile> cir, @Local(ordinal = 0) AbstractArrow abstractArrow) {
-		if(itemStack.getItem() instanceof BowItem && getFatigueForTime(itemStack.getUseDuration() - livingEntity.getUseItemRemainingTicks()) > 0.5F)
+		if (itemStack.getItem() instanceof BowItem && getFatigueForTime(itemStack.getUseDuration() - livingEntity.getUseItemRemainingTicks()) > 0.5F)
 			abstractArrow.setCritArrow(false);
 	}
 }

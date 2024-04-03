@@ -20,11 +20,12 @@ public class ConfigurableItemData {
 	public final Integer enchantability;
 	public final Boolean isEnchantable;
 	public final Boolean hasSwordEnchants;
+	public final Boolean isPrimaryForSwordEnchants;
 	public final Integer useDuration;
 	public final Double piercingLevel;
 	public final Boolean canSweep;
 	public final Tier tier;
-	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, Integer durability) {
+	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Boolean isPrimaryForSwordEnchants, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, Integer durability) {
 		damage = clamp(attackDamage, -10, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
@@ -40,6 +41,7 @@ public class ConfigurableItemData {
 		this.enchantability = clamp(enchantability, 0, 1000);
 		this.isEnchantable = isEnchantable;
 		this.hasSwordEnchants = hasSwordEnchants;
+		this.isPrimaryForSwordEnchants = isPrimaryForSwordEnchants;
 		this.useDuration = clamp(useDuration, 1, 1000);
 		this.piercingLevel = clamp(piercingLevel, 0, 1);
 		this.canSweep = canSweep;

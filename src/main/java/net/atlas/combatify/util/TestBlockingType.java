@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
@@ -20,8 +21,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -62,7 +61,7 @@ public class TestBlockingType extends BlockingType {
 				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = (tier.getLevel()) / 2F - 2F;
+		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		if (Combatify.CONFIG.defender())
 			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
@@ -76,7 +75,7 @@ public class TestBlockingType extends BlockingType {
 				return configurableItemData.blockKbRes;
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		if (tier.getLevel() >= 4)
+		if (ExtendedTier.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;
 	}
