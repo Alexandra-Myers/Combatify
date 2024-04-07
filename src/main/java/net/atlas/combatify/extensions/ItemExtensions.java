@@ -5,6 +5,7 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -84,5 +85,13 @@ public interface ItemExtensions {
 		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self()))
             return Combatify.ITEMS.configuredItems.get(self()).tier;
 		return null;
+	}
+	default boolean canRepairThroughConfig(ItemStack stack) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
+			if (configurableItemData.repairIngredient != null)
+				return configurableItemData.repairIngredient.test(stack);
+		}
+		return false;
 	}
 }

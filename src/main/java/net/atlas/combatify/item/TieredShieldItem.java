@@ -44,7 +44,7 @@ public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 	}
 
 	public boolean isValidRepairItem(ItemStack itemStack, ItemStack itemStack2) {
-		return getConfigTier().getRepairIngredient().test(itemStack2) || super.isValidRepairItem(itemStack, itemStack2);
+		return getConfigTier().getRepairIngredient().test(itemStack2) || canRepairThroughConfig(itemStack2);
 	}
 
 	@Override

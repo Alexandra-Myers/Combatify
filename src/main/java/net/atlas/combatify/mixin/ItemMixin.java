@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -34,38 +36,7 @@ public abstract class ItemMixin implements ItemExtensions {
 
 	@Inject(method = "verifyComponentsAfterLoad", at = @At(value = "HEAD"))
 	public void editModifiers(ItemStack itemStack, CallbackInfo ci) {
-		boolean maxDamageChanged = false;
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
-			Integer durability = configurableItemData.durability;
-			Integer maxStackSize = configurableItemData.stackSize;
-			Tier tier = configurableItemData.tier;
-			if (durability != null) {
-				setDurability(itemStack, durability);
-				maxDamageChanged = true;
-			}
-			if (maxStackSize != null
-				&& ((!components.has(DataComponents.MAX_STACK_SIZE) && !itemStack.has(DataComponents.MAX_STACK_SIZE))
-					|| Objects.equals(components.get(DataComponents.MAX_STACK_SIZE), itemStack.get(DataComponents.MAX_STACK_SIZE)))) {
-				itemStack.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
-			}
-			if (tier != null && self() instanceof DiggerItem && Objects.equals(components.get(DataComponents.TOOL), itemStack.get(DataComponents.TOOL))) {
-				Tool original = components.get(DataComponents.TOOL);
-				AtomicReference<Tool> tool = new AtomicReference<>();
-
-                assert original != null;
-                original.rules().forEach(rule -> {
-					if (rule.blocks() instanceof HolderSet.Named<Block> named) {
-						tool.set(tier.createToolProperties(named.key()));
-					}
-				});
-				if (tool.get() != null)
-					itemStack.set(DataComponents.TOOL, tool.get());
-			}
-		}
-		if (!maxDamageChanged && getTierFromConfig() != null)
-			setDurability(itemStack, getTierFromConfig().getUses());
-		MethodHandler.updateModifiers(itemStack);
+		editModifiers(itemStack);
 	}
 
 	@Override
@@ -81,5 +52,44 @@ public abstract class ItemMixin implements ItemExtensions {
 		if ((!components.has(DataComponents.MAX_DAMAGE) && !stack.has(DataComponents.MAX_DAMAGE)) || Objects.equals(components.get(DataComponents.MAX_DAMAGE), stack.get(DataComponents.MAX_DAMAGE))) {
 			stack.set(DataComponents.MAX_DAMAGE, value);
 		}
+	}
+	@ModifyReturnValue(method = "isValidRepairItem", at = @At(value = "RETURN"))
+	public boolean canRepair(boolean original, @Local(ordinal = 1, argsOnly = true) ItemStack stack) {
+		return original || canRepairThroughConfig(stack);
+	}
+	@Unique
+	public void editModifiers(ItemStack itemStack) {
+		boolean maxDamageChanged = false;
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
+			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
+			Integer durability = configurableItemData.durability;
+			Integer maxStackSize = configurableItemData.stackSize;
+			Tier tier = configurableItemData.tier;
+			if (durability != null) {
+				setDurability(itemStack, durability);
+				maxDamageChanged = true;
+			}
+			if (maxStackSize != null
+				&& ((!components.has(DataComponents.MAX_STACK_SIZE) && !itemStack.has(DataComponents.MAX_STACK_SIZE))
+				|| Objects.equals(components.get(DataComponents.MAX_STACK_SIZE), itemStack.get(DataComponents.MAX_STACK_SIZE)))) {
+				itemStack.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
+			}
+			if (tier != null && self() instanceof DiggerItem && Objects.equals(components.get(DataComponents.TOOL), itemStack.get(DataComponents.TOOL))) {
+				Tool original = components.get(DataComponents.TOOL);
+				AtomicReference<Tool> tool = new AtomicReference<>();
+
+				assert original != null;
+				original.rules().forEach(rule -> {
+					if (rule.blocks() instanceof HolderSet.Named<Block> named) {
+						tool.set(tier.createToolProperties(named.key()));
+					}
+				});
+				if (tool.get() != null)
+					itemStack.set(DataComponents.TOOL, tool.get());
+			}
+		}
+		if (!maxDamageChanged && getTierFromConfig() != null)
+			setDurability(itemStack, getTierFromConfig().getUses());
+		MethodHandler.updateModifiers(itemStack);
 	}
 }

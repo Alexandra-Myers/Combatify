@@ -81,18 +81,27 @@ public class MethodHandler {
 				AtomicReference<ItemAttributeModifiers.Entry> speed = new AtomicReference<>();
 				boolean modReach = false;
 				AtomicReference<ItemAttributeModifiers.Entry> reach = new AtomicReference<>();
+				boolean modDefense = false;
+				AtomicReference<ItemAttributeModifiers.Entry> defense = new AtomicReference<>();
+				boolean modToughness = false;
+				AtomicReference<ItemAttributeModifiers.Entry> toughness = new AtomicReference<>();
+				boolean modKnockbackResistance = false;
+				AtomicReference<ItemAttributeModifiers.Entry> knockbackResistance = new AtomicReference<>();
 				modifier.modifiers().forEach(entry -> {
-					boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
-						|| entry.attribute().is(Attributes.ATTACK_SPEED)
-						|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
-					if (!bl)
-						builder.add(entry.attribute(), entry.modifier(), entry.slot());
-					else if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
 						damage.set(entry);
 					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
 						reach.set(entry);
-					else
+					else if (entry.attribute().is(Attributes.ATTACK_SPEED))
 						speed.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR))
+						defense.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
+						toughness.set(entry);
+					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
+						knockbackResistance.set(entry);
+					else
+						builder.add(entry.attribute(), entry.modifier(), entry.slot());
 				});
 				if (configurableItemData.damage != null) {
 					modDamage = true;
@@ -112,13 +121,50 @@ public class MethodHandler {
 						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
+				UUID uuid = UUID.fromString("C1D3F271-8B8E-BA4A-ACE0-6020A98928B2");
+				EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
+				if (itemStack.getItem() instanceof Equipable equipable)
+					slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
+				uuid = switch (slotGroup) {
+					case HEAD -> UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150");
+					case CHEST -> UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E");
+					case LEGS -> UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
+					case FEET -> UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B");
+					case BODY -> UUID.fromString("C1C72771-8B8E-BA4A-ACE0-81A93C8928B2");
+					default -> uuid;
+				};
+				if (configurableItemData.defense != null) {
+					modDefense = true;
+					builder.add(Attributes.ARMOR,
+						new AttributeModifier(uuid, "Config modifier", configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
+						slotGroup);
+				}
+				if (configurableItemData.toughness != null) {
+					modToughness = true;
+					builder.add(Attributes.ARMOR_TOUGHNESS,
+						new AttributeModifier(uuid, "Config modifier", configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
+						slotGroup);
+				}
+				if (configurableItemData.armourKbRes != null) {
+					modKnockbackResistance = true;
+					if (configurableItemData.armourKbRes > 0)
+						builder.add(Attributes.KNOCKBACK_RESISTANCE,
+							new AttributeModifier(uuid, "Config modifier", configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
+							slotGroup);
+				}
 				if (!modDamage && damage.get() != null)
 					builder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
 				if (!modSpeed && speed.get() != null)
 					builder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
 				if (!modReach && reach.get() != null)
 					builder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
-				if (modDamage || modSpeed || modReach)
+				if (!modDefense && defense.get() != null)
+					builder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
+				if (!modToughness && toughness.get() != null)
+					builder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
+				if (!modKnockbackResistance && knockbackResistance.get() != null)
+					builder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
+				if (modDamage || modSpeed || modReach || modDefense || modToughness || modKnockbackResistance)
 					itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.build());
 			}
 		}

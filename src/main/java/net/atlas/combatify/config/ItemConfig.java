@@ -17,20 +17,16 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -38,6 +34,7 @@ public class ItemConfig extends AtlasConfig {
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
 	public BiMap<String, Tier> tiers;
+	public Formula armourCalcs = null;
 
 	public ItemConfig() {
 		super(id("combatify-items"));
@@ -148,6 +145,8 @@ public class ItemConfig extends AtlasConfig {
 					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
 			});
 		}
+		if (object.has("armor_calculation"))
+			armourCalcs = new Formula(getString(object, "armor_calculation"));
 	}
 	@Override
 	protected InputStream getDefaultedConfig() {
@@ -166,28 +165,33 @@ public class ItemConfig extends AtlasConfig {
 
 	}
 
-	public static String getString(JsonObject element, String name) {
-		return element.get(name).getAsString();
+	public static String getString(JsonObject object, String name) {
+		return object.get(name).getAsString();
 	}
 
-	public static Integer getInt(JsonObject element, String name) {
-		return element.get(name).getAsInt();
+	public static Integer getInt(JsonObject object, String name) {
+		return object.get(name).getAsInt();
 	}
 
-	public static Float getFloat(JsonObject element, String name) {
-		return element.get(name).getAsFloat();
+	public static Integer getIntWithFallback(JsonObject object, String name, String fallback) {
+		if (!object.has(name))
+			return object.get(fallback).getAsInt();
+		return object.get(name).getAsInt();
 	}
 
-	public static Double getDouble(JsonObject element, String name) {
-		return element.get(name).getAsDouble();
+	public static Float getFloat(JsonObject object, String name) {
+		return object.get(name).getAsFloat();
 	}
-	public static Boolean getBoolean(JsonObject element, String name) {
-		return element.get(name).getAsBoolean();
+
+	public static Double getDouble(JsonObject object, String name) {
+		return object.get(name).getAsDouble();
+	}
+	public static Boolean getBoolean(JsonObject object, String name) {
+		return object.get(name).getAsBoolean();
 	}
 
 	public static Item itemFromJson(JsonObject jsonObject) {
-		String string = GsonHelper.getAsString(jsonObject, "name");
-		return itemFromName(string);
+		return itemFromName(GsonHelper.getAsString(jsonObject, "name"));
 	}
 
 	public static Item itemFromName(String string) {
@@ -473,6 +477,11 @@ public class ItemConfig extends AtlasConfig {
 			int canSweepAsInt = buf1.readInt();
 			Boolean canSweep = null;
 			Tier tier = getTier(buf1.readUtf());
+			Integer defense = buf1.readInt();
+			Double toughness = buf1.readDouble();
+			Double armourKbRes = buf1.readDouble();
+			String repairIngredient = buf1.readUtf();
+			Ingredient ingredient = Objects.equals(repairIngredient, "empty") ? null : Ingredient.of(BuiltInRegistries.ITEM.get(new ResourceLocation(repairIngredient)));
 			if (damage == -10)
 				damage = null;
 			if (speed == -10)
@@ -507,7 +516,13 @@ public class ItemConfig extends AtlasConfig {
 				canSweep = canSweepAsInt == 1;
 			if (registeredWeaponTypes.containsKey(weaponType))
 				type = WeaponType.fromID(weaponType);
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability);
+			if (defense == -10)
+				defense = null;
+			if (toughness == -10)
+				toughness = null;
+			if (armourKbRes == -10)
+				armourKbRes = null;
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -542,6 +557,11 @@ public class ItemConfig extends AtlasConfig {
 				canSweep = canSweepAsInt == 1;
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
 		});
+		String formula = buf.readUtf();
+		if (formula.equals("empty"))
+			armourCalcs = null;
+		else
+			armourCalcs = new Formula(formula);
 		return this;
 	}
 
@@ -630,6 +650,10 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
 			buf12.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
 			buf12.writeUtf(configurableItemData.tier == null ? "empty" : getTierName(configurableItemData.tier));
+			buf12.writeInt(configurableItemData.defense == null ? -10 : configurableItemData.defense);
+			buf12.writeDouble(configurableItemData.toughness == null ? -10 : configurableItemData.toughness);
+			buf12.writeDouble(configurableItemData.armourKbRes == null ? -10 : configurableItemData.armourKbRes);
+			buf12.writeUtf(configurableItemData.repairIngredient == null ? "empty" : BuiltInRegistries.ITEM.getKey(configurableItemData.repairIngredient.getItems()[0].getItem()).toString());
 		});
 		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name), (buf12, configurableWeaponData) -> {
 			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
@@ -643,6 +667,7 @@ public class ItemConfig extends AtlasConfig {
 			buf12.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
 			buf12.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
 		});
+		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written);
 	}
 
 	@Override
@@ -673,6 +698,10 @@ public class ItemConfig extends AtlasConfig {
 		Boolean canSweep = null;
 		Tier tier = null;
 		Integer durability = null;
+		Integer defense = null;
+		Double toughness = null;
+		Double armourKbRes = null;
+		Ingredient ingredient = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -755,11 +784,213 @@ public class ItemConfig extends AtlasConfig {
 			canSweep = getBoolean(jsonObject, "can_sweep");
 		if (jsonObject.has("tier"))
 			tier = getTier(getString(jsonObject, "tier"));
-		if (jsonObject.has("durability"))
-			durability = getInt(jsonObject, "durability");
+		if (jsonObject.has("durability")) {
+			JsonElement durabilityE = jsonObject.get("durability");
+			if (durabilityE instanceof JsonObject durabilityO) {
+				if (!durabilityO.has("any"))
+					throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the integer 'any' when armour is configured!"), "Applying Item Durability"));
+				if (item instanceof ArmorItem armorItem) {
+					durability = getIntWithFallback(durabilityO, armorItem.getType().getName(), "any");
+				} else durability = getInt(durabilityO, "any");
+			} else durability = durabilityE.getAsInt();
+		}
 		if (jsonObject.has("sword_enchants_from_enchanting"))
 			isPrimaryForSwordEnchants = getBoolean(jsonObject, "sword_enchants_from_enchanting");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability);
+		if (jsonObject.has("armor")) {
+			JsonElement defenseE = jsonObject.get("armor");
+			if (defenseE instanceof JsonObject defenseO) {
+				if (!defenseO.has("any"))
+					throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the integer 'any' when armour is configured!"), "Applying Item Defense"));
+				if (item instanceof ArmorItem armorItem) {
+                    defense = getIntWithFallback(defenseO, armorItem.getType().getName(), "any");
+				} else defense = getInt(defenseO, "any");
+			} else defense = defenseE.getAsInt();
+		}
+		if (jsonObject.has("armor_toughness"))
+			toughness = getDouble(jsonObject, "armor_toughness");
+		if (jsonObject.has("armor_knockback_resistance"))
+			armourKbRes = getDouble(jsonObject, "armor_knockback_resistance");
+		if (jsonObject.has("repair_ingredient"))
+			ingredient = Ingredient.of(itemFromName(getString(jsonObject, "repair_ingredient")));
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient);
 		configuredItems.put(item, configurableItemData);
+	}
+	public record Formula(String written) {
+		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {
+			String armourFormula = written.split("enchMul", 1)[0];
+			armourFormula = armourFormula.replaceAll("D", String.valueOf(amount)).replaceAll("P", String.valueOf(armour)).replaceAll("T", String.valueOf(armourToughness));
+			float result = solveFormula(armourFormula);
+			result = 1.0F - EnchantmentHelper.calculateArmorBreach(damageSource.getEntity(), result);
+			return amount * result;
+		}
+		public float enchantCalcs(float amount, float enchantLevel) {
+			String enchantFormula = written.split("enchMul", 1)[1];
+			enchantFormula = enchantFormula.replaceAll("D", String.valueOf(amount)).replaceAll("E", String.valueOf(enchantLevel));
+			float result = solveFormula(enchantFormula);
+			return amount * result;
+		}
+		public float solveFormula(String formula) {
+			if (!formula.contains("("))
+				return solveInner(formula);
+			float res = 0;
+			String par = formula;
+			while (par.contains("(")) {
+				par = simplifyParenthesis(par, 0);
+			}
+			return res;
+		}
+		public String simplifyParenthesis(String par, int recursion) {
+			if (recursion > 5)
+				throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Cannot have more than 5 mins/maxes inside of each other!"), "Handling armour calculations"));
+			String innermost = par.transform(string -> string.substring(string.lastIndexOf('(') + 1, string.indexOf(')', string.lastIndexOf('(')) - 1));
+			if (par.contains("min")) {
+				String[] min = par.split("min\\(", 1)[1].split("\\)", 1)[0].split(",");
+				float[] minf = new float[2];
+				for (int i = 0; i < min.length; i++) {
+					String minSt = min[i];
+					while (minSt.contains("(")) {
+						minSt = simplifyParenthesis(minSt, recursion + 1);
+					}
+					minf[i] = solveInner(minSt);
+				}
+				par = par.replace("min(" + min[0] + "," + min[1] + ")", String.valueOf(Math.min(minf[0], minf[1])));
+			} else if (par.contains("max")) {
+				String[] max = par.split("max\\(", 1)[1].split("\\)", 1)[0].split(",");
+				float[] maxf = new float[2];
+				for (int i = 0; i < max.length; i++) {
+					String maxSt = max[i];
+					while (maxSt.contains("(")) {
+						maxSt = simplifyParenthesis(maxSt, recursion + 1);
+					}
+					maxf[i] = solveInner(maxSt);
+				}
+				par = par.replace("max(" + max[0] + "," + max[1] + ")", String.valueOf(Math.max(maxf[0], maxf[1])));
+			} else
+				par = par.replace("(" + innermost + ")", String.valueOf(solveInner(innermost)));
+			return par;
+		}
+		public float solveInner(String par) {
+			while (par.contains("^")) {
+				String[] pow = par.split("\\^", 1);
+				double[] powSides = new double[2];
+				if (!pow[0].contains("*") && !pow[0].contains("/") && !pow[0].contains("+") && !pow[0].contains("-")) {
+					powSides[0] = Double.parseDouble(pow[0]);
+					if (pow[1].contains("+") || pow[1].contains("-") || pow[1].contains("*") || pow[1].contains("/")) {
+						int pIndex = pow[1].indexOf("+");
+						int mIndex = pow[1].indexOf("-");
+						int muIndex = pow[1].indexOf("*");
+						int dIndex = pow[1].indexOf("/");
+						int lIndex = min(min(pIndex, mIndex), min(muIndex, dIndex));
+						powSides[1] = Double.parseDouble(pow[1].substring(0, lIndex));
+					} else powSides[1] = Double.parseDouble(pow[1]);
+				} else {
+					int pIndex0 = pow[0].indexOf("+");
+					int mIndex0 = pow[0].indexOf("-");
+					int muIndex0 = pow[0].indexOf("*");
+					int dIndex0 = pow[0].indexOf("/");
+					int lIndex0 = min(min(pIndex0, mIndex0), min(muIndex0, dIndex0));
+					powSides[0] = Double.parseDouble(pow[0].substring(lIndex0));
+					if (pow[1].contains("+") || pow[1].contains("-") || pow[1].contains("*") || pow[1].contains("/")) {
+						int pIndex = pow[1].indexOf("+");
+						int mIndex = pow[1].indexOf("-");
+						int muIndex = pow[1].indexOf("*");
+						int dIndex = pow[1].indexOf("/");
+						int lIndex = min(min(pIndex, mIndex), min(muIndex, dIndex));
+						powSides[1] = Double.parseDouble(pow[1].substring(0, lIndex));
+					} else powSides[1] = Double.parseDouble(pow[1]);
+				}
+				par = par.replace(pow[0] + "^" + pow[1], String.valueOf(Math.pow(powSides[0], powSides[1])));
+			}
+			while (par.contains("*") || par.contains("/")) {
+				boolean divide = par.indexOf("*") > par.indexOf("/");
+				if (divide) {
+					String[] div = par.split("/", 1);
+					double[] divSides = new double[2];
+					if (!div[0].contains("+") && !div[0].contains("-")) {
+						divSides[0] = Double.parseDouble(div[0]);
+						if (div[1].contains("+") || div[1].contains("-") || div[1].contains("*")) {
+							int pIndex = div[1].indexOf("+");
+							int mIndex = div[1].indexOf("-");
+							int muIndex = div[1].indexOf("*");
+							int lIndex = min(min(pIndex, mIndex), muIndex);
+							divSides[1] = Double.parseDouble(div[1].substring(0, lIndex));
+						} else divSides[1] = Double.parseDouble(div[1]);
+					} else {
+						int pIndex0 = div[0].indexOf("+");
+						int mIndex0 = div[0].indexOf("-");
+						int lIndex0 = min(pIndex0, mIndex0);
+						divSides[0] = Double.parseDouble(div[0].substring(lIndex0));
+						if (div[1].contains("+") || div[1].contains("-") || div[1].contains("*")) {
+							int pIndex = div[1].indexOf("+");
+							int mIndex = div[1].indexOf("-");
+							int muIndex = div[1].indexOf("*");
+							int lIndex = min(min(pIndex, mIndex), muIndex);
+							divSides[1] = Double.parseDouble(div[1].substring(0, lIndex));
+						} else divSides[1] = Double.parseDouble(div[1]);
+					}
+					par = par.replace(div[0] + "/" + div[1], String.valueOf(divSides[0] / divSides[1]));
+				} else {
+					String[] mul = par.split("\\*", 1);
+					double[] mulSides = new double[2];
+					if (!mul[0].contains("+") && !mul[0].contains("-")) {
+						mulSides[0] = Double.parseDouble(mul[0]);
+						if (mul[1].contains("+") || mul[1].contains("-") || mul[1].contains("/")) {
+							int pIndex = mul[1].indexOf("+");
+							int mIndex = mul[1].indexOf("-");
+							int dIndex = mul[1].indexOf("/");
+							int lIndex = min(min(pIndex, mIndex), dIndex);
+							mulSides[1] = Double.parseDouble(mul[1].substring(0, lIndex));
+						} else mulSides[1] = Double.parseDouble(mul[1]);
+					} else {
+						int pIndex0 = mul[0].indexOf("+");
+						int mIndex0 = mul[0].indexOf("-");
+						int lIndex0 = min(pIndex0, mIndex0);
+						mulSides[0] = Double.parseDouble(mul[0].substring(lIndex0));
+						if (mul[1].contains("+") || mul[1].contains("-") || mul[1].contains("/")) {
+							int pIndex = mul[1].indexOf("+");
+							int mIndex = mul[1].indexOf("-");
+							int dIndex = mul[1].indexOf("/");
+							int lIndex = min(min(pIndex, mIndex), dIndex);
+							mulSides[1] = Double.parseDouble(mul[1].substring(0, lIndex));
+						} else mulSides[1] = Double.parseDouble(mul[1]);
+					}
+					par = par.replace(mul[0] + "*" + mul[1], String.valueOf(mulSides[0] * mulSides[1]));
+				}
+			}
+			while (par.contains("+") || par.contains("-")) {
+				boolean subtract = par.indexOf("+") > par.indexOf("-");
+				if (subtract) {
+					String[] sub = par.split("-", 1);
+					double[] subSides = new double[2];
+					subSides[0] = Double.parseDouble(sub[0]);
+					if (sub[1].contains("+") || sub[1].contains("-")) {
+						int pIndex = sub[1].indexOf("+");
+						int mIndex = sub[1].indexOf("-");
+						int lIndex = min(pIndex, mIndex);
+						subSides[1] = Double.parseDouble(sub[1].substring(0, lIndex));
+					} else subSides[1] = Double.parseDouble(sub[1]);
+					par = par.replace(sub[0] + "-" + sub[1], String.valueOf(subSides[0] - subSides[1]));
+				} else {
+					String[] add = par.split("\\+", 1);
+					double[] addSides = new double[2];
+					addSides[0] = Double.parseDouble(add[0]);
+					if (add[1].contains("+") || add[1].contains("-")) {
+						int pIndex = add[1].indexOf("+");
+						int mIndex = add[1].indexOf("-");
+						int lIndex = min(pIndex, mIndex);
+						addSides[1] = Double.parseDouble(add[1].substring(0, lIndex));
+					} else addSides[1] = Double.parseDouble(add[1]);
+					par = par.replace(add[0] + "+" + add[1], String.valueOf(addSides[0] + addSides[1]));
+				}
+			}
+			return Float.parseFloat(par);
+		}
+		public static int min(int val, int comp) {
+			if (comp == -1)
+				comp = Integer.MAX_VALUE;
+			if (val == -1)
+				val = Integer.MAX_VALUE;
+			return Math.min(val, comp);
+		}
 	}
 }
