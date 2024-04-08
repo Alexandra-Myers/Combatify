@@ -166,9 +166,9 @@ public class WeaponType {
 			else
 				return damageBonus + 3.0;
 		} else if (useHoeDamage) {
-			if (tier != Tiers.IRON && tier != Tiers.DIAMOND) {
+			if (tier != Tiers.IRON && tier != Tiers.DIAMOND && ExtendedTier.getLevel(tier) != 2 && ExtendedTier.getLevel(tier) != 3) {
 				if (tier == Tiers.NETHERITE || ExtendedTier.getLevel(tier) >= 4)
-					return tier == Tiers.NETHERITE ? 2 + modifier : 2 + damageBonus - 3 + modifier;
+					return tier == Tiers.NETHERITE ? 2 + modifier : 2 + damageBonus - 3;
 
 				return modifier;
 			}

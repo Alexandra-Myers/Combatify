@@ -55,6 +55,9 @@ public class MethodHandler {
 
 	public static void updateModifiers(ItemStack itemStack) {
 		ItemAttributeModifiers modifier = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+		ItemAttributeModifiers def = itemStack.getItem().getDefaultAttributeModifiers();
+		if (modifier == ItemAttributeModifiers.EMPTY && def != ItemAttributeModifiers.EMPTY)
+			modifier = def;
 		modifier = ((ItemExtensions)itemStack.getItem()).modifyAttributeModifiers(modifier);
 		itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
 		if (modifier != null && Combatify.ITEMS != null) {
@@ -87,6 +90,22 @@ public class MethodHandler {
 				AtomicReference<ItemAttributeModifiers.Entry> toughness = new AtomicReference<>();
 				boolean modKnockbackResistance = false;
 				AtomicReference<ItemAttributeModifiers.Entry> knockbackResistance = new AtomicReference<>();
+				def.modifiers().forEach(entry -> {
+					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+						damage.set(entry);
+					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
+						reach.set(entry);
+					else if (entry.attribute().is(Attributes.ATTACK_SPEED))
+						speed.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR))
+						defense.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
+						toughness.set(entry);
+					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
+						knockbackResistance.set(entry);
+					else
+						builder.add(entry.attribute(), entry.modifier(), entry.slot());
+				});
 				modifier.modifiers().forEach(entry -> {
 					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
 						damage.set(entry);
