@@ -34,7 +34,7 @@ public class ItemConfig extends AtlasConfig {
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
 	public BiMap<String, Tier> tiers;
-	public static Formula armourCalcs = new Formula("div[min(P,max(div[P/5],mul[P*sub{1-div[mul[2*D]/add{mul[7*T]+max(mul[4*P],30)}]}]))/min(mul[25*max(div[P/20],1)],add{add{P+div[P/8]}+2.5})]enchMulpow<0.945^E>");
+	public static Formula armourCalcs = null;
 
 	public ItemConfig() {
 		super(id("combatify-items"));
@@ -923,7 +923,7 @@ public class ItemConfig extends AtlasConfig {
 						}
 						addf[i] = solveInner(addSt);
 					}
-					par = par.replace("add{" + add[0] + "+" + add[1] + "}", String.valueOf(addf[0] * addf[1]));
+					par = par.replace("add{" + add[0] + "+" + add[1] + "}", String.valueOf(addf[0] + addf[1]));
 				} else {
 					String[] sub = par.substring(par.lastIndexOf("sub{") + 4, par.indexOf("}", par.lastIndexOf("sub{"))).split("-");
 					float[] subf = new float[2];
