@@ -34,6 +34,6 @@ public class ClientNetworkingHandler {
 
 			Combatify.LOGGER.info("Loaded items config.");
 		});
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AtlasConfig.configs.forEach((resourceLocation, atlasConfig) -> atlasConfig.load()));
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AtlasConfig.configs.forEach((resourceLocation, atlasConfig) -> atlasConfig.reload()));
 	}
 }

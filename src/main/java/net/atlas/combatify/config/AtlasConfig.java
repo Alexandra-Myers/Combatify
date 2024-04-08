@@ -22,15 +22,11 @@ import java.util.*;
 
 public abstract class AtlasConfig {
     public final ResourceLocation name;
+	public boolean isDefault;
     private final Map<String, ConfigHolder<?>> valueNameToConfigHolderMap = Maps.newHashMap();
     public static final Map<ResourceLocation, AtlasConfig> configs = Maps.newHashMap();
-
     final Path configFolderPath;
-
     File configFile;
-
-    JsonElement configJsonElement;
-
     JsonObject configJsonObject;
     List<EnumHolder<?>> enumValues;
     List<StringHolder> stringValues;
@@ -59,6 +55,8 @@ public abstract class AtlasConfig {
 
     public abstract void defineConfigHolders();
 
+	public abstract void resetExtraHolders();
+
     public abstract <T> void alertChange(ConfigValue<T> tConfigValue, T newValue);
 
     public static String getString(JsonObject element, String name) {
@@ -75,7 +73,12 @@ public abstract class AtlasConfig {
     public static Boolean getBoolean(JsonObject element, String name) {
         return element.get(name).getAsBoolean();
     }
+	public void reload() {
+		resetExtraHolders();
+		load();
+	}
     public final void load() {
+		isDefault = false;
         configFile = new File(configFolderPath.toAbsolutePath() + "/" + name.getPath() + ".json");
         if (!configFile.exists()) {
             try {
@@ -89,9 +92,7 @@ public abstract class AtlasConfig {
         }
 
         try {
-            configJsonElement = JsonParser.parseReader(new JsonReader(new FileReader(configFile)));
-
-            configJsonObject = configJsonElement.getAsJsonObject();
+            configJsonObject = JsonParser.parseReader(new JsonReader(new FileReader(configFile))).getAsJsonObject();
             for (EnumHolder<?> enumHolder : enumValues)
                 if (configJsonObject.has(enumHolder.heldValue.name))
                     enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name));
@@ -308,6 +309,8 @@ public abstract class AtlasConfig {
     }
 
 	public void reloadFromDefault() {
+		resetExtraHolders();
+		isDefault = true;
 		JsonElement configJsonElement = JsonParser.parseReader(new JsonReader(new InputStreamReader(getDefaultedConfig())));
 
 		JsonObject configJsonObject = configJsonElement.getAsJsonObject();

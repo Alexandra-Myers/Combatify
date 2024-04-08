@@ -154,6 +154,11 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 
 	@Override
+	public void resetExtraHolders() {
+
+	}
+
+	@Override
 	public <T> void alertChange(AtlasConfig.ConfigValue<T> tConfigValue, T newValue) {
 
 	}

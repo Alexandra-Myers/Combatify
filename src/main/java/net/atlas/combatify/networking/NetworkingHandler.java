@@ -94,7 +94,10 @@ public class NetworkingHandler {
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		});
-		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> Combatify.ITEMS = new ItemConfig());
+		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
+			if (ITEMS == null)
+				ITEMS = new ItemConfig();
+		});
 	}
 	public record AtlasConfigPacket(AtlasConfig config) implements CustomPacketPayload {
 		public static final Type<AtlasConfigPacket> TYPE = CustomPacketPayload.createType(Combatify.id("atlas_config").toString());

@@ -34,10 +34,14 @@ public class ItemConfig extends AtlasConfig {
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
 	public BiMap<String, Tier> tiers;
-	public Formula armourCalcs = null;
+	public static Formula armourCalcs = new Formula("div[min(P,max(div[P/5],mul[P*sub{1-div[mul[2*D]/add{mul[7*T]+max(mul[4*P],30)}]}]))/min(mul[25*max(div[P/20],1)],add{add{P+div[P/8]}+2.5})]enchMulpow<0.945^E>");
 
 	public ItemConfig() {
 		super(id("combatify-items"));
+	}
+
+	public static Formula getArmourCalcs() {
+		return armourCalcs;
 	}
 
 	@Override
@@ -158,6 +162,11 @@ public class ItemConfig extends AtlasConfig {
 		configuredItems = new HashMap<>();
 		configuredWeapons = new HashMap<>();
 		tiers = HashBiMap.create();
+	}
+
+	@Override
+	public void resetExtraHolders() {
+		defineConfigHolders();
 	}
 
 	@Override
@@ -558,9 +567,7 @@ public class ItemConfig extends AtlasConfig {
 			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
 		});
 		String formula = buf.readUtf();
-		if (formula.equals("empty"))
-			armourCalcs = null;
-		else
+		if (!formula.equals("empty"))
 			armourCalcs = new Formula(formula);
 		return this;
 	}
@@ -817,178 +824,128 @@ public class ItemConfig extends AtlasConfig {
 	}
 	public record Formula(String written) {
 		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {
-			String armourFormula = written.split("enchMul", 1)[0];
+			String armourFormula = written.split("enchMul", 2)[0];
 			armourFormula = armourFormula.replaceAll("D", String.valueOf(amount)).replaceAll("P", String.valueOf(armour)).replaceAll("T", String.valueOf(armourToughness));
 			float result = solveFormula(armourFormula);
 			result = 1.0F - EnchantmentHelper.calculateArmorBreach(damageSource.getEntity(), result);
 			return amount * result;
 		}
 		public float enchantCalcs(float amount, float enchantLevel) {
-			String enchantFormula = written.split("enchMul", 1)[1];
+			String enchantFormula = written.split("enchMul", 2)[1];
 			enchantFormula = enchantFormula.replaceAll("D", String.valueOf(amount)).replaceAll("E", String.valueOf(enchantLevel));
 			float result = solveFormula(enchantFormula);
 			return amount * result;
 		}
 		public float solveFormula(String formula) {
-			if (!formula.contains("("))
+			if (!formula.contains("(") && !formula.contains("[") && !formula.contains("<") && !formula.contains("{"))
 				return solveInner(formula);
-			float res = 0;
+			float res;
 			String par = formula;
-			while (par.contains("(")) {
+			while (par.contains("(") || par.contains("[") || par.contains("<") || par.contains("{")) {
 				par = simplifyParenthesis(par, 0);
 			}
+			res = solveInner(par);
 			return res;
 		}
 		public String simplifyParenthesis(String par, int recursion) {
-			if (recursion > 5)
-				throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Cannot have more than 5 mins/maxes inside of each other!"), "Handling armour calculations"));
-			String innermost = par.transform(string -> string.substring(string.lastIndexOf('(') + 1, string.indexOf(')', string.lastIndexOf('(')) - 1));
-			if (par.contains("min")) {
-				String[] min = par.split("min\\(", 1)[1].split("\\)", 1)[0].split(",");
-				float[] minf = new float[2];
-				for (int i = 0; i < min.length; i++) {
-					String minSt = min[i];
-					while (minSt.contains("(")) {
-						minSt = simplifyParenthesis(minSt, recursion + 1);
+			if (recursion > 10)
+				throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Cannot have more than 10 operations inside of each other!"), "Handling armour calculations"));
+			if (par.contains("min") || par.contains("max")) {
+				boolean minB = par.lastIndexOf("min") > par.lastIndexOf("max") || !par.contains("max");
+				if (minB) {
+					String[] min = par.substring(par.lastIndexOf("min(") + 4, par.indexOf(")", par.lastIndexOf("min("))).split(",");
+					float[] minf = new float[2];
+					for (int i = 0; i < min.length; i++) {
+						String minSt = min[i];
+						while (minSt.contains("(") || minSt.contains("[") || minSt.contains("<") || minSt.contains("{")) {
+							minSt = simplifyParenthesis(minSt, recursion + 1);
+						}
+						minf[i] = solveInner(minSt);
 					}
-					minf[i] = solveInner(minSt);
-				}
-				par = par.replace("min(" + min[0] + "," + min[1] + ")", String.valueOf(Math.min(minf[0], minf[1])));
-			} else if (par.contains("max")) {
-				String[] max = par.split("max\\(", 1)[1].split("\\)", 1)[0].split(",");
-				float[] maxf = new float[2];
-				for (int i = 0; i < max.length; i++) {
-					String maxSt = max[i];
-					while (maxSt.contains("(")) {
-						maxSt = simplifyParenthesis(maxSt, recursion + 1);
+					par = par.replace("min(" + min[0] + "," + min[1] + ")", String.valueOf(Math.min(minf[0], minf[1])));
+				} else {
+					String[] max = par.substring(par.lastIndexOf("max(") + 4, par.indexOf(")", par.lastIndexOf("max("))).split(",");
+					float[] maxf = new float[2];
+					for (int i = 0; i < max.length; i++) {
+						String maxSt = max[i];
+						while (maxSt.contains("(") || maxSt.contains("[") || maxSt.contains("<") || maxSt.contains("{")) {
+							maxSt = simplifyParenthesis(maxSt, recursion + 1);
+						}
+						maxf[i] = solveInner(maxSt);
 					}
-					maxf[i] = solveInner(maxSt);
+					par = par.replace("max(" + max[0] + "," + max[1] + ")", String.valueOf(Math.max(maxf[0], maxf[1])));
 				}
-				par = par.replace("max(" + max[0] + "," + max[1] + ")", String.valueOf(Math.max(maxf[0], maxf[1])));
-			} else
-				par = par.replace("(" + innermost + ")", String.valueOf(solveInner(innermost)));
+			} else if (par.contains("pow")) {
+				String[] pow = par.substring(par.lastIndexOf("pow<") + 4, par.indexOf(">", par.lastIndexOf("pow<"))).split("\\^");
+				float[] powf = new float[2];
+				for (int i = 0; i < pow.length; i++) {
+					String powSt = pow[i];
+					while (powSt.contains("(") || powSt.contains("[") || powSt.contains("<") || powSt.contains("{")) {
+						powSt = simplifyParenthesis(powSt, recursion + 1);
+					}
+					powf[i] = solveInner(powSt);
+				}
+				par = par.replace("pow<" + pow[0] + "^" + pow[1] + ">", String.valueOf(Math.pow(powf[0], powf[1])));
+			} else if (par.contains("mul") || par.contains("div")) {
+				boolean mulB = par.lastIndexOf("mul") > par.lastIndexOf("div") || !par.contains("div");
+				if (mulB) {
+					String[] mul = par.substring(par.lastIndexOf("mul[") + 4, par.indexOf("]", par.lastIndexOf("mul["))).split("\\*");
+					float[] mulf = new float[2];
+					for (int i = 0; i < mul.length; i++) {
+						String mulSt = mul[i];
+						while (mulSt.contains("(") || mulSt.contains("[") || mulSt.contains("<") || mulSt.contains("{")) {
+							mulSt = simplifyParenthesis(mulSt, recursion + 1);
+						}
+						mulf[i] = solveInner(mulSt);
+					}
+					par = par.replace("mul[" + mul[0] + "*" + mul[1] + "]", String.valueOf(mulf[0] * mulf[1]));
+				} else {
+					String[] div = par.substring(par.lastIndexOf("div[") + 4, par.indexOf("]", par.lastIndexOf("div["))).split("/");
+					float[] divf = new float[2];
+					for (int i = 0; i < div.length; i++) {
+						String divSt = div[i];
+						while (divSt.contains("(") || divSt.contains("[") || divSt.contains("<") || divSt.contains("{")) {
+							divSt = simplifyParenthesis(divSt, recursion + 1);
+						}
+						divf[i] = solveInner(divSt);
+					}
+					par = par.replace("div[" + div[0] + "/" + div[1] + "]", String.valueOf(divf[0] / divf[1]));
+				}
+			} else if (par.contains("add") || par.contains("sub")) {
+				boolean addB = par.lastIndexOf("add") > par.lastIndexOf("sub") || !par.contains("sub");
+				if (addB) {
+					String[] add = par.substring(par.lastIndexOf("add{") + 4, par.indexOf("}", par.lastIndexOf("add{"))).split("\\+");
+					float[] addf = new float[2];
+					for (int i = 0; i < add.length; i++) {
+						String addSt = add[i];
+						while (addSt.contains("(") || addSt.contains("[") || addSt.contains("<") || addSt.contains("{")) {
+							addSt = simplifyParenthesis(addSt, recursion + 1);
+						}
+						addf[i] = solveInner(addSt);
+					}
+					par = par.replace("add{" + add[0] + "+" + add[1] + "}", String.valueOf(addf[0] * addf[1]));
+				} else {
+					String[] sub = par.substring(par.lastIndexOf("sub{") + 4, par.indexOf("}", par.lastIndexOf("sub{"))).split("-");
+					float[] subf = new float[2];
+					for (int i = 0; i < sub.length; i++) {
+						String subSt = sub[i];
+						while (subSt.contains("(") || subSt.contains("[") || subSt.contains("<") || subSt.contains("{")) {
+							subSt = simplifyParenthesis(subSt, recursion + 1);
+						}
+						subf[i] = solveInner(subSt);
+					}
+					par = par.replace("sub{" + sub[0] + "-" + sub[1] + "}", String.valueOf(subf[0] - subf[1]));
+				}
+			}
 			return par;
 		}
 		public float solveInner(String par) {
-			while (par.contains("^")) {
-				String[] pow = par.split("\\^", 1);
-				double[] powSides = new double[2];
-				if (!pow[0].contains("*") && !pow[0].contains("/") && !pow[0].contains("+") && !pow[0].contains("-")) {
-					powSides[0] = Double.parseDouble(pow[0]);
-					if (pow[1].contains("+") || pow[1].contains("-") || pow[1].contains("*") || pow[1].contains("/")) {
-						int pIndex = pow[1].indexOf("+");
-						int mIndex = pow[1].indexOf("-");
-						int muIndex = pow[1].indexOf("*");
-						int dIndex = pow[1].indexOf("/");
-						int lIndex = min(min(pIndex, mIndex), min(muIndex, dIndex));
-						powSides[1] = Double.parseDouble(pow[1].substring(0, lIndex));
-					} else powSides[1] = Double.parseDouble(pow[1]);
-				} else {
-					int pIndex0 = pow[0].indexOf("+");
-					int mIndex0 = pow[0].indexOf("-");
-					int muIndex0 = pow[0].indexOf("*");
-					int dIndex0 = pow[0].indexOf("/");
-					int lIndex0 = min(min(pIndex0, mIndex0), min(muIndex0, dIndex0));
-					powSides[0] = Double.parseDouble(pow[0].substring(lIndex0));
-					if (pow[1].contains("+") || pow[1].contains("-") || pow[1].contains("*") || pow[1].contains("/")) {
-						int pIndex = pow[1].indexOf("+");
-						int mIndex = pow[1].indexOf("-");
-						int muIndex = pow[1].indexOf("*");
-						int dIndex = pow[1].indexOf("/");
-						int lIndex = min(min(pIndex, mIndex), min(muIndex, dIndex));
-						powSides[1] = Double.parseDouble(pow[1].substring(0, lIndex));
-					} else powSides[1] = Double.parseDouble(pow[1]);
-				}
-				par = par.replace(pow[0] + "^" + pow[1], String.valueOf(Math.pow(powSides[0], powSides[1])));
-			}
-			while (par.contains("*") || par.contains("/")) {
-				boolean divide = par.indexOf("*") > par.indexOf("/");
-				if (divide) {
-					String[] div = par.split("/", 1);
-					double[] divSides = new double[2];
-					if (!div[0].contains("+") && !div[0].contains("-")) {
-						divSides[0] = Double.parseDouble(div[0]);
-						if (div[1].contains("+") || div[1].contains("-") || div[1].contains("*")) {
-							int pIndex = div[1].indexOf("+");
-							int mIndex = div[1].indexOf("-");
-							int muIndex = div[1].indexOf("*");
-							int lIndex = min(min(pIndex, mIndex), muIndex);
-							divSides[1] = Double.parseDouble(div[1].substring(0, lIndex));
-						} else divSides[1] = Double.parseDouble(div[1]);
-					} else {
-						int pIndex0 = div[0].indexOf("+");
-						int mIndex0 = div[0].indexOf("-");
-						int lIndex0 = min(pIndex0, mIndex0);
-						divSides[0] = Double.parseDouble(div[0].substring(lIndex0));
-						if (div[1].contains("+") || div[1].contains("-") || div[1].contains("*")) {
-							int pIndex = div[1].indexOf("+");
-							int mIndex = div[1].indexOf("-");
-							int muIndex = div[1].indexOf("*");
-							int lIndex = min(min(pIndex, mIndex), muIndex);
-							divSides[1] = Double.parseDouble(div[1].substring(0, lIndex));
-						} else divSides[1] = Double.parseDouble(div[1]);
-					}
-					par = par.replace(div[0] + "/" + div[1], String.valueOf(divSides[0] / divSides[1]));
-				} else {
-					String[] mul = par.split("\\*", 1);
-					double[] mulSides = new double[2];
-					if (!mul[0].contains("+") && !mul[0].contains("-")) {
-						mulSides[0] = Double.parseDouble(mul[0]);
-						if (mul[1].contains("+") || mul[1].contains("-") || mul[1].contains("/")) {
-							int pIndex = mul[1].indexOf("+");
-							int mIndex = mul[1].indexOf("-");
-							int dIndex = mul[1].indexOf("/");
-							int lIndex = min(min(pIndex, mIndex), dIndex);
-							mulSides[1] = Double.parseDouble(mul[1].substring(0, lIndex));
-						} else mulSides[1] = Double.parseDouble(mul[1]);
-					} else {
-						int pIndex0 = mul[0].indexOf("+");
-						int mIndex0 = mul[0].indexOf("-");
-						int lIndex0 = min(pIndex0, mIndex0);
-						mulSides[0] = Double.parseDouble(mul[0].substring(lIndex0));
-						if (mul[1].contains("+") || mul[1].contains("-") || mul[1].contains("/")) {
-							int pIndex = mul[1].indexOf("+");
-							int mIndex = mul[1].indexOf("-");
-							int dIndex = mul[1].indexOf("/");
-							int lIndex = min(min(pIndex, mIndex), dIndex);
-							mulSides[1] = Double.parseDouble(mul[1].substring(0, lIndex));
-						} else mulSides[1] = Double.parseDouble(mul[1]);
-					}
-					par = par.replace(mul[0] + "*" + mul[1], String.valueOf(mulSides[0] * mulSides[1]));
-				}
-			}
-			while (par.contains("+") || par.contains("-")) {
-				boolean subtract = par.indexOf("+") > par.indexOf("-");
-				if (subtract) {
-					String[] sub = par.split("-", 1);
-					double[] subSides = new double[2];
-					subSides[0] = Double.parseDouble(sub[0]);
-					if (sub[1].contains("+") || sub[1].contains("-")) {
-						int pIndex = sub[1].indexOf("+");
-						int mIndex = sub[1].indexOf("-");
-						int lIndex = min(pIndex, mIndex);
-						subSides[1] = Double.parseDouble(sub[1].substring(0, lIndex));
-					} else subSides[1] = Double.parseDouble(sub[1]);
-					par = par.replace(sub[0] + "-" + sub[1], String.valueOf(subSides[0] - subSides[1]));
-				} else {
-					String[] add = par.split("\\+", 1);
-					double[] addSides = new double[2];
-					addSides[0] = Double.parseDouble(add[0]);
-					if (add[1].contains("+") || add[1].contains("-")) {
-						int pIndex = add[1].indexOf("+");
-						int mIndex = add[1].indexOf("-");
-						int lIndex = min(pIndex, mIndex);
-						addSides[1] = Double.parseDouble(add[1].substring(0, lIndex));
-					} else addSides[1] = Double.parseDouble(add[1]);
-					par = par.replace(add[0] + "+" + add[1], String.valueOf(addSides[0] + addSides[1]));
-				}
-			}
 			return Float.parseFloat(par);
 		}
 		public static int min(int val, int comp) {
-			if (comp == -1)
+			if (comp == -1 || comp == 0)
 				comp = Integer.MAX_VALUE;
-			if (val == -1)
+			if (val == -1 || val == 0)
 				val = Integer.MAX_VALUE;
 			return Math.min(val, comp);
 		}
