@@ -17,8 +17,7 @@ public class CombatRulesMixin {
 		if (calcs != null) {
 			original = calcs.armourCalcs(amount, source, armour, toughness);
 			Combatify.LOGGER.info("Damage: " + amount + " Result: " + original);
-		} else
-			Combatify.LOGGER.info("armour formula is null");
+		}
 		return original;
 	}
 	@ModifyReturnValue(method = "getDamageAfterMagicAbsorb", at = @At("RETURN"))

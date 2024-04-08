@@ -824,14 +824,14 @@ public class ItemConfig extends AtlasConfig {
 	}
 	public record Formula(String written) {
 		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {
-			String armourFormula = written.split("enchMul", 2)[0];
+			String armourFormula = written.split("enchant:", 2)[0];
 			armourFormula = armourFormula.replaceAll("D", String.valueOf(amount)).replaceAll("P", String.valueOf(armour)).replaceAll("T", String.valueOf(armourToughness));
 			float result = solveFormula(armourFormula);
 			result = 1.0F - EnchantmentHelper.calculateArmorBreach(damageSource.getEntity(), result);
 			return amount * result;
 		}
 		public float enchantCalcs(float amount, float enchantLevel) {
-			String enchantFormula = written.split("enchMul", 2)[1];
+			String enchantFormula = written.split("enchant:", 2)[1];
 			enchantFormula = enchantFormula.replaceAll("D", String.valueOf(amount)).replaceAll("E", String.valueOf(enchantLevel));
 			float result = solveFormula(enchantFormula);
 			return amount * result;
