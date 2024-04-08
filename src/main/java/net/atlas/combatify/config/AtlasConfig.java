@@ -95,7 +95,7 @@ public abstract class AtlasConfig {
             configJsonObject = JsonParser.parseReader(new JsonReader(new FileReader(configFile))).getAsJsonObject();
             for (EnumHolder<?> enumHolder : enumValues)
                 if (configJsonObject.has(enumHolder.heldValue.name))
-                    enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name));
+                    enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name).toUpperCase(Locale.ROOT));
             for (StringHolder stringHolder : stringValues)
                 if (configJsonObject.has(stringHolder.heldValue.name))
                     stringHolder.setValue(getString(configJsonObject, stringHolder.heldValue.name));
@@ -143,44 +143,54 @@ public abstract class AtlasConfig {
     public ConfigHolder<?> fromValue(ConfigValue<?> value) {
         return valueNameToConfigHolderMap.get(value.name);
     }
-    @SafeVarargs
-    public final <E extends Enum<E>> EnumHolder<E> createEnum(String name, E defaultVal, Class<E> clazz, E... values) {
+    public final <E extends Enum<E>> EnumHolder<E> createEnum(String name, E defaultVal, Class<E> clazz, E[] values) {
         EnumHolder<E> enumHolder = new EnumHolder<>(new ConfigValue<>(defaultVal, values, false, name, this), clazz);
         enumValues.add(enumHolder);
         return enumHolder;
     }
-    public StringHolder createString(String name, String defaultVal, String... values) {
+    public StringHolder createStringRange(String name, String defaultVal, String... values) {
         StringHolder stringHolder = new StringHolder(new ConfigValue<>(defaultVal, values, false, name, this));
         stringValues.add(stringHolder);
         return stringHolder;
     }
+	public StringHolder createString(String name, String defaultVal) {
+		StringHolder stringHolder = new StringHolder(new ConfigValue<>(defaultVal, null, false, name, this));
+		stringValues.add(stringHolder);
+		return stringHolder;
+	}
     public BooleanHolder createBoolean(String name, boolean defaultVal) {
         BooleanHolder booleanHolder = new BooleanHolder(new ConfigValue<>(defaultVal, new Boolean[]{false, true}, false, name, this));
         booleanValues.add(booleanHolder);
         return booleanHolder;
     }
+	public IntegerHolder createIntegerUnbound(String name, Integer defaultVal) {
+		IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, null, false, name, this));
+		integerValues.add(integerHolder);
+		return integerHolder;
+	}
     public IntegerHolder createInRestrictedValues(String name, Integer defaultVal, Integer... values) {
         IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, values, false, name, this));
         integerValues.add(integerHolder);
         return integerHolder;
     }
     public IntegerHolder createInRange(String name, int defaultVal, int min, int max) {
-        Integer[] range = new Integer[2];
-        range[0] = min;
-        range[1] = max;
+        Integer[] range = new Integer[]{min, max};
         IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, range, true, name, this));
         integerValues.add(integerHolder);
         return integerHolder;
     }
+	public DoubleHolder createDoubleUnbound(String name, Double defaultVal) {
+		DoubleHolder doubleHolder = new DoubleHolder(new ConfigValue<>(defaultVal, null, false, name, this));
+		doubleValues.add(doubleHolder);
+		return doubleHolder;
+	}
     public DoubleHolder createInRestrictedValues(String name, Double defaultVal, Double... values) {
         DoubleHolder doubleHolder = new DoubleHolder(new ConfigValue<>(defaultVal, values, false, name, this));
         doubleValues.add(doubleHolder);
         return doubleHolder;
     }
     public DoubleHolder createInRange(String name, double defaultVal, double min, double max) {
-        Double[] range = new Double[2];
-        range[0] = min;
-        range[1] = max;
+        Double[] range = new Double[]{min, max};
         DoubleHolder doubleHolder = new DoubleHolder(new ConfigValue<>(defaultVal, range, true, name, this));
         doubleValues.add(doubleHolder);
         return doubleHolder;
@@ -191,7 +201,7 @@ public abstract class AtlasConfig {
             owner.alertChange(this, newValue);
         }
         public boolean isValid(T newValue) {
-            return Arrays.stream(possibleValues).toList().contains(newValue);
+            return possibleValues == null || Arrays.stream(possibleValues).toList().contains(newValue);
         }
         public void addAssociation(ConfigHolder<T> configHolder) {
             if (owner.valueNameToConfigHolderMap.containsKey(name))
@@ -266,9 +276,7 @@ public abstract class AtlasConfig {
         public void setValue(String name) {
             E newValue = null;
             for (E e : clazz.getEnumConstants()) {
-                if (e.toString().equals(name)) {
-                    newValue = e;
-                }
+                if (e.toString().equals(name)) newValue = e;
             }
             if (newValue == null)
                 return;
@@ -292,6 +300,8 @@ public abstract class AtlasConfig {
 
         @Override
         public boolean isNotValid(Integer newValue) {
+			if (heldValue.possibleValues == null)
+				return super.isNotValid(newValue);
             boolean inRange = heldValue.isRange && newValue >= heldValue.possibleValues[0] && newValue <= heldValue.possibleValues[1];
             return super.isNotValid(newValue) && !inRange;
         }
@@ -303,6 +313,8 @@ public abstract class AtlasConfig {
 
         @Override
         public boolean isNotValid(Double newValue) {
+			if (heldValue.possibleValues == null)
+				return super.isNotValid(newValue);
             boolean inRange = heldValue.isRange && newValue >= heldValue.possibleValues[0] && newValue <= heldValue.possibleValues[1];
             return super.isNotValid(newValue) && !inRange;
         }

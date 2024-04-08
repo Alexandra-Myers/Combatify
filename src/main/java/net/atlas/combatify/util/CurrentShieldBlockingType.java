@@ -12,12 +12,16 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class CurrentShieldBlockingType extends BlockingType {
 	public CurrentShieldBlockingType(String name) {
@@ -34,6 +38,16 @@ public class CurrentShieldBlockingType extends BlockingType {
 		if (!source.is(DamageTypeTags.IS_PROJECTILE) && (entity = source.getDirectEntity()) instanceof LivingEntity) {
 			LivingEntity livingEntity = (LivingEntity)entity;
 			instance.blockUsingShield(livingEntity);
+		} else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
+			switch (source.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, blockingItem);
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, blockingItem);
+				case null, default -> {
+					// Do nothing
+				}
+			}
 		}
 		bl.set(true);
 	}

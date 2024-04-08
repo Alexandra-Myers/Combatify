@@ -301,11 +301,18 @@ public class MethodHandler {
 			if (piercingLevel > 0)
 				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
 			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime());
-			if(Combatify.CONFIG.defender())
+			if (Combatify.CONFIG.defender())
 				damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
-			if(target instanceof PlayerExtensions player)
+			if (target instanceof PlayerExtensions player)
 				player.ctsShieldDisable(damage, blockingItem.getItem());
 		}
+	}
+	public static void arrowDisable(LivingEntity target, ItemStack blockingItem) {
+		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
+		if (Combatify.CONFIG.defender())
+			damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
+		if (target instanceof PlayerExtensions player)
+			player.ctsShieldDisable(damage, blockingItem.getItem());
 	}
 	public static ItemStack getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {

@@ -3,10 +3,13 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ArrowDisableMode;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -15,10 +18,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -28,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class NewShieldBlockingType extends BlockingType {
 	public NewShieldBlockingType(String name) {
@@ -40,9 +49,18 @@ public class NewShieldBlockingType extends BlockingType {
 			return;
 		float actualStrength = this.getShieldBlockDamageValue(blockingItem);
 		g.set(amount.get() * actualStrength);
-		if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_PROJECTILE))
+		if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_PROJECTILE)) {
 			g.set(amount.get());
-		else {
+			switch (source.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, blockingItem);
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, blockingItem);
+				case null, default -> {
+					// Do nothing
+				}
+			}
+		} else {
 			entity = source.getDirectEntity();
 			if (entity instanceof LivingEntity livingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());

@@ -72,6 +72,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private DoubleHolder thrownTridentDamage;
+	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 
 	public CombatifyBetaConfig() {
 		super(id("combatify-beta"));
@@ -151,6 +152,8 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
 		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
 		thrownTridentDamage = createInRange("thrownTridentDamage", 8, 0, 40D);
+
+		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values());
 	}
 
 	@Override
@@ -357,5 +360,8 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Double minHitboxSize() {
 		return minHitboxSize.get();
+	}
+	public ArrowDisableMode arrowDisableMode() {
+		return arrowDisableMode.get();
 	}
 }
