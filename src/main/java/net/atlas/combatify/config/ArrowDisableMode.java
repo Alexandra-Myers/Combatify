@@ -3,9 +3,9 @@ package net.atlas.combatify.config;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 
 public enum ArrowDisableMode {
-	NONE(false, false, false),
+	NONE,
 	ALL(true, true, true),
-	CRIT(false, true, false),
+	CRIT(false, true),
 	PIERCE(false, false, true),
 	CRIT_OR_PIERCE(false, true, true),
 	CRIT_AND_PIERCE(false, false, false, true);
@@ -13,6 +13,12 @@ public enum ArrowDisableMode {
 	public final boolean onCrit;
 	public final boolean onPierce;
 	public final boolean onPierceCrit;
+	ArrowDisableMode() {
+		this(false, false, false, false);
+	}
+	ArrowDisableMode(boolean onAny, boolean onCrit) {
+		this(onAny, onCrit, false, false);
+	}
 	ArrowDisableMode(boolean onAny, boolean onCrit, boolean onPierce) {
 		this(onAny, onCrit, onPierce, false);
 	}

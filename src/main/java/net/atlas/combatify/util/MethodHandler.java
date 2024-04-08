@@ -128,18 +128,24 @@ public class MethodHandler {
 						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
+				if (!modDamage && damage.get() != null)
+					builder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
 				if (configurableItemData.speed != null) {
 					modSpeed = true;
 					builder.add(Attributes.ATTACK_SPEED,
 						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
+				if (!modSpeed && speed.get() != null)
+					builder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
 				if (configurableItemData.reach != null) {
 					modReach = true;
 					builder.add(Attributes.ENTITY_INTERACTION_RANGE,
 						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
+				if (!modReach && reach.get() != null)
+					builder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
 				UUID uuid = UUID.fromString("C1D3F271-8B8E-BA4A-ACE0-6020A98928B2");
 				EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
 				if (itemStack.getItem() instanceof Equipable equipable)
@@ -158,12 +164,16 @@ public class MethodHandler {
 						new AttributeModifier(uuid, "Config modifier", configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
+				if (!modDefense && defense.get() != null)
+					builder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
 				if (configurableItemData.toughness != null) {
 					modToughness = true;
 					builder.add(Attributes.ARMOR_TOUGHNESS,
 						new AttributeModifier(uuid, "Config modifier", configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
+				if (!modToughness && toughness.get() != null)
+					builder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
 				if (configurableItemData.armourKbRes != null) {
 					modKnockbackResistance = true;
 					if (configurableItemData.armourKbRes > 0)
@@ -171,16 +181,6 @@ public class MethodHandler {
 							new AttributeModifier(uuid, "Config modifier", configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
 							slotGroup);
 				}
-				if (!modDamage && damage.get() != null)
-					builder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
-				if (!modSpeed && speed.get() != null)
-					builder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
-				if (!modReach && reach.get() != null)
-					builder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
-				if (!modDefense && defense.get() != null)
-					builder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
-				if (!modToughness && toughness.get() != null)
-					builder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
 				if (!modKnockbackResistance && knockbackResistance.get() != null)
 					builder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
 				if (modDamage || modSpeed || modReach || modDefense || modToughness || modKnockbackResistance)

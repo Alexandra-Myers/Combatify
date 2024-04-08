@@ -95,7 +95,7 @@ public abstract class AtlasConfig {
             configJsonObject = JsonParser.parseReader(new JsonReader(new FileReader(configFile))).getAsJsonObject();
             for (EnumHolder<?> enumHolder : enumValues)
                 if (configJsonObject.has(enumHolder.heldValue.name))
-                    enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name).toUpperCase(Locale.ROOT));
+                    enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name));
             for (StringHolder stringHolder : stringValues)
                 if (configJsonObject.has(stringHolder.heldValue.name))
                     stringHolder.setValue(getString(configJsonObject, stringHolder.heldValue.name));
@@ -274,13 +274,7 @@ public abstract class AtlasConfig {
 
         }
         public void setValue(String name) {
-            E newValue = null;
-            for (E e : clazz.getEnumConstants()) {
-                if (e.toString().equals(name)) newValue = e;
-            }
-            if (newValue == null)
-                return;
-            setValue(newValue);
+            setValue(Enum.valueOf(clazz, name.toUpperCase(Locale.ROOT)));
         }
     }
     public static class StringHolder extends ConfigHolder<String> {
