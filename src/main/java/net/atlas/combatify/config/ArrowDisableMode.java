@@ -34,4 +34,7 @@ public enum ArrowDisableMode {
 			bl = arrow.isCritArrow() && arrow.getPierceLevel() > 0;
 		return bl;
 	}
+	public boolean pierceArrowsBlocked() {
+		return onPierce || onPierceCrit;
+	}
 }

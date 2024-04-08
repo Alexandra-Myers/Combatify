@@ -202,17 +202,17 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			MethodHandler.knockback(thisEntity, 0.4, e, f);
 	}
 
+	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))
+	public byte isDamageSourceBlocked(byte original) {
+		return Combatify.CONFIG.arrowDisableMode().pierceArrowsBlocked() ? 0 : original;
+	}
+
 	@Inject(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;calculateViewVector(FF)Lnet/minecraft/world/phys/Vec3;"), cancellable = true)
 	public void isDamageSourceBlocked(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
-		Vec3 currentVector = this.getViewVector(1.0F);
-		if (currentVector.y > -0.99 && currentVector.y < 0.99) {
-			currentVector = (new Vec3(currentVector.x, 0.0, currentVector.z)).normalize();
-			Vec3 sourceVector = Objects.requireNonNull(source.getSourcePosition()).vectorTo(this.position());
-			sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
-			cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
-			return;
-		}
-		cir.setReturnValue(false);
+		Vec3 currentVector = this.calculateViewVector(0.0F, this.getYHeadRot()).normalize();
+		Vec3 sourceVector = Objects.requireNonNull(source.getSourcePosition()).vectorTo(this.position());
+		sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
+		cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
 	}
 	@Unique
 	public float combatify$getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel) {

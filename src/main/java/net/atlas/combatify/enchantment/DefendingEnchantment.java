@@ -13,7 +13,7 @@ public class DefendingEnchantment extends Enchantment {
 	public static final Enchantment DEFENDER = EnchantmentRegistry.registerEnchant(id("defender"), new DefendingEnchantment());
 
 	public DefendingEnchantment() {
-		super(Enchantment.definition(ItemTags.WEAPON_ENCHANTABLE, 1, 3, Enchantment.dynamicCost(25, 25), Enchantment.dynamicCost(75, 25), 3, EquipmentSlot.MAINHAND));
+		super(Enchantment.definition(ItemTags.WEAPON_ENCHANTABLE, 1, 1, Enchantment.dynamicCost(25, 25), Enchantment.dynamicCost(75, 25), 3, EquipmentSlot.MAINHAND));
 	}
 
 	@Override

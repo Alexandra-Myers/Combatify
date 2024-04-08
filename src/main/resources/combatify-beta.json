@@ -65,5 +65,7 @@
   "eggDamage": 0.0,
   "snowballDamage": 0.0,
   "windChargeDamage": 1.0,
-  "thrownTridentDamage": 8.0
+  "thrownTridentDamage": 8.0,
+
+  "arrowDisableMode": "none"
 }
