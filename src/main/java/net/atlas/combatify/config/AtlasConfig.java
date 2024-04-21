@@ -243,8 +243,8 @@ public abstract class AtlasConfig {
 			}
 			printWriter.println();
 		}
-		jsonWriter.setIndent("");
-		jsonWriter.endObject();
+		printWriter.write("}");
+		printWriter.close();
 	}
 
 	public abstract void saveExtra(JsonWriter jsonWriter, PrintWriter printWriter);
