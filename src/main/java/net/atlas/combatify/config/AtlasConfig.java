@@ -192,20 +192,20 @@ public abstract class AtlasConfig {
         return booleanHolder;
     }
 	public IntegerHolder createIntegerUnbound(String name, Integer defaultVal) {
-		IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, null, false, name, this));
+		IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, null, false, name, this), false);
 		integerValues.add(integerHolder);
 		holders.add(integerHolder);
 		return integerHolder;
 	}
     public IntegerHolder createInRestrictedValues(String name, Integer defaultVal, Integer... values) {
-        IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, values, false, name, this));
+        IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, values, false, name, this), false);
         integerValues.add(integerHolder);
 		holders.add(integerHolder);
         return integerHolder;
     }
-    public IntegerHolder createInRange(String name, int defaultVal, int min, int max) {
+    public IntegerHolder createInRange(String name, int defaultVal, int min, int max, boolean isSlider) {
         Integer[] range = new Integer[]{min, max};
-        IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, range, true, name, this));
+        IntegerHolder integerHolder = new IntegerHolder(new ConfigValue<>(defaultVal, range, true, name, this), isSlider);
         integerValues.add(integerHolder);
 		holders.add(integerHolder);
         return integerHolder;
@@ -405,7 +405,8 @@ public abstract class AtlasConfig {
 		}
 	}
     public static class IntegerHolder extends ConfigHolder<Integer> {
-        private IntegerHolder(ConfigValue<Integer> value) {
+		public final boolean isSlider;
+        private IntegerHolder(ConfigValue<Integer> value, boolean isSlider) {
             super(value, ByteBufCodecs.VAR_INT, (writer, i) -> {
 				try {
 					writer.value(i);
@@ -413,6 +414,7 @@ public abstract class AtlasConfig {
 					throw new RuntimeException(e);
 				}
 			});
+            this.isSlider = isSlider;
         }
 
         @Override
@@ -425,7 +427,7 @@ public abstract class AtlasConfig {
 
 		@Override
 		public AbstractConfigListEntry<?> transformIntoConfigEntry() {
-			if (!heldValue.isRange)
+			if (!heldValue.isRange || !isSlider)
 				return new IntegerListEntry(Component.translatable(getTranslationKey()), get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, tooltip, restartRequired);
 			return new IntegerSliderEntry(Component.translatable(getTranslationKey()), heldValue.possibleValues[0], heldValue.possibleValues[1], get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, tooltip, restartRequired);
 		}

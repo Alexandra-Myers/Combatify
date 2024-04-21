@@ -108,6 +108,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public void defineConfigHolders() {
 		attackDecay = createBoolean("attackDecay", false);
 		attackDecay.tieToCategory(ctsB);
+		attackDecay.setupTooltip(1);
 		attackReach = createBoolean("attackReach", true);
 		attackReach.tieToCategory(ctsB);
 		attackReach.setupTooltip(1);
@@ -116,27 +117,37 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		autoAttackAllowed.setupTooltip(1);
 		bedrockImpaling = createBoolean("bedrockImpaling", true);
 		bedrockImpaling.tieToCategory(ctsB);
+		bedrockImpaling.setupTooltip(1);
 		bowFatigue = createBoolean("bowFatigue", true);
 		bowFatigue.tieToCategory(ctsB);
+		bowFatigue.setupTooltip(4);
 		canAttackEarly = createBoolean("canAttackEarly", false);
 		canAttackEarly.tieToCategory(ctsB);
+		canAttackEarly.setupTooltip(1);
 		canSweepOnMiss = createBoolean("canSweepOnMiss", true);
 		canSweepOnMiss.tieToCategory(ctsB);
+		canSweepOnMiss.setupTooltip(1);
 		chargedAttacks = createBoolean("chargedAttacks", true);
 		chargedAttacks.tieToCategory(ctsB);
+		chargedAttacks.setupTooltip(1);
 		chargedReach = createBoolean("chargedReach", true);
 		chargedReach.tieToCategory(ctsB);
+		chargedReach.setupTooltip(1);
 		creativeReach = createBoolean("creativeReach", false);
 		creativeReach.tieToCategory(ctsB);
+		creativeReach.setupTooltip(1);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
 		ctsAttackBalancing.tieToCategory(ctsB);
 		ctsAttackBalancing.setupTooltip(1);
 		ctsKB = createBoolean("ctsKB", true);
 		ctsKB.tieToCategory(ctsB);
+		ctsKB.setupTooltip(1);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ctsB);
+		ctsMomentumPassedToProjectiles.setupTooltip(1);
 		dispensableTridents = createBoolean("dispensableTridents", true);
 		dispensableTridents.tieToCategory(ctsB);
+		dispensableTridents.setupTooltip(1);
 		eatingInterruption = createBoolean("eatingInterruption", true);
 		eatingInterruption.tieToCategory(ctsB);
 		eatingInterruption.setupTooltip(1);
@@ -145,15 +156,19 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		fistDamage.setupTooltip(1);
 		hasMissTime = createBoolean("hasMissTime", false);
 		hasMissTime.tieToCategory(ctsB);
+		hasMissTime.setupTooltip(1);
 		missedAttackRecovery = createBoolean("missedAttackRecovery", true);
 		missedAttackRecovery.tieToCategory(ctsB);
+		missedAttackRecovery.setupTooltip(1);
 		percentageDamageEffects = createBoolean("percentageDamageEffects", true);
 		percentageDamageEffects.tieToCategory(ctsB);
+		percentageDamageEffects.setupTooltip(1);
 		projectilesHaveIFrames = createBoolean("projectilesHaveIFrames", false);
 		projectilesHaveIFrames.tieToCategory(ctsB);
 		projectilesHaveIFrames.setupTooltip(1);
 		resetOnItemChange = createBoolean("resetOnItemChange", false);
 		resetOnItemChange.tieToCategory(ctsB);
+		resetOnItemChange.setupTooltip(1);
 		fastHealing = createBoolean("fastHealing", false);
 		fastHealing.tieToCategory(ctsB);
 		fastHealing.setupTooltip(1);
@@ -168,21 +183,27 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		sprintCritsEnabled.setupTooltip(1);
 		strengthAppliesToEnchants = createBoolean("strengthAppliesToEnchants", true);
 		strengthAppliesToEnchants.tieToCategory(ctsB);
+		strengthAppliesToEnchants.setupTooltip(1);
 		sweepWithSweeping = createBoolean("sweepWithSweeping", true);
 		sweepWithSweeping.tieToCategory(ctsB);
+		sweepWithSweeping.setupTooltip(1);
 		swingThroughGrass = createBoolean("swingThroughGrass", true);
 		swingThroughGrass.tieToCategory(ctsB);
+		swingThroughGrass.setupTooltip(1);
 		tridentVoidReturn = createBoolean("tridentVoidReturn", true);
 		tridentVoidReturn.tieToCategory(ctsB);
+		tridentVoidReturn.setupTooltip(1);
 		vanillaSweep = createBoolean("vanillaSweep", false);
 		vanillaSweep.tieToCategory(ctsB);
+		vanillaSweep.setupTooltip(1);
 		weaponTypesEnabled = createBoolean("weaponTypesEnabled", true);
 		weaponTypesEnabled.tieToCategory(ctsB);
+		weaponTypesEnabled.setupTooltip(3);
 
-		shieldDelay = createInRange("shieldDelay", 0, 0, 2000);
+		shieldDelay = createInRange("shieldDelay", 0, 0, 2000, false);
 		shieldDelay.tieToCategory(ctsI);
 		shieldDelay.setupTooltip(1);
-		instantHealthBonus = createInRange("instantHealthBonus", 6, 1, 1000);
+		instantHealthBonus = createInRange("instantHealthBonus", 6, 1, 1000, false);
 		instantHealthBonus.tieToCategory(ctsI);
 
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
@@ -257,7 +278,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		swordBlocking.tieToCategory(extraB);
 		swordBlocking.setupTooltip(1);
 
-		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
+		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200, true);
 		shieldChargePercentage.tieToCategory(extraI);
 		shieldChargePercentage.setupTooltip(1);
 
