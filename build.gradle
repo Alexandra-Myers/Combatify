@@ -7,6 +7,10 @@ archivesBaseName = project.archives_base_name
 version = project.version
 group = project.maven_group
 
+configurations {
+	includeClasspath
+}
+
 loom {
 	accessWidenerPath = file("src/main/resources/combatify.accesswidener")
 }
@@ -49,10 +53,16 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-//	modApi("com.terraformersmc:modmenu:9.0.0")
+	modApi "com.terraformersmc:modmenu:10.0.0-alpha.1"
+	modApi "me.shedaniel.cloth:cloth-config-fabric:14.0.125"
+
+	implementation "com.moandjiezana.toml:toml4j:${project.toml4j_version}"
+	includeClasspath("com.moandjiezana.toml:toml4j:${project.toml4j_version}") {
+		exclude(group: "com.google.code.gson")
+	}
 }
 
-configurations.all {
+configurations.configureEach {
 	resolutionStrategy {
 		force("net.fabricmc:fabric-loader:${project.loader_version}")
 	}
@@ -94,6 +104,9 @@ java {
 jar {
 	from("LICENSE") {
 		rename { "${it}_${archivesBaseName}" }
+	}
+	from {
+		configurations.includeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 	}
 }
 

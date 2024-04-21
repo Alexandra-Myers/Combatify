@@ -46,7 +46,8 @@
     "ThrownTridentMixin",
     "TieredItemMixin",
     "TiersMixin",
-    "TridentItemMixin"
+    "TridentItemMixin",
+    "cookey.LivingEntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -61,7 +62,23 @@
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
     "RendererMixin",
-    "VideoSettingsMixin"
+    "VideoSettingsMixin",
+    "cookey.AbstractClientPlayerMixin",
+    "cookey.CameraMixin",
+    "cookey.GameRendererMixin",
+    "cookey.HorseArmorLayerMixin",
+    "cookey.HumanoidArmorLayerMixin",
+    "cookey.HumanoidModelMixin",
+    "cookey.ItemInHandLayerMixin",
+    "cookey.LivingEntityRendererMixin",
+    "cookey.MinecraftAccessor",
+    "cookey.OptionsScreenMixin",
+    "cookey.OverlayTextureMixin",
+    "cookey.PlayerRendererMixin",
+    "cookey.RemotePlayerMixin",
+    "cookey.WindowMixin",
+    "cookey.WolfArmorLayerMixin",
+    "cookey.compatibility.optifabric.OFHumanoidArmorLayerMixin"
   ],
   "mixinPriority": 1200
 }

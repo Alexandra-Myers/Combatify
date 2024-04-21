@@ -9,8 +9,8 @@
 		"Alexandra",
 		"zOnlyKroks"
 	],
-    "contact": {},
-    "license": "GPL-3.0",
+  "contact": {},
+  "license": "GPL-3.0",
 	"icon": "assets/combatify/icon.png",
 
 	"environment": "*",
@@ -20,6 +20,9 @@
     ],
 		"client": [
       "net.atlas.combatify.CombatifyClient"
+    ],
+    "modmenu": [
+      "net.atlas.combatify.implementation.ModMenuApiImpl"
     ]
 	},
 	"mixins": [
@@ -27,8 +30,9 @@
 	],
   "accessWidener": "combatify.accesswidener",
 	"depends": {
-		"fabricloader": ">=0.15.7",
-		"minecraft": ">=1.20.4",
+    "fabric-api": "0.97.4+1.20.5",
+		"fabricloader": ">=0.15.10",
+		"minecraft": ">=1.20.5- <1.20.6-",
 		"java": ">=21"
 	}
 }

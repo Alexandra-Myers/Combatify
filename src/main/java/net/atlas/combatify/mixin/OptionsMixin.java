@@ -10,6 +10,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.io.IOException;
+
 @Mixin(Options.class)
 public abstract class OptionsMixin implements IOptions {
 
@@ -23,6 +25,15 @@ public abstract class OptionsMixin implements IOptions {
 		visitor.process("attackIndicatorMaxValue", CombatifyClient.attackIndicatorMaxValue);
 		visitor.process("attackIndicatorMinValue", CombatifyClient.attackIndicatorMinValue);
 		visitor.process("shieldIndicator", CombatifyClient.shieldIndicator);
+	}
+
+	@Inject(method = "save", at = @At("TAIL"))
+	public void saveModConfig(CallbackInfo ci) {
+		try {
+			CombatifyClient.getInstance().getConfig().saveConfig();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

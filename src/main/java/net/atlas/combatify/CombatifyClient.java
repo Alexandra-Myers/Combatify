@@ -2,15 +2,21 @@ package net.atlas.combatify;
 
 import com.mojang.serialization.Codec;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
+import net.atlas.combatify.config.cookey.ModConfig;
 import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.keybind.Keybinds;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
+import net.atlas.combatify.util.PrefixLogger;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -18,6 +24,11 @@ import java.util.Objects;
 import static net.minecraft.client.Options.genericValueLabel;
 
 public class CombatifyClient implements ClientModInitializer {
+	private static final PrefixLogger COOKEY_LOGGER = new PrefixLogger(LogManager.getLogger("CookeyMod"));
+	private static CombatifyClient instance;
+
+	private ModConfig config;
+	private Keybinds keybinds;
 	public static final ModelLayerLocation WOODEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(new ResourceLocation("combatify", "wooden_shield"),"main");
 	public static final ModelLayerLocation IRON_SHIELD_MODEL_LAYER = new ModelLayerLocation(new ResourceLocation("combatify", "iron_shield"),"main");
 	public static final ModelLayerLocation GOLDEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(new ResourceLocation("combatify", "golden_shield"),"main");
@@ -62,6 +73,12 @@ public class CombatifyClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		COOKEY_LOGGER.info("Loading CookeyMod...");
+
+		instance = this;
+		config = new ModConfig(this, FabricLoader.getInstance().getConfigDir().resolve("cookeymod").resolve("config.toml"));
+
+		keybinds = new Keybinds();
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
 		if (Combatify.CONFIG.tieredShields()) {
@@ -71,5 +88,21 @@ public class CombatifyClient implements ClientModInitializer {
 			EntityModelLayerRegistry.registerModelLayer(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 		}
+	}
+
+	public Logger getCookeyModLogger() {
+		return COOKEY_LOGGER.unwrap();
+	}
+
+	public ModConfig getConfig() {
+		return this.config;
+	}
+
+	public Keybinds getKeybinds() {
+		return keybinds;
+	}
+
+	public static CombatifyClient getInstance() {
+		return instance;
 	}
 }

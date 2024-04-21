@@ -1,11 +1,19 @@
 package net.atlas.combatify.config;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -73,9 +81,17 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder minHitboxSize;
 	private DoubleHolder thrownTridentDamage;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
+	private Category ctsB;
+	private Category ctsI;
+	private Category ctsD;
+	private Category extraB;
+	private Category extraI;
+	private Category extraD;
+	private Category extraE;
 
 	public CombatifyBetaConfig() {
 		super(id("combatify-beta"));
+		declareDefaultForMod("combatify");
 	}
 
 	@Override
@@ -84,76 +100,202 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 
 	@Override
+	public void saveExtra(JsonWriter jsonWriter, PrintWriter printWriter) {
+
+	}
+
+	@Override
 	public void defineConfigHolders() {
 		attackDecay = createBoolean("attackDecay", false);
+		attackDecay.tieToCategory(ctsB);
 		attackReach = createBoolean("attackReach", true);
+		attackReach.tieToCategory(ctsB);
+		attackReach.setupTooltip(1);
 		autoAttackAllowed = createBoolean("autoAttackAllowed", true);
+		autoAttackAllowed.tieToCategory(ctsB);
+		autoAttackAllowed.setupTooltip(1);
 		bedrockImpaling = createBoolean("bedrockImpaling", true);
+		bedrockImpaling.tieToCategory(ctsB);
 		bowFatigue = createBoolean("bowFatigue", true);
+		bowFatigue.tieToCategory(ctsB);
 		canAttackEarly = createBoolean("canAttackEarly", false);
+		canAttackEarly.tieToCategory(ctsB);
 		canSweepOnMiss = createBoolean("canSweepOnMiss", true);
+		canSweepOnMiss.tieToCategory(ctsB);
 		chargedAttacks = createBoolean("chargedAttacks", true);
+		chargedAttacks.tieToCategory(ctsB);
 		chargedReach = createBoolean("chargedReach", true);
+		chargedReach.tieToCategory(ctsB);
 		creativeReach = createBoolean("creativeReach", false);
+		creativeReach.tieToCategory(ctsB);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
+		ctsAttackBalancing.tieToCategory(ctsB);
+		ctsAttackBalancing.setupTooltip(1);
 		ctsKB = createBoolean("ctsKB", true);
+		ctsKB.tieToCategory(ctsB);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
+		ctsMomentumPassedToProjectiles.tieToCategory(ctsB);
 		dispensableTridents = createBoolean("dispensableTridents", true);
+		dispensableTridents.tieToCategory(ctsB);
 		eatingInterruption = createBoolean("eatingInterruption", true);
+		eatingInterruption.tieToCategory(ctsB);
+		eatingInterruption.setupTooltip(1);
 		fistDamage = createBoolean("fistDamage", false);
+		fistDamage.tieToCategory(ctsB);
+		fistDamage.setupTooltip(1);
 		hasMissTime = createBoolean("hasMissTime", false);
+		hasMissTime.tieToCategory(ctsB);
 		missedAttackRecovery = createBoolean("missedAttackRecovery", true);
+		missedAttackRecovery.tieToCategory(ctsB);
 		percentageDamageEffects = createBoolean("percentageDamageEffects", true);
+		percentageDamageEffects.tieToCategory(ctsB);
 		projectilesHaveIFrames = createBoolean("projectilesHaveIFrames", false);
+		projectilesHaveIFrames.tieToCategory(ctsB);
+		projectilesHaveIFrames.setupTooltip(1);
 		resetOnItemChange = createBoolean("resetOnItemChange", false);
+		resetOnItemChange.tieToCategory(ctsB);
 		fastHealing = createBoolean("fastHealing", false);
+		fastHealing.tieToCategory(ctsB);
+		fastHealing.setupTooltip(1);
 		saturationHealing = createBoolean("saturationHealing", false);
+		saturationHealing.tieToCategory(ctsB);
+		saturationHealing.setupTooltip(1);
 		snowballKB = createBoolean("snowballKB", true);
+		snowballKB.tieToCategory(ctsB);
+		snowballKB.setupTooltip(1);
 		sprintCritsEnabled = createBoolean("sprintCritsEnabled", true);
+		sprintCritsEnabled.tieToCategory(ctsB);
+		sprintCritsEnabled.setupTooltip(1);
 		strengthAppliesToEnchants = createBoolean("strengthAppliesToEnchants", true);
+		strengthAppliesToEnchants.tieToCategory(ctsB);
 		sweepWithSweeping = createBoolean("sweepWithSweeping", true);
+		sweepWithSweeping.tieToCategory(ctsB);
 		swingThroughGrass = createBoolean("swingThroughGrass", true);
+		swingThroughGrass.tieToCategory(ctsB);
 		tridentVoidReturn = createBoolean("tridentVoidReturn", true);
+		tridentVoidReturn.tieToCategory(ctsB);
 		vanillaSweep = createBoolean("vanillaSweep", false);
+		vanillaSweep.tieToCategory(ctsB);
 		weaponTypesEnabled = createBoolean("weaponTypesEnabled", true);
+		weaponTypesEnabled.tieToCategory(ctsB);
 
-		shieldDelay = createInRange("shieldDelay", 0, 0, 100);
+		shieldDelay = createInRange("shieldDelay", 0, 0, 2000);
+		shieldDelay.tieToCategory(ctsI);
+		shieldDelay.setupTooltip(1);
 		instantHealthBonus = createInRange("instantHealthBonus", 6, 1, 1000);
+		instantHealthBonus.tieToCategory(ctsI);
 
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
+		baseHandAttackSpeed.tieToCategory(ctsD);
 		bowUncertainty = createInRange("bowUncertainty", 0.25, 0, 4);
+		bowUncertainty.tieToCategory(ctsD);
 		healingTime = createInRange("healingTime", 2, 0, 100D);
+		healingTime.tieToCategory(ctsD);
+		healingTime.setupTooltip(1);
 		cleavingDisableTime = createInRange("cleavingDisableTime", 0.5, 0, 10);
+		cleavingDisableTime.tieToCategory(ctsD);
+		cleavingDisableTime.setupTooltip(1);
 		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
+		shieldDisableTime.tieToCategory(ctsD);
+		shieldDisableTime.setupTooltip(1);
 		minHitboxSize = createInRange("minHitboxSize", 0.9, 0, 5);
+		minHitboxSize.tieToCategory(ctsD);
+		minHitboxSize.setupTooltip(1);
 
 		attackSpeed = createBoolean("attackSpeed", true);
+		attackSpeed.tieToCategory(extraB);
+		attackSpeed.setupTooltip(1);
 		canInteractWhenCrouchShield = createBoolean("canInteractWhenCrouchShield", true);
+		canInteractWhenCrouchShield.tieToCategory(extraB);
 		configOnlyWeapons = createBoolean("configOnlyWeapons", false);
+		configOnlyWeapons.tieToCategory(extraB);
+		configOnlyWeapons.setRestartRequired(true);
+		configOnlyWeapons.setupTooltip(1);
 		defender = createBoolean("defender", false);
+		defender.tieToCategory(extraB);
+		defender.setRestartRequired(true);
+		defender.setupTooltip(1);
 		piercer = createBoolean("piercer", false);
+		piercer.tieToCategory(extraB);
+		piercer.setRestartRequired(true);
+		piercer.setupTooltip(2);
 		tieredShields = createBoolean("tieredShields", false);
+		tieredShields.tieToCategory(extraB);
+		tieredShields.setRestartRequired(true);
+		tieredShields.setupTooltip(1);
 		disableDuringShieldDelay = createBoolean("disableDuringShieldDelay", false);
+		disableDuringShieldDelay.tieToCategory(extraB);
+		disableDuringShieldDelay.setupTooltip(1);
 		fishingHookKB = createBoolean("fishingHookKB", false);
+		fishingHookKB.tieToCategory(extraB);
+		fishingHookKB.setupTooltip(1);
 		improvedMiscEntityAttacks = createBoolean("improvedMiscEntityAttacks", false);
+		improvedMiscEntityAttacks.tieToCategory(extraB);
+		improvedMiscEntityAttacks.setupTooltip(1);
 		instaAttack = createBoolean("instaAttack", false);
+		instaAttack.tieToCategory(extraB);
+		instaAttack.setupTooltip(1);
 		letVanillaConnect = createBoolean("letVanillaConnect", true);
+		letVanillaConnect.tieToCategory(extraB);
+		letVanillaConnect.setupTooltip(1);
 		magicHasIFrames = createBoolean("magicHasIFrames", true);
+		magicHasIFrames.tieToCategory(extraB);
+		magicHasIFrames.setupTooltip(1);
 		midairKB = createBoolean("midairKB", false);
+		midairKB.tieToCategory(extraB);
+		midairKB.setupTooltip(2);
 		oldSprintFoodRequirement = createBoolean("oldSprintFoodRequirement", false);
+		oldSprintFoodRequirement.tieToCategory(extraB);
+		oldSprintFoodRequirement.setupTooltip(1);
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
+		shieldOnlyWhenCharged.tieToCategory(extraB);
+		shieldOnlyWhenCharged.setupTooltip(2);
 		sweepingNegatedForTamed = createBoolean("sweepingNegatedForTamed", false);
+		sweepingNegatedForTamed.tieToCategory(extraB);
+		sweepingNegatedForTamed.setupTooltip(1);
 		swordBlocking = createBoolean("swordBlocking", false);
+		swordBlocking.tieToCategory(extraB);
+		swordBlocking.setupTooltip(1);
 
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200);
+		shieldChargePercentage.tieToCategory(extraI);
+		shieldChargePercentage.setupTooltip(1);
 
 		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
+		defenderDisableReduction.tieToCategory(extraD);
+		defenderDisableReduction.setupTooltip(1);
 		eggDamage = createInRange("eggDamage", 0, 0, 40D);
+		eggDamage.tieToCategory(extraD);
 		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
+		snowballDamage.tieToCategory(extraD);
 		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
+		windChargeDamage.tieToCategory(extraD);
 		thrownTridentDamage = createInRange("thrownTridentDamage", 8, 0, 40D);
+		thrownTridentDamage.tieToCategory(extraD);
 
-		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values());
+		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values(), e -> Component.translatable("text.config.combatify-beta.option.arrowDisableMode." + e.name().toLowerCase(Locale.ROOT)));
+		arrowDisableMode.tieToCategory(extraE);
+		arrowDisableMode.setupTooltip(7);
+	}
+
+	@Override
+	public @NotNull List<Category> createCategories() {
+		List<Category> categoryList = super.createCategories();
+		ctsB = new Category(this, "cts_booleans", new ArrayList<>());
+		ctsI = new Category(this, "cts_integers", new ArrayList<>());
+		ctsD = new Category(this, "cts_doubles", new ArrayList<>());
+		extraB = new Category(this, "extra_booleans", new ArrayList<>());
+		extraI = new Category(this, "extra_integers", new ArrayList<>());
+		extraD = new Category(this, "extra_doubles", new ArrayList<>());
+		extraE = new Category(this, "extra_enums", new ArrayList<>());
+		categoryList.add(ctsB);
+		categoryList.add(ctsI);
+		categoryList.add(ctsD);
+		categoryList.add(extraB);
+		categoryList.add(extraD);
+		categoryList.add(extraI);
+		categoryList.add(extraE);
+		return categoryList;
 	}
 
 	@Override
@@ -162,7 +304,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 
 	@Override
-	public <T> void alertChange(AtlasConfig.ConfigValue<T> tConfigValue, T newValue) {
+	public <T> void alertChange(ConfigValue<T> tConfigValue, T newValue) {
 
 	}
 
@@ -175,6 +317,12 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 
 	}
+
+	@Override
+	public Screen createScreen(Screen prevScreen) {
+		return null;
+	}
+
 	public Boolean weaponTypesEnabled() {
 		return weaponTypesEnabled.get();
 	}

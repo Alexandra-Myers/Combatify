@@ -3,6 +3,7 @@ package net.atlas.combatify.config;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.item.WeaponType;
@@ -12,6 +13,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -24,6 +26,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -678,8 +681,23 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
+	public void saveExtra(JsonWriter jsonWriter, PrintWriter printWriter) {
+
+	}
+
+	@Override
 	public void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 		LOGGER.info("Loading config details from buffer.");
+	}
+
+	@Override
+	public Screen createScreen(Screen prevScreen) {
+		return null;
+	}
+
+	@Override
+	public boolean hasScreen() {
+		return false;
 	}
 
 	public void parseItemConfig(Item item, JsonObject jsonObject) {

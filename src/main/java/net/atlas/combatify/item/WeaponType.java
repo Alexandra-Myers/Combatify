@@ -189,4 +189,7 @@ public class WeaponType {
 		}
 		return speed;
 	}
+	public static void init() {
+
+	}
 }

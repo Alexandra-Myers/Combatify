@@ -45,6 +45,8 @@ public class Combatify implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		if (registeredWeaponTypes.isEmpty())
+			WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		LOGGER.info("Init started.");
 		if (CONFIG.dispensableTridents())

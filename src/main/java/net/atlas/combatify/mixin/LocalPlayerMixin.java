@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
@@ -18,6 +19,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
+import net.atlas.combatify.config.cookey.option.BooleanOption;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,6 +39,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Shadow
 	private boolean startedUsingItem;
 
+
+	BooleanOption force100PercentRecharge = CombatifyClient.getInstance().getConfig().misc().force100PercentRecharge();
+
 	@Shadow
 	@Final
 	public ClientPacketListener connection;
@@ -55,7 +60,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
 					if (!bl && !itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
 						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
-							((IMinecraft) minecraft).startUseItem(interactionHand);
+							((IMinecraft) minecraft).combatify$startUseItem(interactionHand);
 							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
 						}
 					}
@@ -76,6 +81,16 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	public void customSwing(InteractionHand interactionHand) {
 		swing(interactionHand, false);
 		connection.send(new ServerboundSwingPacket(interactionHand));
+	}
+
+	@Override
+	public boolean isAttackAvailable(float baseTime) {
+		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
+			if (force100PercentRecharge.get())
+				return false;
+			return (getMissedAttackRecovery() && getAttackStrengthStartValue() - (this.attackStrengthTicker - baseTime) > 4.0F);
+		}
+		return true;
 	}
 
 	@ModifyExpressionValue(method = "hasEnoughFoodToStartSprinting", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
