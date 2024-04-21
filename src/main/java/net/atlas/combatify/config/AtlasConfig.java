@@ -119,19 +119,19 @@ public abstract class AtlasConfig {
             configJsonObject = JsonParser.parseReader(new JsonReader(new FileReader(configFile))).getAsJsonObject();
             for (EnumHolder<?> enumHolder : enumValues)
                 if (configJsonObject.has(enumHolder.heldValue.name))
-                    enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name));
+                    enumHolder.setValueAndResetManaged(getString(configJsonObject, enumHolder.heldValue.name));
             for (StringHolder stringHolder : stringValues)
                 if (configJsonObject.has(stringHolder.heldValue.name))
-                    stringHolder.setValue(getString(configJsonObject, stringHolder.heldValue.name));
+                    stringHolder.setValueAndResetManaged(getString(configJsonObject, stringHolder.heldValue.name));
             for (BooleanHolder booleanHolder : booleanValues)
                 if (configJsonObject.has(booleanHolder.heldValue.name))
-                    booleanHolder.setValue(getBoolean(configJsonObject, booleanHolder.heldValue.name));
+                    booleanHolder.setValueAndResetManaged(getBoolean(configJsonObject, booleanHolder.heldValue.name));
             for (IntegerHolder integerHolder : integerValues)
                 if (configJsonObject.has(integerHolder.heldValue.name))
-                    integerHolder.setValue(getInt(configJsonObject, integerHolder.heldValue.name));
+                    integerHolder.setValueAndResetManaged(getInt(configJsonObject, integerHolder.heldValue.name));
             for (DoubleHolder doubleHolder : doubleValues)
                 if (configJsonObject.has(doubleHolder.heldValue.name))
-                    doubleHolder.setValue(getDouble(configJsonObject, doubleHolder.heldValue.name));
+                    doubleHolder.setValueAndResetManaged(getDouble(configJsonObject, doubleHolder.heldValue.name));
             loadExtra(configJsonObject);
         } catch (IOException | IllegalStateException e) {
             e.printStackTrace();
@@ -282,6 +282,7 @@ public abstract class AtlasConfig {
         public final StreamCodec<ByteBuf, T> codec;
 		public final BiConsumer<JsonWriter, T> update;
 		public boolean restartRequired = false;
+		public boolean serverManaged = false;
 		public Supplier<Optional<Component[]>> tooltip = Optional::empty;
 
 		public ConfigHolder(ConfigValue<T> value, StreamCodec<ByteBuf, T> codec, BiConsumer<JsonWriter, T> update) {
@@ -307,10 +308,15 @@ public abstract class AtlasConfig {
                 return;
             heldValue.emitChanged(newValue);
             value = newValue;
+			serverManaged = true;
         }
         public boolean isNotValid(T newValue) {
             return !heldValue.isValid(newValue);
         }
+		public void setValueAndResetManaged(T newValue) {
+			setValue(newValue);
+			serverManaged = false;
+		}
         public void setValue(T newValue) {
             if (isNotValid(newValue))
                 return;
@@ -363,7 +369,13 @@ public abstract class AtlasConfig {
             this.clazz = clazz;
 			this.names = names;
         }
-        public void setValue(String name) {
+
+		public void setValueAndResetManaged(String name) {
+			setValue(name);
+			serverManaged = false;
+		}
+
+		public void setValue(String name) {
             setValue(Enum.valueOf(clazz, name.toUpperCase(Locale.ROOT)));
         }
 
@@ -463,20 +475,30 @@ public abstract class AtlasConfig {
 		JsonObject configJsonObject = JsonParser.parseReader(new JsonReader(new InputStreamReader(getDefaultedConfig()))).getAsJsonObject();
 
 		for (EnumHolder<?> enumHolder : enumValues)
-			if (configJsonObject.has(enumHolder.heldValue.name))
+			if (configJsonObject.has(enumHolder.heldValue.name)) {
 				enumHolder.setValue(getString(configJsonObject, enumHolder.heldValue.name));
+				enumHolder.serverManaged = true;
+			}
 		for (StringHolder stringHolder : stringValues)
-			if (configJsonObject.has(stringHolder.heldValue.name))
+			if (configJsonObject.has(stringHolder.heldValue.name)) {
 				stringHolder.setValue(getString(configJsonObject, stringHolder.heldValue.name));
+				stringHolder.serverManaged = true;
+			}
 		for (BooleanHolder booleanHolder : booleanValues)
-			if (configJsonObject.has(booleanHolder.heldValue.name))
+			if (configJsonObject.has(booleanHolder.heldValue.name)) {
 				booleanHolder.setValue(getBoolean(configJsonObject, booleanHolder.heldValue.name));
+				booleanHolder.serverManaged = true;
+			}
 		for (IntegerHolder integerHolder : integerValues)
-			if (configJsonObject.has(integerHolder.heldValue.name))
+			if (configJsonObject.has(integerHolder.heldValue.name)) {
 				integerHolder.setValue(getInt(configJsonObject, integerHolder.heldValue.name));
+				integerHolder.serverManaged = true;
+			}
 		for (DoubleHolder doubleHolder : doubleValues)
-			if (configJsonObject.has(doubleHolder.heldValue.name))
+			if (configJsonObject.has(doubleHolder.heldValue.name)) {
 				doubleHolder.setValue(getDouble(configJsonObject, doubleHolder.heldValue.name));
+				doubleHolder.serverManaged = true;
+			}
 		loadExtra(configJsonObject);
 	}
 
@@ -496,7 +518,11 @@ public abstract class AtlasConfig {
 
 		public List<AbstractConfigListEntry<?>> membersAsCloth() {
 			List<AbstractConfigListEntry<?>> transformed = new ArrayList<>();
-			members.forEach(configHolder -> transformed.add(configHolder.transformIntoConfigEntry()));
+			members.forEach(configHolder -> {
+				AbstractConfigListEntry<?> entry = configHolder.transformIntoConfigEntry();
+				entry.setEditable(!configHolder.serverManaged);
+				transformed.add(entry);
+			});
 			return transformed;
 		}
 	}

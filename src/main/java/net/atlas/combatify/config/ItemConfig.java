@@ -4,6 +4,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
+import me.shedaniel.clothconfig2.api.ConfigBuilder;
+import me.shedaniel.clothconfig2.api.ConfigCategory;
+import me.shedaniel.clothconfig2.gui.entries.MultiElementListEntry;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.item.WeaponType;
@@ -17,6 +20,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,6 +29,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -692,7 +697,22 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public Screen createScreen(Screen prevScreen) {
-		return null;
+		ConfigBuilder builder = ConfigBuilder.create()
+			.setTitle(Component.translatable("text.config.combatify-items.title"))
+			.transparentBackground()
+			.setSavingRunnable(() -> {
+				try {
+					saveConfig();
+				} catch (IOException e) {
+					Combatify.LOGGER.error("Failed to save combatify:combatify-items config file!");
+					e.printStackTrace();
+				}
+			});
+		if (prevScreen != null) builder.setParentScreen(prevScreen);
+		ConfigCategory configCategory = builder.getOrCreateCategory(Component.translatable("text.config.combatify-items.title"));
+		builder.setFallbackCategory(configCategory);
+
+		return builder.build();
 	}
 
 	@Override

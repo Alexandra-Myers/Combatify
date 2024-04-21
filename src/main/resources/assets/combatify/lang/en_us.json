@@ -120,6 +120,7 @@
   "options.swordBlockStyle" : "1.8 Sword Blocking Animation",
   "options.fishingRodLegacy" : "1.7 Fishing Rod",
   "options.shieldIndicator" : "Shield Indicator",
+  "text.config.combatify-items.title": "Combatify Items",
   "text.config.combatify-beta.title": "Combatify",
   "text.config.combatify-beta.reset": "Reset",
   "text.config.combatify-beta.category.cts_booleans": "CTS Booleans",
