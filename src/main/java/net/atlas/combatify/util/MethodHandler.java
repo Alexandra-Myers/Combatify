@@ -39,8 +39,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 import static net.atlas.combatify.Combatify.CONFIG;
 
@@ -258,12 +261,64 @@ public class MethodHandler {
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
 	}
-	public static HitResult pickFromPos(Entity entity, double reach, double mod) {
-		reach = Math.max(reach - mod, 0);
+	private static List<BlockPos> clip(Level level, ClipContext clipContext) {
+		List<BlockPos> blockPosList = new ArrayList<>();
+		traverseBlocks(clipContext.getFrom(), clipContext.getTo(), clipContext, (clipContextx, blockPos) -> {
+			BlockState blockState = level.getBlockState(blockPos);
+            if (blockState.canOcclude() && blockState.getBlock().hasCollision)
+				blockPosList.add(blockPos);
+		});
+		return blockPosList;
+	}
+	private static <C> void traverseBlocks(Vec3 vec3, Vec3 vec32, C object, BiConsumer<C, BlockPos> biConsumer) {
+		if (!vec3.equals(vec32)) {
+			double d = Mth.lerp(-1.0E-7, vec3.x, vec32.x);
+			double e = Mth.lerp(-1.0E-7, vec3.y, vec32.y);
+			double f = Mth.lerp(-1.0E-7, vec3.z, vec32.z);
+			int g = Mth.floor(d);
+			int h = Mth.floor(e);
+			int i = Mth.floor(f);
+			BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(g, h, i);
+			biConsumer.accept(object, mutableBlockPos);
+			double j = Mth.lerp(-1.0E-7, vec32.x, vec3.x) - d;
+			double k = Mth.lerp(-1.0E-7, vec32.y, vec3.y) - e;
+			double l = Mth.lerp(-1.0E-7, vec32.z, vec3.z) - f;
+			int m = Mth.sign(j);
+			int n = Mth.sign(k);
+			int o = Mth.sign(l);
+			double p = m == 0 ? Double.MAX_VALUE : (double)m / j;
+			double q = n == 0 ? Double.MAX_VALUE : (double)n / k;
+			double r = o == 0 ? Double.MAX_VALUE : (double)o / l;
+			double s = p * (m > 0 ? 1.0 - Mth.frac(d) : Mth.frac(d));
+			double t = q * (n > 0 ? 1.0 - Mth.frac(e) : Mth.frac(e));
+			double u = r * (o > 0 ? 1.0 - Mth.frac(f) : Mth.frac(f));
+
+			do {
+				if (s < t) {
+					if (s < u) {
+						g += m;
+						s += p;
+					} else {
+						i += o;
+						u += r;
+					}
+				} else if (t < u) {
+					h += n;
+					t += q;
+				} else {
+					i += o;
+					u += r;
+				}
+
+				biConsumer.accept(object, mutableBlockPos.set(g, h, i));
+			} while(s <= 1.0 || t <= 1.0 || u <= 1.0);
+		}
+	}
+	public static List<BlockPos> pickFromPos(Entity entity, double reach) {
 		Vec3 viewVector = entity.getViewVector(1);
-		Vec3 pos = entity.getEyePosition(1).add(viewVector.scale(mod));
-		Vec3 endPos = pos.add(viewVector.x * reach, viewVector.y * reach,viewVector.z * reach);
-		return entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
+		Vec3 pos = entity.getEyePosition(1);
+		Vec3 endPos = pos.add(viewVector.scale(reach));
+		return clip(entity.level(), new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
 	}
 	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
 		Vec3 from = player.getEyePosition(partialTicks);
@@ -283,25 +338,16 @@ public class MethodHandler {
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockHitResult = (BlockHitResult)instance;
+			BlockHitResult blockHitResult = (BlockHitResult) instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			Level level = player.level();
 			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
 			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
 			if (rayTraceResult != null && bl) {
-				double reach = player.distanceTo(rayTraceResult.getEntity());
-				double d = 0;
-				HitResult check;
-				while (d <= Math.ceil(reach)) {
-					check = pickFromPos(player, reach, d);
-					if (check.getType() == HitResult.Type.BLOCK) {
-						BlockState state = level.getBlockState(((BlockHitResult) check).getBlockPos());
-						bl = !state.canOcclude() && !state.getBlock().hasCollision;
-						if (!bl)
-							return instance;
-					}
-					d += 0.0002;
-				}
+				double distanceTo = player.distanceTo(rayTraceResult.getEntity());
+				List<BlockPos> blockPosList = pickFromPos(player, distanceTo);
+				if (!blockPosList.isEmpty())
+					return instance;
 				return rayTraceResult;
 			} else {
 				return instance;

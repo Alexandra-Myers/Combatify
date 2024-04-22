@@ -10,10 +10,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
 
 import static net.atlas.combatify.util.MethodHandler.*;
@@ -41,18 +41,9 @@ public class ClientMethodHandler {
 				if (dist > reach)
 					return;
 				double enemyDistance = player.distanceTo(entity);
-				double d = 0;
-				HitResult check;
-				while (d <= enemyDistance) {
-					check = pickFromPos(player, enemyDistance, d);
-					if (check.getType() == HitResult.Type.BLOCK) {
-						BlockState state = level.getBlockState(((BlockHitResult) check).getBlockPos());
-						bl = !state.canOcclude() && !state.getBlock().hasCollision;
-						if (!bl)
-							return;
-					}
-					d += 0.0002;
-				}
+				List<BlockPos> blockPosList = pickFromPos(player, enemyDistance);
+				if (!blockPosList.isEmpty())
+					return;
 				minecraft.hitResult = rayTraceResult;
 				if (entity instanceof LivingEntity || entity instanceof ItemFrame) {
 					minecraft.crosshairPickEntity = entity;

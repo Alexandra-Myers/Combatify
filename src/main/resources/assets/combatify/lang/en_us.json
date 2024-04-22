@@ -165,7 +165,7 @@
   "text.config.combatify-beta.option.eatingInterruption": "Eating Interruption Enabled",
   "text.config.combatify-beta.option.eatingInterruption.tooltip.0": "Eating progress resets when attacked.",
   "text.config.combatify-beta.option.fistDamage": "CTS Fist Damage",
-  "text.config.combatify-beta.option.fistDamage.tooltip.0": "Fist Damage is updated to 1, matching the change made to Bedrock Edition.",
+  "text.config.combatify-beta.option.fistDamage.tooltip.0": "Fist Damage is updated to 1, matching vanilla and the parity change made to Bedrock Edition.",
   "text.config.combatify-beta.option.hasMissTime": "Has Miss Time",
   "text.config.combatify-beta.option.hasMissTime.tooltip.0": "What this does has yet to be identified.",
   "text.config.combatify-beta.option.missedAttackRecovery": "Missed Attack Recovery",

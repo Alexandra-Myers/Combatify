@@ -22,7 +22,8 @@
         "minecraft:splash_potion",
         "minecraft:lingering_potion",
         "minecraft:milk_bucket",
-        "minecraft:honey_bottle"
+        "minecraft:honey_bottle",
+        "minecraft:ominous_bottle"
       ],
       "use_duration": 20
     },

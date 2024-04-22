@@ -309,9 +309,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
 
 		for (LivingEntity livingEntity : livingEntities) {
-			if (livingEntity == this || livingEntity == entity || this.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
+			if (livingEntity == player || livingEntity == entity || this.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
 				continue;
-			if (Combatify.CONFIG.sweepingNegatedForTamed() && livingEntity instanceof OwnableEntity ownableEntity && ownableEntity.getOwnerUUID() == player.getUUID())
+			if (Combatify.CONFIG.sweepingNegatedForTamed()
+				&& (livingEntity instanceof OwnableEntity ownableEntity
+					&& player.is(ownableEntity.getOwner())
+					|| livingEntity.is(getVehicle())
+					|| livingEntity.isPassengerOfSameVehicle(player)))
 				continue;
 			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach)) {
