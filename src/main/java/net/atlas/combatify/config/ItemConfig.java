@@ -12,6 +12,8 @@ import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.BlockingType;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -696,6 +698,7 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public Screen createScreen(Screen prevScreen) {
 		ConfigBuilder builder = ConfigBuilder.create()
 			.setTitle(Component.translatable("text.config.combatify-items.title"))
@@ -716,6 +719,7 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public boolean hasScreen() {
 		return false;
 	}

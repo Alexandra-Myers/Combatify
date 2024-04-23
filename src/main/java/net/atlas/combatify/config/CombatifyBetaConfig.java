@@ -3,6 +3,8 @@ package net.atlas.combatify.config;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -340,6 +342,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 
 	@Override
+	@Environment(EnvType.CLIENT)
 	public Screen createScreen(Screen prevScreen) {
 		return null;
 	}

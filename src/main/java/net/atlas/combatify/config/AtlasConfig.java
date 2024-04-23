@@ -8,6 +8,8 @@ import io.netty.buffer.ByteBuf;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.*;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.CrashReport;
@@ -343,6 +345,7 @@ public abstract class AtlasConfig {
 			return "text.config." + heldValue.owner.name.getPath() + ".reset";
 		}
 
+		@Environment(EnvType.CLIENT)
 		public abstract AbstractConfigListEntry<?> transformIntoConfigEntry();
 	}
     public static class EnumHolder<E extends Enum<E>> extends ConfigHolder<E> {
@@ -380,6 +383,7 @@ public abstract class AtlasConfig {
         }
 
 		@Override
+		@Environment(EnvType.CLIENT)
 		public AbstractConfigListEntry<?> transformIntoConfigEntry() {
 			return new EnumListEntry<>(Component.translatable(getTranslationKey()), clazz, get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, names, tooltip, restartRequired);
 		}
@@ -396,6 +400,7 @@ public abstract class AtlasConfig {
         }
 
 		@Override
+		@Environment(EnvType.CLIENT)
 		public AbstractConfigListEntry<?> transformIntoConfigEntry() {
 			return new StringListEntry(Component.translatable(getTranslationKey()), get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, tooltip, restartRequired);
 		}
@@ -412,6 +417,7 @@ public abstract class AtlasConfig {
         }
 
 		@Override
+		@Environment(EnvType.CLIENT)
 		public AbstractConfigListEntry<?> transformIntoConfigEntry() {
 			return new BooleanListEntry(Component.translatable(getTranslationKey()), get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, tooltip, restartRequired);
 		}
@@ -438,6 +444,7 @@ public abstract class AtlasConfig {
         }
 
 		@Override
+		@Environment(EnvType.CLIENT)
 		public AbstractConfigListEntry<?> transformIntoConfigEntry() {
 			if (!heldValue.isRange || !isSlider)
 				return new IntegerListEntry(Component.translatable(getTranslationKey()), get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, tooltip, restartRequired);
@@ -464,6 +471,7 @@ public abstract class AtlasConfig {
         }
 
 		@Override
+		@Environment(EnvType.CLIENT)
 		public AbstractConfigListEntry<?> transformIntoConfigEntry() {
 			return new DoubleListEntry(Component.translatable(getTranslationKey()), get(), Component.translatable(getTranslationResetKey()), () -> heldValue.defaultValue, this::setValue, tooltip, restartRequired);
 		}
@@ -503,7 +511,9 @@ public abstract class AtlasConfig {
 	}
 
 	public abstract void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender);
+	@Environment(EnvType.CLIENT)
 	public abstract Screen createScreen(Screen prevScreen);
+	@Environment(EnvType.CLIENT)
 	public boolean hasScreen() {
 		return true;
 	}
@@ -516,6 +526,7 @@ public abstract class AtlasConfig {
 			members.add(member);
 		}
 
+		@Environment(EnvType.CLIENT)
 		public List<AbstractConfigListEntry<?>> membersAsCloth() {
 			List<AbstractConfigListEntry<?>> transformed = new ArrayList<>();
 			members.forEach(configHolder -> {
