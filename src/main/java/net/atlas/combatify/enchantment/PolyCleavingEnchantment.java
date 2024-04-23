@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 public class PolyCleavingEnchantment extends CleavingEnchantment implements PolymerEnchantment {
 	@Override
 	public @Nullable Enchantment getPolymerReplacement(ServerPlayer player) {
-		if (Combatify.unmoddedPlayers.contains(player.getUUID()))
+		if (player != null && Combatify.unmoddedPlayers.contains(player.getUUID()))
 			return Enchantments.SHARPNESS;
 		return this;
 	}
