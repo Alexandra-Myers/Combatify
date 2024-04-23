@@ -16,7 +16,7 @@ public abstract class EnchantmentsMixin implements IEnchantments {
 	}
 
 	@Unique
-	private static final Enchantment CLEAVING_ENCHANTMENT = register("cleaving", new CleavingEnchantment());
+	private static final Enchantment CLEAVING_ENCHANTMENT = register("cleaving", CleavingEnchantment.create());
 
 	@Override
 	public Enchantment getCleavingEnchantment() {

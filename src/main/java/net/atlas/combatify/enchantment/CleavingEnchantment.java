@@ -1,5 +1,7 @@
 package net.atlas.combatify.enchantment;
 
+import net.atlas.combatify.compat.PolymerCompat;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -22,5 +24,10 @@ public class CleavingEnchantment extends Enchantment {
 	@Override
 	protected boolean checkCompatibility(Enchantment enchantment) {
 		return super.checkCompatibility(enchantment) && !(enchantment instanceof PiercingEnchantment || enchantment instanceof DamageEnchantment);
+	}
+	public static CleavingEnchantment create() {
+		if (FabricLoader.getInstance().isModLoaded("polymer-core"))
+			return PolymerCompat.getPolyCleaving();
+		return new CleavingEnchantment();
 	}
 }
