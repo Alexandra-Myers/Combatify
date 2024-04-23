@@ -166,7 +166,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		int invulnerableTime = original - 10;
 		if (entity2 instanceof Player player) {
 			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-			invulnerableTime = base >= 4 ? base - 2 : base;
+			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
 			if(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 15 || Combatify.CONFIG.instaAttack())
 				invulnerableTime = original - 10;
 		}
