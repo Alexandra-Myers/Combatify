@@ -2,7 +2,5 @@
   "attribute.name.player.entity_interaction_range": "Attack Reach",
   "attribute.name.generic.shield_strength": "Damage Protection",
   "attribute.name.generic.sword_block_strength": "Damage Reduction",
-  "attribute.name.generic.longsword_piercing": "Armor Piercing",
-  "options.atlas_config.button": "Atlas Configs",
-  "title.atlas_config.name": "Atlas Config"
+  "attribute.name.generic.longsword_piercing": "Armor Piercing"
 }

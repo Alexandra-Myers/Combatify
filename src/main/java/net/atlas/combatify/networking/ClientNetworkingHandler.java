@@ -1,7 +1,6 @@
 package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.AtlasConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -17,7 +16,6 @@ public class ClientNetworkingHandler {
 	private ClientNetworkingHandler() {
 	}
 	public static void init() {
-		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.AtlasConfigPacket.TYPE, (packet, context) -> packet.config().handleExtraSync(packet, context.player(), context.responseSender()));
 		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.RemainingUseSyncPacket.TYPE, (packet, player) -> {
 			Entity entity = Minecraft.getInstance().level.getEntity(packet.id());
 			if (entity instanceof LivingEntityExtensions livingEntity)
@@ -34,6 +32,5 @@ public class ClientNetworkingHandler {
 
 			Combatify.LOGGER.info("Loaded items config.");
 		});
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AtlasConfig.configs.forEach((resourceLocation, atlasConfig) -> atlasConfig.reload()));
 	}
 }

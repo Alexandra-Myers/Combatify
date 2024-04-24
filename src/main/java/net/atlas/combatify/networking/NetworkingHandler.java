@@ -1,7 +1,6 @@
 package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.AtlasConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
@@ -26,7 +25,6 @@ import static net.atlas.combatify.Combatify.*;
 public class NetworkingHandler {
 
 	public NetworkingHandler() {
-		PayloadTypeRegistry.playS2C().register(AtlasConfigPacket.TYPE, AtlasConfigPacket.CODEC);
 		PayloadTypeRegistry.playC2S().register(ServerboundMissPacket.TYPE, ServerboundMissPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
@@ -46,7 +44,7 @@ public class NetworkingHandler {
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
-			if(!ServerPlayNetworking.canSend(handler.player, AtlasConfigPacket.TYPE)) {
+			if(!ServerPlayNetworking.canSend(handler.player, RemainingUseSyncPacket.TYPE)) {
 				if(bl) {
 					handler.player.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
 					return;
@@ -57,10 +55,6 @@ public class NetworkingHandler {
 				return;
 			}
 			moddedPlayers.add(handler.player.getUUID());
-			for (AtlasConfig atlasConfig : AtlasConfig.configs.values()) {
-				ServerPlayNetworking.send(handler.player, new AtlasConfigPacket(atlasConfig));
-			}
-			Combatify.LOGGER.info("Config packet sent to client.");
 		});
 		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
 			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
@@ -98,24 +92,6 @@ public class NetworkingHandler {
 			if (ITEMS == null)
 				ITEMS = new ItemConfig();
 		});
-	}
-	public record AtlasConfigPacket(AtlasConfig config) implements CustomPacketPayload {
-		public static final Type<AtlasConfigPacket> TYPE = CustomPacketPayload.createType(Combatify.id("atlas_config").toString());
-		public static final StreamCodec<FriendlyByteBuf, AtlasConfigPacket> CODEC = CustomPacketPayload.codec(AtlasConfigPacket::write, AtlasConfigPacket::new);
-
-		public AtlasConfigPacket(FriendlyByteBuf buf) {
-			this(AtlasConfig.staticLoadFromNetwork(buf));
-		}
-
-		public void write(FriendlyByteBuf buf) {
-			buf.writeResourceLocation(config.name);
-			config.saveToNetwork(buf);
-		}
-
-		@Override
-		public Type<? extends CustomPacketPayload> type() {
-			return TYPE;
-		}
 	}
 	public record ServerboundMissPacket() implements CustomPacketPayload {
 		public static final Type<ServerboundMissPacket> TYPE = CustomPacketPayload.createType(Combatify.id("miss_attack").toString());

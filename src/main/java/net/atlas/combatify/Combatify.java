@@ -1,5 +1,7 @@
 package net.atlas.combatify;
 
+import net.atlas.atlaslib.util.ArrayListExtensions;
+import net.atlas.atlaslib.util.PrefixLogger;
 import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;

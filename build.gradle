@@ -22,28 +22,6 @@ repositories {
 	allprojects { repositories { maven { url 'https://jitpack.io' } } }
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/releases/" }
-
-	maven {
-		name = "Modrinth"
-		url = "https://api.modrinth.com/maven"
-	}
-
-	maven {
-		name = "auoeke Maven"
-		url = uri("https://maven.auoeke.net")
-	}
-
-	maven {
-		name = "ENDERZOMBI102 Maven"
-		url = uri("https://repsy.io/mvn/enderzombi102/mc")
-	}
-	maven { url 'https://maven.wispforest.io' }
-	maven {
-		url "https://maven.jamieswhiteshirt.com/libs-release"
-		content {
-			includeGroup "com.jamieswhiteshirt"
-		}
-	}
 	maven { url 'https://maven.nucleoid.xyz' }
 }
 
@@ -54,6 +32,7 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation include("net.atlas:atlas-lib:1.0.0")
 	modApi "com.terraformersmc:modmenu:10.0.0-alpha.1"
 	modApi "me.shedaniel.cloth:cloth-config-fabric:14.0.125"
 

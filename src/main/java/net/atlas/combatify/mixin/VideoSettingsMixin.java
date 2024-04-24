@@ -1,8 +1,8 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.util.ArrayListExtensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.screens.VideoSettingsScreen;

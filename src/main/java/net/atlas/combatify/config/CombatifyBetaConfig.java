@@ -2,7 +2,8 @@ package net.atlas.combatify.config;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
-import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.atlaslib.AtlasLib;
+import net.atlas.atlaslib.config.AtlasConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -23,7 +24,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder weaponTypesEnabled;
 	private BooleanHolder bowFatigue;
 	private BooleanHolder chargedAttacks;
-	private BooleanHolder canAttackEarly;
+	private AtlasConfig.BooleanHolder canAttackEarly;
 	private BooleanHolder canSweepOnMiss;
 	private BooleanHolder chargedReach;
 	private BooleanHolder creativeReach;
@@ -337,7 +338,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 
 	@Override
-	public void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
+	public void handleExtraSync(AtlasLib.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 
 	}
 

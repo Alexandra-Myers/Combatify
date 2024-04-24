@@ -6,11 +6,11 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
-import me.shedaniel.clothconfig2.gui.entries.MultiElementListEntry;
+import net.atlas.atlaslib.AtlasLib;
+import net.atlas.atlaslib.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -693,7 +693,7 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
-	public void handleExtraSync(NetworkingHandler.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
+	public void handleExtraSync(AtlasLib.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 		LOGGER.info("Loading config details from buffer.");
 	}
 

@@ -2,8 +2,8 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.combatify.extensions.IOptions;
-import net.atlas.combatify.util.ArrayListExtensions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.AccessibilityOptionsScreen;

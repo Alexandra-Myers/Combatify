@@ -1,7 +1,5 @@
 package net.atlas.combatify.mixin.cookey;
 
-import net.atlas.combatify.config.AtlasConfigScreen;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -9,7 +7,6 @@ import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.atlas.combatify.screen.ScreenBuilder;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,10 +21,6 @@ public abstract class OptionsScreenMixin extends Screen {
     @Shadow
     protected abstract Button openScreenButton(Component component, Supplier<Screen> supplier);
 
-	@Shadow
-	@Final
-	private Options options;
-
 	protected OptionsScreenMixin(Component component) {
         super(component);
     }
@@ -41,10 +34,6 @@ public abstract class OptionsScreenMixin extends Screen {
         rowHelper.addChild(this.openScreenButton(Component.translatable("options.cookeymod.button"), () -> {
 			assert this.minecraft != null;
 			return ScreenBuilder.buildConfig(this.minecraft.screen);
-		}));
-		rowHelper.addChild(this.openScreenButton(Component.translatable("options.atlas_config.button"), () -> {
-			assert this.minecraft != null;
-			return new AtlasConfigScreen(this.minecraft.screen, options, Component.translatable("title.atlas_config.name"));
 		}));
     }
 }

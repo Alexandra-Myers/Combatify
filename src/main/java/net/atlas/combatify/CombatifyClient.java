@@ -1,12 +1,12 @@
 package net.atlas.combatify;
 
 import com.mojang.serialization.Codec;
+import net.atlas.atlaslib.util.PrefixLogger;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.config.cookey.ModConfig;
 import net.atlas.combatify.extensions.IOptions;
 import net.atlas.combatify.keybind.Keybinds;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
-import net.atlas.combatify.util.PrefixLogger;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.loader.api.FabricLoader;

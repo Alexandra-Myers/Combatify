@@ -20,9 +20,6 @@
     ],
 		"client": [
       "net.atlas.combatify.CombatifyClient"
-    ],
-    "modmenu": [
-      "net.atlas.combatify.implementation.ModMenuApiImpl"
     ]
 	},
 	"mixins": [
