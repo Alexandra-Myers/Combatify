@@ -68,5 +68,6 @@
   "windChargeDamage": 1.0,
   "thrownTridentDamage": 8.0,
 
-  "arrowDisableMode": "none"
+  "arrowDisableMode": "none",
+  "armourPiercingMode": "vanilla"
 }

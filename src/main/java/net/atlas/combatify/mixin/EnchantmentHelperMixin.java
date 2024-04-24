@@ -70,7 +70,7 @@ public abstract class EnchantmentHelperMixin {
 				((LivingEntityExtensions)livingEntity).setPiercingNegation(0);
 				yield (float) Mth.clamp(original - d, 0, protection);
 			}
-			default -> original;
+			case null, default -> original;
 		};
 	}
 }
