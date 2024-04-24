@@ -9,10 +9,6 @@ public interface IOptions {
 	OptionInstance<Boolean> shieldCrouch();
 	OptionInstance<Boolean> rhythmicAttacks();
 
-	OptionInstance<Boolean> protIndicator();
-
-	OptionInstance<Boolean> fishingRodLegacy();
-
 	OptionInstance<ShieldIndicatorStatus> shieldIndicator();
 
 	static Component doubleValueLabel(Component optionText, double value) {

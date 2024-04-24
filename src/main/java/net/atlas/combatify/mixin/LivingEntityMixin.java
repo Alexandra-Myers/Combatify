@@ -6,25 +6,18 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -41,8 +34,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Objects;
 import java.util.UUID;
 
-import static net.atlas.combatify.util.MethodHandler.getNewDamageAfterMagicAbsorb;
-
 @Mixin(value = LivingEntity.class, priority = 1400)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
 	@Unique
@@ -54,15 +45,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Unique
 	LivingEntity thisEntity = LivingEntity.class.cast(this);
-
-	@Shadow
-	public abstract double getAttributeValue(Holder<Attribute> attribute);
-
-	@Shadow
-	public abstract void hurtArmor(DamageSource damageSource, float v);
-
-	@Shadow
-	public abstract int getArmorValue();
 
 
 	@Shadow
@@ -100,44 +82,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void setPiercingNegation(double negation) {
 		piercingNegation = negation;
 	}
-	@Inject(method = "getDamageAfterArmorAbsorb", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
-		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
-			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			double d = 0;
-			d += ((ItemExtensions)item).getPiercingLevel();
-			if (Combatify.CONFIG.piercer())
-				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
-			d -= piercingNegation;
-			d = Math.max(0, d);
-			piercingNegation = 0;
-			if(d > 0)
-				cir.setReturnValue(combatify$getNewDamageAfterArmorAbsorb(source, f, d));
-		}
-	}
-	@Inject(method = "getDamageAfterMagicAbsorb", at = @At(value = "HEAD"), cancellable = true)
-	public void addPiercing1(DamageSource source, float f, CallbackInfoReturnable<Float> cir) {
-		if(source.getEntity() instanceof LivingEntity livingEntity && isSourceAnyOf(source, DamageTypes.PLAYER_ATTACK, DamageTypes.MOB_ATTACK_NO_AGGRO, DamageTypes.MOB_ATTACK)) {
-			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			double d = 0;
-			d += ((ItemExtensions)item).getPiercingLevel();
-			if (Combatify.CONFIG.piercer())
-				d += CustomEnchantmentHelper.getPierce(livingEntity) * 0.1;
-			d -= piercingNegation;
-			d = Math.max(0, d);
-			piercingNegation = 0;
-			if(d > 0)
-				cir.setReturnValue(getNewDamageAfterMagicAbsorb(thisEntity, source, f, d));
-		}
-	}
-	@Unique
-	@SafeVarargs
-	public final boolean isSourceAnyOf(DamageSource source, ResourceKey<DamageType>... damageTypes) {
-		boolean bl = false;
-		for(ResourceKey<DamageType> damageType : damageTypes) {
-			bl |= source.is(damageType);
-		}
-		return bl;
+	@Override
+	public double getPiercingNegation() {
+		return piercingNegation;
 	}
 	@ModifyConstant(method = "handleDamageEvent", constant = @Constant(intValue = 20, ordinal = 0))
 	private int syncInvulnerability(int x) {
@@ -213,17 +160,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		Vec3 sourceVector = Objects.requireNonNull(source.getSourcePosition()).vectorTo(this.position());
 		sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
 		cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
-	}
-	@Unique
-	public float combatify$getNewDamageAfterArmorAbsorb(DamageSource source, float amount, double piercingLevel) {
-		if (!source.is(DamageTypeTags.BYPASSES_ARMOR) && piercingLevel < 1) {
-			hurtArmor(source, (float) (amount * (1 + piercingLevel)));
-			double armourStrength = getArmorValue();
-			double toughness = getAttributeValue(Attributes.ARMOR_TOUGHNESS);
-			amount = CombatRules.getDamageAfterAbsorb(amount, source, (float) (armourStrength - (armourStrength * piercingLevel)), (float) (toughness - (toughness * piercingLevel)));
-		}
-
-		return amount;
 	}
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {

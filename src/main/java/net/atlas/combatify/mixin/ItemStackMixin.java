@@ -8,12 +8,12 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.enchantment.PiercingEnchantment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.*;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -26,6 +26,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -63,12 +64,10 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	public void addPiercing(Consumer<Component> consumer, Player player, CallbackInfo ci) {
 		ItemAttributeModifiers itemAttributeModifiers = getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		if (itemAttributeModifiers.showInTooltip()) {
-			double piercingLevel = 0;
-			if (Combatify.CONFIG.piercer())
-				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER, (ItemStack) (Object) this) * 0.1;
-			piercingLevel += ((ItemExtensions) getItem()).getPiercingLevel();
+			double piercingLevel = ((ItemExtensions)getItem()).getPiercingLevel();
+			piercingLevel += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BREACH, (ItemStack) (Object) this) * Combatify.CONFIG.breachArmorPiercing();
+			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
 			if (piercingLevel > 0) {
-				piercingLevel = Math.min(piercingLevel, 1);
 				consumer.accept(
 					CommonComponents.space().append(
 						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),

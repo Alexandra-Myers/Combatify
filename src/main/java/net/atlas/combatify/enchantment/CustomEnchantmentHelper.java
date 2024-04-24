@@ -14,8 +14,8 @@ public class CustomEnchantmentHelper {
 		Enchantments enchantments = new Enchantments();
 		return EnchantmentHelper.getEnchantmentLevel(((IEnchantments)enchantments).getCleavingEnchantment(), entity);
 	}
-	public static int getPierce(LivingEntity entity) {
-		return EnchantmentHelper.getEnchantmentLevel(PiercingEnchantment.PIERCER, entity);
+	public static double getBreach(LivingEntity entity) {
+		return EnchantmentHelper.getEnchantmentLevel(Enchantments.BREACH, entity) * Combatify.CONFIG.breachArmorPiercing();
 	}
 	public static int getDefense(LivingEntity entity) {
 		return EnchantmentHelper.getEnchantmentLevel(DefendingEnchantment.DEFENDER, entity);

@@ -43,7 +43,7 @@ public class NetworkingHandler {
 			((PlayerExtensions)player).attackAir();
 		});
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
-			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
+			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, RemainingUseSyncPacket.TYPE)) {
 				if(bl) {
 					handler.player.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));

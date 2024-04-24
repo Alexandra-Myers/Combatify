@@ -28,8 +28,7 @@ public class VideoSettingsMixin {
 		optionInstance.add(i + 1, CombatifyClient.shieldIndicator);
 		optionInstance.addAll(CombatifyClient.attackIndicatorMinValue,
 			CombatifyClient.attackIndicatorMaxValue,
-			CombatifyClient.rhythmicAttacks,
-			CombatifyClient.fishingRodLegacy);
+			CombatifyClient.rhythmicAttacks);
 
 		return optionInstance.toArray(new OptionInstance[0]);
 	}

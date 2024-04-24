@@ -5,7 +5,7 @@ import net.atlas.atlaslib.util.PrefixLogger;
 import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
-import net.atlas.combatify.enchantment.PiercingEnchantment;
+import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
@@ -51,6 +51,7 @@ public class Combatify implements ModInitializer {
 			WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		LOGGER.info("Init started.");
+		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
  			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
 		if (CONFIG.configOnlyWeapons()) {
@@ -63,8 +64,6 @@ public class Combatify implements ModInitializer {
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
-		if (CONFIG.piercer())
-			PiercingEnchantment.registerEnchants();
 		if (CONFIG.defender())
 			DefendingEnchantment.registerEnchants();
 		if (Combatify.CONFIG.percentageDamageEffects()) {

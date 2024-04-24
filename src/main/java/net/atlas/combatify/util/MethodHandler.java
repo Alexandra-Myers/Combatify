@@ -6,20 +6,14 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stats;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.CombatRules;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -32,7 +26,6 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -356,15 +349,15 @@ public class MethodHandler {
 		return instance;
 	}
 	public static void disableShield(LivingEntity attacker, LivingEntity target, ItemStack blockingItem) {
-		double piercingLevel = 0;
-		piercingLevel += ((ItemExtensions)attacker.getMainHandItem().getItem()).getPiercingLevel();
-		if (Combatify.CONFIG.piercer())
-			piercingLevel += CustomEnchantmentHelper.getPierce(attacker) * 0.1;
+		double piercingLevel = ((ItemExtensions)attacker.getMainHandItem().getItem()).getPiercingLevel();
+		piercingLevel += CustomEnchantmentHelper.getBreach(attacker);
+		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
+			piercingLevel = 0;
 		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;
 		ItemExtensions shieldItem = (ItemExtensions) blockingItem.getItem();
 		if (canDisable && shieldItem.getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0)
-				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
+				((LivingEntityExtensions) attacker).setPiercingNegation(piercingLevel);
 			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime());
 			if (Combatify.CONFIG.defender())
 				damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
@@ -442,33 +435,6 @@ public class MethodHandler {
 				++trident.clientSideReturnTridentTickCount;
 			}
 		}
-	}
-	public static float getNewDamageAfterMagicAbsorb(LivingEntity entity, DamageSource source, float amount, double piercingLevel) {
-		if (!source.is(DamageTypeTags.BYPASSES_EFFECTS) && piercingLevel < 1) {
-			if (entity.hasEffect(MobEffects.DAMAGE_RESISTANCE) && !source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
-				int i = entity.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1;
-				int j = 5 - i;
-				float f = (float) (amount * j * (1 + piercingLevel));
-				float g = amount;
-				amount = Math.max(f / 5.0F, (float) (amount * piercingLevel));
-				float h = g - amount;
-				if (h > 0.0F && h < 3.4028235E37F) {
-					if (entity instanceof ServerPlayer serverPlayer)
-						serverPlayer.awardStat(Stats.DAMAGE_RESISTED, Math.round(h * 10.0F));
-					if (source.getEntity() instanceof ServerPlayer serverPlayer)
-						serverPlayer.awardStat(Stats.DAMAGE_DEALT_RESISTED, Math.round(h * 10.0F));
-				}
-			}
-
-			if (amount <= 0.0F)
-				return 0.0F;
-			else if (!source.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
-				int i = EnchantmentHelper.getDamageProtection(entity.getArmorSlots(), source);
-				if (i > 0)
-					amount = CombatRules.getDamageAfterMagicAbsorb(amount, i - Math.round(i * piercingLevel));
-			}
-		}
-		return amount;
 	}
 	public static Vec3 project(Vec3 originalVec, Vec3 newVec) {
 	    Vec3 normalized = newVec.normalize();

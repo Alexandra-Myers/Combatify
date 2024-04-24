@@ -23,8 +23,7 @@ public class AccessibilityOptionsMixin {
 		optionInstance.addAll(((IOptions)options).autoAttack(),
 			((IOptions)options).shieldCrouch(),
 			((IOptions)options).attackIndicatorMinValue(),
-			((IOptions)options).attackIndicatorMaxValue(),
-			((IOptions)options).fishingRodLegacy());
+			((IOptions)options).attackIndicatorMaxValue());
 
 		return optionInstance.toArray(new OptionInstance[0]);
 	}

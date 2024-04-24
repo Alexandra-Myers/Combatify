@@ -2,6 +2,7 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CleavingEnchantment;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.tags.ItemTags;
@@ -17,6 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Enchantment.class)
 public abstract class EnchantmentMixin {
+	@Unique
+	private final Enchantment thisEnchantment = Enchantment.class.cast(this);
 
 	@Shadow
 	@Final
@@ -46,6 +49,12 @@ public abstract class EnchantmentMixin {
 			else if (definition.primaryItems().isEmpty())
 				cir.setReturnValue(false);
 		}
+	}
+
+	@Inject(method = "checkCompatibility", at = @At(value = "HEAD"), cancellable = true)
+	public void checkCompatibility(Enchantment enchantment, CallbackInfoReturnable<Boolean> cir) {
+		if (thisEnchantment instanceof BreachEnchantment)
+			cir.setReturnValue(thisEnchantment != enchantment && !(enchantment instanceof CleavingEnchantment || enchantment instanceof DamageEnchantment));
 	}
 
 	@Unique

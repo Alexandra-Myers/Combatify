@@ -20,8 +20,6 @@ public abstract class OptionsMixin implements IOptions {
 		visitor.process("autoAttack", CombatifyClient.autoAttack);
 		visitor.process("shieldCrouch", CombatifyClient.shieldCrouch);
 		visitor.process("rhythmicAttacks", CombatifyClient.rhythmicAttacks);
-		visitor.process("protIndicator", CombatifyClient.protectionIndicator);
-		visitor.process("fishingRodLegacy", CombatifyClient.fishingRodLegacy);
 		visitor.process("attackIndicatorMaxValue", CombatifyClient.attackIndicatorMaxValue);
 		visitor.process("attackIndicatorMinValue", CombatifyClient.attackIndicatorMinValue);
 		visitor.process("shieldIndicator", CombatifyClient.shieldIndicator);
@@ -47,14 +45,6 @@ public abstract class OptionsMixin implements IOptions {
 	@Override
 	public OptionInstance<Boolean> rhythmicAttacks() {
 		return CombatifyClient.rhythmicAttacks;
-	}
-	@Override
-	public OptionInstance<Boolean> protIndicator() {
-		return CombatifyClient.protectionIndicator;
-	}
-	@Override
-	public OptionInstance<Boolean> fishingRodLegacy() {
-		return CombatifyClient.fishingRodLegacy;
 	}
 	@Override
 	public OptionInstance<ShieldIndicatorStatus> shieldIndicator() {

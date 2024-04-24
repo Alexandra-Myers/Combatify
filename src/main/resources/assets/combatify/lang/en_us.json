@@ -214,6 +214,8 @@
   "text.config.combatify-beta.option.minHitboxSize": "Minimum Hitbox Size",
   "text.config.combatify-beta.option.minHitboxSize.tooltip.0": "Defines the minimum size for entity hitboxes",
 
+  "text.config.combatify-beta.option.armorPiercingDisablesShields": "Armor Piercing Disables Shields",
+  "text.config.combatify-beta.option.armorPiercingDisablesShields.tooltip.0": "Allows items with Armor Piercing to disable shields.",
   "text.config.combatify-beta.option.attackSpeed": "Cooldown Bypass For Max Attack Speed",
   "text.config.combatify-beta.option.attackSpeed.tooltip.0": "If disabled and your tool has maxed attack speed (20), will prevent attacks from resetting.",
   "text.config.combatify-beta.option.canInteractWhenCrouchShield": "Can Interact During Crouch Shielding",
@@ -221,9 +223,6 @@
   "text.config.combatify-beta.option.configOnlyWeapons.tooltip.0": "Adds Knives and Longswords with their own respective stats and abilities.",
   "text.config.combatify-beta.option.defender": "Defender",
   "text.config.combatify-beta.option.defender.tooltip.0": "Adds enchantment Defender, which decreases shield disable time by 0.5s, and increases protection for shields and swords.",
-  "text.config.combatify-beta.option.piercer": "Piercer",
-  "text.config.combatify-beta.option.piercer.tooltip.0": "Adds enchantment Piercer, which allows for disabling of shields, as well as adding 10% armor piercing per level.",
-  "text.config.combatify-beta.option.piercer.tooltip.1": "   Note: Incompatible with Damage Enchantments.",
   "text.config.combatify-beta.option.tieredShields": "Tiered Shields",
   "text.config.combatify-beta.option.tieredShields.tooltip.0": "Adds Tiered Shields which get stronger per level.",
   "text.config.combatify-beta.option.disableDuringShieldDelay": "Can Disable Shields On Delay",
@@ -255,6 +254,9 @@
   "text.config.combatify-beta.option.shieldChargePercentage.tooltip.0": "Percentage of charge needed for V5 shield to work",
   "text.config.combatify-beta.option.defenderDisableReduction": "Defender Disable Reduction",
   "text.config.combatify-beta.option.defenderDisableReduction.tooltip.0": "Time, in seconds, which Defender cuts off of a shield's disable time.",
+  "text.config.combatify-beta.option.breachArmorPiercing": "Breach Armor Piercing",
+  "text.config.combatify-beta.option.breachArmorPiercing.tooltip.0": "The rate at which Breach increases armor piercing.",
+  "text.config.combatify-beta.option.breachArmorPiercing.tooltip.1": "   Note: Default is 15% but 10% is recommended.",
   "text.config.combatify-beta.option.snowballDamage": "Snowball Damage",
   "text.config.combatify-beta.option.eggDamage": "Egg Damage",
   "text.config.combatify-beta.option.windChargeDamage": "Wind Charge Damage",
@@ -273,5 +275,13 @@
   "text.config.combatify-beta.option.arrowDisableMode.tooltip.3": "   Crit - Only critical arrows disable shields",
   "text.config.combatify-beta.option.arrowDisableMode.tooltip.4": "   Piercing - Only piercing arrows disable shields",
   "text.config.combatify-beta.option.arrowDisableMode.tooltip.5": "   Crit or Piercing - Critical or piercing arrows disable shields",
-  "text.config.combatify-beta.option.arrowDisableMode.tooltip.6": "   Crit and Piercing - Critical piercing arrows disable shields"
+  "text.config.combatify-beta.option.arrowDisableMode.tooltip.6": "   Crit and Piercing - Critical piercing arrows disable shields",
+  "text.config.combatify-beta.option.armourPiercingMode": "Armor Piercing Mode",
+  "text.config.combatify-beta.option.armourPiercingMode.vanilla": "Vanilla",
+  "text.config.combatify-beta.option.armourPiercingMode.apply_before_percentage": "Combatify Original",
+  "text.config.combatify-beta.option.armourPiercingMode.apply_after_percentage": "Combatify New",
+  "text.config.combatify-beta.option.armourPiercingMode.tooltip.0": "Defines the mode upon which armor piercing is activated.",
+  "text.config.combatify-beta.option.armourPiercingMode.tooltip.1": "   Vanilla - Armor Piercing is applied after armor calcs, and is subtracted from the protection.",
+  "text.config.combatify-beta.option.armourPiercingMode.tooltip.2": "   Combatify Original - Armor Piercing is applied before armor calcs, and negates a percentage of the armor and toughness.",
+  "text.config.combatify-beta.option.armourPiercingMode.tooltip.3": "   Combatify New - Armor Piercing is applied after armor calcs, and is taken out as a percentage of the protection."
 }

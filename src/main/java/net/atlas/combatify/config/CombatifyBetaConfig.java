@@ -24,7 +24,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder weaponTypesEnabled;
 	private BooleanHolder bowFatigue;
 	private BooleanHolder chargedAttacks;
-	private AtlasConfig.BooleanHolder canAttackEarly;
+	private BooleanHolder canAttackEarly;
 	private BooleanHolder canSweepOnMiss;
 	private BooleanHolder chargedReach;
 	private BooleanHolder creativeReach;
@@ -61,9 +61,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder autoAttackAllowed;
 	private BooleanHolder configOnlyWeapons;
 	private BooleanHolder tieredShields;
-	private BooleanHolder piercer;
 	private BooleanHolder defender;
 	private BooleanHolder attackReach;
+	private BooleanHolder armorPiercingDisablesShields;
 	private BooleanHolder attackSpeed;
 	private BooleanHolder instaAttack;
 	private BooleanHolder ctsAttackBalancing;
@@ -76,6 +76,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder shieldDisableTime;
 	private DoubleHolder cleavingDisableTime;
 	private DoubleHolder defenderDisableReduction;
+	private DoubleHolder breachArmorPiercing;
 	private DoubleHolder snowballDamage;
 	private DoubleHolder eggDamage;
 	private DoubleHolder windChargeDamage;
@@ -84,6 +85,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder minHitboxSize;
 	private DoubleHolder thrownTridentDamage;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
+	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
 	private Category ctsB;
 	private Category ctsI;
 	private Category ctsD;
@@ -226,6 +228,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		minHitboxSize.tieToCategory(ctsD);
 		minHitboxSize.setupTooltip(1);
 
+		armorPiercingDisablesShields = createBoolean("armorPiercingDisablesShields", false);
+		armorPiercingDisablesShields.tieToCategory(extraB);
+		armorPiercingDisablesShields.setupTooltip(1);
 		attackSpeed = createBoolean("attackSpeed", true);
 		attackSpeed.tieToCategory(extraB);
 		attackSpeed.setupTooltip(1);
@@ -239,10 +244,6 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		defender.tieToCategory(extraB);
 		defender.setRestartRequired(true);
 		defender.setupTooltip(1);
-		piercer = createBoolean("piercer", false);
-		piercer.tieToCategory(extraB);
-		piercer.setRestartRequired(true);
-		piercer.setupTooltip(2);
 		tieredShields = createBoolean("tieredShields", false);
 		tieredShields.tieToCategory(extraB);
 		tieredShields.setRestartRequired(true);
@@ -288,6 +289,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
 		defenderDisableReduction.tieToCategory(extraD);
 		defenderDisableReduction.setupTooltip(1);
+		breachArmorPiercing = createInRange("breachArmorPiercing", 0.15, 0, 1);
+		breachArmorPiercing.tieToCategory(extraD);
+		breachArmorPiercing.setupTooltip(2);
 		eggDamage = createInRange("eggDamage", 0, 0, 40D);
 		eggDamage.tieToCategory(extraD);
 		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
@@ -300,6 +304,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values(), e -> Component.translatable("text.config.combatify-beta.option.arrowDisableMode." + e.name().toLowerCase(Locale.ROOT)));
 		arrowDisableMode.tieToCategory(extraE);
 		arrowDisableMode.setupTooltip(7);
+		armourPiercingMode = createEnum("armourPiercingMode", ArmourPiercingMode.VANILLA, ArmourPiercingMode.class, ArmourPiercingMode.values(), e -> Component.translatable("text.config.combatify-beta.option.armourPiercingMode." + e.name().toLowerCase(Locale.ROOT)));
+		armourPiercingMode.tieToCategory(extraE);
+		armourPiercingMode.setupTooltip(4);
 	}
 
 	@Override
@@ -316,8 +323,8 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		categoryList.add(ctsI);
 		categoryList.add(ctsD);
 		categoryList.add(extraB);
-		categoryList.add(extraD);
 		categoryList.add(extraI);
+		categoryList.add(extraD);
 		categoryList.add(extraE);
 		return categoryList;
 	}
@@ -468,14 +475,14 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public Boolean tieredShields() {
 		return tieredShields.get();
 	}
-	public Boolean piercer() {
-		return piercer.get();
-	}
 	public Boolean defender() {
 		return defender.get();
 	}
 	public Boolean attackReach() {
 		return attackReach.get();
+	}
+	public Boolean armorPiercingDisablesShields() {
+		return armorPiercingDisablesShields.get();
 	}
 	public Boolean attackSpeed() {
 		return attackSpeed.get();
@@ -513,6 +520,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	public Double defenderDisableReduction() {
 		return defenderDisableReduction.get();
 	}
+	public Double breachArmorPiercing() {
+		return breachArmorPiercing.get();
+	}
 	public Double snowballDamage() {
 		return snowballDamage.get();
 	}
@@ -536,5 +546,8 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public ArrowDisableMode arrowDisableMode() {
 		return arrowDisableMode.get();
+	}
+	public ArmourPiercingMode armourPiercingMode() {
+		return armourPiercingMode.get();
 	}
 }
