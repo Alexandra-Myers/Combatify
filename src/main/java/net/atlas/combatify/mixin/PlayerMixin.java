@@ -180,7 +180,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
-		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker > 4.0F) ? 1.0F : Math.min(original, 1.0F);
+		original = (float) Mth.clamp(original, Combatify.CONFIG.attackDecayMinCharge(), Combatify.CONFIG.attackDecayMaxCharge());
+		original = (float) (Combatify.CONFIG.attackDecayMinPercentage() + ((original - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageDiff());
+		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker > 4.0F) ? 1.0F : original;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
 	public void reset(CallbackInfo ci) {
@@ -251,14 +253,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
 		this.missedAttackRecovery = !hit && Combatify.CONFIG.missedAttackRecovery();
-		if (!Combatify.CONFIG.attackSpeed()) {
-			if(Objects.requireNonNull(getAttribute(Attributes.ATTACK_SPEED)).getValue() - 1.5 >= 20) {
-				return;
-			}
-		}
-		if (Combatify.CONFIG.instaAttack()) {
+		if ((!Combatify.CONFIG.attackSpeed() && getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20) || Combatify.CONFIG.instaAttack())
 			return;
-		}
 		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
 		Combatify.LOGGER.info("Ticks for charge: " + var2);
 		if (var2 > this.attackStrengthTicker) {
@@ -270,7 +266,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
 		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_UUID) != null;
-		float f = (float)(getAttributeValue(Attributes.ATTACK_SPEED) - 1.5f);
+		float f = (float) (getAttributeValue(Attributes.ATTACK_SPEED) - 1.5f);
 		if (hasVanilla)
 			f += 1.5f;
 		f = Mth.clamp(f, 0.1F, 1024.0F);

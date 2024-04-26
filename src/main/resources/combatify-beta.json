@@ -16,6 +16,7 @@
   "eatingInterruption": true,
   "fistDamage": false,
   "hasMissTime": false,
+  "iFramesBasedOnWeapon": true,
   "missedAttackRecovery": true,
   "percentageDamageEffects": true,
   "projectilesHaveIFrames": false,
@@ -59,6 +60,10 @@
   "sweepingNegatedForTamed": false,
   "swordBlocking": false,
 
+  "attackDecayMinCharge": 0,
+  "attackDecayMaxCharge": 100,
+  "attackDecayMinPercentage": 0,
+  "attackDecayMaxPercentage": 100,
   "shieldChargePercentage": 195,
 
   "defenderDisableReduction": 0.5,

@@ -22,6 +22,7 @@ import static net.atlas.combatify.Combatify.*;
 
 public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder weaponTypesEnabled;
+	private BooleanHolder iFramesBasedOnWeapon;
 	private BooleanHolder bowFatigue;
 	private BooleanHolder chargedAttacks;
 	private BooleanHolder canAttackEarly;
@@ -71,6 +72,10 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private BooleanHolder improvedMiscEntityAttacks;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
+	private IntegerHolder attackDecayMinCharge;
+	private IntegerHolder attackDecayMaxCharge;
+	private IntegerHolder attackDecayMinPercentage;
+	private IntegerHolder attackDecayMaxPercentage;
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder healingTime;
 	private DoubleHolder shieldDisableTime;
@@ -162,6 +167,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		hasMissTime = createBoolean("hasMissTime", false);
 		hasMissTime.tieToCategory(ctsB);
 		hasMissTime.setupTooltip(1);
+		iFramesBasedOnWeapon = createBoolean("iFramesBasedOnWeapon", true);
+		iFramesBasedOnWeapon.tieToCategory(ctsB);
+		iFramesBasedOnWeapon.setupTooltip(1);
 		missedAttackRecovery = createBoolean("missedAttackRecovery", true);
 		missedAttackRecovery.tieToCategory(ctsB);
 		missedAttackRecovery.setupTooltip(1);
@@ -282,6 +290,18 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		swordBlocking.tieToCategory(extraB);
 		swordBlocking.setupTooltip(1);
 
+		attackDecayMinCharge = createInRange("attackDecayMinCharge", 0, 0, 200, false);
+		attackDecayMinCharge.tieToCategory(extraI);
+		attackDecayMinCharge.setupTooltip(1);
+		attackDecayMaxCharge = createInRange("attackDecayMaxCharge", 100, 0, 200, false);
+		attackDecayMaxCharge.tieToCategory(extraI);
+		attackDecayMaxCharge.setupTooltip(1);
+		attackDecayMinPercentage = createInRange("attackDecayMinPercentage", 0, 0, 200, false);
+		attackDecayMinPercentage.tieToCategory(extraI);
+		attackDecayMinPercentage.setupTooltip(2);
+		attackDecayMaxPercentage = createInRange("attackDecayMaxPercentage", 100, 0, 200, false);
+		attackDecayMaxPercentage.tieToCategory(extraI);
+		attackDecayMaxPercentage.setupTooltip(2);
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200, true);
 		shieldChargePercentage.tieToCategory(extraI);
 		shieldChargePercentage.setupTooltip(1);
@@ -357,6 +377,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 
 	public Boolean weaponTypesEnabled() {
 		return weaponTypesEnabled.get();
+	}
+	public Boolean iFramesBasedOnWeapon() {
+		return iFramesBasedOnWeapon.get();
 	}
 	public Boolean bowFatigue() {
 		return bowFatigue.get();
@@ -504,6 +527,24 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Integer instantHealthBonus() {
 		return instantHealthBonus.get();
+	}
+	public double attackDecayMinCharge() {
+		return attackDecayMinCharge.get().doubleValue() / 100;
+	}
+	public double attackDecayMaxCharge() {
+		return attackDecayMaxCharge.get().doubleValue() / 100;
+	}
+	public double attackDecayMaxChargeDiff() {
+		double ret = attackDecayMaxCharge() - attackDecayMinCharge();
+		if (ret <= 0)
+			ret = 1;
+		return ret;
+	}
+	public double attackDecayMinPercentage() {
+		return attackDecayMinPercentage.get().doubleValue() / 100;
+	}
+	public double attackDecayMaxPercentageDiff() {
+		return (attackDecayMaxPercentage.get().doubleValue() / 100) - attackDecayMinPercentage();
 	}
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();

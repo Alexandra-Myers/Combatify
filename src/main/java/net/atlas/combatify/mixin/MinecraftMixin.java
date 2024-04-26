@@ -72,7 +72,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	public Screen screen;
 
 	@Shadow
-	public abstract void startUseItem();
+	protected abstract void startUseItem();
 
 	@Shadow
 	@Final
