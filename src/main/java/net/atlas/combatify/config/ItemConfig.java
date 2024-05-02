@@ -1,6 +1,5 @@
 package net.atlas.combatify.config;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
@@ -36,14 +35,16 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import static net.atlas.combatify.Combatify.*;
 
 public class ItemConfig extends AtlasConfig {
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
-	public BiMap<String, Tier> tiers;
 	public static Formula armourCalcs = null;
 
 	public ItemConfig() {
@@ -171,12 +172,14 @@ public class ItemConfig extends AtlasConfig {
 	public void defineConfigHolders() {
 		configuredItems = new HashMap<>();
 		configuredWeapons = new HashMap<>();
-		tiers = HashBiMap.create();
 	}
 
 	@Override
 	public void resetExtraHolders() {
 		defineConfigHolders();
+		tiers = HashBiMap.create();
+		registeredWeaponTypes = new HashMap<>();
+		registeredTypes = new HashMap<>();
 	}
 
 	@Override

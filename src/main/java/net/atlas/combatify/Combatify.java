@@ -1,5 +1,7 @@
 package net.atlas.combatify;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.atlaslib.util.PrefixLogger;
 import net.atlas.combatify.config.CombatifyBetaConfig;
@@ -38,6 +40,7 @@ public class Combatify implements ModInitializer {
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static Map<String, WeaponType> registeredWeaponTypes = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
+	public static BiMap<String, Tier> tiers = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
