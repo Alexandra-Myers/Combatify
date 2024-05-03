@@ -73,7 +73,8 @@ public class ConfigurableItemData {
 		Integer defense = buf.readInt();
 		Double toughness = buf.readDouble();
 		Double armourKbRes = buf.readDouble();
-		Ingredient ingredient = buf.readBoolean() ? null : Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
+		boolean repairIngredientAbsent = buf.readBoolean();
+		Ingredient ingredient = repairIngredientAbsent ? null : Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
 		if (damage == -10)
 			damage = null;
 		if (speed == -10)
