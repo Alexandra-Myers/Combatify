@@ -7,6 +7,7 @@ import net.atlas.atlaslib.util.PrefixLogger;
 import net.atlas.combatify.config.CombatifyBetaConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
+import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -20,11 +21,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Tier;
 import net.minecraft.world.level.block.DispenserBlock;
 import org.apache.logging.log4j.LogManager;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
@@ -38,20 +44,22 @@ public class Combatify implements ModInitializer {
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
+	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
+	public static final Map<String, BlockingType> defaultTypes = new HashMap<>();
+	public static final BiMap<String, Tier> defaultTiers = HashBiMap.create();
 	public static Map<String, WeaponType> registeredWeaponTypes = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static BiMap<String, Tier> tiers = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
-	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
-	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
-	public static final BlockingType CURRENT_SHIELD = registerBlockingType(new CurrentShieldBlockingType("current_shield"));
-	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
+	public static final BlockingType SWORD = defineDefaultBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
+	public static final BlockingType SHIELD = defineDefaultBlockingType(new ShieldBlockingType("shield"));
+	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(new CurrentShieldBlockingType("current_shield"));
+	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
 	@Override
 	public void onInitialize() {
-		if (registeredWeaponTypes.isEmpty())
-			WeaponType.init();
+		WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		LOGGER.info("Init started.");
 		CombatifyItemTags.init();
@@ -83,5 +91,16 @@ public class Combatify implements ModInitializer {
 	}
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);
+	}
+	public static void defineDefaultWeaponType(WeaponType type) {
+		defaultWeaponTypes.put(type.name, type);
+	}
+	public static <T extends BlockingType> T defineDefaultBlockingType(T blockingType) {
+		defaultTypes.put(blockingType.getName(), blockingType);
+		return registerBlockingType(blockingType);
+	}
+	public static void defineDefaultTier(String name, ExtendedTier tier) {
+		defaultTiers.put(name, tier);
+		tiers.put(name, tier);
 	}
 }

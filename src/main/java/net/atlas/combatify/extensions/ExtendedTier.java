@@ -1,31 +1,16 @@
 package net.atlas.combatify.extensions;
 
-import net.atlas.combatify.Combatify;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 public interface ExtendedTier extends Tier {
 	int getLevel();
-	default Tier baseTier() {
-		return Combatify.ITEMS.getTier(baseTierName());
-	}
 	String baseTierName();
 
-	@Override
-	default @NotNull TagKey<Block> getIncorrectBlocksForDrops() {
-		return switch (getLevel()) {
-			case 0 -> BlockTags.INCORRECT_FOR_WOODEN_TOOL;
-			case 1 -> BlockTags.INCORRECT_FOR_STONE_TOOL;
-			case 2 -> BlockTags.INCORRECT_FOR_IRON_TOOL;
-			case 3 -> BlockTags.INCORRECT_FOR_DIAMOND_TOOL;
-			case 4 -> BlockTags.INCORRECT_FOR_NETHERITE_TOOL;
-            default -> baseTier().getIncorrectBlocksForDrops();
-        };
-	}
 	static int getLevelFromDefault(Tier tier) {
 		if (tier instanceof Tiers tiers) {
 			return switch (tiers) {
@@ -42,5 +27,48 @@ public interface ExtendedTier extends Tier {
 		if (tier instanceof ExtendedTier extendedTier)
 			return extendedTier.getLevel();
 		return getLevelFromDefault(tier);
+	}
+	static ExtendedTier create(int level, int enchantLevel, int uses, float damage, float speed, Ingredient repairIngredient, TagKey<Block> incorrect, String baseTier) {
+		return new ExtendedTier() {
+			@Override
+			public int getLevel() {
+				return level;
+			}
+
+			@Override
+			public String baseTierName() {
+				return baseTier;
+			}
+
+			@Override
+			public @NotNull TagKey<Block> getIncorrectBlocksForDrops() {
+				return incorrect;
+			}
+
+			@Override
+			public int getUses() {
+				return uses;
+			}
+
+			@Override
+			public float getSpeed() {
+				return speed;
+			}
+
+			@Override
+			public float getAttackDamageBonus() {
+				return damage;
+			}
+
+			@Override
+			public int getEnchantmentValue() {
+				return enchantLevel;
+			}
+
+			@Override
+			public @NotNull Ingredient getRepairIngredient() {
+				return repairIngredient;
+			}
+		};
 	}
 }

@@ -1,6 +1,7 @@
 package net.atlas.combatify.config;
 
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -20,31 +21,119 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.block.Block;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.IntFunction;
 
 import static net.atlas.combatify.Combatify.*;
+import static net.atlas.combatify.config.ConfigurableItemData.ITEM_DATA_STREAM_CODEC;
+import static net.atlas.combatify.config.ConfigurableWeaponData.WEAPON_DATA_STREAM_CODEC;
 
 public class ItemConfig extends AtlasConfig {
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
+	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
+	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
+		buf.writeVarInt(ExtendedTier.getLevel(tier));
+		buf.writeVarInt(tier.getEnchantmentValue());
+		buf.writeVarInt(tier.getUses());
+		buf.writeFloat(tier.getAttackDamageBonus());
+		buf.writeFloat(tier.getSpeed());
+		Ingredient.CONTENTS_STREAM_CODEC.encode(buf, tier.getRepairIngredient());
+		buf.writeResourceLocation(tier.getIncorrectBlocksForDrops().location());
+		buf.writeUtf(tier instanceof ExtendedTier extendedTier ? extendedTier.baseTierName() : getTierName(tier));
+	}, (buf) -> {
+		int level = buf.readVarInt();
+		int enchantLevel = buf.readVarInt();
+		int uses = buf.readVarInt();
+		float damage = buf.readFloat();
+		float speed = buf.readFloat();
+		Ingredient repairIngredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
+		TagKey<Block> incorrect = TagKey.create(Registries.BLOCK, buf.readResourceLocation());
+		String baseTier = buf.readUtf();
+		return ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect, baseTier);
+	});
+	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> REGISTERED_WEAPON_TYPE_STREAM_CODEC = StreamCodec.of((buf, weaponType) -> {
+		buf.writeUtf(weaponType.name);
+		buf.writeDouble(weaponType.damageOffset);
+		buf.writeDouble(weaponType.speed);
+		buf.writeDouble(weaponType.reach);
+		buf.writeBoolean(weaponType.useAxeDamage);
+		buf.writeBoolean(weaponType.useHoeDamage);
+		buf.writeBoolean(weaponType.useHoeSpeed);
+		buf.writeBoolean(weaponType.hasSwordEnchants);
+		buf.writeBoolean(weaponType.tierable);
+	}, buf -> {
+		String name = buf.readUtf();
+		double damageOffset = buf.readDouble();
+		double speed = buf.readDouble();
+		double reach = buf.readDouble();
+		boolean useAxeDamage = buf.readBoolean();
+		boolean useHoeDamage = buf.readBoolean();
+		boolean useHoeSpeed = buf.readBoolean();
+		boolean hasSwordEnchants = buf.readBoolean();
+		boolean tierable = buf.readBoolean();
+		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, hasSwordEnchants, true);
+	});
+	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> BLOCKING_TYPE_STREAM_CODEC = StreamCodec.of((buf, blockingType) -> {
+		buf.writeUtf(blockingType.getClass().getName());
+		buf.writeUtf(blockingType.getName());
+		buf.writeBoolean(blockingType.canBeDisabled());
+		buf.writeBoolean(blockingType.canBlockHit());
+		buf.writeBoolean(blockingType.canCrouchBlock());
+		buf.writeBoolean(blockingType.defaultKbMechanics());
+		buf.writeBoolean(blockingType.isToolBlocker());
+		buf.writeBoolean(blockingType.requireFullCharge());
+		buf.writeBoolean(blockingType.requiresSwordBlocking());
+		buf.writeBoolean(blockingType.hasDelay());
+	}, buf -> {
+		try {
+			Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf.readUtf());
+			Constructor<?> constructor = clazz.getConstructor(String.class);
+			String name = buf.readUtf();
+			Object object = constructor.newInstance(name);
+			if (object instanceof BlockingType blockingType) {
+				blockingType.setDisablement(buf.readBoolean());
+				blockingType.setBlockHit(buf.readBoolean());
+				blockingType.setCrouchable(buf.readBoolean());
+				blockingType.setKbMechanics(buf.readBoolean());
+				blockingType.setToolBlocker(buf.readBoolean());
+				blockingType.setRequireFullCharge(buf.readBoolean());
+				blockingType.setSwordBlocking(buf.readBoolean());
+				blockingType.setDelay(buf.readBoolean());
+				Combatify.registerBlockingType(blockingType);
+				return blockingType;
+			} else {
+				CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
+				CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
+				crashReportCategory.setDetail("Class", clazz.getName());
+				crashReportCategory.setDetail("Type Name", name);
+				throw new ReportedException(report);
+			}
+		} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+				 ClassNotFoundException | NoSuchMethodException e) {
+			throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
+		}
+	});
+	public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_STREAM_CODEC = StreamCodec.of((buf, item) -> buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)), buf -> BuiltInRegistries.ITEM.get(buf.readResourceLocation()));
 	public static Formula armourCalcs = null;
 
 	public ItemConfig() {
@@ -74,7 +163,7 @@ public class ItemConfig extends AtlasConfig {
 				if (jsonElement instanceof JsonObject jsonObject) {
 					parseTiers(jsonObject);
 				} else
-					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Tiers"));
+					notJSONObject(jsonElement, "Configuring Tiers");
 			});
 		}
 		if (defenders instanceof JsonArray typeArray) {
@@ -82,64 +171,25 @@ public class ItemConfig extends AtlasConfig {
 				if (jsonElement instanceof JsonObject jsonObject) {
 					parseBlockingType(jsonObject);
 				} else
-					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Blocking Types"));
+					notJSONObject(jsonElement, "Configuring Blocking Types");
 			});
 		}
 		if (weapons instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					WeaponType type = typeFromJson(jsonObject);
-					Double damageOffset = null;
-					Double speed = null;
-					Double reach = null;
-					Double chargedReach = null;
-					BlockingType blockingType = null;
-					Boolean tierable;
-					Boolean hasSwordEnchants = null;
-					Boolean isPrimaryForSwordEnchants = null;
-					Double piercingLevel = null;
-					Boolean canSweep = null;
-					if (jsonObject.has("tierable"))
-						tierable = getBoolean(jsonObject, "tierable");
-					else
-						throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean `tierable` if a weapon type is defined!"), "Configuring Weapon Types"));
-					if (jsonObject.has("damage_offset"))
-						damageOffset = getDouble(jsonObject, "damage_offset");
-					if (jsonObject.has("speed"))
-						speed = getDouble(jsonObject, "speed");
-					if (jsonObject.has("reach"))
-						reach = getDouble(jsonObject, "reach");
-					if (type == null) {
-						if (damageOffset == null || speed == null || reach == null)
-							throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the weapon type's attributes if a new weapon type is added!"), "Configuring Weapon Types"));
-						type = tierable ? WeaponType.createBasic(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach) : WeaponType.createBasicUntierable(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach);
+					if (jsonObject.get("name") instanceof JsonArray weaponsWithConfig) {
+						weaponsWithConfig.asList().forEach(
+							weaponName -> {
+								WeaponType type = typeFromName(weaponName.getAsString());
+								parseWeaponType(type, jsonObject);
+							}
+						);
+					} else {
+						WeaponType type = typeFromJson(jsonObject);
+						parseWeaponType(type, jsonObject);
 					}
-					if (jsonObject.has("charged_reach"))
-						chargedReach = getDouble(jsonObject, "charged_reach");
-					if (jsonObject.has("blocking_type")) {
-						String blocking_type = getString(jsonObject, "blocking_type");
-						blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-						if (!Combatify.registeredTypes.containsKey(blocking_type)) {
-							CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
-							CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
-							crashReportCategory.setDetail("Type name", blocking_type);
-							crashReportCategory.setDetail("Json Object", jsonObject);
-							throw new ReportedException(report);
-						}
-						blockingType = Combatify.registeredTypes.get(blocking_type);
-					}
-					if (jsonObject.has("has_sword_enchants"))
-						hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
-					if (jsonObject.has("armor_piercing"))
-						piercingLevel = getDouble(jsonObject, "armor_piercing");
-					if (jsonObject.has("can_sweep"))
-						canSweep = getBoolean(jsonObject, "can_sweep");
-					if (jsonObject.has("sword_enchants_from_enchanting"))
-						isPrimaryForSwordEnchants = getBoolean(jsonObject, "sword_enchants_from_enchanting");
-					ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
-					configuredWeapons.put(type, configurableWeaponData);
 				} else
-					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Weapon Types"));
+					notJSONObject(jsonElement, "Configuring Weapon Types");
 			});
 		}
 		if (items instanceof JsonArray itemArray) {
@@ -157,11 +207,84 @@ public class ItemConfig extends AtlasConfig {
 						parseItemConfig(item, jsonObject);
 					}
 				} else
-					throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("Not a JSON Object: " + jsonElement + " this may be due to an incorrectly written config file."), "Configuring Items"));
+					notJSONObject(jsonElement, "Configuring Items");
 			});
 		}
 		if (object.has("armor_calculation"))
 			armourCalcs = new Formula(getString(object, "armor_calculation"));
+	}
+	public void parseWeaponType(WeaponType type, JsonObject jsonObject) {
+		Double damageOffset = null;
+		Double speed = null;
+		Double reach = null;
+		Double chargedReach = null;
+		BlockingType blockingType = null;
+		Boolean tierable = null;
+		Boolean hasSwordEnchants = null;
+		Boolean isPrimaryForSwordEnchants = null;
+		Double piercingLevel = null;
+		Boolean canSweep = null;
+
+		if (type != null && configuredWeapons.containsKey(type)) {
+			ConfigurableWeaponData oldData = configuredWeapons.get(type);
+			tierable = oldData.tierable;
+			damageOffset = oldData.damageOffset;
+			speed = oldData.speed;
+			reach = oldData.reach;
+			chargedReach = oldData.chargedReach;
+			blockingType = oldData.blockingType;
+			hasSwordEnchants = oldData.hasSwordEnchants;
+			isPrimaryForSwordEnchants = oldData.isPrimaryForSwordEnchants;
+			piercingLevel = oldData.piercingLevel;
+			canSweep = oldData.canSweep;
+		}
+
+		if (jsonObject.has("tierable"))
+			tierable = getBoolean(jsonObject, "tierable");
+		else if (tierable == null) {
+			LOGGER.error("The JSON must contain the boolean `tierable` if a weapon type is defined!" + errorStage("Configuring Weapon Types"));
+			return;
+		}
+		if (jsonObject.has("damage_offset"))
+			damageOffset = getDouble(jsonObject, "damage_offset");
+		if (jsonObject.has("speed"))
+			speed = getDouble(jsonObject, "speed");
+		if (jsonObject.has("reach"))
+			reach = getDouble(jsonObject, "reach");
+		if (type == null) {
+			if (damageOffset == null || speed == null || reach == null) {
+				LOGGER.error("The JSON must contain the weapon type's attributes if a new weapon type is added!" + errorStage("Configuring Weapon Types"));
+				return;
+			}
+			type = tierable ? WeaponType.createBasic(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach) : WeaponType.createBasicUntierable(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach);
+			damageOffset = null;
+			speed = null;
+			reach = null;
+		}
+		if (jsonObject.has("charged_reach"))
+			chargedReach = getDouble(jsonObject, "charged_reach");
+		if (jsonObject.has("blocking_type")) {
+			String blocking_type = getString(jsonObject, "blocking_type");
+			blocking_type = blocking_type.toLowerCase(Locale.ROOT);
+			if (!Combatify.registeredTypes.containsKey(blocking_type)) {
+				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
+				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
+				crashReportCategory.setDetail("Type name", blocking_type);
+				crashReportCategory.setDetail("Json Object", jsonObject);
+				throw new ReportedException(report);
+			}
+			blockingType = Combatify.registeredTypes.get(blocking_type);
+		}
+		if (jsonObject.has("has_sword_enchants"))
+			hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
+		if (jsonObject.has("armor_piercing"))
+			piercingLevel = getDouble(jsonObject, "armor_piercing");
+		if (jsonObject.has("can_sweep"))
+			canSweep = getBoolean(jsonObject, "can_sweep");
+		if (jsonObject.has("sword_enchants_from_enchanting"))
+			isPrimaryForSwordEnchants = getBoolean(jsonObject, "sword_enchants_from_enchanting");
+		ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
+		configuredWeapons.put(type, configurableWeaponData);
 	}
 	@Override
 	protected InputStream getDefaultedConfig() {
@@ -177,9 +300,9 @@ public class ItemConfig extends AtlasConfig {
 	@Override
 	public void resetExtraHolders() {
 		defineConfigHolders();
-		tiers = HashBiMap.create();
-		registeredWeaponTypes = new HashMap<>();
-		registeredTypes = new HashMap<>();
+		tiers = defaultTiers;
+		registeredWeaponTypes = defaultWeaponTypes;
+		registeredTypes = defaultTypes;
 	}
 
 	@Override
@@ -228,9 +351,12 @@ public class ItemConfig extends AtlasConfig {
 	public static WeaponType typeFromJson(JsonObject jsonObject) {
 		String weapon_type = GsonHelper.getAsString(jsonObject, "name");
 		weapon_type = weapon_type.toLowerCase(Locale.ROOT);
-		if (!registeredWeaponTypes.containsKey(weapon_type))
+		return typeFromName(weapon_type);
+	}
+	public static WeaponType typeFromName(String name) {
+		if (!registeredWeaponTypes.containsKey(name))
 			return null;
-		return WeaponType.fromID(weapon_type);
+		return WeaponType.fromID(name);
 	}
 
 	public static void parseBlockingType(JsonObject jsonObject) {
@@ -313,11 +439,15 @@ public class ItemConfig extends AtlasConfig {
 			blockingType.setDelay(getBoolean(jsonObject, "has_shield_delay"));
 	}
 	public void parseTiers(JsonObject jsonObject) {
-		if (!jsonObject.has("name"))
-			throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("An added tier does not possess a name. This is due to an incorrectly written config file."), "Configuring Tiers"));
+		if (!jsonObject.has("name")) {
+			LOGGER.error("An added tier does not possess a name. This is due to an incorrectly written config file." + errorStage("Configuring Tiers"));
+			return;
+		}
 		String name = getString(jsonObject, "name");
-		if (!jsonObject.has("base_tier"))
-			throw new ReportedException(CrashReport.forThrowable(new IllegalStateException("An added tier by the name of " + name + " has no tier to base off of. This is required for a tier to function."), "Configuring Tiers"));
+		if (!jsonObject.has("base_tier")) {
+			LOGGER.error("An added tier by the name of " + name + " has no tier to base off of. This is required for a tier to function." + errorStage("Configuring Tiers"));
+			return;
+		}
 		String baseTierName = getString(jsonObject, "base_tier");
 		Tier baseTier = getTier(baseTierName);
 		int uses = baseTier.getUses();
@@ -336,256 +466,40 @@ public class ItemConfig extends AtlasConfig {
 		if (jsonObject.has("enchant_level"))
 			enchantLevel = getInt(jsonObject, "enchant_level");
 		Ingredient repairIngredient = baseTier.getRepairIngredient();
-		if (jsonObject.has("repair_ingredient"))
-			repairIngredient = Ingredient.of(itemFromName(getString(jsonObject, "repair_ingredient")));
-		int finalUses = uses;
-		float finalSpeed = speed;
-		float finalDamage = damage;
-		int finalLevel = level;
-		int finalEnchantLevel = enchantLevel;
-		Ingredient finalRepairIngredient = repairIngredient;
-		tiers.put(name, new ExtendedTier() {
-			@Override
-			public int getLevel() {
-				return finalLevel;
+		if (jsonObject.has("repair_ingredient")) {
+			JsonElement repair_ingredient = jsonObject.get("repair_ingredient");
+			if (repair_ingredient instanceof JsonArray jsonArray) {
+				List<ItemStack> ingredients = new ArrayList<>();
+				jsonArray.asList().forEach(jsonElement -> ingredients.add(itemFromName(jsonElement.getAsString()).getDefaultInstance()));
+				repairIngredient = Ingredient.of(ingredients.stream());
+			} else {
+				String ri = repair_ingredient.getAsString();
+				if (ri.startsWith("#"))
+					repairIngredient = Ingredient.of(TagKey.create(Registries.ITEM, new ResourceLocation(ri.substring(1))));
+				else repairIngredient = Ingredient.of(itemFromName(ri));
 			}
+		}
+		TagKey<Block> incorrect = baseTier.getIncorrectBlocksForDrops();
+		if (jsonObject.has("incorrect_blocks"))
+			incorrect = TagKey.create(Registries.BLOCK, new ResourceLocation(getString(jsonObject, "incorrect_blocks").substring(1)));
 
-			@Override
-			public String baseTierName() {
-				return baseTierName;
-			}
-
-			@Override
-			public int getUses() {
-				return finalUses;
-			}
-
-			@Override
-			public float getSpeed() {
-				return finalSpeed;
-			}
-
-			@Override
-			public float getAttackDamageBonus() {
-				return finalDamage;
-			}
-
-			@Override
-			public int getEnchantmentValue() {
-				return finalEnchantLevel;
-			}
-
-			@Override
-			public @NotNull Ingredient getRepairIngredient() {
-				return finalRepairIngredient;
-			}
-		});
+		tiers.put(name, ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect, baseTierName));
 	}
 
-	public ItemConfig loadFromNetwork(FriendlyByteBuf buf) {
+	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
-		tiers = HashBiMap.create(buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
-			int uses = buf1.readVarInt();
-			float speed = buf1.readFloat();
-			float damage = buf1.readFloat();
-			int level = buf1.readVarInt();
-			int enchantLevel = buf1.readVarInt();
-			Ingredient ingredient = Ingredient.of(BuiltInRegistries.ITEM.get(buf1.readResourceLocation()));
-			String baseTier = buf1.readUtf();
-			return new ExtendedTier() {
-				@Override
-				public int getLevel() {
-					return level;
-				}
-
-				@Override
-				public String baseTierName() {
-					return baseTier;
-				}
-
-				@Override
-				public int getUses() {
-					return uses;
-				}
-
-				@Override
-				public float getSpeed() {
-					return speed;
-				}
-
-				@Override
-				public float getAttackDamageBonus() {
-					return damage;
-				}
-
-				@Override
-				public int getEnchantmentValue() {
-					return enchantLevel;
-				}
-
-				@Override
-				public @NotNull Ingredient getRepairIngredient() {
-					return ingredient;
-				}
-			};
-		}));
-		registeredWeaponTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
-			String name = buf1.readUtf();
-			double damageOffset = buf1.readDouble();
-			double speed = buf1.readDouble();
-			double reach = buf1.readDouble();
-			boolean useAxeDamage = buf1.readBoolean();
-			boolean useHoeDamage = buf1.readBoolean();
-			boolean useHoeSpeed = buf1.readBoolean();
-			boolean hasSwordEnchants = buf1.readBoolean();
-			boolean tierable = buf1.readBoolean();
-			return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, hasSwordEnchants, true);
-		});
-		Combatify.registeredTypes = buf.readMap(FriendlyByteBuf::readUtf, buf1 -> {
-			try {
-				Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf1.readUtf());
-				Constructor<?> constructor = clazz.getConstructor(String.class);
-				String name = buf1.readUtf();
-				Object object = constructor.newInstance(name);
-				if (object instanceof BlockingType blockingType) {
-					blockingType.setDisablement(buf1.readBoolean());
-					blockingType.setBlockHit(buf1.readBoolean());
-					blockingType.setCrouchable(buf1.readBoolean());
-					blockingType.setKbMechanics(buf1.readBoolean());
-					blockingType.setToolBlocker(buf1.readBoolean());
-					blockingType.setRequireFullCharge(buf1.readBoolean());
-					blockingType.setSwordBlocking(buf1.readBoolean());
-					blockingType.setDelay(buf1.readBoolean());
-					Combatify.registerBlockingType(blockingType);
-					return blockingType;
-				} else {
-					CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
-					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
-					crashReportCategory.setDetail("Class", clazz.getName());
-					crashReportCategory.setDetail("Type Name", name);
-					throw new ReportedException(report);
-				}
-			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-					 ClassNotFoundException | NoSuchMethodException e) {
-				throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
-			}
-		});
-		configuredItems = buf.readMap(buf12 -> BuiltInRegistries.ITEM.get(buf12.readResourceLocation()), buf1 -> {
-			Double damage = buf1.readDouble();
-			Double speed = buf1.readDouble();
-			Double reach = buf1.readDouble();
-			Double chargedReach = buf1.readDouble();
-			Integer stackSize = buf1.readVarInt();
-			Integer durability = buf1.readVarInt();
-			Integer cooldown = buf1.readInt();
-			Boolean cooldownAfter = null;
-			if (cooldown != -10)
-				cooldownAfter = buf1.readBoolean();
-			String weaponType = buf1.readUtf();
-			WeaponType type = null;
-			String blockingType = buf1.readUtf();
-			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Double blockStrength = buf1.readDouble();
-			Double blockKbRes = buf1.readDouble();
-			Integer enchantlevel = buf1.readInt();
-			int isEnchantableAsInt = buf1.readInt();
-			int hasSwordEnchantsAsInt = buf1.readInt();
-			int isPrimaryForSwordEnchantsAsInt = buf1.readInt();
-			Boolean isEnchantable = null;
-			Boolean hasSwordEnchants = null;
-			Boolean isPrimaryForSwordEnchants = null;
-			Integer useDuration = buf1.readInt();
-			Double piercingLevel = buf1.readDouble();
-			int canSweepAsInt = buf1.readInt();
-			Boolean canSweep = null;
-			Tier tier = getTier(buf1.readUtf());
-			Integer defense = buf1.readInt();
-			Double toughness = buf1.readDouble();
-			Double armourKbRes = buf1.readDouble();
-			String repairIngredient = buf1.readUtf();
-			Ingredient ingredient = Objects.equals(repairIngredient, "empty") ? null : Ingredient.of(BuiltInRegistries.ITEM.get(new ResourceLocation(repairIngredient)));
-			if (damage == -10)
-				damage = null;
-			if (speed == -10)
-				speed = null;
-			if (reach == -10)
-				reach = null;
-			if (chargedReach == -10)
-				chargedReach = null;
-			if (stackSize == -10)
-				stackSize = null;
-			if (durability == -10)
-				durability = null;
-			if (cooldown == -10)
-				cooldown = null;
-			if (blockStrength == -10)
-				blockStrength = null;
-			if (blockKbRes == -10)
-				blockKbRes = null;
-			if (enchantlevel == -10)
-				enchantlevel = null;
-			if (isEnchantableAsInt != -10)
-				isEnchantable = isEnchantableAsInt == 1;
-			if (hasSwordEnchantsAsInt != -10)
-				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-			if (isPrimaryForSwordEnchantsAsInt != -10)
-				isPrimaryForSwordEnchants = isPrimaryForSwordEnchantsAsInt == 1;
-			if (useDuration == -10)
-				useDuration = null;
-			if (piercingLevel == -10)
-				piercingLevel = null;
-			if (canSweepAsInt != -10)
-				canSweep = canSweepAsInt == 1;
-			if (registeredWeaponTypes.containsKey(weaponType))
-				type = WeaponType.fromID(weaponType);
-			if (defense == -10)
-				defense = null;
-			if (toughness == -10)
-				toughness = null;
-			if (armourKbRes == -10)
-				armourKbRes = null;
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient);
-		});
-		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
-			Double damageOffset = buf1.readDouble();
-			Double speed = buf1.readDouble();
-			Double reach = buf1.readDouble();
-			Double chargedReach = buf1.readDouble();
-			Boolean tierable = buf1.readBoolean();
-			String blockingType = buf1.readUtf();
-			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			int hasSwordEnchantsAsInt = buf1.readInt();
-			Boolean hasSwordEnchants = null;
-			int isPrimaryForSwordEnchantsAsInt = buf1.readInt();
-			Boolean isPrimaryForSwordEnchants = null;
-			Double piercingLevel = buf1.readDouble();
-			int canSweepAsInt = buf1.readInt();
-			Boolean canSweep = null;
-			if (damageOffset == -10)
-				damageOffset = null;
-			if (speed == -10)
-				speed = null;
-			if (reach == -10)
-				reach = null;
-			if (chargedReach == -10)
-				chargedReach = null;
-			if (hasSwordEnchantsAsInt != -10)
-				hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-			if (isPrimaryForSwordEnchantsAsInt != -10)
-				isPrimaryForSwordEnchants = isPrimaryForSwordEnchantsAsInt == 1;
-			if (piercingLevel == -10)
-				piercingLevel = null;
-			if (canSweepAsInt != -10)
-				canSweep = canSweepAsInt == 1;
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
-		});
+		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
+		registeredWeaponTypes = readMap(buf, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
+		registeredTypes = readMap(buf, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
+		configuredItems = readMap(buf, ITEM_STREAM_CODEC, ITEM_DATA_STREAM_CODEC);
+		configuredWeapons = readMap(buf, WeaponType.STREAM_CODEC, WEAPON_DATA_STREAM_CODEC);
 		String formula = buf.readUtf();
 		if (!formula.equals("empty"))
 			armourCalcs = new Formula(formula);
 		return this;
 	}
 
-	public Tier getTier(String s) {
+	public static Tier getTier(String s) {
 		return switch (s.toLowerCase()) {
 			case "wood" -> Tiers.WOOD;
 			case "stone" -> Tiers.STONE;
@@ -596,7 +510,7 @@ public class ItemConfig extends AtlasConfig {
 			default -> getTierRaw(s);
 		};
 	}
-	private String getTierName(Tier tier) {
+	public static String getTierName(Tier tier) {
 		if (tier instanceof Tiers vanilla) {
 			return switch (vanilla) {
 				case WOOD -> "wood";
@@ -609,85 +523,44 @@ public class ItemConfig extends AtlasConfig {
 		}
 		return tiers.inverse().get(tier);
 	}
-	private Tier getTierRaw(String s) {
+	private static Tier getTierRaw(String s) {
 		if (!tiers.containsKey(s) || Objects.equals(s, "empty")) return null;
 		return tiers.get(s);
 	}
 
-	public void saveToNetwork(FriendlyByteBuf buf) {
+	public void saveToNetwork(RegistryFriendlyByteBuf buf) {
 		super.saveToNetwork(buf);
-		buf.writeMap(tiers, FriendlyByteBuf::writeUtf, (buf1, tier) -> {
-			buf1.writeVarInt(tier.getUses());
-			buf1.writeFloat(tier.getSpeed());
-			buf1.writeFloat(tier.getAttackDamageBonus());
-			buf1.writeVarInt(ExtendedTier.getLevel(tier));
-			buf1.writeVarInt(tier.getEnchantmentValue());
-			buf1.writeResourceLocation(BuiltInRegistries.ITEM.getKey(tier.getRepairIngredient().getItems()[0].getItem()));
-			buf1.writeUtf(tier instanceof ExtendedTier extendedTier ? extendedTier.baseTierName() : getTierName(tier));
-		});
-		buf.writeMap(registeredWeaponTypes, FriendlyByteBuf::writeUtf, (buf1, weaponType) -> {
-			buf1.writeUtf(weaponType.name);
-			buf1.writeDouble(weaponType.damageOffset);
-			buf1.writeDouble(weaponType.speed);
-			buf1.writeDouble(weaponType.reach);
-			buf1.writeBoolean(weaponType.useAxeDamage);
-			buf1.writeBoolean(weaponType.useHoeDamage);
-			buf1.writeBoolean(weaponType.useHoeSpeed);
-			buf1.writeBoolean(weaponType.hasSwordEnchants);
-			buf1.writeBoolean(weaponType.tierable);
-		});
-		buf.writeMap(Combatify.registeredTypes, FriendlyByteBuf::writeUtf, (buf1, blockingType) -> {
-			buf1.writeUtf(blockingType.getClass().getName());
-			buf1.writeUtf(blockingType.getName());
-			buf1.writeBoolean(blockingType.canBeDisabled());
-			buf1.writeBoolean(blockingType.canBlockHit());
-			buf1.writeBoolean(blockingType.canCrouchBlock());
-			buf1.writeBoolean(blockingType.defaultKbMechanics());
-			buf1.writeBoolean(blockingType.isToolBlocker());
-			buf1.writeBoolean(blockingType.requireFullCharge());
-			buf1.writeBoolean(blockingType.requiresSwordBlocking());
-			buf1.writeBoolean(blockingType.hasDelay());
-		});
-		buf.writeMap(configuredItems, (buf1, item) -> buf1.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)), (buf12, configurableItemData) -> {
-			buf12.writeDouble(configurableItemData.damage == null ? -10 : configurableItemData.damage);
-			buf12.writeDouble(configurableItemData.speed == null ? -10 : configurableItemData.speed);
-			buf12.writeDouble(configurableItemData.reach == null ? -10 : configurableItemData.reach);
-			buf12.writeDouble(configurableItemData.chargedReach == null ? -10 : configurableItemData.chargedReach);
-			buf12.writeVarInt(configurableItemData.stackSize == null ? -10 : configurableItemData.stackSize);
-			buf12.writeVarInt(configurableItemData.durability == null ? -10 : configurableItemData.durability);
-			buf12.writeInt(configurableItemData.cooldown == null ? -10 : configurableItemData.cooldown);
-			if(configurableItemData.cooldown != null)
-				buf12.writeBoolean(configurableItemData.cooldownAfter);
-			buf12.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name);
-			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName());
-			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
-			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
-			buf12.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
-			buf12.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
-			buf12.writeInt(configurableItemData.hasSwordEnchants == null ? -10 : configurableItemData.hasSwordEnchants ? 1 : 0);
-			buf12.writeInt(configurableItemData.isPrimaryForSwordEnchants == null ? -10 : configurableItemData.isPrimaryForSwordEnchants ? 1 : 0);
-			buf12.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
-			buf12.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
-			buf12.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
-			buf12.writeUtf(configurableItemData.tier == null ? "empty" : getTierName(configurableItemData.tier));
-			buf12.writeInt(configurableItemData.defense == null ? -10 : configurableItemData.defense);
-			buf12.writeDouble(configurableItemData.toughness == null ? -10 : configurableItemData.toughness);
-			buf12.writeDouble(configurableItemData.armourKbRes == null ? -10 : configurableItemData.armourKbRes);
-			buf12.writeUtf(configurableItemData.repairIngredient == null ? "empty" : BuiltInRegistries.ITEM.getKey(configurableItemData.repairIngredient.getItems()[0].getItem()).toString());
-		});
-		buf.writeMap(configuredWeapons, (buf1, type) -> buf1.writeUtf(type.name), (buf12, configurableWeaponData) -> {
-			buf12.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
-			buf12.writeDouble(configurableWeaponData.speed == null ? -10 : configurableWeaponData.speed);
-			buf12.writeDouble(configurableWeaponData.reach == null ? -10 : configurableWeaponData.reach);
-			buf12.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
-			buf12.writeBoolean(configurableWeaponData.tierable);
-			buf12.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
-			buf12.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
-			buf12.writeInt(configurableWeaponData.isPrimaryForSwordEnchants == null ? -10 : configurableWeaponData.isPrimaryForSwordEnchants ? 1 : 0);
-			buf12.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
-			buf12.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
-		});
+		writeMap(buf, tiers, NAME_STREAM_CODEC, TIERS_STREAM_CODEC);
+		writeMap(buf, registeredWeaponTypes, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
+		writeMap(buf, Combatify.registeredTypes, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
+		writeMap(buf, configuredItems, ITEM_STREAM_CODEC, ITEM_DATA_STREAM_CODEC);
+		writeMap(buf, configuredWeapons, WeaponType.STREAM_CODEC, WEAPON_DATA_STREAM_CODEC);
 		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written);
+	}
+
+	public static <B extends FriendlyByteBuf, K, V> Map<K, V> readMap(B buf, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
+		return readMap(buf, Maps::newHashMapWithExpectedSize, keyCodec, valueCodec);
+	}
+
+	public static <B extends FriendlyByteBuf, K, V, M extends Map<K, V>> M readMap(B buf, IntFunction<M> intFunction, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
+		int size = buf.readVarInt();
+		M map = intFunction.apply(size);
+
+		for (int index = 0; index < size; ++index) {
+			K key = keyCodec.decode(buf);
+			V value = valueCodec.decode(buf);
+			map.put(key, value);
+		}
+
+		return map;
+	}
+
+	public static <B extends FriendlyByteBuf, K, V> void writeMap(B buf, Map<K, V> map, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
+		buf.writeVarInt(map.size());
+		map.forEach((key, value) -> {
+			keyCodec.encode(buf, key);
+			valueCodec.encode(buf, value);
+		});
 	}
 
 	@Override
@@ -814,8 +687,10 @@ public class ItemConfig extends AtlasConfig {
 			blockingType = Combatify.registeredTypes.get(blocking_type);
 		}
 		if (cooldown != null && cooldownAfterUse == null) {
-			if (!jsonObject.has("cooldown_after"))
-				throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!"), "Applying Item Cooldown"));
+			if (!jsonObject.has("cooldown_after")) {
+				LOGGER.error("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!" + errorStage("Applying Item Cooldown"));
+				return;
+			}
 			cooldownAfterUse = getBoolean(jsonObject, "cooldown_after");
 		}
 		if (jsonObject.has("damage_protection"))
@@ -839,8 +714,10 @@ public class ItemConfig extends AtlasConfig {
 		if (jsonObject.has("durability")) {
 			JsonElement durabilityE = jsonObject.get("durability");
 			if (durabilityE instanceof JsonObject durabilityO) {
-				if (!durabilityO.has("any"))
-					throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the integer 'any' when armour is configured!"), "Applying Item Durability"));
+				if (!durabilityO.has("any")) {
+					LOGGER.error("The JSON must contain the integer 'any' when armour is configured!" + errorStage("Applying Item Durability"));
+					return;
+				}
 				if (item instanceof ArmorItem armorItem) {
 					durability = getIntWithFallback(durabilityO, armorItem.getType().getName(), "any");
 				} else durability = getInt(durabilityO, "any");
@@ -851,8 +728,10 @@ public class ItemConfig extends AtlasConfig {
 		if (jsonObject.has("armor")) {
 			JsonElement defenseE = jsonObject.get("armor");
 			if (defenseE instanceof JsonObject defenseO) {
-				if (!defenseO.has("any"))
-					throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the integer 'any' when armour is configured!"), "Applying Item Defense"));
+				if (!defenseO.has("any")) {
+					LOGGER.error("The JSON must contain the integer 'any' when armour is configured!" + errorStage("Applying Item Defense"));
+					return;
+				}
 				if (item instanceof ArmorItem armorItem) {
                     defense = getIntWithFallback(defenseO, armorItem.getType().getName(), "any");
 				} else defense = getInt(defenseO, "any");
@@ -862,10 +741,27 @@ public class ItemConfig extends AtlasConfig {
 			toughness = getDouble(jsonObject, "armor_toughness");
 		if (jsonObject.has("armor_knockback_resistance"))
 			armourKbRes = getDouble(jsonObject, "armor_knockback_resistance");
-		if (jsonObject.has("repair_ingredient"))
-			ingredient = Ingredient.of(itemFromName(getString(jsonObject, "repair_ingredient")));
+		if (jsonObject.has("repair_ingredient")) {
+			JsonElement repair_ingredient = jsonObject.get("repair_ingredient");
+			if (repair_ingredient instanceof JsonArray jsonArray) {
+				List<ItemStack> ingredients = new ArrayList<>();
+				jsonArray.asList().forEach(jsonElement -> ingredients.add(itemFromName(jsonElement.getAsString()).getDefaultInstance()));
+				ingredient = Ingredient.of(ingredients.stream());
+			} else {
+				String ri = repair_ingredient.getAsString();
+				if (ri.startsWith("#"))
+					ingredient = Ingredient.of(TagKey.create(Registries.ITEM, new ResourceLocation(ri.substring(1))));
+				else ingredient = Ingredient.of(itemFromName(ri));
+			}
+		}
 		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient);
 		configuredItems.put(item, configurableItemData);
+	}
+	public static void notJSONObject(JsonElement invalid, String stage) {
+		LOGGER.error("Not a JSON Object: " + invalid + " this may be due to an incorrectly written config file. " + errorStage(stage));
+	}
+	public static String errorStage(String stage) {
+		return "[Config Stage]: " + stage;
 	}
 	public record Formula(String written) {
 		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {

@@ -3,6 +3,8 @@ package net.atlas.combatify.item;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ExtendedTier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -16,6 +18,7 @@ import java.util.UUID;
 import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_UUID;
 
 public class WeaponType {
+	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> STREAM_CODEC = StreamCodec.of((buf, weaponType) -> buf.writeUtf(weaponType.name), buf -> WeaponType.fromID(buf.readUtf()));
 	public static final WeaponType EMPTY = createBasicUntierable("empty", 0, 0, 0);
     public static final WeaponType SWORD = createBasic("sword", 2, 0.5, 0.5);
 	public static final WeaponType MACE = createBasic("mace", 2, 0.5, 0);
@@ -190,6 +193,14 @@ public class WeaponType {
 		return speed;
 	}
 	public static void init() {
-
+		Combatify.defineDefaultWeaponType(SWORD);
+		Combatify.defineDefaultWeaponType(MACE);
+		Combatify.defineDefaultWeaponType(LONGSWORD);
+		Combatify.defineDefaultWeaponType(AXE);
+		Combatify.defineDefaultWeaponType(PICKAXE);
+		Combatify.defineDefaultWeaponType(HOE);
+		Combatify.defineDefaultWeaponType(SHOVEL);
+		Combatify.defineDefaultWeaponType(KNIFE);
+		Combatify.defineDefaultWeaponType(TRIDENT);
 	}
 }
