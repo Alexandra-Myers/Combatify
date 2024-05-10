@@ -771,7 +771,7 @@ public class ItemConfig extends AtlasConfig {
 			String ri = getString(jsonObject, "tool_tag");
 			if (ri.startsWith("#"))
 				toolMineable = TagKey.create(Registries.BLOCK, new ResourceLocation(ri.substring(1)));
-			else LOGGER.error("The resource location provided when setting a tool tag for an item must belong to a tag! " + errorStage("Applying Item Tools"));;
+			else LOGGER.error("The resource location provided when setting a tool tag for an item must belong to a tag! " + errorStage("Applying Item Tools"));
 		}
 		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
 		configuredItems.put(item, configurableItemData);
