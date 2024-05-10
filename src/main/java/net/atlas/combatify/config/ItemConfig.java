@@ -27,6 +27,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.damagesource.DamageSource;
@@ -627,6 +628,7 @@ public class ItemConfig extends AtlasConfig {
 		Double toughness = null;
 		Double armourKbRes = null;
 		Ingredient ingredient = null;
+		TagKey<Block> toolMineable = null;
 		if (configuredItems.containsKey(item)) {
 			ConfigurableItemData oldData = configuredItems.get(item);
 			damage = oldData.damage;
@@ -649,6 +651,7 @@ public class ItemConfig extends AtlasConfig {
 			canSweep = oldData.canSweep;
 			tier = oldData.tier;
 			durability = oldData.durability;
+			toolMineable = oldData.toolMineableTag;
 		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
@@ -709,8 +712,18 @@ public class ItemConfig extends AtlasConfig {
 			piercingLevel = getDouble(jsonObject, "armor_piercing");
 		if (jsonObject.has("can_sweep"))
 			canSweep = getBoolean(jsonObject, "can_sweep");
-		if (jsonObject.has("tier"))
+		if (jsonObject.has("tier")) {
 			tier = getTier(getString(jsonObject, "tier"));
+			if (toolMineable == null) {
+				toolMineable = switch (item) {
+					case AxeItem ignored -> BlockTags.MINEABLE_WITH_AXE;
+					case HoeItem ignored -> BlockTags.MINEABLE_WITH_HOE;
+					case PickaxeItem ignored -> BlockTags.MINEABLE_WITH_PICKAXE;
+					case ShovelItem ignored -> BlockTags.MINEABLE_WITH_SHOVEL;
+					default -> null;
+				};
+			}
+		}
 		if (jsonObject.has("durability")) {
 			JsonElement durabilityE = jsonObject.get("durability");
 			if (durabilityE instanceof JsonObject durabilityO) {
@@ -754,7 +767,13 @@ public class ItemConfig extends AtlasConfig {
 				else ingredient = Ingredient.of(itemFromName(ri));
 			}
 		}
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient);
+		if (jsonObject.has("tool_tag")) {
+			String ri = getString(jsonObject, "tool_tag");
+			if (ri.startsWith("#"))
+				toolMineable = TagKey.create(Registries.BLOCK, new ResourceLocation(ri.substring(1)));
+			else LOGGER.error("The resource location provided when setting a tool tag for an item must belong to a tag! " + errorStage("Applying Item Tools"));;
+		}
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
 		configuredItems.put(item, configurableItemData);
 	}
 	public static void notJSONObject(JsonElement invalid, String stage) {

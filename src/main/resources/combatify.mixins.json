@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "net.atlas.combatify.mixin",
   "plugin": "net.atlas.combatify.mixin.MixinPlugin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AbstractWindChargeMixin",
     "AxeItemMixin",
@@ -29,7 +29,6 @@
     "MobMixin",
     "PickaxeItemMixin",
     "PiglinAiMixin",
-    "PlayerHeadItemMixin",
     "PlayerListMixin",
     "PlayerMixin",
     "ProjectileMixin",

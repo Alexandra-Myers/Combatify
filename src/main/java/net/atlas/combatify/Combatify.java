@@ -5,9 +5,11 @@ import com.google.common.collect.HashBiMap;
 import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.atlaslib.util.PrefixLogger;
 import net.atlas.combatify.config.CombatifyBetaConfig;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -16,16 +18,33 @@ import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.mixin.item.ItemAccessor;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +53,7 @@ import java.util.UUID;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
+@SuppressWarnings("unused")
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
 	public static CombatifyBetaConfig CONFIG = new CombatifyBetaConfig();
@@ -61,6 +81,38 @@ public class Combatify implements ModInitializer {
 	public void onInitialize() {
 		WeaponType.init();
 		networkingHandler = new NetworkingHandler();
+		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
+			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+			return InteractionResult.PASS;
+		});
+		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
+			if(Combatify.unmoddedPlayers.contains(player.getUUID())) {
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+				HitResult hitResult = new BlockHitResult(Vec3.atCenterOf(pos), direction, pos, false);
+				hitResult = MethodHandler.redirectResult(player, hitResult);
+				if (hitResult.getType() == HitResult.Type.ENTITY && player instanceof ServerPlayer serverPlayer) {
+					serverPlayer.connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), player.isShiftKeyDown()));
+					return InteractionResult.FAIL;
+				}
+			}
+			return InteractionResult.PASS;
+		});
+		UseBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, hitResult) -> {
+			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+			return InteractionResult.PASS;
+		});
+		UseEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, entity, hitResult) -> {
+			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+			return InteractionResult.PASS;
+		});
+		UseItemCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand) -> {
+			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+				Combatify.isPlayerAttacking.put(player.getUUID(), false);
+			return InteractionResultHolder.pass(player.getItemInHand(hand));
+		});
 		LOGGER.info("Init started.");
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
@@ -81,6 +133,41 @@ public class Combatify implements ModInitializer {
 			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 		}
+	}
+	@SuppressWarnings("all")
+	public static void modify() {
+		for (Item item : BuiltInRegistries.ITEM) {
+			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
+			boolean maxDamageChanged = false;
+			if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
+				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+				Integer durability = configurableItemData.durability;
+				Integer maxStackSize = configurableItemData.stackSize;
+				Tier tier = configurableItemData.tier;
+				if (tier != null)
+					maxDamageChanged = true;
+				TagKey<Block> mineable = configurableItemData.toolMineableTag;
+				if (durability != null) {
+					setDurability(builder, item, durability);
+					maxDamageChanged = true;
+				}
+				if (maxStackSize != null && !maxDamageChanged)
+					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
+				if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
+			}
+			if (!maxDamageChanged && ((ItemExtensions)item).getTierFromConfig() != null)
+				setDurability(builder, item, ((ItemExtensions)item).getTierFromConfig().getUses());
+			MethodHandler.updateModifiers(builder, item);
+			((ItemAccessor) item).setComponents(builder.build());
+		}
+	}
+	@SuppressWarnings("deprecation")
+	public static void setDurability(DataComponentMap.Builder builder, @NotNull Item item, int value) {
+		if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
+			value *= 2;
+		builder.set(DataComponents.DAMAGE, 0);
+		builder.set(DataComponents.MAX_DAMAGE, value);
+		builder.set(DataComponents.MAX_STACK_SIZE, 1);
 	}
 	public static void registerWeaponType(WeaponType weaponType) {
 		Combatify.registeredWeaponTypes.put(weaponType.name, weaponType);

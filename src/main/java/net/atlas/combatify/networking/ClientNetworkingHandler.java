@@ -29,6 +29,7 @@ public class ClientNetworkingHandler {
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
 			ITEMS = new ItemConfig();
+			Combatify.modify();
 
 			Combatify.LOGGER.info("Loaded items config.");
 		});

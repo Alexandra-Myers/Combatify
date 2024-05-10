@@ -2,10 +2,8 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.util.MethodHandler;
+import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -13,12 +11,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.phys.*;
+import org.jetbrains.annotations.NotNull;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -56,41 +51,9 @@ public class NetworkingHandler {
 			}
 			moddedPlayers.add(handler.player.getUUID());
 		});
-		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
-				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-			return InteractionResult.PASS;
-		});
-		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID())) {
-				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-				HitResult hitResult = new BlockHitResult(Vec3.atCenterOf(pos), direction, pos, false);
-				hitResult = MethodHandler.redirectResult(player, hitResult);
-				if (hitResult.getType() == HitResult.Type.ENTITY && player instanceof ServerPlayer serverPlayer) {
-					serverPlayer.connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), player.isShiftKeyDown()));
-					return InteractionResult.FAIL;
-				}
-			}
-			return InteractionResult.PASS;
-		});
-		UseBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, hitResult) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
-				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-			return InteractionResult.PASS;
-		});
-		UseEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, entity, hitResult) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
-				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-			return InteractionResult.PASS;
-		});
-		UseItemCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
-				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-			return InteractionResultHolder.pass(player.getItemInHand(hand));
-		});
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
-			if (ITEMS == null)
-				ITEMS = new ItemConfig();
+			ITEMS = new ItemConfig();
+			Combatify.modify();
 		});
 	}
 	public record ServerboundMissPacket() implements CustomPacketPayload {
@@ -105,7 +68,7 @@ public class NetworkingHandler {
 
 		}
 		@Override
-		public Type<?> type() {
+		public @NotNull Type<?> type() {
 			return TYPE;
 		}
 	}
@@ -131,7 +94,7 @@ public class NetworkingHandler {
 		 * @return the type of this packet
 		 */
 		@Override
-		public Type<?> type() {
+		public @NotNull Type<?> type() {
 			return TYPE;
 		}
 	}

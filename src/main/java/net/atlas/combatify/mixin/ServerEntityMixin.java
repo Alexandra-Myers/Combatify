@@ -30,7 +30,7 @@ public abstract class ServerEntityMixin {
 		if(packet instanceof ClientboundBundlePacket clientboundBundlePacket)
 			clientboundBundlePacket.subPackets().forEach(clientGamePacketListenerPacket -> {
 				if(Combatify.unmoddedPlayers.contains(serverPlayer.getUUID()) && clientGamePacketListenerPacket instanceof ClientboundUpdateAttributesPacket clientboundUpdateAttributesPacket) {
-					((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).changeAttributes(serverPlayer);
+					((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).combatify$changeAttributes(serverPlayer);
 				}
 			});
 		instance.send(packet);
@@ -38,7 +38,7 @@ public abstract class ServerEntityMixin {
 	@Redirect(method = "sendDirtyEntityData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerEntity;broadcastAndSend(Lnet/minecraft/network/protocol/Packet;)V", ordinal = 1))
 	public void modifyAttributes1(ServerEntity instance, Packet<?> packet) {
 		if(entity instanceof ServerPlayer serverPlayer && Combatify.unmoddedPlayers.contains(serverPlayer.getUUID()) && packet instanceof ClientboundUpdateAttributesPacket clientboundUpdateAttributesPacket)
-			((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).changeAttributes(serverPlayer);
+			((IUpdateAttributesPacket) clientboundUpdateAttributesPacket).combatify$changeAttributes(serverPlayer);
 		broadcastAndSend(packet);
 	}
 }

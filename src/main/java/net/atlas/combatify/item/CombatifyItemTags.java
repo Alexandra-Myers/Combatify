@@ -8,6 +8,7 @@ import net.minecraft.world.item.Item;
 public class CombatifyItemTags {
 	public static final TagKey<Item> AXE_ENCHANTABLE = bind("enchantable/axe");
 	public static final TagKey<Item> BREACH_ENCHANTABLE = bind("enchantable/breach");
+	public static final TagKey<Item> DOUBLE_TIER_DURABILITY = bind("combatify:double_tier_durability");
 	private static TagKey<Item> bind(String string) {
 		return TagKey.create(Registries.ITEM, new ResourceLocation(string));
 	}

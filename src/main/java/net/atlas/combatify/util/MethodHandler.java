@@ -9,6 +9,7 @@ import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.sounds.SoundEvents;
@@ -49,31 +50,29 @@ public class MethodHandler {
 		return new Vec3(x, y, z);
 	}
 
-	public static void updateModifiers(ItemStack itemStack) {
-		ItemAttributeModifiers modifier = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		ItemAttributeModifiers def = itemStack.getItem().getDefaultAttributeModifiers();
+	@SuppressWarnings("ALL")
+	public static void updateModifiers(DataComponentMap.Builder builder, Item item) {
+		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+		ItemAttributeModifiers def = item.getDefaultAttributeModifiers();
 		if (modifier == ItemAttributeModifiers.EMPTY && def != ItemAttributeModifiers.EMPTY)
 			modifier = def;
-		modifier = ((ItemExtensions)itemStack.getItem()).modifyAttributeModifiers(modifier);
-		itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
+		modifier = ((ItemExtensions)item).modifyAttributeModifiers(modifier);
 		if (modifier != null && Combatify.ITEMS != null) {
-			Item item = itemStack.getItem();
 			if (Combatify.ITEMS.configuredItems.containsKey(item)) {
 				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
 				if (configurableItemData.type != null) {
-					ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
-					configurableItemData.type.addCombatAttributes(((ItemExtensions)item).getConfigTier(), builder);
+					ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
+					configurableItemData.type.addCombatAttributes(((ItemExtensions)item).getConfigTier(), itemAttributeBuilder);
 					modifier.modifiers().forEach(entry -> {
 						boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
 							|| entry.attribute().is(Attributes.ATTACK_SPEED)
 							|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
 						if (!bl)
-							builder.add(entry.attribute(), entry.modifier(), entry.slot());
+							itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
 					});
-					itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.build());
-					modifier = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
+					modifier = itemAttributeBuilder.build();
 				}
-				ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+				ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
 				boolean modDamage = false;
 				AtomicReference<ItemAttributeModifiers.Entry> damage = new AtomicReference<>();
 				boolean modSpeed = false;
@@ -100,7 +99,7 @@ public class MethodHandler {
 					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
 						knockbackResistance.set(entry);
 					else
-						builder.add(entry.attribute(), entry.modifier(), entry.slot());
+						itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
 				});
 				modifier.modifiers().forEach(entry -> {
 					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
@@ -116,35 +115,35 @@ public class MethodHandler {
 					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
 						knockbackResistance.set(entry);
 					else
-						builder.add(entry.attribute(), entry.modifier(), entry.slot());
+						itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
 				});
 				if (configurableItemData.damage != null) {
 					modDamage = true;
-					builder.add(Attributes.ATTACK_DAMAGE,
+					itemAttributeBuilder.add(Attributes.ATTACK_DAMAGE,
 						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
 				if (!modDamage && damage.get() != null)
-					builder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
+					itemAttributeBuilder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
 				if (configurableItemData.speed != null) {
 					modSpeed = true;
-					builder.add(Attributes.ATTACK_SPEED,
+					itemAttributeBuilder.add(Attributes.ATTACK_SPEED,
 						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
 				if (!modSpeed && speed.get() != null)
-					builder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
+					itemAttributeBuilder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
 				if (configurableItemData.reach != null) {
 					modReach = true;
-					builder.add(Attributes.ENTITY_INTERACTION_RANGE,
+					itemAttributeBuilder.add(Attributes.ENTITY_INTERACTION_RANGE,
 						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
 				if (!modReach && reach.get() != null)
-					builder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
+					itemAttributeBuilder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
 				UUID uuid = UUID.fromString("C1D3F271-8B8E-BA4A-ACE0-6020A98928B2");
 				EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
-				if (itemStack.getItem() instanceof Equipable equipable)
+				if (item instanceof Equipable equipable)
 					slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
 				uuid = switch (slotGroup) {
 					case HEAD -> UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150");
@@ -156,33 +155,34 @@ public class MethodHandler {
 				};
 				if (configurableItemData.defense != null) {
 					modDefense = true;
-					builder.add(Attributes.ARMOR,
+					itemAttributeBuilder.add(Attributes.ARMOR,
 						new AttributeModifier(uuid, "Config modifier", configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
 				if (!modDefense && defense.get() != null)
-					builder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
+					itemAttributeBuilder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
 				if (configurableItemData.toughness != null) {
 					modToughness = true;
-					builder.add(Attributes.ARMOR_TOUGHNESS,
+					itemAttributeBuilder.add(Attributes.ARMOR_TOUGHNESS,
 						new AttributeModifier(uuid, "Config modifier", configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
 				if (!modToughness && toughness.get() != null)
-					builder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
+					itemAttributeBuilder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
 				if (configurableItemData.armourKbRes != null) {
 					modKnockbackResistance = true;
 					if (configurableItemData.armourKbRes > 0)
-						builder.add(Attributes.KNOCKBACK_RESISTANCE,
+						itemAttributeBuilder.add(Attributes.KNOCKBACK_RESISTANCE,
 							new AttributeModifier(uuid, "Config modifier", configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
 							slotGroup);
 				}
 				if (!modKnockbackResistance && knockbackResistance.get() != null)
-					builder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
+					itemAttributeBuilder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
 				if (modDamage || modSpeed || modReach || modDefense || modToughness || modKnockbackResistance)
-					itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.build());
+					modifier = itemAttributeBuilder.build();
 			}
 		}
+		builder.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
 	}
 	public static double calculateValue(@Nullable AttributeInstance attributeInstance, float damageBonus) {
 		if(attributeInstance == null)

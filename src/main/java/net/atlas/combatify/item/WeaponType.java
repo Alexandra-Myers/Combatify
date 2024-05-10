@@ -165,7 +165,7 @@ public class WeaponType {
 			return modifier + damageOffset;
 		else if (useAxeDamage) {
 			if (!Combatify.CONFIG.ctsAttackBalancing())
-				return (isNotTier1 ? tier == Tiers.NETHERITE ? 8 : 7 : 5) + modifier;
+				return (isNotTier1 ? tier == Tiers.NETHERITE || ExtendedTier.getLevel(tier) >= 4 ? 8 : 7 : 5) + modifier + (ExtendedTier.getLevel(tier) >= 4 && tier != Tiers.NETHERITE ? damageBonus - 3 : 0);
 			else
 				return damageBonus + 3.0;
 		} else if (useHoeDamage) {

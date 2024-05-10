@@ -13,6 +13,7 @@ import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.*;
 
@@ -23,7 +24,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 	private List<ClientboundUpdateAttributesPacket.AttributeSnapshot> attributes;
 
 	@Override
-	public void changeAttributes(ServerPlayer reciever) {
+	public void combatify$changeAttributes(ServerPlayer reciever) {
 		List<Integer> indexes = new ArrayList<>();
 		Map<Integer, AttributeModifier> modifierMap = new HashMap<>();
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
@@ -51,6 +52,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				attributes.add(index, new ClientboundUpdateAttributesPacket.AttributeSnapshot(attributeSnapshot.attribute(), attributeSnapshot.base() - 1.5, newModifiers));
 			}
 	}
+	@Unique
 	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Holder<Attribute> attribute) {
 		double attributeInstanceBaseValue = baseValue;
 		List<AttributeModifier> additionList = modifiers
@@ -80,6 +82,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 
 		return attribute.value().sanitizeValue(attributeInstanceBaseValue);
 	}
+	@Unique
 	private static int CTSMath(double attackSpeed, boolean hasVanilla) {
 		double d = attackSpeed - 1.5;
 		if (hasVanilla)
@@ -88,6 +91,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		d = 1.0 / d * 20.0 + (hasVanilla ? 0 : 0.5);
 		return (int) (d);
 	}
+	@Unique
 	private static int vanillaMath(double attackSpeed) {
 		return (int) (1.0 / attackSpeed * 20.0);
 	}
