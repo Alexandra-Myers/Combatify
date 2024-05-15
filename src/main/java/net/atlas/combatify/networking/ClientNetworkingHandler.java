@@ -21,10 +21,12 @@ public class ClientNetworkingHandler {
 			if (entity instanceof LivingEntityExtensions livingEntity)
 				livingEntity.setUseItemRemaining(packet.ticks());
 		});
+		ClientPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, client) -> Combatify.markCTS(false));
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
 			if (!ClientPlayNetworking.canSend(NetworkingHandler.ServerboundMissPacket.TYPE)) {
-				Combatify.CONFIG.reloadFromDefault();
+				CONFIG.reloadFromDefault();
 				ITEMS.reloadFromDefault();
+				Combatify.markCTS(true);
 			}
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {

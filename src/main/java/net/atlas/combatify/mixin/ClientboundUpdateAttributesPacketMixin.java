@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IUpdateAttributesPacket;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.Holder;
@@ -33,7 +34,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
 					.filter(attributeModifier -> attributeModifier.id() == Item.BASE_ATTACK_SPEED_UUID)
 					.toList()
-					.isEmpty();
+					.isEmpty() && !Combatify.isCTS;
 				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
 					if (vanillaMath(newSpeed) == CTSMath(speed, hasVanilla) * 2) {
 						if (newSpeed - 2.5 != 0)

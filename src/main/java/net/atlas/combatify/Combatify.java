@@ -60,6 +60,7 @@ public class Combatify implements ModInitializer {
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
+	public static boolean isCTS = false;
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
@@ -76,6 +77,10 @@ public class Combatify implements ModInitializer {
 	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(new CurrentShieldBlockingType("current_shield"));
 	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
+
+	public static void markCTS(boolean isCTS) {
+		Combatify.isCTS = isCTS;
+	}
 
 	@Override
 	public void onInitialize() {

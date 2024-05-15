@@ -265,7 +265,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
-		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_UUID) != null;
+		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_UUID) != null && !Combatify.isCTS;
 		float f = (float) (getAttributeValue(Attributes.ATTACK_SPEED) - 1.5f);
 		if (hasVanilla)
 			f += 1.5f;
