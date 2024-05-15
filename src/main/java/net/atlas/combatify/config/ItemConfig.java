@@ -300,7 +300,8 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public void resetExtraHolders() {
-		defineConfigHolders();
+		configuredItems = new HashMap<>();
+		configuredWeapons = new HashMap<>();
 		tiers = defaultTiers;
 		registeredWeaponTypes = defaultWeaponTypes;
 		registeredTypes = defaultTypes;
