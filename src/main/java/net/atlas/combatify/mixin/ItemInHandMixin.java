@@ -5,12 +5,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.config.cookey.ModConfig;
+import net.atlas.combatify.config.cookey.category.MiscCategory;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -43,10 +47,24 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Shadow
 	private ItemStack mainHandItem;
 
+	@Shadow @Final private Minecraft minecraft;
 
-	AnimationsCategory animationsCategory = CombatifyClient.getInstance().getConfig().animations();
+	@Unique
+	private AnimationsCategory animationsCategory;
 
-	HudRenderingCategory hudRenderingCategory = CombatifyClient.getInstance().getConfig().hudRendering();
+	@Unique
+	private HudRenderingCategory hudRenderingCategory;
+
+	@Unique
+	private MiscCategory miscCategory;
+
+	@Inject(method = "<init>", at = @At("TAIL"))
+	private void injectOptions(Minecraft minecraft, EntityRenderDispatcher entityRenderDispatcher, ItemRenderer itemRenderer, CallbackInfo ci) {
+		ModConfig modConfig = CombatifyClient.getInstance().getConfig();
+		animationsCategory = modConfig.animations();
+		hudRenderingCategory = modConfig.hudRendering();
+		miscCategory = modConfig.misc();
+	}
 
 	@Inject(method = "renderArmWithItem", at = @At("HEAD"), cancellable = true)
 	public void onRenderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
@@ -128,7 +146,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
     /* Values from 15w33b, thanks to Fuzss for providing them
     https://github.com/Fuzss/swordblockingcombat/blob/1.15/src/main/java/com/fuzs/swordblockingcombat/client/handler/RenderBlockingHandler.java
      */
-
+	@Unique
 	public void applyItemBlockTransform(PoseStack poseStack, HumanoidArm humanoidArm) {
 		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
@@ -136,9 +154,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		poseStack.mulPose(Axis.YP.rotationDegrees(reverse * 13.365F));
 		poseStack.mulPose(Axis.ZP.rotationDegrees(reverse * 78.05F));
 	}
-	@Shadow
-	@Final
-	private Minecraft minecraft;
 	@Unique
 	private HumanoidArm humanoidArm;
 	@Unique

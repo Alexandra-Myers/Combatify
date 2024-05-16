@@ -6,7 +6,7 @@ import java.util.List;
 public interface OverlayReloadListener {
     List<OverlayReloadListener> LISTENERS = new ArrayList<>();
 
-    void onOverlayReload();
+    void combatify$onOverlayReload();
 
     static void register(OverlayReloadListener listener) {
         LISTENERS.add(listener);
@@ -14,7 +14,7 @@ public interface OverlayReloadListener {
 
     static void callEvent() {
         for (OverlayReloadListener listener : LISTENERS) {
-            listener.onOverlayReload();
+            listener.combatify$onOverlayReload();
         }
     }
 }

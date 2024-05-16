@@ -10,6 +10,7 @@ import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -17,6 +18,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.*;
 import net.atlas.combatify.config.cookey.option.BooleanOption;
@@ -24,6 +26,7 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -40,14 +43,21 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	private boolean startedUsingItem;
 
 
-	BooleanOption force100PercentRecharge = CombatifyClient.getInstance().getConfig().misc().force100PercentRecharge();
+	@Unique
+	BooleanOption force100PercentRecharge;
 
 	@Shadow
 	@Final
 	public ClientPacketListener connection;
+	@Unique
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
+	@Unique
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
+	@Inject(method = "<init>", at = @At("TAIL"))
+	private void injectOptions(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2, CallbackInfo ci) {
+		force100PercentRecharge = CombatifyClient.getInstance().getConfig().misc().force100PercentRecharge();
+	}
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {

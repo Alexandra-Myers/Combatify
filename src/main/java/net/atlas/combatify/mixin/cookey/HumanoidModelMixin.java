@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin.cookey;
 
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.config.cookey.ModConfig;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.AgeableListModel;
@@ -19,6 +20,7 @@ import net.atlas.combatify.config.cookey.option.BooleanOption;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -40,9 +42,18 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
     protected abstract void poseRightArm(T livingEntity);
 
 
-    BooleanOption showEatingInThirdPerson = CombatifyClient.getInstance().getConfig().animations().showEatingInThirdPerson();
+	@Unique
+	private BooleanOption showEatingInThirdPerson;
 
-    private static final BooleanOption enableToolBlocking = CombatifyClient.getInstance().getConfig().animations().enableToolBlocking();
+	@Unique
+	private BooleanOption enableToolBlocking;
+
+	@Inject(method = "<init>(Lnet/minecraft/client/model/geom/ModelPart;Ljava/util/function/Function;)V", at = @At("TAIL"))
+	private void injectOptions(CallbackInfo ci) {
+		ModConfig modConfig = CombatifyClient.getInstance().getConfig();
+		showEatingInThirdPerson = modConfig.animations().showEatingInThirdPerson();
+		enableToolBlocking = modConfig.animations().enableToolBlocking();
+	}
 
     @Inject(method = "poseRightArm", at = @At("HEAD"), cancellable = true)
     public void addRightArmAnimations(T livingEntity, CallbackInfo ci) {
@@ -55,7 +66,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
             if (itemInRightArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).equals(itemInRightArm))
                 poseLeftArmAfterwards = true;
         }
-        if (this.showEatingInThirdPerson.get()
+        if (showEatingInThirdPerson.get()
                 && livingEntity.isUsingItem() && usedHand == HumanoidArm.RIGHT && (livingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || livingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
             boolean run = this.applyEatingAnimation(livingEntity, usedHand, ((MinecraftAccessor) Minecraft.getInstance()).getTimer().partialTick);
             if (run) ci.cancel();
@@ -75,7 +86,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
             if (itemInLeftArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).equals(itemInLeftArm))
                 poseRightArmAfterwards = true;
         }
-        if (this.showEatingInThirdPerson.get()
+        if (showEatingInThirdPerson.get()
                 && livingEntity.isUsingItem() && usedHand == HumanoidArm.LEFT && (livingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || livingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
             boolean run = this.applyEatingAnimation(livingEntity, usedHand, ((MinecraftAccessor) Minecraft.getInstance()).getTimer().partialTick);
             if (run) ci.cancel();
@@ -86,7 +97,8 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
 
     // Animation values and "formula" from ItemInHandRenderer's applyEatAnimation
 
-    public boolean applyEatingAnimation(LivingEntity livingEntity, HumanoidArm humanoidArm, float f) {
+    @Unique
+	public boolean applyEatingAnimation(LivingEntity livingEntity, HumanoidArm humanoidArm, float f) {
         int side = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
         float xRot = humanoidArm == HumanoidArm.RIGHT ? this.rightArm.xRot : this.leftArm.xRot;
         float yRot;
