@@ -26,6 +26,7 @@ public class ClientNetworkingHandler {
 			if (!ClientPlayNetworking.canSend(NetworkingHandler.ServerboundMissPacket.TYPE)) {
 				CONFIG.reloadFromDefault();
 				ITEMS.reloadFromDefault();
+				Combatify.modify();
 				Combatify.markCTS(true);
 			}
 		});
