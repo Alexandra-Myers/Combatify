@@ -37,6 +37,7 @@
 
   "baseHandAttackSpeed": 2.5,
   "bowUncertainty": 0.25,
+  "crossbowUncertainty": 0.25,
   "healingTime": 2,
   "cleavingDisableTime": 0.5,
   "shieldDisableTime": 1.6,

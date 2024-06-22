@@ -207,6 +207,7 @@
 
   "text.config.combatify-beta.option.baseHandAttackSpeed": "Hand Attack Speed Offset",
   "text.config.combatify-beta.option.bowUncertainty": "Bow Uncertainty AKA Accuracy",
+  "text.config.combatify-beta.option.crossbowUncertainty": "Crossbow Uncertainty AKA Accuracy",
   "text.config.combatify-beta.option.healingTime": "Healing Time",
   "text.config.combatify-beta.option.healingTime.tooltip.0": "Time, in seconds, which it will take to regenerate one health point through natural healing.",
   "text.config.combatify-beta.option.cleavingDisableTime": "Cleaving Disable Bonus (Per level)",

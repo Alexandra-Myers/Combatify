@@ -11,6 +11,7 @@
     "BreachEnchantmentMixin",
     "ClientboundUpdateAttributesPacketMixin",
     "CombatRulesMixin",
+    "CrossbowItemMixin",
     "DiggerItemMixin",
     "EggMixin",
     "ElytraItemMixin",

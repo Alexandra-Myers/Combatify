@@ -86,6 +86,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private DoubleHolder eggDamage;
 	private DoubleHolder windChargeDamage;
 	private DoubleHolder bowUncertainty;
+	private DoubleHolder crossbowUncertainty;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private DoubleHolder thrownTridentDamage;
@@ -223,6 +224,8 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		baseHandAttackSpeed.tieToCategory(ctsD);
 		bowUncertainty = createInRange("bowUncertainty", 0.25, 0, 4);
 		bowUncertainty.tieToCategory(ctsD);
+		crossbowUncertainty = createInRange("crossbowUncertainty", 0.25, 0, 4);
+		crossbowUncertainty.tieToCategory(ctsD);
 		healingTime = createInRange("healingTime", 2, 0, 100D);
 		healingTime.tieToCategory(ctsD);
 		healingTime.setupTooltip(1);
@@ -578,6 +581,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Double bowUncertainty() {
 		return bowUncertainty.get();
+	}
+	public Double crossbowUncertainty() {
+		return crossbowUncertainty.get();
 	}
 	public Double baseHandAttackSpeed() {
 		return baseHandAttackSpeed.get();
