@@ -6,6 +6,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AbstractWindChargeMixin",
+    "ArrowMixin",
     "AxeItemMixin",
     "BowItemMixin",
     "BreachEnchantmentMixin",
