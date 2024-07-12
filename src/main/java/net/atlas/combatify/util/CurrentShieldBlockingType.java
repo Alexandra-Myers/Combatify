@@ -4,26 +4,26 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
-public class CurrentShieldBlockingType extends BlockingType {
+public class CurrentShieldBlockingType extends ShieldBlockingType {
 	public CurrentShieldBlockingType(String name) {
 		super(name);
 	}
@@ -49,6 +49,7 @@ public class CurrentShieldBlockingType extends BlockingType {
 				}
 			}
 		}
+
 		bl.set(true);
 	}
 
@@ -59,7 +60,7 @@ public class CurrentShieldBlockingType extends BlockingType {
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockKbRes != null)
 				return configurableItemData.blockKbRes;
@@ -67,20 +68,13 @@ public class CurrentShieldBlockingType extends BlockingType {
 		return 0;
 	}
 
-	@Override
-	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand interactionHand) {
-		ItemStack itemStack = player.getItemInHand(interactionHand);
-		player.startUsingItem(interactionHand);
-		return InteractionResultHolder.consume(itemStack);
-	}
-
-	@Override
-	public boolean canUse(Level world, Player user, InteractionHand hand) {
-		return true;
-	}
-
-	@Override
+    @Override
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
-
+		double g = getShieldKnockbackResistanceValue(stack);
+		if (g > 0.0)
+			consumer.accept(CommonComponents.space().append(
+				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
+					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
+					Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 	}
 }

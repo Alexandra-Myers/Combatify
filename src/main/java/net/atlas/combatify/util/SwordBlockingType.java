@@ -28,23 +28,23 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-public class SwordBlockingType extends BlockingType {
+public class SwordBlockingType extends PercentageBlockingType {
 	public SwordBlockingType(String name) {
 		super(name);
 	}
 
 	@Override
-	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-			boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
-            float actualStrength = this.getShieldBlockDamageValue(blockingItem);
-            g.set(amount.get() * actualStrength);
-			entity = source.getDirectEntity();
-			if (blocked && entity instanceof LivingEntity)
-				instance.blockUsingShield((LivingEntity) entity);
+	public boolean canBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+		return instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty();
+	}
 
-            amount.set(amount.get() - g.get());
-		}
+	@Override
+	public boolean fulfilBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl, float actualStrength) {
+		boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
+		entity = source.getDirectEntity();
+		if (blocked && entity instanceof LivingEntity)
+			instance.blockUsingShield((LivingEntity) entity);
+		return true;
 	}
 
 	@Override
@@ -72,11 +72,11 @@ public class SwordBlockingType extends BlockingType {
 	}
 
 	@Override
-	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-		ItemStack itemStack = user.getItemInHand(hand);
-		if(user.isSprinting())
-			user.setSprinting(false);
-		user.startUsingItem(hand);
+	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
+		ItemStack itemStack = player.getItemInHand(hand);
+		if (player.isSprinting())
+			player.setSprinting(false);
+		player.startUsingItem(hand);
 		return InteractionResultHolder.consume(itemStack);
 	}
 
@@ -84,20 +84,5 @@ public class SwordBlockingType extends BlockingType {
 	public boolean canUse(Level world, Player user, InteractionHand hand) {
 		ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
 		return hand != InteractionHand.OFF_HAND && oppositeStack.isEmpty() && Combatify.CONFIG.swordBlocking();
-	}
-
-	@Override
-	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
-		float f = getShieldBlockDamageValue(stack);
-		double g = getShieldKnockbackResistanceValue(stack);
-		consumer.accept(CommonComponents.space().append(
-			Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),
-				ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100),
-				Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-		if (g > 0.0)
-			consumer.accept(CommonComponents.space().append(
-				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
-					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
-					Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 	}
 }

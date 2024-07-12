@@ -65,7 +65,7 @@ public class ShieldBlockingType extends BlockingType {
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockStrength != null) {
 				return configurableItemData.blockStrength.floatValue();
@@ -74,15 +74,16 @@ public class ShieldBlockingType extends BlockingType {
 		BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
 		DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
 		float f = !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 10.0F : 5.0F;
-		if(Combatify.CONFIG.defender()) {
+		if (Combatify.CONFIG.defender()) {
 			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 		}
+
 		return f;
 	}
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockKbRes != null) {
 				return configurableItemData.blockKbRes;
