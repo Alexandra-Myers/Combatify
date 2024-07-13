@@ -74,7 +74,7 @@ public class Combatify implements ModInitializer {
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final BlockingType SWORD = defineDefaultBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
 	public static final BlockingType SHIELD = defineDefaultBlockingType(new ShieldBlockingType("shield"));
-	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(new ShieldBlockingType("shield_no_banner"));
+	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(new NonBannerShieldBlockingType("shield_no_banner"));
 	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(new CurrentShieldBlockingType("current_shield"));
 	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
