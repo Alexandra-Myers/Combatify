@@ -39,6 +39,7 @@
   "bowUncertainty": 0.25,
   "crossbowUncertainty": 0.25,
   "healingTime": 2,
+  "instantTippedArrowEffectMultiplier": 0.125,
   "cleavingDisableTime": 0.5,
   "shieldDisableTime": 1.6,
   "minHitboxSize": 0.9,

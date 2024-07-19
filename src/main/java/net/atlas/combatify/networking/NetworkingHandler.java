@@ -42,7 +42,7 @@ public class NetworkingHandler {
 			((PlayerExtensions)player).attackAir();
 		});
 		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.networkHandler()).setShieldOnCrouch(payload.useShieldOnCrouch));
-		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((PlayerExtensions)context.player().connection.getPlayer()).setShieldOnCrouch(payload.useShieldOnCrouch));
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.player().connection.getPlayer()).setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, RemainingUseSyncPacket.TYPE)) {
@@ -106,7 +106,7 @@ public class NetworkingHandler {
 	}
 
 	public record ServerboundClientInformationExtensionPacket(boolean useShieldOnCrouch) implements CustomPacketPayload {
-		public static final Type<ServerboundClientInformationExtensionPacket> TYPE = CustomPacketPayload.createType(Combatify.id("client_information").toString());
+		public static final Type<ServerboundClientInformationExtensionPacket> TYPE = CustomPacketPayload.createType(Combatify.id("client_extras").toString());
 		public static final StreamCodec<FriendlyByteBuf, ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
 
 		public ServerboundClientInformationExtensionPacket(FriendlyByteBuf buf) {

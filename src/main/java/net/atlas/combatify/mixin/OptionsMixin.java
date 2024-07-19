@@ -3,13 +3,12 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.IOptions;
-import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.atlas.combatify.networking.NetworkingHandler;
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,11 +25,8 @@ public abstract class OptionsMixin implements IOptions {
 	@Inject(method = "broadcastOptions", at = @At(value = "TAIL"))
 	public void broadcastExtras(CallbackInfo ci) {
 		if (this.minecraft.player != null) {
-			NetworkingHandler.ServerboundClientInformationExtensionPacket packet = new NetworkingHandler.ServerboundClientInformationExtensionPacket(shieldCrouch().get());
-			switch (ClientNetworkingHandler.connectionState) {
-				case CONFIGURATION -> ClientConfigurationNetworking.send(packet);
-				case PLAY -> ClientPlayNetworking.send(packet);
-			}
+			CustomPacketPayload payload = new NetworkingHandler.ServerboundClientInformationExtensionPacket(shieldCrouch().get());
+			this.minecraft.player.connection.send(ClientPlayNetworking.createC2SPacket(payload));
 		}
 	}
 

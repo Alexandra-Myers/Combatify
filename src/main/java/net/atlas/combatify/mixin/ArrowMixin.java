@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.atlas.combatify.Combatify;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -22,7 +23,7 @@ public abstract class ArrowMixin extends AbstractArrow {
 	@WrapOperation(method = "doPostHurtEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z"))
 	public boolean applyInstantaneousEffect(LivingEntity instance, MobEffectInstance mobEffectInstance, Entity entity, Operation<Boolean> original, @Local(ordinal = 0) MobEffectInstance effectInstance) {
         if (effectInstance.getEffect().value().isInstantenous()) {
-			effectInstance.getEffect().value().applyInstantenousEffect(this, getEffectSource(), instance, effectInstance.getAmplifier(), 0.125D);
+			effectInstance.getEffect().value().applyInstantenousEffect(this, getEffectSource(), instance, effectInstance.getAmplifier(), Combatify.CONFIG.instantTippedArrowEffectMultiplier());
 			return true;
 		}
 		return original.call(instance, mobEffectInstance, entity);
