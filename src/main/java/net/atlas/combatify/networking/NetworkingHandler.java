@@ -2,9 +2,11 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.extensions.ClientInformationHolder;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
@@ -21,6 +23,8 @@ public class NetworkingHandler {
 
 	public NetworkingHandler() {
 		PayloadTypeRegistry.playC2S().register(ServerboundMissPacket.TYPE, ServerboundMissPacket.CODEC);
+		PayloadTypeRegistry.playC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
+		PayloadTypeRegistry.configurationC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
@@ -37,6 +41,8 @@ public class NetworkingHandler {
 				return;
 			((PlayerExtensions)player).attackAir();
 		});
+		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.networkHandler()).setShieldOnCrouch(payload.useShieldOnCrouch));
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((PlayerExtensions)context.player().connection.getPlayer()).setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, RemainingUseSyncPacket.TYPE)) {
@@ -83,6 +89,32 @@ public class NetworkingHandler {
 		public void write(FriendlyByteBuf buf) {
 			buf.writeVarInt(id);
 			buf.writeInt(ticks);
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public @NotNull Type<?> type() {
+			return TYPE;
+		}
+	}
+
+	public record ServerboundClientInformationExtensionPacket(boolean useShieldOnCrouch) implements CustomPacketPayload {
+		public static final Type<ServerboundClientInformationExtensionPacket> TYPE = CustomPacketPayload.createType(Combatify.id("client_information").toString());
+		public static final StreamCodec<FriendlyByteBuf, ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
+
+		public ServerboundClientInformationExtensionPacket(FriendlyByteBuf buf) {
+			this(buf.readBoolean());
+		}
+
+		public void write(FriendlyByteBuf buf) {
+			buf.writeBoolean(useShieldOnCrouch);
 		}
 
 		/**

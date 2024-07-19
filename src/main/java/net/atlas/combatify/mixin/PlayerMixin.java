@@ -44,6 +44,9 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 @Mixin(value = Player.class, priority = 1400)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
+	@Unique
+	public boolean hasShieldOnCrouch = true;
+
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
@@ -147,7 +150,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
-		return true;
+		return hasShieldOnCrouch;
+	}
+
+	@Override
+	public void setShieldOnCrouch(boolean hasShieldOnCrouch) {
+		this.hasShieldOnCrouch = hasShieldOnCrouch;
 	}
 
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)

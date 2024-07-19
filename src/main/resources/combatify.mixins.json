@@ -37,6 +37,7 @@
     "ProjectileWeaponItemMixin",
     "RamTargetMixin",
     "ResourceLocationMixin",
+    "ServerConfigurationPacketMixin",
     "ServerEntityMixin",
     "ServerGamePacketMixin",
     "ServerPlayerMixin",

@@ -3,9 +3,15 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.networking.ClientNetworkingHandler;
+import net.atlas.combatify.networking.NetworkingHandler;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -14,6 +20,19 @@ import java.io.IOException;
 
 @Mixin(Options.class)
 public abstract class OptionsMixin implements IOptions {
+	@Shadow
+	protected Minecraft minecraft;
+
+	@Inject(method = "broadcastOptions", at = @At(value = "TAIL"))
+	public void broadcastExtras(CallbackInfo ci) {
+		if (this.minecraft.player != null) {
+			NetworkingHandler.ServerboundClientInformationExtensionPacket packet = new NetworkingHandler.ServerboundClientInformationExtensionPacket(shieldCrouch().get());
+			switch (ClientNetworkingHandler.connectionState) {
+				case CONFIGURATION -> ClientConfigurationNetworking.send(packet);
+				case PLAY -> ClientPlayNetworking.send(packet);
+			}
+		}
+	}
 
 	@Inject(method = "processOptions", at = @At(value = "HEAD"))
 	public void injectOptions(Options.FieldAccess visitor, CallbackInfo ci) {

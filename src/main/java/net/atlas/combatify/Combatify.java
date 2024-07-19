@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.atlaslib.util.PrefixLogger;
-import net.atlas.combatify.config.CombatifyBetaConfig;
+import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
@@ -56,7 +56,7 @@ import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 @SuppressWarnings("unused")
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
-	public static CombatifyBetaConfig CONFIG = new CombatifyBetaConfig();
+	public static CombatifyGeneralConfig CONFIG = new CombatifyGeneralConfig();
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;

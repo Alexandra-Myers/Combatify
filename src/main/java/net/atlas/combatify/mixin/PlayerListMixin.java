@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
+import net.atlas.combatify.extensions.ClientInformationHolder;
 import net.atlas.combatify.util.PlayerData;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,6 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerList.class)
 public class PlayerListMixin {
@@ -30,6 +33,11 @@ public class PlayerListMixin {
 	@Inject(at = @At("TAIL"), method = "remove")
 	private void clearPlayerData(ServerPlayer serverPlayer, CallbackInfo ci) {
 		PlayerData.removePlayerData(serverPlayer);
+	}
+
+	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;setId(I)V"), method = "respawn")
+	public void providePlayerData(ServerPlayer serverPlayer, boolean bl, CallbackInfoReturnable<ServerPlayer> cir, @Local(ordinal = 1) ServerPlayer serverPlayer2) {
+		((ClientInformationHolder)serverPlayer2).setShieldOnCrouch(((ClientInformationHolder)serverPlayer).hasEnabledShieldOnCrouch());
 	}
 
 }

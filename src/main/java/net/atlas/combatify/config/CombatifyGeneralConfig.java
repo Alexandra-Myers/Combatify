@@ -20,7 +20,7 @@ import java.util.Locale;
 
 import static net.atlas.combatify.Combatify.*;
 
-public class CombatifyBetaConfig extends AtlasConfig {
+public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder weaponTypesEnabled;
 	private BooleanHolder iFramesBasedOnWeapon;
 	private BooleanHolder bowFatigue;
@@ -78,6 +78,7 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private IntegerHolder attackDecayMaxPercentage;
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder healingTime;
+	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder shieldDisableTime;
 	private DoubleHolder cleavingDisableTime;
 	private DoubleHolder defenderDisableReduction;
@@ -100,14 +101,14 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	private Category extraD;
 	private Category extraE;
 
-	public CombatifyBetaConfig() {
-		super(id("combatify-beta"));
+	public CombatifyGeneralConfig() {
+		super(id("combatify-general"));
 		declareDefaultForMod("combatify");
 	}
 
 	@Override
 	protected InputStream getDefaultedConfig() {
-		return Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-beta.json");
+		return Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-general.json");
 	}
 
 	@Override
@@ -229,6 +230,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		healingTime = createInRange("healingTime", 2, 0, 100D);
 		healingTime.tieToCategory(ctsD);
 		healingTime.setupTooltip(1);
+		instantTippedArrowEffectMultiplier = createInRange("instantTippedArrowEffectMultiplier", 0.125, 0, 4);
+		instantTippedArrowEffectMultiplier.tieToCategory(ctsD);
+		instantTippedArrowEffectMultiplier.setupTooltip(1);
 		cleavingDisableTime = createInRange("cleavingDisableTime", 0.5, 0, 10);
 		cleavingDisableTime.tieToCategory(ctsD);
 		cleavingDisableTime.setupTooltip(1);
@@ -324,10 +328,10 @@ public class CombatifyBetaConfig extends AtlasConfig {
 		thrownTridentDamage = createInRange("thrownTridentDamage", 8, 0, 40D);
 		thrownTridentDamage.tieToCategory(extraD);
 
-		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values(), e -> Component.translatable("text.config.combatify-beta.option.arrowDisableMode." + e.name().toLowerCase(Locale.ROOT)));
+		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values(), e -> Component.translatable("text.config.combatify-general.option.arrowDisableMode." + e.name().toLowerCase(Locale.ROOT)));
 		arrowDisableMode.tieToCategory(extraE);
 		arrowDisableMode.setupTooltip(7);
-		armourPiercingMode = createEnum("armourPiercingMode", ArmourPiercingMode.VANILLA, ArmourPiercingMode.class, ArmourPiercingMode.values(), e -> Component.translatable("text.config.combatify-beta.option.armourPiercingMode." + e.name().toLowerCase(Locale.ROOT)));
+		armourPiercingMode = createEnum("armourPiercingMode", ArmourPiercingMode.VANILLA, ArmourPiercingMode.class, ArmourPiercingMode.values(), e -> Component.translatable("text.config.combatify-general.option.armourPiercingMode." + e.name().toLowerCase(Locale.ROOT)));
 		armourPiercingMode.tieToCategory(extraE);
 		armourPiercingMode.setupTooltip(4);
 	}
@@ -554,6 +558,9 @@ public class CombatifyBetaConfig extends AtlasConfig {
 	}
 	public Double healingTime() {
 		return healingTime.get();
+	}
+	public Double instantTippedArrowEffectMultiplier() {
+		return instantTippedArrowEffectMultiplier.get();
 	}
 	public Double shieldDisableTime() {
 		return shieldDisableTime.get();
