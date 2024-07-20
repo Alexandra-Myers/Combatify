@@ -123,7 +123,7 @@ public class NetworkingHandler {
 		}
 
 		@Override
-		public Type type() {
+		public @NotNull Type type() {
 			return TYPE;
 		}
 	}
