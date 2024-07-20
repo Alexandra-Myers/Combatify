@@ -5,7 +5,6 @@ import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
