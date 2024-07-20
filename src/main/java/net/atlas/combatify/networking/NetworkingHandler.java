@@ -5,17 +5,18 @@ import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ClientInformationHolder;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ConfigurationTask;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -26,6 +27,11 @@ public class NetworkingHandler {
 		PayloadTypeRegistry.playC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
 		PayloadTypeRegistry.configurationC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
+		PayloadTypeRegistry.playS2C().register(ClientboundClientInformationRetrievalPacket.TYPE, ClientboundClientInformationRetrievalPacket.CODEC);
+		ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
+			if (ServerConfigurationNetworking.canSend(handler, ClientboundClientInformationRetrievalPacket.TYPE))
+				handler.addTask(new ClientRetrievalTask());
+		});
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
 				unmoddedPlayers.remove(handler.player.getUUID());
@@ -41,7 +47,10 @@ public class NetworkingHandler {
 				return;
 			((PlayerExtensions)player).attackAir();
 		});
-		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.networkHandler()).setShieldOnCrouch(payload.useShieldOnCrouch));
+		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> {
+			((ClientInformationHolder) context.networkHandler()).setShieldOnCrouch(payload.useShieldOnCrouch);
+			context.networkHandler().completeTask(ClientRetrievalTask.TYPE);
+		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.player().connection.getPlayer()).setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || !CONFIG.letVanillaConnect();
@@ -89,6 +98,46 @@ public class NetworkingHandler {
 		public void write(FriendlyByteBuf buf) {
 			buf.writeVarInt(id);
 			buf.writeInt(ticks);
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public @NotNull Type<?> type() {
+			return TYPE;
+		}
+	}
+
+	public record ClientRetrievalTask() implements ConfigurationTask {
+		public static final ConfigurationTask.Type TYPE = new ConfigurationTask.Type(Combatify.id("client_info_retrieval").toString());
+
+		@Override
+		public void start(Consumer<Packet<?>> sender) {
+			sender.accept(ServerConfigurationNetworking.createS2CPacket(new ClientboundClientInformationRetrievalPacket()));
+		}
+
+		@Override
+		public Type type() {
+			return TYPE;
+		}
+	}
+
+	public record ClientboundClientInformationRetrievalPacket() implements CustomPacketPayload {
+		public static final Type<ClientboundClientInformationRetrievalPacket> TYPE = CustomPacketPayload.createType(Combatify.id("client_retrieval").toString());
+		public static final StreamCodec<FriendlyByteBuf, ClientboundClientInformationRetrievalPacket> CODEC = CustomPacketPayload.codec(ClientboundClientInformationRetrievalPacket::write, ClientboundClientInformationRetrievalPacket::new);
+
+		public ClientboundClientInformationRetrievalPacket(FriendlyByteBuf buf) {
+			this();
+		}
+
+		public void write(FriendlyByteBuf buf) {
+
 		}
 
 		/**

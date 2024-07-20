@@ -6,6 +6,7 @@ import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -22,8 +23,8 @@ public class ClientNetworkingHandler {
 			if (entity instanceof LivingEntityExtensions livingEntity)
 				livingEntity.setUseItemRemaining(packet.ticks());
 		});
-		ClientConfigurationConnectionEvents.INIT.register(modDetectionNetworkChannel, (handler, client) -> {
-			handler.send(ClientPlayNetworking.createC2SPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));
+		ClientConfigurationNetworking.registerGlobalReceiver(NetworkingHandler.ClientboundClientInformationRetrievalPacket.TYPE, (packet, sender) -> {
+			sender.responseSender().sendPacket(ClientPlayNetworking.createC2SPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));
 			connectionState = ConnectionState.CONFIGURATION;
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, client) -> Combatify.markCTS(false));
