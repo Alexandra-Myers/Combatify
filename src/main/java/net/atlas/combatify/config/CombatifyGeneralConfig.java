@@ -38,7 +38,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder dispensableTridents;
 	private BooleanHolder snowballKB;
 	private BooleanHolder resetOnItemChange;
-	private BooleanHolder vanillaSweep;
 	private BooleanHolder sweepWithSweeping;
 	private BooleanHolder sweepingNegatedForTamed;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
@@ -62,7 +61,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder autoAttackAllowed;
 	private BooleanHolder configOnlyWeapons;
 	private BooleanHolder tieredShields;
-	private BooleanHolder defender;
 	private BooleanHolder attackReach;
 	private BooleanHolder armorPiercingDisablesShields;
 	private BooleanHolder attackSpeed;
@@ -80,8 +78,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private DoubleHolder healingTime;
 	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder shieldDisableTime;
-	private DoubleHolder cleavingDisableTime;
-	private DoubleHolder defenderDisableReduction;
 	private DoubleHolder breachArmorPiercing;
 	private DoubleHolder snowballDamage;
 	private DoubleHolder eggDamage;
@@ -208,9 +204,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		tridentVoidReturn = createBoolean("tridentVoidReturn", true);
 		tridentVoidReturn.tieToCategory(ctsB);
 		tridentVoidReturn.setupTooltip(1);
-		vanillaSweep = createBoolean("vanillaSweep", false);
-		vanillaSweep.tieToCategory(ctsB);
-		vanillaSweep.setupTooltip(1);
 		weaponTypesEnabled = createBoolean("weaponTypesEnabled", true);
 		weaponTypesEnabled.tieToCategory(ctsB);
 		weaponTypesEnabled.setupTooltip(3);
@@ -233,9 +226,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		instantTippedArrowEffectMultiplier = createInRange("instantTippedArrowEffectMultiplier", 0.125, 0, 4);
 		instantTippedArrowEffectMultiplier.tieToCategory(ctsD);
 		instantTippedArrowEffectMultiplier.setupTooltip(1);
-		cleavingDisableTime = createInRange("cleavingDisableTime", 0.5, 0, 10);
-		cleavingDisableTime.tieToCategory(ctsD);
-		cleavingDisableTime.setupTooltip(1);
 		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
 		shieldDisableTime.tieToCategory(ctsD);
 		shieldDisableTime.setupTooltip(1);
@@ -255,10 +245,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		configOnlyWeapons.tieToCategory(extraB);
 		configOnlyWeapons.setRestartRequired(true);
 		configOnlyWeapons.setupTooltip(1);
-		defender = createBoolean("defender", false);
-		defender.tieToCategory(extraB);
-		defender.setRestartRequired(true);
-		defender.setupTooltip(1);
 		tieredShields = createBoolean("tieredShields", false);
 		tieredShields.tieToCategory(extraB);
 		tieredShields.setRestartRequired(true);
@@ -313,9 +299,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		shieldChargePercentage.tieToCategory(extraI);
 		shieldChargePercentage.setupTooltip(1);
 
-		defenderDisableReduction = createInRange("defenderDisableReduction", 0.5, 0, 10);
-		defenderDisableReduction.tieToCategory(extraD);
-		defenderDisableReduction.setupTooltip(1);
 		breachArmorPiercing = createInRange("breachArmorPiercing", 0.15, 0, 1);
 		breachArmorPiercing.tieToCategory(extraD);
 		breachArmorPiercing.setupTooltip(2);
@@ -430,9 +413,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean resetOnItemChange() {
 		return resetOnItemChange.get();
 	}
-	public Boolean vanillaSweep() {
-		return vanillaSweep.get();
-	}
 	public Boolean sweepWithSweeping() {
 		return sweepWithSweeping.get();
 	}
@@ -505,9 +485,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean tieredShields() {
 		return tieredShields.get();
 	}
-	public Boolean defender() {
-		return defender.get();
-	}
 	public Boolean attackReach() {
 		return attackReach.get();
 	}
@@ -564,12 +541,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Double shieldDisableTime() {
 		return shieldDisableTime.get();
-	}
-	public Double cleavingDisableTime() {
-		return cleavingDisableTime.get();
-	}
-	public Double defenderDisableReduction() {
-		return defenderDisableReduction.get();
 	}
 	public Double breachArmorPiercing() {
 		return breachArmorPiercing.get();

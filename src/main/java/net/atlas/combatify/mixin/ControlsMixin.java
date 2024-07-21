@@ -6,7 +6,7 @@ import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.combatify.extensions.IOptions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.screens.controls.ControlsScreen;
+import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 

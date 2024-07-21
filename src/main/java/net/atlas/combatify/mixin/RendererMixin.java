@@ -37,16 +37,16 @@ public class RendererMixin {
 	private ShieldModel modelGoldenShield;
 	private ShieldModel modelDiamondShield;
 	private ShieldModel modelNetheriteShield;
-	private static final Material WOODEN_SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, new ResourceLocation("entity/shield_base"));
-	private static final Material WOODEN_SHIELD_BASE_NO_PATTERN = new Material(Sheets.SHIELD_SHEET, new ResourceLocation("entity/shield_base_nopattern"));
-	private static final Material IRON_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/iron_shield_base"));
-	private static final Material IRON_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/iron_shield_base_nopattern"));
-	private static final Material GOLDEN_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/golden_shield_base"));
-	private static final Material GOLDEN_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/golden_shield_base_nopattern"));
-	private static final Material DIAMOND_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/diamond_shield_base"));
-	private static final Material DIAMOND_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/diamond_shield_base_nopattern"));
-	private static final Material NETHERITE_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/netherite_shield_base"));
-	private static final Material NETHERITE_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("combatify/netherite_shield_base_nopattern"));
+	private static final Material WOODEN_SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
+	private static final Material WOODEN_SHIELD_BASE_NO_PATTERN = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
+	private static final Material IRON_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/iron_shield_base"));
+	private static final Material IRON_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/iron_shield_base_nopattern"));
+	private static final Material GOLDEN_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/golden_shield_base"));
+	private static final Material GOLDEN_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/golden_shield_base_nopattern"));
+	private static final Material DIAMOND_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/diamond_shield_base"));
+	private static final Material DIAMOND_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/diamond_shield_base_nopattern"));
+	private static final Material NETHERITE_SHIELD_BASE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/netherite_shield_base"));
+	private static final Material NETHERITE_SHIELD_BASE_NO_PATTERN = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("combatify/netherite_shield_base_nopattern"));
 
 	@Final
 	@Shadow
@@ -75,11 +75,11 @@ public class RendererMixin {
 				poseStack.scale(1.0F, -1.0F, -1.0F);
 				Material material = bl ? WOODEN_SHIELD_BASE : WOODEN_SHIELD_BASE_NO_PATTERN;
 				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelWoodenShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
-				this.modelWoodenShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				this.modelWoodenShield.handle().render(poseStack, vertexConsumer, i, j);
 				if (bl)
 					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelWoodenShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
 				else
-					this.modelWoodenShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+					this.modelWoodenShield.plate().render(poseStack, vertexConsumer, i, j);
 
 				poseStack.popPose();
 			}
@@ -91,11 +91,11 @@ public class RendererMixin {
 				poseStack.scale(1.0F, -1.0F, -1.0F);
 				Material material = bl ? IRON_SHIELD_BASE : IRON_SHIELD_BASE_NO_PATTERN;
 				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelIronShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
-				this.modelIronShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				this.modelIronShield.handle().render(poseStack, vertexConsumer, i, j);
 				if (bl)
 					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelIronShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
 				else
-					this.modelIronShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+					this.modelIronShield.plate().render(poseStack, vertexConsumer, i, j);
 
 				poseStack.popPose();
 			}
@@ -107,11 +107,11 @@ public class RendererMixin {
 				poseStack.scale(1.0F, -1.0F, -1.0F);
 				Material material = bl ? GOLDEN_SHIELD_BASE : GOLDEN_SHIELD_BASE_NO_PATTERN;
 				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelGoldenShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
-				this.modelGoldenShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				this.modelGoldenShield.handle().render(poseStack, vertexConsumer, i, j);
 				if (bl)
 					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelGoldenShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
 				else
-					this.modelGoldenShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+					this.modelGoldenShield.plate().render(poseStack, vertexConsumer, i, j);
 
 				poseStack.popPose();
 			}
@@ -123,11 +123,11 @@ public class RendererMixin {
 				poseStack.scale(1.0F, -1.0F, -1.0F);
 				Material material = bl ? DIAMOND_SHIELD_BASE : DIAMOND_SHIELD_BASE_NO_PATTERN;
 				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelDiamondShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
-				this.modelDiamondShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				this.modelDiamondShield.handle().render(poseStack, vertexConsumer, i, j);
 				if (bl)
 					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelDiamondShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
 				else
-					this.modelDiamondShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+					this.modelDiamondShield.plate().render(poseStack, vertexConsumer, i, j);
 
 				poseStack.popPose();
 			}
@@ -139,11 +139,11 @@ public class RendererMixin {
 				poseStack.scale(1.0F, -1.0F, -1.0F);
 				Material material = bl ? NETHERITE_SHIELD_BASE : NETHERITE_SHIELD_BASE_NO_PATTERN;
 				VertexConsumer vertexConsumer = material.sprite().wrap(ItemRenderer.getFoilBufferDirect(multiBufferSource, this.modelNetheriteShield.renderType(material.atlasLocation()), true, stack.hasFoil()));
-				this.modelNetheriteShield.handle().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+				this.modelNetheriteShield.handle().render(poseStack, vertexConsumer, i, j);
 				if (bl)
 					BannerRenderer.renderPatterns(poseStack, multiBufferSource, i, j, this.modelNetheriteShield.plate(), material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, stack.hasFoil());
 				else
-					this.modelNetheriteShield.plate().render(poseStack, vertexConsumer, i, j, 1.0F, 1.0F, 1.0F, 1.0F);
+					this.modelNetheriteShield.plate().render(poseStack, vertexConsumer, i, j);
 
 				poseStack.popPose();
 			}

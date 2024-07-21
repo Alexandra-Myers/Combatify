@@ -68,7 +68,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
         }
         if (showEatingInThirdPerson.get()
                 && livingEntity.isUsingItem() && usedHand == HumanoidArm.RIGHT && (livingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || livingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
-            boolean run = this.applyEatingAnimation(livingEntity, usedHand, ((MinecraftAccessor) Minecraft.getInstance()).getTimer().partialTick);
+            boolean run = this.applyEatingAnimation(livingEntity, usedHand, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
             if (run) ci.cancel();
             return;
         }
@@ -88,7 +88,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
         }
         if (showEatingInThirdPerson.get()
                 && livingEntity.isUsingItem() && usedHand == HumanoidArm.LEFT && (livingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || livingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
-            boolean run = this.applyEatingAnimation(livingEntity, usedHand, ((MinecraftAccessor) Minecraft.getInstance()).getTimer().partialTick);
+            boolean run = this.applyEatingAnimation(livingEntity, usedHand, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
             if (run) ci.cancel();
             return;
         }
@@ -104,7 +104,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
         float yRot;
 
         float g = livingEntity.getUseItemRemainingTicks() - f + 1.0F;
-        float h = g / livingEntity.getUseItem().getUseDuration();
+        float h = g / livingEntity.getUseItem().getUseDuration(livingEntity);
         if (h < -1.0F) return false; // Stop animation from going wild if eating won't process
         float j;
         float k = Math.min(1.0F - (float) Math.pow(h, 27.0D), 1.0F);

@@ -46,12 +46,7 @@ public abstract class EnchantmentHelperMixin {
 		return original;
 	}
 
-	@ModifyReturnValue(method = "getSweepingDamageRatio(I)F", at = @At(value = "RETURN"))
-	private static float getSweepingDamageRatio(float original, @Local(ordinal = 0, argsOnly = true) int lvl) {
-		return Combatify.CONFIG.vanillaSweep() ? original : 0.5F - 0.5F / (float)(lvl + 1);
-	}
-
-	@ModifyReturnValue(method = "calculateArmorBreach", at = @At(value = "RETURN"))
+	@ModifyReturnValue(method = "modifyArmorEffectiveness", at = @At(value = "RETURN"))
 	private static float piercerMemories(float original, @Local(ordinal = 0, argsOnly = true) Entity entity, @Local(ordinal = 0, argsOnly = true) float protection) {
 		return switch (entity) {
 			case LivingEntity ignored when Combatify.CONFIG.armourPiercingMode() == ArmourPiercingMode.APPLY_BEFORE_PERCENTAGE -> protection;

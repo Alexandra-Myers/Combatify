@@ -16,8 +16,8 @@ public class ResourceLocationMixin {
 	@Final
 	private String namespace;
 
-	@Inject(method = "<init>(Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation$Dummy;)V", at = @At(value = "TAIL"))
-	public void modifyNamespace(String string, String string2, ResourceLocation.Dummy dummy, CallbackInfo ci) {
+	@Inject(method = "<init>", at = @At(value = "TAIL"))
+	public void modifyNamespace(String string, String string2, CallbackInfo ci) {
 		switch (namespace) {
 			case "atlas_combat", "combat_enhanced" -> namespace = "combatify";
 		}

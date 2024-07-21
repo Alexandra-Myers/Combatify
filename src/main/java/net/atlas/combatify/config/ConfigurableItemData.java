@@ -32,8 +32,6 @@ public class ConfigurableItemData {
 		buf.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
 		buf.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
 		buf.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
-		buf.writeInt(configurableItemData.hasSwordEnchants == null ? -10 : configurableItemData.hasSwordEnchants ? 1 : 0);
-		buf.writeInt(configurableItemData.isPrimaryForSwordEnchants == null ? -10 : configurableItemData.isPrimaryForSwordEnchants ? 1 : 0);
 		buf.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
 		buf.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
 		buf.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
@@ -66,11 +64,7 @@ public class ConfigurableItemData {
 		Double blockKbRes = buf.readDouble();
 		Integer enchantlevel = buf.readInt();
 		int isEnchantableAsInt = buf.readInt();
-		int hasSwordEnchantsAsInt = buf.readInt();
-		int isPrimaryForSwordEnchantsAsInt = buf.readInt();
 		Boolean isEnchantable = null;
-		Boolean hasSwordEnchants = null;
-		Boolean isPrimaryForSwordEnchants = null;
 		Integer useDuration = buf.readInt();
 		Double piercingLevel = buf.readDouble();
 		int canSweepAsInt = buf.readInt();
@@ -105,10 +99,6 @@ public class ConfigurableItemData {
 			enchantlevel = null;
 		if (isEnchantableAsInt != -10)
 			isEnchantable = isEnchantableAsInt == 1;
-		if (hasSwordEnchantsAsInt != -10)
-			hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-		if (isPrimaryForSwordEnchantsAsInt != -10)
-			isPrimaryForSwordEnchants = isPrimaryForSwordEnchantsAsInt == 1;
 		if (useDuration == -10)
 			useDuration = null;
 		if (piercingLevel == -10)
@@ -123,7 +113,7 @@ public class ConfigurableItemData {
 			toughness = null;
 		if (armourKbRes == -10)
 			armourKbRes = null;
-		return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
+		return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
 	});
 	public final Double damage;
 	public final Double speed;
@@ -139,8 +129,6 @@ public class ConfigurableItemData {
 	public final Double blockKbRes;
 	public final Integer enchantability;
 	public final Boolean isEnchantable;
-	public final Boolean hasSwordEnchants;
-	public final Boolean isPrimaryForSwordEnchants;
 	public final Integer useDuration;
 	public final Double piercingLevel;
 	public final Boolean canSweep;
@@ -151,7 +139,7 @@ public class ConfigurableItemData {
 	public final Ingredient repairIngredient;
 	public final TagKey<Block> toolMineableTag;
 
-    ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Boolean isPrimaryForSwordEnchants, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, Integer durability, Integer defense, Double toughness, Double armourKbRes, Ingredient repairIngredient, TagKey<Block> toolMineableTag) {
+    ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, Integer durability, Integer defense, Double toughness, Double armourKbRes, Ingredient repairIngredient, TagKey<Block> toolMineableTag) {
 		damage = clamp(attackDamage, -10, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
@@ -166,8 +154,6 @@ public class ConfigurableItemData {
 		this.blockKbRes = clamp(blockKbRes, 0, 1);
 		this.enchantability = clamp(enchantability, 0, 1000);
 		this.isEnchantable = isEnchantable;
-		this.hasSwordEnchants = hasSwordEnchants;
-		this.isPrimaryForSwordEnchants = isPrimaryForSwordEnchants;
 		this.useDuration = clamp(useDuration, 1, 1000);
 		this.piercingLevel = clamp(piercingLevel, 0, 1);
 		this.canSweep = canSweep;

@@ -32,13 +32,13 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED) {
 				double speed = calculateValue(attributeSnapshot.base(), attributeSnapshot.modifiers(), attributeSnapshot.attribute());
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
-					.filter(attributeModifier -> attributeModifier.id() == Item.BASE_ATTACK_SPEED_UUID)
+					.filter(attributeModifier -> attributeModifier.id() == Item.BASE_ATTACK_SPEED_ID)
 					.toList()
 					.isEmpty() && !Combatify.isCTS;
 				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
 					if (vanillaMath(newSpeed) == CTSMath(speed, hasVanilla) * 2) {
 						if (newSpeed - 2.5 != 0)
-							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Calculated client modifier", newSpeed - 2.5, AttributeModifier.Operation.ADD_VALUE));
+							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, newSpeed - 2.5, AttributeModifier.Operation.ADD_VALUE));
 						break;
 					}
 				}

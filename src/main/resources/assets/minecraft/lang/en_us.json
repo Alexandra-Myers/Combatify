@@ -1,5 +1,7 @@
 {
   "attribute.name.player.entity_interaction_range": "Attack Reach",
+  "attribute.name.generic.shield_disable_time": "Shield Disable Time",
+  "attribute.name.generic.shield_disable_reduction": "Shield Disable Reduction",
   "attribute.name.generic.shield_strength": "Damage Protection",
   "attribute.name.generic.sword_block_strength": "Damage Reduction",
   "attribute.name.generic.longsword_piercing": "Armor Piercing"

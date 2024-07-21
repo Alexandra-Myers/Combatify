@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.cookey.ModConfig;
+import net.atlas.combatify.config.cookey.option.BooleanOption;
+import net.atlas.combatify.config.cookey.option.DoubleSliderOption;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
@@ -18,7 +20,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.TieredItem;
-import net.atlas.combatify.config.cookey.option.BooleanOption;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,6 +34,8 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 	private static BooleanOption enableToolBlocking;
 	@Unique
 	private BooleanOption shownHandWhenInvisible;
+	@Unique
+	private DoubleSliderOption invisibilityHandOpacity;
 
 	private PlayerRendererMixin(EntityRendererProvider.Context context, PlayerModel<AbstractClientPlayer> entityModel, float f) {
 		super(context, entityModel, f);
@@ -43,6 +46,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 		ModConfig modConfig = CombatifyClient.getInstance().getConfig();
 		shownHandWhenInvisible = modConfig.hudRendering().showHandWhenInvisible();
 		enableToolBlocking = modConfig.animations().enableToolBlocking();
+		invisibilityHandOpacity = modConfig.hudRendering().invisibilityHandOpacity();
 	}
 
     @Inject(method = "getArmPose", at = @At("HEAD"), cancellable = true)
@@ -62,7 +66,9 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/geom/ModelPart;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;II)V"))
     public void transparentHandWhenInvisible(ModelPart instance, PoseStack poseStack, VertexConsumer vertexConsumer, int i, int j, PoseStack poseStack_, MultiBufferSource multiBufferSource, int i_, AbstractClientPlayer abstractClientPlayer, ModelPart modelPart, ModelPart modelPart2) {
-        if (shownHandWhenInvisible.get()) instance.render(poseStack, multiBufferSource.getBuffer(RenderType.entityTranslucentCull(abstractClientPlayer.getSkin().texture())), i, j, 1.0F, 1.0F, 1.0F, abstractClientPlayer.isInvisible() ? 0.15F : 1.0F);
-        else instance.render(poseStack, vertexConsumer, i, j);
+        if (shownHandWhenInvisible.get()) {
+			var color = (int) (0xFFFFFFL + ((long) (invisibilityHandOpacity.get() * 0xFFL) << 24));
+			instance.render(poseStack, multiBufferSource.getBuffer(RenderType.entityTranslucentCull(abstractClientPlayer.getSkin().texture())), i, j, abstractClientPlayer.isInvisible() ? color : 0xFFFFFFFF);
+		} else instance.render(poseStack, vertexConsumer, i, j);
     }
 }

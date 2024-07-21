@@ -22,8 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(CombatRules.class)
 public class CombatRulesMixin {
 	@Inject(method = "getDamageAfterAbsorb", at = @At("HEAD"))
-	private static void changeArmourAndProtection(float f, DamageSource damageSource, float g, float h, CallbackInfoReturnable<Float> cir, @Local(ordinal = 1, argsOnly = true) LocalFloatRef armour, @Local(ordinal = 2, argsOnly = true) LocalFloatRef toughness) {
-		if (Combatify.CONFIG.armourPiercingMode() == ArmourPiercingMode.APPLY_BEFORE_PERCENTAGE && damageSource.getEntity() instanceof LivingEntity livingEntity) {
+	private static void changeArmourAndProtection(LivingEntity livingEntity, float f, DamageSource damageSource, float g, float h, CallbackInfoReturnable<Float> cir, @Local(ordinal = 1, argsOnly = true) LocalFloatRef armour, @Local(ordinal = 2, argsOnly = true) LocalFloatRef toughness) {
+		if (Combatify.CONFIG.armourPiercingMode() == ArmourPiercingMode.APPLY_BEFORE_PERCENTAGE) {
 			Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			double d = ((ItemExtensions)item).getPiercingLevel();
 			d += CustomEnchantmentHelper.getBreach(livingEntity);

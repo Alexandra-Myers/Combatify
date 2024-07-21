@@ -34,7 +34,7 @@ public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 	}
 
 	private void registerModelPredicate() {
-		ItemProperties.register(this, new ResourceLocation("blocking"), (itemStack, clientWorld, livingEntity, i) ->
+		ItemProperties.register(this, ResourceLocation.withDefaultNamespace("blocking"), (itemStack, clientWorld, livingEntity, i) ->
 			livingEntity != null && livingEntity.isUsingItem() && MethodHandler.getBlockingItem(livingEntity) == itemStack ? 1.0F : 0.0F);
 	}
 

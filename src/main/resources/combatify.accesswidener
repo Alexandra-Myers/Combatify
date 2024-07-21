@@ -1,14 +1,15 @@
 accessWidener	v1	named
 accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
-accessible field net/minecraft/world/item/Item BASE_ATTACK_DAMAGE_UUID Ljava/util/UUID;
-accessible field net/minecraft/world/item/Item BASE_ATTACK_SPEED_UUID Ljava/util/UUID;
 accessible field net/minecraft/client/multiplayer/MultiPlayerGameMode connection Lnet/minecraft/client/multiplayer/ClientPacketListener;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour hasCollision Z
 accessible method net/minecraft/world/entity/LivingEntity blockUsingShield (Lnet/minecraft/world/entity/LivingEntity;)V
 accessible method net/minecraft/world/entity/LivingEntity hurtCurrentlyUsedShield (F)V
 accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptibleReturnOwner ()Z
 accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance getModifiersOrEmpty (Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Ljava/util/Collection;
+accessible method net/minecraft/world/item/enchantment/EnchantmentHelper runIterationOnItem (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor;)V
+accessible method net/minecraft/world/item/enchantment/EnchantmentHelper runIterationOnEquipment (Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V
 accessible class net/minecraft/client/Options$FieldAccess
 accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket
-accessible class net/minecraft/resources/ResourceLocation$Dummy
 accessible class net/minecraft/world/effect/HealOrHarmMobEffect
+accessible class net/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor
+accessible class net/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor

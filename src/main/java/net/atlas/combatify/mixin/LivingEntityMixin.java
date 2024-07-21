@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
@@ -18,6 +19,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -62,6 +64,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return !MethodHandler.getBlockingItem(thisEntity).isEmpty();
 	}
 
+	@ModifyReturnValue(method = "createLivingAttributes", at = @At(value = "RETURN"))
+	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
+		return original.add(CustomAttributes.SHIELD_DISABLE_REDUCTION).add(CustomAttributes.SHIELD_DISABLE_TIME);
+	}
+
 	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
 		double x = target.getX() - this.getX();
@@ -96,7 +103,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity);
 		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
 			if (itemStack.getItem() instanceof ItemExtensions shieldItem) {
-				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration() - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
+				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
 					if (Combatify.CONFIG.disableDuringShieldDelay())
 						if (source.getDirectEntity() instanceof LivingEntity attacker)
 							MethodHandler.disableShield(attacker, instance, itemStack);
@@ -127,7 +134,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		Entity entity = source.getEntity();
 		if (entity instanceof LivingEntity && Combatify.CONFIG.eatingInterruption()) {
 			if (thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK)) {
-				useItemRemaining = thisEntity.getUseItem().getUseDuration();
+				useItemRemaining = thisEntity.getUseItem().getUseDuration(thisEntity);
 				if (level() instanceof ServerLevel serverLevel)
 					for (UUID playerUUID : Combatify.moddedPlayers)
 						if (serverLevel.getPlayerByUUID(playerUUID) instanceof ServerPlayer serverPlayer)

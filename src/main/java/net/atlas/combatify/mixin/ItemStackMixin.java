@@ -6,13 +6,15 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,18 +24,19 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.*;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
@@ -50,11 +53,11 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
 	public void addAttackReach(Consumer<Component> consumer, Player player, Holder<Attribute> holder, AttributeModifier attributeModifier, CallbackInfo ci, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl) {
 		if (player != null) {
-			if (attributeModifier.id() == WeaponType.BASE_ATTACK_SPEED_UUID) {
+			if (attributeModifier.id() == WeaponType.BASE_ATTACK_SPEED_CTS_ID) {
 				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
 				bl.set(true);
 			}
-			if (attributeModifier.id() == WeaponType.BASE_ATTACK_REACH_UUID) {
+			if (attributeModifier.id() == WeaponType.BASE_ATTACK_REACH_ID) {
 				d.set(d.get() + player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE) + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
 				bl.set(true);
 			}
@@ -65,7 +68,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		ItemAttributeModifiers itemAttributeModifiers = getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		if (itemAttributeModifiers.showInTooltip()) {
 			double piercingLevel = ((ItemExtensions)getItem()).getPiercingLevel();
-			piercingLevel += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BREACH, (ItemStack) (Object) this) * Combatify.CONFIG.breachArmorPiercing();
+			piercingLevel += CustomEnchantmentHelper.getBreach(ItemStack.class.cast(this));
 			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
 			if (piercingLevel > 0) {
 				consumer.accept(

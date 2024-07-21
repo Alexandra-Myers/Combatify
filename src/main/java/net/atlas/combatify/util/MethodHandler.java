@@ -1,6 +1,7 @@
 package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -12,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -25,7 +27,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Equipable;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -35,7 +40,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -120,7 +124,7 @@ public class MethodHandler {
 				if (configurableItemData.damage != null) {
 					modDamage = true;
 					itemAttributeBuilder.add(Attributes.ATTACK_DAMAGE,
-						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
+						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
 				if (!modDamage && damage.get() != null)
@@ -128,7 +132,7 @@ public class MethodHandler {
 				if (configurableItemData.speed != null) {
 					modSpeed = true;
 					itemAttributeBuilder.add(Attributes.ATTACK_SPEED,
-						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
+						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
 				if (!modSpeed && speed.get() != null)
@@ -136,27 +140,27 @@ public class MethodHandler {
 				if (configurableItemData.reach != null) {
 					modReach = true;
 					itemAttributeBuilder.add(Attributes.ENTITY_INTERACTION_RANGE,
-						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_UUID, "Config modifier", configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
+						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_ID, configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
 						EquipmentSlotGroup.MAINHAND);
 				}
 				if (!modReach && reach.get() != null)
 					itemAttributeBuilder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
-				UUID uuid = UUID.fromString("C1D3F271-8B8E-BA4A-ACE0-6020A98928B2");
+				ResourceLocation resourceLocation = ResourceLocation.withDefaultNamespace("armor.any");
 				EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
 				if (item instanceof Equipable equipable)
 					slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
-				uuid = switch (slotGroup) {
-					case HEAD -> UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150");
-					case CHEST -> UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E");
-					case LEGS -> UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D");
-					case FEET -> UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B");
-					case BODY -> UUID.fromString("C1C72771-8B8E-BA4A-ACE0-81A93C8928B2");
-					default -> uuid;
+				resourceLocation = switch (slotGroup) {
+					case HEAD -> ResourceLocation.withDefaultNamespace("armor.helmet");
+					case CHEST -> ResourceLocation.withDefaultNamespace("armor.chestplate");
+					case LEGS -> ResourceLocation.withDefaultNamespace("armor.leggings");
+					case FEET -> ResourceLocation.withDefaultNamespace("armor.boots");
+					case BODY -> ResourceLocation.withDefaultNamespace("armor.body");
+					default -> resourceLocation;
 				};
 				if (configurableItemData.defense != null) {
 					modDefense = true;
 					itemAttributeBuilder.add(Attributes.ARMOR,
-						new AttributeModifier(uuid, "Config modifier", configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
+						new AttributeModifier(resourceLocation, configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
 				if (!modDefense && defense.get() != null)
@@ -164,7 +168,7 @@ public class MethodHandler {
 				if (configurableItemData.toughness != null) {
 					modToughness = true;
 					itemAttributeBuilder.add(Attributes.ARMOR_TOUGHNESS,
-						new AttributeModifier(uuid, "Config modifier", configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
+						new AttributeModifier(resourceLocation, configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
 				if (!modToughness && toughness.get() != null)
@@ -173,7 +177,7 @@ public class MethodHandler {
 					modKnockbackResistance = true;
 					if (configurableItemData.armourKbRes > 0)
 						itemAttributeBuilder.add(Attributes.KNOCKBACK_RESISTANCE,
-							new AttributeModifier(uuid, "Config modifier", configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
+							new AttributeModifier(resourceLocation, configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
 							slotGroup);
 				}
 				if (!modKnockbackResistance && knockbackResistance.get() != null)
@@ -218,7 +222,7 @@ public class MethodHandler {
 		}
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity);
-		boolean delay = ((ItemExtensions) blockingItem.getItem()).getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration() - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		boolean delay = ((ItemExtensions) blockingItem.getItem()).getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
 			if (!blockingType.defaultKbMechanics())
@@ -358,17 +362,15 @@ public class MethodHandler {
 		if (canDisable && shieldItem.getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0)
 				((LivingEntityExtensions) attacker).setPiercingNegation(piercingLevel);
-			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime());
-			if (Combatify.CONFIG.defender())
-				damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
+			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) attacker.getAttributeValue(CustomAttributes.SHIELD_DISABLE_TIME));
+			damage -= (float) (target.getAttributeValue(CustomAttributes.SHIELD_DISABLE_REDUCTION));
 			if (target instanceof PlayerExtensions player)
 				player.ctsShieldDisable(damage, blockingItem.getItem());
 		}
 	}
 	public static void arrowDisable(LivingEntity target, ItemStack blockingItem) {
 		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
-		if (Combatify.CONFIG.defender())
-			damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction());
+		damage -= (float) (target.getAttributeValue(CustomAttributes.SHIELD_DISABLE_REDUCTION));
 		if (target instanceof PlayerExtensions player)
 			player.ctsShieldDisable(damage, blockingItem.getItem());
 	}
@@ -402,7 +404,7 @@ public class MethodHandler {
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
-			AttributeModifier modifier = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf74"), "Charged reach bonus", chargedBonus, AttributeModifier.Operation.ADD_VALUE);
+			AttributeModifier modifier = new AttributeModifier(Combatify.CHARGED_REACH_ID, chargedBonus, AttributeModifier.Operation.ADD_VALUE);
 			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
 			else

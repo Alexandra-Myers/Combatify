@@ -13,7 +13,7 @@ public abstract class DiggerItemMixin extends TieredItem implements WeaponWithTy
 	public DiggerItemMixin(Tier tier, Properties properties) {
 		super(tier, properties);
 	}
-	@Redirect(method = "hurtEnemy",
+	@Redirect(method = "postHurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
 	public void damage(ItemStack instance, int amount, LivingEntity livingEntity, EquipmentSlot equipmentSlot) {
 		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;

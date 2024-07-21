@@ -13,8 +13,6 @@ public class ConfigurableWeaponData {
 		buf.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
 		buf.writeBoolean(configurableWeaponData.tierable);
 		buf.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
-		buf.writeInt(configurableWeaponData.hasSwordEnchants == null ? -10 : configurableWeaponData.hasSwordEnchants ? 1 : 0);
-		buf.writeInt(configurableWeaponData.isPrimaryForSwordEnchants == null ? -10 : configurableWeaponData.isPrimaryForSwordEnchants ? 1 : 0);
 		buf.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
 		buf.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
 	}, buf -> {
@@ -25,10 +23,6 @@ public class ConfigurableWeaponData {
 		Boolean tierable = buf.readBoolean();
 		String blockingType = buf.readUtf();
 		BlockingType bType = Combatify.registeredTypes.get(blockingType);
-		int hasSwordEnchantsAsInt = buf.readInt();
-		Boolean hasSwordEnchants = null;
-		int isPrimaryForSwordEnchantsAsInt = buf.readInt();
-		Boolean isPrimaryForSwordEnchants = null;
 		Double piercingLevel = buf.readDouble();
 		int canSweepAsInt = buf.readInt();
 		Boolean canSweep = null;
@@ -40,15 +34,11 @@ public class ConfigurableWeaponData {
 			reach = null;
 		if (chargedReach == -10)
 			chargedReach = null;
-		if (hasSwordEnchantsAsInt != -10)
-			hasSwordEnchants = hasSwordEnchantsAsInt == 1;
-		if (isPrimaryForSwordEnchantsAsInt != -10)
-			isPrimaryForSwordEnchants = isPrimaryForSwordEnchantsAsInt == 1;
 		if (piercingLevel == -10)
 			piercingLevel = null;
 		if (canSweepAsInt != -10)
 			canSweep = canSweepAsInt == 1;
-		return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
+		return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, piercingLevel, canSweep);
 	});
 	public final Double damageOffset;
 	public final Double speed;
@@ -56,19 +46,15 @@ public class ConfigurableWeaponData {
 	public final Double chargedReach;
 	public final Boolean tierable;
 	public final BlockingType blockingType;
-	public final Boolean hasSwordEnchants;
-	public final Boolean isPrimaryForSwordEnchants;
 	public final Double piercingLevel;
 	public final Boolean canSweep;
-	ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType, Boolean hasSwordEnchants, Boolean isPrimaryForSwordEnchants, Double piercingLevel, Boolean canSweep) {
+	ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType, Double piercingLevel, Boolean canSweep) {
 		damageOffset = clamp(attackDamage, 0, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
 		this.chargedReach = clamp(chargedReach, 0, 10);
 		tierable = tiered;
 		this.blockingType = blockingType;
-		this.hasSwordEnchants = hasSwordEnchants;
-		this.isPrimaryForSwordEnchants = isPrimaryForSwordEnchants;
 		this.piercingLevel = clamp(piercingLevel, 0, 1);
         this.canSweep = canSweep;
     }

@@ -2,9 +2,7 @@ package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class NonBannerShieldBlockingType extends ShieldBlockingType {
 	public NonBannerShieldBlockingType(String name) {
@@ -18,11 +16,8 @@ public class NonBannerShieldBlockingType extends ShieldBlockingType {
 				return configurableItemData.blockStrength.floatValue();
 			}
 		}
-		float f = 5.0F;
-		if (Combatify.CONFIG.defender())
-			f += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 
-		return f;
+        return 5.0F;
 	}
 
 	@Override

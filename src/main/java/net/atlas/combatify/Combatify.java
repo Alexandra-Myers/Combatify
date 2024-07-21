@@ -4,10 +4,10 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.atlas.atlaslib.util.ArrayListExtensions;
 import net.atlas.atlaslib.util.PrefixLogger;
+import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.CombatifyItemTags;
@@ -72,6 +72,7 @@ public class Combatify implements ModInitializer {
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static BiMap<String, Tier> tiers = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
+	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 	public static final BlockingType SWORD = defineDefaultBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
 	public static final BlockingType SHIELD = defineDefaultBlockingType(new ShieldBlockingType("shield"));
 	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(new NonBannerShieldBlockingType("shield_no_banner"));
@@ -133,11 +134,11 @@ public class Combatify implements ModInitializer {
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
-		if (CONFIG.defender())
-			DefendingEnchantment.registerEnchants();
+
+		CustomAttributes.registerAttributes();
 		if (Combatify.CONFIG.percentageDamageEffects()) {
-			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "648D7064-6A60-4F59-8ABE-C2C23A6DD7A9", 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 		}
 	}
 	@SuppressWarnings("all")
@@ -183,7 +184,7 @@ public class Combatify implements ModInitializer {
 		return blockingType;
 	}
 	public static ResourceLocation id(String path) {
-		return new ResourceLocation(MOD_ID, path);
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 	public static void defineDefaultWeaponType(WeaponType type) {
 		defaultWeaponTypes.put(type.name, type);

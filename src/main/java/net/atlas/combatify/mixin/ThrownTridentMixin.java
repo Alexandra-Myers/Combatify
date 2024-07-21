@@ -1,11 +1,13 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.world.entity.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
@@ -27,17 +29,17 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	@Final
 	private static EntityDataAccessor<Byte> ID_LOYALTY;
 
-	protected ThrownTridentMixin(EntityType<? extends AbstractArrow> entityType, Level level, ItemStack itemStack) {
-		super(entityType, level, itemStack);
+	protected ThrownTridentMixin(EntityType<? extends AbstractArrow> entityType, Level level) {
+		super(entityType, level);
 	}
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void injectVoidReturnLogic(CallbackInfo ci) {
 		voidReturnLogic(ThrownTrident.class.cast(this), ID_LOYALTY);
 	}
-	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getDamageBonus(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EntityType;)F"))
-	public float dealtDamage(ItemStack stack, EntityType<?> entityType, @Local(ordinal = 0) LivingEntity livingEntity) {
-		return CustomEnchantmentHelper.getDamageBonus(getPickupItemStackOrigin(), livingEntity);
+	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+	public float dealtDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float f) {
+		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f);
 	}
 	@ModifyExpressionValue(method = "onHitEntity", at = @At(value = "CONSTANT", args = "floatValue=8.0"))
 	public float editTridentDamage(float original) {

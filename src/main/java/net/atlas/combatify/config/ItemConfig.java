@@ -27,9 +27,11 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -80,7 +82,6 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeBoolean(weaponType.useAxeDamage);
 		buf.writeBoolean(weaponType.useHoeDamage);
 		buf.writeBoolean(weaponType.useHoeSpeed);
-		buf.writeBoolean(weaponType.hasSwordEnchants);
 		buf.writeBoolean(weaponType.tierable);
 	}, buf -> {
 		String name = buf.readUtf();
@@ -90,9 +91,8 @@ public class ItemConfig extends AtlasConfig {
 		boolean useAxeDamage = buf.readBoolean();
 		boolean useHoeDamage = buf.readBoolean();
 		boolean useHoeSpeed = buf.readBoolean();
-		boolean hasSwordEnchants = buf.readBoolean();
 		boolean tierable = buf.readBoolean();
-		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, hasSwordEnchants, true);
+		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, true);
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> BLOCKING_TYPE_STREAM_CODEC = StreamCodec.of((buf, blockingType) -> {
 		buf.writeUtf(blockingType.getClass().getName());
@@ -221,8 +221,6 @@ public class ItemConfig extends AtlasConfig {
 		Double chargedReach = null;
 		BlockingType blockingType = null;
 		Boolean tierable = null;
-		Boolean hasSwordEnchants = null;
-		Boolean isPrimaryForSwordEnchants = null;
 		Double piercingLevel = null;
 		Boolean canSweep = null;
 
@@ -234,8 +232,6 @@ public class ItemConfig extends AtlasConfig {
 			reach = oldData.reach;
 			chargedReach = oldData.chargedReach;
 			blockingType = oldData.blockingType;
-			hasSwordEnchants = oldData.hasSwordEnchants;
-			isPrimaryForSwordEnchants = oldData.isPrimaryForSwordEnchants;
 			piercingLevel = oldData.piercingLevel;
 			canSweep = oldData.canSweep;
 		}
@@ -276,15 +272,11 @@ public class ItemConfig extends AtlasConfig {
 			}
 			blockingType = Combatify.registeredTypes.get(blocking_type);
 		}
-		if (jsonObject.has("has_sword_enchants"))
-			hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
 		if (jsonObject.has("armor_piercing"))
 			piercingLevel = getDouble(jsonObject, "armor_piercing");
 		if (jsonObject.has("can_sweep"))
 			canSweep = getBoolean(jsonObject, "can_sweep");
-		if (jsonObject.has("sword_enchants_from_enchanting"))
-			isPrimaryForSwordEnchants = getBoolean(jsonObject, "sword_enchants_from_enchanting");
-		ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, hasSwordEnchants, isPrimaryForSwordEnchants, piercingLevel, canSweep);
+		ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, piercingLevel, canSweep);
 		configuredWeapons.put(type, configurableWeaponData);
 	}
 	@Override
@@ -477,13 +469,13 @@ public class ItemConfig extends AtlasConfig {
 			} else {
 				String ri = repair_ingredient.getAsString();
 				if (ri.startsWith("#"))
-					repairIngredient = Ingredient.of(TagKey.create(Registries.ITEM, new ResourceLocation(ri.substring(1))));
+					repairIngredient = Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.tryParse(ri.substring(1))));
 				else repairIngredient = Ingredient.of(itemFromName(ri));
 			}
 		}
 		TagKey<Block> incorrect = baseTier.getIncorrectBlocksForDrops();
 		if (jsonObject.has("incorrect_blocks"))
-			incorrect = TagKey.create(Registries.BLOCK, new ResourceLocation(getString(jsonObject, "incorrect_blocks").substring(1)));
+			incorrect = TagKey.create(Registries.BLOCK, ResourceLocation.tryParse(getString(jsonObject, "incorrect_blocks").substring(1)));
 
 		tiers.put(name, ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect, baseTierName));
 	}
@@ -618,8 +610,6 @@ public class ItemConfig extends AtlasConfig {
 		Double blockKbRes = null;
 		Integer enchantment_level = null;
 		Boolean isEnchantable = null;
-		Boolean hasSwordEnchants = null;
-		Boolean isPrimaryForSwordEnchants = null;
 		Integer useDuration = null;
 		Double piercingLevel = null;
 		Boolean canSweep = null;
@@ -645,8 +635,6 @@ public class ItemConfig extends AtlasConfig {
 			blockKbRes = oldData.blockKbRes;
 			enchantment_level = oldData.enchantability;
 			isEnchantable = oldData.isEnchantable;
-			hasSwordEnchants = oldData.hasSwordEnchants;
-			isPrimaryForSwordEnchants = oldData.isPrimaryForSwordEnchants;
 			useDuration = oldData.useDuration;
 			piercingLevel = oldData.piercingLevel;
 			canSweep = oldData.canSweep;
@@ -705,8 +693,6 @@ public class ItemConfig extends AtlasConfig {
 			enchantment_level = getInt(jsonObject, "enchantment_level");
 		if (jsonObject.has("is_enchantable"))
 			isEnchantable = getBoolean(jsonObject, "is_enchantable");
-		if (jsonObject.has("has_sword_enchants"))
-			hasSwordEnchants = getBoolean(jsonObject, "has_sword_enchants");
 		if (jsonObject.has("use_duration"))
 			useDuration = getInt(jsonObject, "use_duration");
 		if (jsonObject.has("armor_piercing"))
@@ -737,8 +723,6 @@ public class ItemConfig extends AtlasConfig {
 				} else durability = getInt(durabilityO, "any");
 			} else durability = durabilityE.getAsInt();
 		}
-		if (jsonObject.has("sword_enchants_from_enchanting"))
-			isPrimaryForSwordEnchants = getBoolean(jsonObject, "sword_enchants_from_enchanting");
 		if (jsonObject.has("armor")) {
 			JsonElement defenseE = jsonObject.get("armor");
 			if (defenseE instanceof JsonObject defenseO) {
@@ -764,17 +748,17 @@ public class ItemConfig extends AtlasConfig {
 			} else {
 				String ri = repair_ingredient.getAsString();
 				if (ri.startsWith("#"))
-					ingredient = Ingredient.of(TagKey.create(Registries.ITEM, new ResourceLocation(ri.substring(1))));
+					ingredient = Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.tryParse(ri.substring(1))));
 				else ingredient = Ingredient.of(itemFromName(ri));
 			}
 		}
 		if (jsonObject.has("tool_tag")) {
 			String ri = getString(jsonObject, "tool_tag");
 			if (ri.startsWith("#"))
-				toolMineable = TagKey.create(Registries.BLOCK, new ResourceLocation(ri.substring(1)));
+				toolMineable = TagKey.create(Registries.BLOCK, ResourceLocation.tryParse(ri.substring(1)));
 			else LOGGER.error("The resource location provided when setting a tool tag for an item must belong to a tag! " + errorStage("Applying Item Tools"));
 		}
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, isPrimaryForSwordEnchants, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
 		configuredItems.put(item, configurableItemData);
 	}
 	public static void notJSONObject(JsonElement invalid, String stage) {
@@ -788,7 +772,9 @@ public class ItemConfig extends AtlasConfig {
 			String armourFormula = written.split("enchant:", 2)[0];
 			armourFormula = armourFormula.replaceAll("D", String.valueOf(amount)).replaceAll("P", String.valueOf(armour)).replaceAll("T", String.valueOf(armourToughness));
 			float result = solveFormula(armourFormula);
-			result = 1.0F - EnchantmentHelper.calculateArmorBreach(damageSource.getEntity(), result);
+			ItemStack itemStack = damageSource.getWeaponItem();
+			if (itemStack != null && damageSource.getEntity().level() instanceof ServerLevel serverLevel)
+				result = 1 - Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(serverLevel, itemStack, damageSource.getEntity(), damageSource, result), 0.0F, 1.0F);
 			return amount * result;
 		}
 		public float enchantCalcs(float amount, float enchantLevel) {

@@ -6,6 +6,7 @@ import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.ClientMethodHandler;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Gui;
@@ -29,15 +30,15 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Gui.class)
 public abstract class GuiMixin {
 	@Unique
-	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE = new ResourceLocation("hud/crosshair_shield_indicator_full");
+	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_shield_indicator_full");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE = new ResourceLocation("hud/crosshair_shield_indicator_disabled");
+	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_shield_indicator_disabled");
 	@Unique
-	private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_FULL_SPRITE = new ResourceLocation("hud/hotbar_attack_indicator_full");
+	private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_full");
 	@Unique
-	private static final ResourceLocation HOTBAR_SHIELD_INDICATOR_FULL_SPRITE = new ResourceLocation("hud/hotbar_shield_indicator_full");
+	private static final ResourceLocation HOTBAR_SHIELD_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_shield_indicator_full");
 	@Unique
-	private static final ResourceLocation HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE = new ResourceLocation("hud/hotbar_shield_indicator_disabled");
+	private static final ResourceLocation HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_shield_indicator_disabled");
 	@Final
 	@Shadow
 	private static ResourceLocation CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE;
@@ -64,7 +65,7 @@ public abstract class GuiMixin {
 	private DebugScreenOverlay debugOverlay;
 
 	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"))
-	private void renderCrosshair(GuiGraphics guiGraphics, float f, CallbackInfo ci) {
+	private void renderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
 		Options options = this.minecraft.options;
 		ClientMethodHandler.redirectResult(minecraft.hitResult);
 		if (options.getCameraType().isFirstPerson()) {
@@ -86,7 +87,7 @@ public abstract class GuiMixin {
 		}
 	}
 	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true)
-	public void renderCrosshair1(GuiGraphics guiGraphics, float f, CallbackInfo ci) {
+	public void renderCrosshair1(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
 		boolean isShieldCooldown = isShieldOnCooldown();
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
 		assert minecraft.player != null;
@@ -123,7 +124,7 @@ public abstract class GuiMixin {
 		ci.cancel();
 	}
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
-	private void renderHotbar(GuiGraphics guiGraphics, float f, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
+	private void renderHotbar(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
 		boolean isShieldCooldown = isShieldOnCooldown();
 		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
 		assert minecraft.player != null;
@@ -162,7 +163,7 @@ public abstract class GuiMixin {
 		ci.cancel();
 	}
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;"), locals = LocalCapture.CAPTURE_FAILSOFT)
-	private void renderHotbar1(GuiGraphics guiGraphics, float f, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
+	private void renderHotbar1(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
 		int n = guiGraphics.guiHeight() - 20;
 		int o = i + 91 + 6;
 		assert minecraft.player != null;
@@ -190,6 +191,6 @@ public abstract class GuiMixin {
 			return false;
 		ItemStack itemStack = MethodHandler.getBlockingItem(this.minecraft.player);
 		ItemExtensions shieldItem = (ItemExtensions) itemStack.getItem();
-		return shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration() - this.minecraft.player.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		return shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(this.minecraft.player) - this.minecraft.player.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 	}
 }

@@ -4,29 +4,20 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Consumer;
 
 public class SwordBlockingType extends PercentageBlockingType {
 	public SwordBlockingType(String name) {
@@ -52,13 +43,11 @@ public class SwordBlockingType extends PercentageBlockingType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockStrength != null)
-				return (float) (configurableItemData.blockStrength / 100.0) + (Combatify.CONFIG.defender() ? EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F : 0);
+				return (float) (configurableItemData.blockStrength / 100.0);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
 		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Math.max(strengthIncrease, -3);
-		if(Combatify.CONFIG.defender())
-			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 		return Math.min(0.3F + (strengthIncrease * 0.1F), 1);
 	}
 	@Override

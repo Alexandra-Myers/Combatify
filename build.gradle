@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -32,12 +32,9 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation include("net.atlas:atlas-lib:1.0.2")
-	modApi "com.terraformersmc:modmenu:10.0.0-alpha.1"
-	modApi "me.shedaniel.cloth:cloth-config-fabric:14.0.125"
-
-	modCompileOnly("eu.pb4:polymer-core:0.8.0-beta.6+1.20.5")
-	modRuntimeOnly("eu.pb4:polymer-core:0.8.0-beta.6+1.20.5")
+	modImplementation include("net.atlas:atlas-lib:1.0.3-1.21")
+	modApi "com.terraformersmc:modmenu:11.0.1"
+	modApi "me.shedaniel.cloth:cloth-config-fabric:15.0.127"
 
 	implementation "com.moandjiezana.toml:toml4j:${project.toml4j_version}"
 	includeClasspath("com.moandjiezana.toml:toml4j:${project.toml4j_version}") {

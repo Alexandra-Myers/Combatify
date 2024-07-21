@@ -29,7 +29,6 @@
   "sweepWithSweeping": true,
   "swingThroughGrass": true,
   "tridentVoidReturn": true,
-  "vanillaSweep": false,
   "weaponTypesEnabled": true,
 
   "shieldDelay": 0,
@@ -40,7 +39,6 @@
   "crossbowUncertainty": 0.25,
   "healingTime": 2,
   "instantTippedArrowEffectMultiplier": 0.125,
-  "cleavingDisableTime": 0.5,
   "shieldDisableTime": 1.6,
   "minHitboxSize": 0.9,
 
@@ -48,7 +46,6 @@
   "attackSpeed": true,
   "canInteractWhenCrouchShield": true,
   "configOnlyWeapons": false,
-  "defender": false,
   "tieredShields": false,
   "disableDuringShieldDelay": false,
   "fishingHookKB": false,
@@ -68,7 +65,6 @@
   "attackDecayMaxPercentage": 100,
   "shieldChargePercentage": 195,
 
-  "defenderDisableReduction": 0.5,
   "breachArmorPiercing": 0.15,
   "eggDamage": 0.0,
   "snowballDamage": 0.0,

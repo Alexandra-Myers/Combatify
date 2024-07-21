@@ -8,9 +8,11 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.attributes.CustomAttributes;
+import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.extensions.LivingEntityExtensions;
+import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.item.TieredShieldItem;
-import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -28,16 +30,22 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -65,6 +73,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	public abstract double entityInteractionRange();
+
+	@Shadow
+	protected abstract float getEnchantedDamage(Entity entity, float f, DamageSource damageSource);
+
+	@Shadow
+	@NotNull
+	public abstract ItemStack getWeaponItem();
 
 	@Unique
 	protected int attackStrengthStartValue;
@@ -104,7 +119,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(Attributes.ENTITY_INTERACTION_RANGE, Combatify.CONFIG.attackReach() ? 2.5 : 3).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, Combatify.CONFIG.attackReach() ? 2.5 : 3).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5).add(CustomAttributes.SHIELD_DISABLE_REDUCTION).add(CustomAttributes.SHIELD_DISABLE_TIME);
 	}
 	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
 	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
@@ -179,10 +194,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) LocalFloatRef attackDamageBonus) {
 		attacked = true;
-		LivingEntity livingEntity = target instanceof LivingEntity ? (LivingEntity) target : null;
-		boolean bl = livingEntity != null;
-		if(player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof TridentItem && bl)
-			attackDamageBonus.set(CustomEnchantmentHelper.getDamageBonus(player.getMainHandItem(), livingEntity));
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
 			attackDamage.set((float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus.get()));
 	}
@@ -197,13 +208,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;walkDist:F"))
-	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 2)LocalBooleanRef bl3) {
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2)LocalBooleanRef bl3) {
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
-			attackDamage.set(attackDamage.get() - attackDamageBonus);
+			combinedDamage.set(attackDamage.get());
 		if (Combatify.CONFIG.attackDecay() && !Combatify.CONFIG.sprintCritsEnabled())
 			return;
 		if (bl3.get())
-			attackDamage.set(attackDamage.get() / 1.5F);
+			combinedDamage.set(combinedDamage.get() / 1.5F);
 		boolean isCrit = player.fallDistance > 0.0F
 			&& !player.onGround()
 			&& !player.onClimbable()
@@ -217,7 +228,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			isCrit &= player.getAttackStrengthScale(0.5F) > 0.9;
 		bl3.set(isCrit);
 		if (isCrit)
-			attackDamage.set(attackDamage.get() * 1.5F);
+			combinedDamage.set(combinedDamage.get() * 1.5F);
 	}
 	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f) {
@@ -273,7 +284,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
 	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
-		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_UUID) != null && !Combatify.isCTS;
+		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_ID) != null && !Combatify.isCTS;
 		float f = (float) (getAttributeValue(Attributes.ATTACK_SPEED) - 1.5f);
 		if (hasVanilla)
 			f += 1.5f;
@@ -302,14 +313,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	protected boolean checkSweepAttack() {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		boolean sweepingItem = ((ItemExtensions)getMainHandItem().getItem()).canSweep();
-		boolean sweep = getAttackStrengthScale(baseValue) > charge && (EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F || sweepingItem);
+		boolean sweep = getAttackStrengthScale(baseValue) > charge && (getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) > 0.0F || sweepingItem);
 		if (!Combatify.CONFIG.sweepWithSweeping())
 			return sweepingItem && sweep;
 		return sweep;
 	}
 
 	public void betterSweepAttack(AABB box, float reach, float damage, Entity entity) {
-		float sweepingDamageRatio = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * damage;
+		float sweepingDamageRatio = (float) (1.0F + getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
 		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
 
 		for (LivingEntity livingEntity : livingEntities) {

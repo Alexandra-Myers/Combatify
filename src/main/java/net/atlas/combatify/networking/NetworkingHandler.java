@@ -53,7 +53,7 @@ public class NetworkingHandler {
 		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.player().connection.getPlayer()).setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
-			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || !CONFIG.letVanillaConnect();
+			boolean bl = CONFIG.configOnlyWeapons() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, RemainingUseSyncPacket.TYPE)) {
 				if(bl) {
 					handler.player.connection.disconnect(Component.literal("Combatify needs to be installed on the client to join this server!"));
@@ -72,7 +72,7 @@ public class NetworkingHandler {
 		});
 	}
 	public record ServerboundMissPacket() implements CustomPacketPayload {
-		public static final Type<ServerboundMissPacket> TYPE = CustomPacketPayload.createType(Combatify.id("miss_attack").toString());
+		public static final Type<ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));
 		public static final StreamCodec<FriendlyByteBuf, ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
 
 		public ServerboundMissPacket(FriendlyByteBuf buf) {
@@ -88,7 +88,7 @@ public class NetworkingHandler {
 		}
 	}
 	public record RemainingUseSyncPacket(int id, int ticks) implements CustomPacketPayload {
-		public static final Type<RemainingUseSyncPacket> TYPE = CustomPacketPayload.createType(Combatify.id("remaining_use_ticks").toString());
+		public static final Type<RemainingUseSyncPacket> TYPE = new Type<>(Combatify.id("remaining_use_ticks"));
 		public static final StreamCodec<FriendlyByteBuf, RemainingUseSyncPacket> CODEC = CustomPacketPayload.codec(RemainingUseSyncPacket::write, RemainingUseSyncPacket::new);
 
 		public RemainingUseSyncPacket(FriendlyByteBuf buf) {
@@ -129,7 +129,7 @@ public class NetworkingHandler {
 	}
 
 	public record ClientboundClientInformationRetrievalPacket() implements CustomPacketPayload {
-		public static final Type<ClientboundClientInformationRetrievalPacket> TYPE = CustomPacketPayload.createType(Combatify.id("client_retrieval").toString());
+		public static final Type<ClientboundClientInformationRetrievalPacket> TYPE = new Type<>(Combatify.id("client_retrieval"));
 		public static final StreamCodec<FriendlyByteBuf, ClientboundClientInformationRetrievalPacket> CODEC = CustomPacketPayload.codec(ClientboundClientInformationRetrievalPacket::write, ClientboundClientInformationRetrievalPacket::new);
 
 		public ClientboundClientInformationRetrievalPacket(FriendlyByteBuf buf) {
@@ -155,7 +155,7 @@ public class NetworkingHandler {
 	}
 
 	public record ServerboundClientInformationExtensionPacket(boolean useShieldOnCrouch) implements CustomPacketPayload {
-		public static final Type<ServerboundClientInformationExtensionPacket> TYPE = CustomPacketPayload.createType(Combatify.id("client_extras").toString());
+		public static final Type<ServerboundClientInformationExtensionPacket> TYPE = new Type<>(Combatify.id("client_extras"));
 		public static final StreamCodec<FriendlyByteBuf, ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
 
 		public ServerboundClientInformationExtensionPacket(FriendlyByteBuf buf) {

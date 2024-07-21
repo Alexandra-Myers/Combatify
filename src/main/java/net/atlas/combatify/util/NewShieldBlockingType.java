@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
@@ -17,7 +16,6 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.Nullable;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
@@ -66,13 +64,11 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
 			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
 			if (configurableItemData.blockStrength != null)
-				return (float) (configurableItemData.blockStrength / 100.0) + (Combatify.CONFIG.defender() ? EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack) * 0.1F : 0);
+				return (float) (configurableItemData.blockStrength / 100.0);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
 		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
-		if (Combatify.CONFIG.defender())
-			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER, stack);
 
 		return Math.min(0.5F + (strengthIncrease * 0.1F), 1);
 	}

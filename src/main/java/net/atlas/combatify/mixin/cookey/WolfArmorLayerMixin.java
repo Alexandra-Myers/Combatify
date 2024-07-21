@@ -34,7 +34,7 @@ public abstract class WolfArmorLayerMixin implements OverlayRendered<Wolf> {
 		showDamageTintOnArmor = CombatifyClient.getInstance().getConfig().hudRendering().showDamageTintOnArmor();
 	}
 
-    @ModifyArg(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/WolfModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"), index = 3)
+    @ModifyArg(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/WolfModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;II)V"), index = 3)
     public int modifyOverlayCoords(int previousCoords) {
         boolean show = this.showDamageTintOnArmor.get();
         return show ? this.overlayCoords : previousCoords;
