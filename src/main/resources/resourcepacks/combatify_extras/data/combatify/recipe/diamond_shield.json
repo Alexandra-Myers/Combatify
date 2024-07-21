@@ -2,13 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "XXX",
+    "X#X",
     "XXX",
     " X "
   ],
   "key": {
     "X": {
       "item": "minecraft:diamond"
+    },
+    "#": {
+      "item": "minecraft:diamond_block"
     }
   },
   "result": {

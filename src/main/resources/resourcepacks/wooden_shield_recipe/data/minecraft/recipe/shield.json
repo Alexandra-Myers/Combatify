@@ -11,7 +11,7 @@
       "tag": "minecraft:planks"
     },
     "#": {
-      "item": "minecraft:cobblestone"
+      "tag": "minecraft:stone_tool_materials"
     }
   },
   "result": {
