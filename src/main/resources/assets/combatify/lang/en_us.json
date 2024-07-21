@@ -101,6 +101,8 @@
   "item.combatify.netherite_shield.gray": "Gray Netherite Shield",
   "item.combatify.netherite_shield.dark_gray": "Dark Gray Netherite Shield",
   "item.combatify.netherite_shield.black": "Black Netherite Shield",
+  "pack.combatify.combatify_extras": "Combatify Extras",
+  "pack.combatify.wooden_shield_recipe": "Wooden Shield Recipe",
   "enchantment.combatify.defender" : "Defender",
   "enchantment.minecraft.cleaving" : "Cleaving",
   "options.autoAttack" : "Auto-Attack",
