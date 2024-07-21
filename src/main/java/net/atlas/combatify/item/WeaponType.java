@@ -21,7 +21,7 @@ public class WeaponType {
 	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> STREAM_CODEC = StreamCodec.of((buf, weaponType) -> buf.writeUtf(weaponType.name), buf -> WeaponType.fromID(buf.readUtf()));
 	public static final WeaponType EMPTY = createBasicUntierable("empty", 0, 0, 0);
     public static final WeaponType SWORD = createBasic("sword", 2, 0.5, 0.5);
-	public static final WeaponType MACE = createBasic("mace", 1, -1.5, 0);
+	public static final WeaponType MACE = createBasic("mace", 2, -1.5, 0);
 	public static final WeaponType LONGSWORD = createWithHoeDamageFormula("longsword", 0, 0.5, 1);
     public static final WeaponType AXE = createAxe("axe", 3, -0.5, 0);
     public static final WeaponType PICKAXE = createBasic("pickaxe", 1, 0, 0);
