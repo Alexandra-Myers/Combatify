@@ -71,6 +71,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 			piercingLevel += CustomEnchantmentHelper.getBreach(ItemStack.class.cast(this));
 			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
 			if (piercingLevel > 0) {
+				consumer.accept(CommonComponents.EMPTY);
+				consumer.accept(Component.translatable("item.modifiers.mainhand").withStyle(ChatFormatting.GRAY));
 				consumer.accept(
 					CommonComponents.space().append(
 						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),

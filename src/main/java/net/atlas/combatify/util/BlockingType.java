@@ -120,16 +120,21 @@ public abstract class BlockingType {
 	public abstract @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand);
 	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
+		consumer.accept(CommonComponents.EMPTY);
+		consumer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
 		float f = getShieldBlockDamageValue(stack);
 		double g = getShieldKnockbackResistanceValue(stack);
 		consumer.accept(CommonComponents.space().append(
 			Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
 				ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(f),
-				Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
+				getStrengthTranslationKey())).withStyle(ChatFormatting.DARK_GREEN));
 		if (g > 0.0)
 			consumer.accept(CommonComponents.space().append(
 				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
 					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
 					Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+	}
+	public Component getStrengthTranslationKey() {
+		return Component.translatable("attribute.name.generic.shield_strength");
 	}
 }

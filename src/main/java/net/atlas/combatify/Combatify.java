@@ -140,8 +140,8 @@ public class Combatify implements ModInitializer {
 		}
 
 		CustomAttributes.registerAttributes();
-		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.combatify_extras"), ResourcePackActivationType.NORMAL);
-		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.wooden_shield_recipe"), ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {
 			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);

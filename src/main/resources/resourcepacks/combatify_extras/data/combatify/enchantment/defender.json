@@ -28,8 +28,7 @@
     "per_level_above_first": 25
   },
   "slots": [
-    "mainhand",
-    "offhand"
+    "hand"
   ],
   "supported_items": "#combatify:enchantable/shield",
   "weight": 1

@@ -16,7 +16,7 @@ public class CustomEnchantmentHelper {
 	public static double getBreach(LivingEntity entity) {
 		AtomicDouble atomicDouble = new AtomicDouble(0);
 		EnchantmentHelper.runIterationOnEquipment(entity, (holder, i, enchantedItemInUse) -> {
-			if (holder.is(Enchantments.BREACH)) atomicDouble.addAndGet(i * Combatify.CONFIG.breachArmorPiercing());
+			if (holder.is(Enchantments.BREACH) && holder.value().matchingSlot(enchantedItemInUse.inSlot())) atomicDouble.addAndGet(i * Combatify.CONFIG.breachArmorPiercing());
 		});
 		return atomicDouble.doubleValue();
 	}
