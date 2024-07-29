@@ -1,7 +1,7 @@
 package net.atlas.combatify;
 
 import com.mojang.serialization.Codec;
-import net.atlas.atlaslib.util.PrefixLogger;
+import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.config.cookey.ModConfig;
 import net.atlas.combatify.extensions.IOptions;
@@ -14,7 +14,6 @@ import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

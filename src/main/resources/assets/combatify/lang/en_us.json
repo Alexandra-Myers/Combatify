@@ -131,6 +131,7 @@
   "text.config.combatify-general.category.extra_integers": "Extra Integers",
   "text.config.combatify-general.category.extra_doubles": "Extra Doubles",
   "text.config.combatify-general.category.extra_enums": "Extra Enums",
+  "text.config.combatify-general.category.debug_options": "Debugging Options",
   "text.config.combatify-general.option.attackDecay": "Attack Decay",
   "text.config.combatify-general.option.attackDecay.tooltip.0": "Determines whether or not damage will decay based on percentage if used before 100%.",
   "text.config.combatify-general.option.attackReach": "Attack Reach Enabled",
@@ -292,5 +293,7 @@
   "text.config.combatify-general.option.armourPiercingMode.tooltip.0": "Defines the mode upon which armor piercing is activated.",
   "text.config.combatify-general.option.armourPiercingMode.tooltip.1": "   Vanilla - Armor Piercing is applied after armor calcs, and is subtracted from the protection.",
   "text.config.combatify-general.option.armourPiercingMode.tooltip.2": "   Combatify Original - Armor Piercing is applied before armor calcs, and negates a percentage of the armor and toughness.",
-  "text.config.combatify-general.option.armourPiercingMode.tooltip.3": "   Combatify New - Armor Piercing is applied after armor calcs, and is taken out as a percentage of the protection."
+  "text.config.combatify-general.option.armourPiercingMode.tooltip.3": "   Combatify New - Armor Piercing is applied after armor calcs, and is taken out as a percentage of the protection.",
+
+  "text.config.combatify-general.option.enableDebugLogging": "Enable Debug Logging"
 }

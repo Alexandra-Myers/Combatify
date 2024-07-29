@@ -66,10 +66,7 @@ public class NetworkingHandler {
 			}
 			moddedPlayers.add(handler.player.getUUID());
 		});
-		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
-			ITEMS = new ItemConfig();
-			Combatify.modify();
-		});
+		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
 	}
 	public record ServerboundMissPacket() implements CustomPacketPayload {
 		public static final Type<ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));

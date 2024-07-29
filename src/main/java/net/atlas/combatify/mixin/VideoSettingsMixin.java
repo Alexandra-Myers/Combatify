@@ -2,7 +2,7 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.atlaslib.util.ArrayListExtensions;
+import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.combatify.CombatifyClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;

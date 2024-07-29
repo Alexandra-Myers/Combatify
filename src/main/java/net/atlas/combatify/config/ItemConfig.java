@@ -6,8 +6,8 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
-import net.atlas.atlaslib.AtlasLib;
-import net.atlas.atlaslib.config.AtlasConfig;
+import net.atlas.atlascore.AtlasCore;
+import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.item.WeaponType;
@@ -213,6 +213,7 @@ public class ItemConfig extends AtlasConfig {
 		}
 		if (object.has("armor_calculation"))
 			armourCalcs = new Formula(getString(object, "armor_calculation"));
+		modify();
 	}
 	public void parseWeaponType(WeaponType type, JsonObject jsonObject) {
 		Double damageOffset = null;
@@ -563,8 +564,9 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
-	public void handleExtraSync(AtlasLib.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
-		LOGGER.info("Loading config details from buffer.");
+	public void handleExtraSync(AtlasCore.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
+		if (CONFIG.enableDebugLogging())
+			LOGGER.info("Loading config details from buffer.");
 	}
 
 	@Override

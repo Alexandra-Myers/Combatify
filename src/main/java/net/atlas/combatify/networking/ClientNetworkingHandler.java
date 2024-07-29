@@ -34,11 +34,9 @@ public class ClientNetworkingHandler {
 				ITEMS.reloadFromDefault();
 				Combatify.markCTS(true);
 			}
-			Combatify.modify();
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {
 			ITEMS = new ItemConfig();
-			Combatify.modify();
 
 			Combatify.LOGGER.info("Loaded items config.");
 		});

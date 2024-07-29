@@ -192,10 +192,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
-	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) LocalFloatRef attackDamageBonus) {
+	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) float attackDamageBonus) {
 		attacked = true;
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
-			attackDamage.set((float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus.get()));
+			attackDamage.set((float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus));
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
@@ -208,9 +208,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;walkDist:F"))
-	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) final float attackDamageBonus, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2)LocalBooleanRef bl3) {
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
-			combinedDamage.set(attackDamage.get());
+			combinedDamage.set(attackDamage);
 		if (Combatify.CONFIG.attackDecay() && !Combatify.CONFIG.sprintCritsEnabled())
 			return;
 		if (bl3.get())
@@ -259,7 +259,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				double dirX = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double dirZ = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
 				AABB sweepBox = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(dirX, 0.0, dirZ);
-				Combatify.LOGGER.info("Swept");
+				if (Combatify.CONFIG.enableDebugLogging())
+					Combatify.LOGGER.info("Swept");
 				betterSweepAttack(sweepBox, currentAttackReach, attackDamage, null);
 			}
 			this.resetAttackStrengthTicker(false);
@@ -275,7 +276,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if ((!Combatify.CONFIG.attackSpeed() && getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20) || Combatify.CONFIG.instaAttack())
 			return;
 		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-		Combatify.LOGGER.info("Ticks for charge: " + var2);
+		if (Combatify.CONFIG.enableDebugLogging())
+			Combatify.LOGGER.info("Ticks for charge: " + var2);
 		if (var2 > this.attackStrengthTicker) {
 			this.attackStrengthStartValue = var2;
 			this.attackStrengthTicker = this.attackStrengthStartValue;

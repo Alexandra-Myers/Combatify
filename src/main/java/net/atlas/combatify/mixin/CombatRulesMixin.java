@@ -38,7 +38,8 @@ public class CombatRulesMixin {
 		ItemConfig.Formula calcs = ItemConfig.getArmourCalcs();
 		if (calcs != null) {
 			original = calcs.armourCalcs(amount, source, armour, toughness);
-			Combatify.LOGGER.info("Damage: " + amount + " Result: " + original);
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.LOGGER.info("Damage: " + amount + " Result: " + original);
 		}
 		return original;
 	}

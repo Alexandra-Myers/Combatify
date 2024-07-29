@@ -2,8 +2,8 @@ package net.atlas.combatify;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import net.atlas.atlaslib.util.ArrayListExtensions;
-import net.atlas.atlaslib.util.PrefixLogger;
+import net.atlas.atlascore.util.ArrayListExtensions;
+import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ConfigurableItemData;

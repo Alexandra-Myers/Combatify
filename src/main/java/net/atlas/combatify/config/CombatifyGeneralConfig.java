@@ -2,8 +2,8 @@ package net.atlas.combatify.config;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
-import net.atlas.atlaslib.AtlasLib;
-import net.atlas.atlaslib.config.AtlasConfig;
+import net.atlas.atlascore.AtlasCore;
+import net.atlas.atlascore.config.AtlasConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -69,6 +69,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder ctsAttackBalancing;
 	private BooleanHolder eatingInterruption;
 	private BooleanHolder improvedMiscEntityAttacks;
+	private BooleanHolder enableDebugLogging;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder attackDecayMinCharge;
@@ -97,6 +98,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private Category extraI;
 	private Category extraD;
 	private Category extraE;
+	private Category debug;
 
 	public CombatifyGeneralConfig() {
 		super(id("combatify-general"));
@@ -105,7 +107,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	@Override
 	public Component getFormattedName() {
-		return Component.translatable("text.config." + this.name.getPath() + ".title").withStyle(Style.EMPTY.withColor(AtlasLib.CONFIG.configNameDisplayColour.get()));
+		return Component.translatable("text.config." + this.name.getPath() + ".title").withStyle(Style.EMPTY.withColor(AtlasCore.CONFIG.configNameDisplayColour.get()));
 	}
 
 	@Override
@@ -323,6 +325,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		armourPiercingMode = createEnum("armourPiercingMode", ArmourPiercingMode.VANILLA, ArmourPiercingMode.class, ArmourPiercingMode.values(), e -> Component.translatable("text.config.combatify-general.option.armourPiercingMode." + e.name().toLowerCase(Locale.ROOT)));
 		armourPiercingMode.tieToCategory(extraE);
 		armourPiercingMode.setupTooltip(4);
+
+		enableDebugLogging = createBoolean("enableDebugLogging", false);
+		enableDebugLogging.tieToCategory(debug);
 	}
 
 	@Override
@@ -335,6 +340,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		extraI = new Category(this, "extra_integers", new ArrayList<>());
 		extraD = new Category(this, "extra_doubles", new ArrayList<>());
 		extraE = new Category(this, "extra_enums", new ArrayList<>());
+		debug = new Category(this, "debug_options", new ArrayList<>());
 		categoryList.add(ctsB);
 		categoryList.add(ctsI);
 		categoryList.add(ctsD);
@@ -342,6 +348,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		categoryList.add(extraI);
 		categoryList.add(extraD);
 		categoryList.add(extraE);
+		categoryList.add(debug);
 		return categoryList;
 	}
 
@@ -361,7 +368,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	@Override
-	public void handleExtraSync(AtlasLib.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
+	public void handleExtraSync(AtlasCore.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
 
 	}
 
@@ -511,6 +518,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean improvedMiscEntityAttacks() {
 		return improvedMiscEntityAttacks.get();
+	}
+	public Boolean enableDebugLogging() {
+		return enableDebugLogging.get();
 	}
 	public Integer shieldDelay() {
 		return shieldDelay.get();
