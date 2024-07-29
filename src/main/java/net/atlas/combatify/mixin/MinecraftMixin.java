@@ -211,6 +211,15 @@ public abstract class MinecraftMixin implements IMinecraft {
 			}
 		}
 	}
+	@ModifyExpressionValue(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
+	public boolean alterResult(boolean original) {
+		boolean bl = true;
+		if (player != null) {
+			ItemExtensions item = (ItemExtensions) MethodHandler.getBlockingItem(player).getItem();
+			bl = Combatify.CONFIG.canInteractWhenCrouchShield() && ((PlayerExtensions) player).hasEnabledShieldOnCrouch() && (player.isCrouching() || player.isPassenger()) && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty();
+		}
+		return original && !bl;
+	}
 	@WrapOperation(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
 	public InteractionResult addRequirement(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, Operation<InteractionResult> original, @Local ItemStack stack) {
 		if(Combatify.CONFIG.shieldOnlyWhenCharged() && localPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge())

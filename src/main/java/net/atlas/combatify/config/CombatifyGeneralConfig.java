@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
@@ -100,6 +101,11 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public CombatifyGeneralConfig() {
 		super(id("combatify-general"));
 		declareDefaultForMod("combatify");
+	}
+
+	@Override
+	public Component getFormattedName() {
+		return Component.translatable("text.config." + this.name.getPath() + ".title").withStyle(Style.EMPTY.withColor(AtlasLib.CONFIG.configNameDisplayColour.get()));
 	}
 
 	@Override
