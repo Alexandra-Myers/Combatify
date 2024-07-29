@@ -2,6 +2,7 @@
   "attackDecay": false,
   "attackReach": true,
   "autoAttackAllowed": true,
+  "bedrockBridging": false,
   "bedrockImpaling": true,
   "bowFatigue": true,
   "canAttackEarly": false,

@@ -138,6 +138,8 @@
   "text.config.combatify-general.option.attackReach.tooltip.0": "Determines whether or not items will have unique attack reach.",
   "text.config.combatify-general.option.autoAttackAllowed": "Auto Attack Allowed",
   "text.config.combatify-general.option.autoAttackAllowed.tooltip.0": "Option for servers which will prevent using auto-attack on client.",
+  "text.config.combatify-general.option.bedrockBridging": "Bedrock / 8a Bridging",
+  "text.config.combatify-general.option.bedrockBridging.tooltip.0": "Allows for reach-around block placement like in Bedrock Edition but most specifically matching CTS 8a's implementation of this feature.",
   "text.config.combatify-general.option.bedrockImpaling": "Bedrock Impaling",
   "text.config.combatify-general.option.bedrockImpaling.tooltip.0": "Impaling activates in water or rain rather than just on specific entities.",
   "text.config.combatify-general.option.bowFatigue": "Bow Fatigue",

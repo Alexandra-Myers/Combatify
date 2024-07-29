@@ -317,14 +317,14 @@ public class MethodHandler {
 		Vec3 endPos = pos.add(viewVector.scale(reach));
 		return clip(entity.level(), new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
 	}
-	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
+	public static EntityHitResult rayTraceEntity(Entity entity, float partialTicks, double blockReachDistance) {
+		Vec3 from = entity.getEyePosition(partialTicks);
+		Vec3 look = entity.getViewVector(partialTicks);
 		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
 
 		return ProjectileUtil.getEntityHitResult(
-			player.level(),
-			player,
+			entity.level(),
+			entity,
 			from,
 			to,
 			new AABB(from, to),

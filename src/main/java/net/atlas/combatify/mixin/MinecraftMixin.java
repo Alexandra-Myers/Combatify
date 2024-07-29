@@ -7,7 +7,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.util.ClientMethodHandler;
+import net.atlas.combatify.screen.ScreenBuilder;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -23,12 +23,17 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.*;
-import net.atlas.combatify.screen.ScreenBuilder;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -144,9 +149,7 @@ public abstract class MinecraftMixin implements IMinecraft {
 	}
 	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
-		if (hitResult != null)
-			ClientMethodHandler.redirectResult(hitResult);
-		if (player == null)
+		if (player == null || hitResult == null)
 			return original.call(instance);
 		if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
@@ -173,6 +176,12 @@ public abstract class MinecraftMixin implements IMinecraft {
 			return original;
 		return false;
 	}
+	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z", ordinal = 0))
+	public boolean ensureNotReachingAround(boolean original) {
+        if (original) return true;
+        assert this.hitResult != null;
+        return ((BlockHitResultExtensions)this.hitResult).isLedgeEdge();
+	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer instance, Operation<Void> original) {
 		if (gameMode != null)
@@ -196,7 +205,6 @@ public abstract class MinecraftMixin implements IMinecraft {
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
-		ClientMethodHandler.redirectResult(hitResult);
 		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
 		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
 		if (missTime <= 0) {
@@ -210,6 +218,12 @@ public abstract class MinecraftMixin implements IMinecraft {
 				}
 			}
 		}
+	}
+	@ModifyExpressionValue(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z", ordinal = 0))
+	public boolean ensureNotReachingAroundContinue(boolean original) {
+		if (original) return true;
+		assert this.hitResult != null;
+		return ((BlockHitResultExtensions)this.hitResult).isLedgeEdge();
 	}
 	@ModifyExpressionValue(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
 	public boolean alterResult(boolean original) {

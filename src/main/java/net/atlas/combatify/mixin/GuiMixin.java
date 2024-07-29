@@ -3,8 +3,8 @@ package net.atlas.combatify.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
-import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.util.ClientMethodHandler;
+import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -21,7 +21,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -67,7 +70,6 @@ public abstract class GuiMixin {
 	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"))
 	private void renderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
 		Options options = this.minecraft.options;
-		ClientMethodHandler.redirectResult(minecraft.hitResult);
 		if (options.getCameraType().isFirstPerson()) {
 			assert minecraft.gameMode != null;
 			assert minecraft.player != null;
@@ -137,7 +139,6 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-		ClientMethodHandler.redirectResult(minecraft.hitResult);
 		int n = guiGraphics.guiHeight() - 20;
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT)

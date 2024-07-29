@@ -25,6 +25,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder weaponTypesEnabled;
 	private BooleanHolder iFramesBasedOnWeapon;
 	private BooleanHolder bowFatigue;
+	private BooleanHolder bedrockBridging;
 	private BooleanHolder chargedAttacks;
 	private BooleanHolder canAttackEarly;
 	private BooleanHolder canSweepOnMiss;
@@ -131,6 +132,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		autoAttackAllowed = createBoolean("autoAttackAllowed", true);
 		autoAttackAllowed.tieToCategory(ctsB);
 		autoAttackAllowed.setupTooltip(1);
+		bedrockBridging = createBoolean("bedrockBridging", false);
+		bedrockBridging.tieToCategory(ctsB);
+		bedrockBridging.setupTooltip(1);
 		bedrockImpaling = createBoolean("bedrockImpaling", true);
 		bedrockImpaling.tieToCategory(ctsB);
 		bedrockImpaling.setupTooltip(1);
@@ -386,6 +390,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean bowFatigue() {
 		return bowFatigue.get();
+	}
+	public Boolean bedrockBridging() {
+		return bedrockBridging.get();
 	}
 	public Boolean canAttackEarly() {
 		return canAttackEarly.get();
