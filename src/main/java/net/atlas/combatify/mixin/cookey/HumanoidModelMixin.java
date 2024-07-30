@@ -63,7 +63,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
         boolean poseLeftArmAfterwards = false;
         if (enableToolBlocking.get()) {
             ItemStack itemInRightArm = livingEntity.getItemInHand(livingEntity.getMainArm() == HumanoidArm.RIGHT ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
-            if (itemInRightArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).equals(itemInRightArm))
+            if (itemInRightArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).stack().equals(itemInRightArm))
                 poseLeftArmAfterwards = true;
         }
         if (showEatingInThirdPerson.get()
@@ -83,7 +83,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
         boolean poseRightArmAfterwards = false;
         if (enableToolBlocking.get()) {
             ItemStack itemInLeftArm = livingEntity.getItemInHand(livingEntity.getMainArm() == HumanoidArm.RIGHT ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-            if (itemInLeftArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).equals(itemInLeftArm))
+            if (itemInLeftArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).stack().equals(itemInLeftArm))
                 poseRightArmAfterwards = true;
         }
         if (showEatingInThirdPerson.get()

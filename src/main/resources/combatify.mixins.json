@@ -59,6 +59,7 @@
     "GameRendererMixin",
     "GuiMixin",
     "ItemInHandMixin",
+    "ItemPropertiesMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
     "MultiPlayerGameModeMixin",

@@ -61,7 +61,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
-		return !MethodHandler.getBlockingItem(thisEntity).isEmpty();
+		return !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty();
 	}
 
 	@ModifyReturnValue(method = "createLivingAttributes", at = @At(value = "RETURN"))
@@ -75,7 +75,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		double z = target.getZ() - this.getZ();
 		double x2 = this.getX() - target.getX();
 		double z2 = this.getZ() - target.getZ();
-		ItemStack blockingItem = MethodHandler.getBlockingItem(target);
+		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
 		MethodHandler.disableShield(thisEntity, target, blockingItem);
 		if(((ItemExtensions)blockingItem.getItem()).getBlockingType().isToolBlocker()) {
 			ci.cancel();
@@ -100,7 +100,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
 	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
-		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity);
+		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
 		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
 			if (itemStack.getItem() instanceof ItemExtensions shieldItem) {
 				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {

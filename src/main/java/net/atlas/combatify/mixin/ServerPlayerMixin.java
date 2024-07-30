@@ -119,7 +119,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		}
 		attackAir();
 	}
-	@Inject(method = "updatePlayerAttributes", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "updatePlayerAttributes", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getAttribute(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;", ordinal = 1), cancellable = true)
 	public void removeCreativeReach(CallbackInfo ci) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		double chargedBonus;
@@ -134,7 +134,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			else
 				attackRange.removeModifier(modifier);
 		}
-		if (!Combatify.CONFIG.creativeReach())
+		if (!Combatify.CONFIG.creativeAttackReach())
 			ci.cancel();
 	}
 

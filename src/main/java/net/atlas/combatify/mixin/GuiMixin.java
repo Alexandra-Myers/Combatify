@@ -190,7 +190,7 @@ public abstract class GuiMixin {
 	public boolean isShieldDelayed() {
 		if (this.minecraft.player == null)
 			return false;
-		ItemStack itemStack = MethodHandler.getBlockingItem(this.minecraft.player);
+		ItemStack itemStack = MethodHandler.getBlockingItem(this.minecraft.player).stack();
 		ItemExtensions shieldItem = (ItemExtensions) itemStack.getItem();
 		return shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(this.minecraft.player) - this.minecraft.player.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 	}

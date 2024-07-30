@@ -221,7 +221,7 @@ public class MethodHandler {
 			return;
 		}
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = getBlockingItem(entity);
+		ItemStack blockingItem = getBlockingItem(entity).stack();
 		boolean delay = ((ItemExtensions) blockingItem.getItem()).getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
@@ -241,7 +241,7 @@ public class MethodHandler {
 	}
 	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = getBlockingItem(entity);
+		ItemStack blockingItem = getBlockingItem(entity).stack();
 		if (!blockingItem.isEmpty()) {
 			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
 			if (!blockingType.defaultKbMechanics())
@@ -374,23 +374,23 @@ public class MethodHandler {
 		if (target instanceof PlayerExtensions player)
 			player.ctsShieldDisable(damage, blockingItem.getItem());
 	}
-	public static ItemStack getBlockingItem(LivingEntity entity) {
+	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
 			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK) {
-				return entity.getUseItem();
+				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand());
 			}
-		} else if ((entity.onGround() && entity.isCrouching() && ((LivingEntityExtensions) entity).hasEnabledShieldOnCrouch() || entity.isPassenger()) && ((LivingEntityExtensions)entity).hasEnabledShieldOnCrouch()) {
-			for(InteractionHand hand : InteractionHand.values()) {
-				ItemStack var1 = entity.getItemInHand(hand);
-				Item blockingItem = var1.getItem();
+		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && ((LivingEntityExtensions) entity).hasEnabledShieldOnCrouch()) {
+			for (InteractionHand hand : InteractionHand.values()) {
+				ItemStack stack = entity.getItemInHand(hand);
+				Item blockingItem = stack.getItem();
 				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!bl && !var1.isEmpty() && var1.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock()) {
-					return var1;
+				if (!bl && !stack.isEmpty() && stack.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, stack) && ((ItemExtensions)stack.getItem()).getBlockingType().canCrouchBlock()) {
+					return new FakeUseItem(stack, hand);
 				}
 			}
 		}
 
-		return ItemStack.EMPTY;
+		return new FakeUseItem(ItemStack.EMPTY, null);
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
 		return entity instanceof Player player && player.getCooldowns().isOnCooldown(var1.getItem());

@@ -43,7 +43,7 @@ public abstract class ItemInHandLayerMixin<T extends LivingEntity, M extends Ent
         if (this.enableToolBlocking.get()) {
             InteractionHand otherHand = humanoidArm == livingEntity.getMainArm() ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
             ItemStack otherHandStack = livingEntity.getItemInHand(otherHand);
-            if (itemStack.getItem() instanceof ShieldItem && otherHandStack.getItem() instanceof TieredItem && (!MethodHandler.getBlockingItem(livingEntity).isEmpty() && MethodHandler.getBlockingItem(livingEntity).getItem() instanceof ShieldItem)) {
+            if (itemStack.getItem() instanceof ShieldItem && otherHandStack.getItem() instanceof TieredItem && (!MethodHandler.getBlockingItem(livingEntity).stack().isEmpty() && MethodHandler.getBlockingItem(livingEntity).getItem() instanceof ShieldItem)) {
                 ci.cancel();
             }
         }

@@ -54,7 +54,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
         if (enableToolBlocking.get()) {
             ItemStack currentHandStack = abstractClientPlayer.getItemInHand(interactionHand);
             ItemStack otherHandStack = interactionHand == InteractionHand.MAIN_HAND ? abstractClientPlayer.getItemInHand(InteractionHand.OFF_HAND) : abstractClientPlayer.getItemInHand(InteractionHand.MAIN_HAND);
-            if (!MethodHandler.getBlockingItem(abstractClientPlayer).isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).getItem() instanceof ShieldItem) {
+            if (!MethodHandler.getBlockingItem(abstractClientPlayer).stack().isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).getItem() instanceof ShieldItem) {
                 if (currentHandStack.getItem() instanceof TieredItem && otherHandStack.getItem() instanceof ShieldItem) {
                     cir.setReturnValue(HumanoidModel.ArmPose.BLOCK);
                 } else if (currentHandStack.getItem() instanceof ShieldItem && otherHandStack.getItem() instanceof TieredItem) {

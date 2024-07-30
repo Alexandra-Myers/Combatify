@@ -30,7 +30,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder canAttackEarly;
 	private BooleanHolder canSweepOnMiss;
 	private BooleanHolder chargedReach;
-	private BooleanHolder creativeReach;
+	private BooleanHolder creativeAttackReach;
 	private BooleanHolder attackDecay;
 	private BooleanHolder missedAttackRecovery;
 	private BooleanHolder disableDuringShieldDelay;
@@ -153,9 +153,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		chargedReach = createBoolean("chargedReach", true);
 		chargedReach.tieToCategory(ctsB);
 		chargedReach.setupTooltip(1);
-		creativeReach = createBoolean("creativeReach", false);
-		creativeReach.tieToCategory(ctsB);
-		creativeReach.setupTooltip(1);
+		creativeAttackReach = createBoolean("creativeAttackReach", false);
+		creativeAttackReach.tieToCategory(ctsB);
+		creativeAttackReach.setupTooltip(1);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
 		ctsAttackBalancing.tieToCategory(ctsB);
 		ctsAttackBalancing.setupTooltip(1);
@@ -403,8 +403,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean chargedReach() {
 		return chargedReach.get();
 	}
-	public Boolean creativeReach() {
-		return creativeReach.get();
+	public Boolean creativeAttackReach() {
+		return creativeAttackReach.get();
 	}
 	public Boolean attackDecay() {
 		return attackDecay.get();

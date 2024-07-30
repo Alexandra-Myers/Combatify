@@ -9,7 +9,7 @@
   "canSweepOnMiss": true,
   "chargedAttacks": true,
   "chargedReach": true,
-  "creativeReach": false,
+  "creativeAttackReach": false,
   "ctsAttackBalancing": true,
   "ctsKB": true,
   "ctsMomentumPassedToProjectiles": true,

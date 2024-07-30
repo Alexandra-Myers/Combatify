@@ -1,13 +1,13 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.util.MethodHandler;
+import net.atlas.combatify.config.cookey.option.BooleanOption;
+import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.extensions.LivingEntityExtensions;
+import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.ClientRecipeBook;
@@ -15,20 +15,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.*;
-import net.atlas.combatify.config.cookey.option.BooleanOption;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static net.atlas.combatify.util.MethodHandler.getBlockingItem;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
@@ -38,11 +39,10 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@Shadow
 	public abstract void startUsingItem(InteractionHand interactionHand);
-
-	@Shadow
-	private boolean startedUsingItem;
-
-
+	@Unique
+	boolean wasShieldBlocking = false;
+	@Unique
+	InteractionHand shieldBlockingHand = InteractionHand.OFF_HAND;
 	@Unique
 	BooleanOption force100PercentRecharge;
 
@@ -61,29 +61,13 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if (this.hasEnabledShieldOnCrouch()) {
-			for (InteractionHand interactionHand : InteractionHand.values()) {
-				if ((thisPlayer.isCrouching() && thisPlayer.onGround() || isPassenger()) && !thisPlayer.isUsingItem()) {
-					ItemStack itemStack = MethodHandler.getBlockingItem(thisPlayer);
-
-					Item blockingItem = itemStack.getItem();
-					boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && thisPlayer.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-					if (!bl && !itemStack.isEmpty() && ((ItemExtensions) blockingItem).getBlockingType().canCrouchBlock() && thisPlayer.getItemInHand(interactionHand) == itemStack) {
-						if (!thisPlayer.getCooldowns().isOnCooldown(itemStack.getItem())) {
-							((IMinecraft) minecraft).combatify$startUseItem(interactionHand);
-							minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionHand);
-						}
-					}
-				} else if ((thisPlayer.isUsingItem() && minecraft.options.keyShift.consumeClick() && !minecraft.options.keyShift.isDown()) && !minecraft.options.keyUse.isDown()) {
-					ItemStack itemStack = this.thisPlayer.getItemInHand(interactionHand);
-					ItemExtensions item = (ItemExtensions) itemStack.getItem();
-					if (!itemStack.isEmpty() && item.getBlockingType().canCrouchBlock() && !item.getBlockingType().isEmpty()) {
-						assert minecraft.gameMode != null;
-						minecraft.gameMode.releaseUsingItem(thisPlayer);
-						startedUsingItem = false;
-					}
-				}
-			}
+		boolean isBlocking = isBlocking();
+		if (isBlocking != wasShieldBlocking) {
+			wasShieldBlocking = isBlocking;
+			InteractionHand hand = getBlockingItem(thisPlayer).useHand();
+			if (isBlocking)
+				shieldBlockingHand = hand;
+			minecraft.gameRenderer.itemInHandRenderer.itemUsed(hand != null ? hand : shieldBlockingHand);
 		}
 	}
 
@@ -112,17 +96,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
         player.invulnerableTime = x / 2;
     }
 
-	@WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
-	private void isShieldCrouching(Input instance, boolean b, float v, Operation<Void> original) {
-		Item item = MethodHandler.getBlockingItem(thisPlayer).getItem();
-		if (thisPlayer.getCooldowns().isOnCooldown(item))
-			original.call(instance, b, v);
-		else if (((ItemExtensions) item).getBlockingType().canCrouchBlock() && thisPlayer.onGround() && !((ItemExtensions) item).getBlockingType().isEmpty() && !thisPlayer.getCooldowns().isOnCooldown(item)) {
-			if (v < 1.0F)
-				v = 1.0F;
-			original.call(instance, false, v);
-		} else
-			original.call(instance, b, v);
+	@ModifyExpressionValue(method = "canStartSprinting", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
+	private boolean isShieldCrouching(boolean original) {
+		return original || isBlocking();
 	}
 	@Override
 	public float getAttackAnim(float tickDelta) {

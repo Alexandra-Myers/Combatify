@@ -1,13 +1,18 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.cookey.ModConfig;
-import net.atlas.combatify.config.cookey.category.MiscCategory;
-import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.config.cookey.category.AnimationsCategory;
+import net.atlas.combatify.config.cookey.category.HudRenderingCategory;
+import net.atlas.combatify.extensions.IItemInHandRenderer;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -20,15 +25,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
-import net.atlas.combatify.config.cookey.category.AnimationsCategory;
-import net.atlas.combatify.config.cookey.category.HudRenderingCategory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(ItemInHandRenderer.class)
 public abstract class ItemInHandMixin implements IItemInHandRenderer {
@@ -55,26 +57,20 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Unique
 	private HudRenderingCategory hudRenderingCategory;
 
-	@Unique
-	private MiscCategory miscCategory;
-
-	@Inject(method = "<init>", at = @At("TAIL"))
+    @Inject(method = "<init>", at = @At("TAIL"))
 	private void injectOptions(Minecraft minecraft, EntityRenderDispatcher entityRenderDispatcher, ItemRenderer itemRenderer, CallbackInfo ci) {
 		ModConfig modConfig = CombatifyClient.getInstance().getConfig();
 		animationsCategory = modConfig.animations();
 		hudRenderingCategory = modConfig.hudRendering();
-		miscCategory = modConfig.misc();
-	}
+    }
 
 	@Inject(method = "renderArmWithItem", at = @At("HEAD"), cancellable = true)
 	public void onRenderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
-		this.itemStack = itemStack;
 		HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
 			? abstractClientPlayer.getMainArm()
 			: abstractClientPlayer.getMainArm().getOpposite();
 
-		this.humanoidArm = humanoidArm;
-		ItemStack blockingItem = MethodHandler.getBlockingItem(abstractClientPlayer);
+		ItemStack blockingItem = MethodHandler.getBlockingItem(abstractClientPlayer).stack();
 		if ((hudRenderingCategory.onlyShowShieldWhenBlocking().get() || animationsCategory.enableToolBlocking().get())
 			&& (itemStack.getItem() instanceof ShieldItem && !(!blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem))) {
 			ci.cancel();
@@ -154,12 +150,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		poseStack.mulPose(Axis.YP.rotationDegrees(reverse * 13.365F));
 		poseStack.mulPose(Axis.ZP.rotationDegrees(reverse * 78.05F));
 	}
-	@Unique
-	private HumanoidArm humanoidArm;
-	@Unique
-	private ItemStack itemStack;
-	@Unique
-	private float f;
 
 	//This works, trust us
 	@ModifyVariable(method = "tick", slice = @Slice(
@@ -167,23 +157,36 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	), at = @At(value = "FIELD", ordinal = 0))
 	public float modifyArmHeight(float f) {
 		if (Combatify.CONFIG.chargedAttacks())
-			f *= 0.5;
+			f *= 0.5f;
 		f = f * f * f * 0.25F + 0.75F;
 		double offset = hudRenderingCategory.attackCooldownHandOffset().get();
 		return (float) (f * (1 - offset) + offset);
 	}
-	@Inject(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"), locals = LocalCapture.CAPTURE_FAILSOFT)
-	private void modifyBowCode(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci, boolean bl, HumanoidArm humanoidArm, boolean bl2, int q) {
-		this.humanoidArm = humanoidArm;
-		this.f = f;
+	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isUsingItem()Z", ordinal = 1))
+	private boolean modifyUseItemCheck(boolean original, @Local(ordinal = 0, argsOnly = true) AbstractClientPlayer abstractClientPlayer, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
+		boolean isReallyUsingItem = abstractClientPlayer.isUsingItem() && abstractClientPlayer.getUsedItemHand() == interactionHand;
+		fakeUsingItem.set(!isReallyUsingItem && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && abstractClientPlayer.isBlocking());
+		return original || fakeUsingItem.get();
+	}
+	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;getUseItemRemainingTicks()I", ordinal = 2))
+	private int modifyUseItemRemainingCheck(int original, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
+		if (fakeUsingItem.get())
+			return Integer.MAX_VALUE;
+		return original;
+	}
+	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;getUsedItemHand()Lnet/minecraft/world/InteractionHand;", ordinal = 1))
+	private InteractionHand modifyUseHandCheck(InteractionHand original, @Local(ordinal = 0, argsOnly = true) AbstractClientPlayer abstractClientPlayer, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
+		if (fakeUsingItem.get())
+			return MethodHandler.getBlockingItem(abstractClientPlayer).useHand();
+		return original;
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
-	private void modifyBowCode(PoseStack instance, float x, float y, float z) {
+	private void modifyBowCode(PoseStack instance, float x, float y, float z, @Local(ordinal = 0) HumanoidArm humanoidArm) {
 		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
 		instance.translate(q * -0.2785682, 0.18344387412071228, 0.15731531381607056);
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
-	private void modifyBowCode1(PoseStack instance, float x, float y, float z) {
+	private void modifyBowCode1(PoseStack instance, float x, float y, float z, @Local(ordinal = 0, argsOnly = true) float f, @Local(ordinal = 0, argsOnly = true) ItemStack itemStack) {
 		assert minecraft.player != null;
 		float r = (float)itemStack.getUseDuration(minecraft.player) - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
 		float m = Mth.sin((r - 0.1F) * 1.3F);
