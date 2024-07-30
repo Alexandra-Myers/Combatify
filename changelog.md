@@ -1,21 +1,13 @@
 ### Changes:
 ***
-- Edited translation keys for blocking types
+- Creative Block Reach now applies no matter what, matching CTS
 
-- Fixed Cleaving and Defender not appearing naturally
-
-- Atlas Core now required seperately
-
-- Altered how `swingThroughGrass` is implemented
-
-- Ported Bedrock Bridging from CTS 8a
+- Crouch-shielding is now feature identical to CTS
 ***
 #### Config Changes:
 ***
-- Added the config option `enableDebugLogging`, if enabled, triggers certain debug information which may spam the logs otherwise.
-
-- Added the config option `bedrockBridging`, controls whether players will be able to use reach-around block placement. Functions identically to CTS 8a, a version of CTS which was not released publicly.
+- Renamed the config option `creativeReach` to `creativeAttackReach` reflecting the fact it now only influences attack reach in creative
 ***
 #### Fixes:
 ***
-- Fixed mining blocks while crouch-shielding not working
+- Fixed all issues with crouch-shielding
