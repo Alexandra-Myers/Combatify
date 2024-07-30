@@ -1,31 +1,21 @@
 ### Changes:
 ***
-- Port to 1.21
+- Edited translation keys for blocking types
 
-- Removal of Polymer as an optional dependency
+- Fixed Cleaving and Defender not appearing naturally
 
-- Added built-in datapacks for the custom content to prevent error spamming in console (and to allow Defender to keep existing)
+- Atlas Core now required seperately
 
-- Added `Shield Disable Time` attribute, controls how much extra Shield Disable Time is applied when disabling an opponent's shield
+- Altered how `swingThroughGrass` is implemented
 
-- Added `Shield Disable Reduction` attribute, controls how much Shield Disable Time is negated by the user
-
-- Removed the extra defense granted by Defender, and it can now only be applied to items in the tag `combatify:enchantable/shield`
-
-- Buffed the `Shield Disable Reduction` of Defender back to 1s
-
-- Nerfed the Mace's Attack Speed to 1 by default
+- Ported Bedrock Bridging from CTS 8a
 ***
 #### Config Changes:
 ***
-- Removed `vanillaSweep`, `defender`, `cleavingDisableTime`, and `defenderDisableReduction` due to no longer being needed, now having other equivalents
+- Added the config option `enableDebugLogging`, if enabled, triggers certain debug information which may spam the logs otherwise.
 
-- Removed all instances of `has_sword_enchants` and `sword_enchants_from_enchanting` as options in the items config for above reasons
-
-- Note: The Defender enchantment is included as part of the built-in datapack Combatify Extras now
-
-- Changed the wooden, golden, and diamond shield recipes (Note: recipes for all custom content are in Combatify Extras, although the Wooden Shield's new recipe is in Wooden Shield Recipe, as per logic would dictate.)
+- Added the config option `bedrockBridging`, controls whether players will be able to use reach-around block placement. Functions identically to CTS 8a, a version of CTS which was not released publicly.
 ***
 #### Fixes:
 ***
-- Fixed log spamming when custom content is disabled
+- Fixed mining blocks while crouch-shielding not working
