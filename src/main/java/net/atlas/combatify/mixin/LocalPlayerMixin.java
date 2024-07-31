@@ -30,6 +30,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.atlas.combatify.util.MethodHandler.getBlockingItem;
+
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
 	public LocalPlayerMixin(ClientLevel clientLevel, GameProfile gameProfile) {
@@ -41,6 +43,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Unique
 	boolean wasShieldBlocking = false;
 	@Unique
+	InteractionHand shieldBlockingHand = InteractionHand.OFF_HAND;
+	@Unique
 	BooleanOption force100PercentRecharge;
 
 	@Shadow
@@ -50,6 +54,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
 
+	@Unique
+	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void injectOptions(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2, CallbackInfo ci) {
 		force100PercentRecharge = CombatifyClient.getInstance().getConfig().misc().force100PercentRecharge();
@@ -60,6 +66,8 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		boolean isBlocking = isBlocking();
 		if (isBlocking != wasShieldBlocking) {
 			wasShieldBlocking = isBlocking;
+			if (isBlocking) shieldBlockingHand = getBlockingItem(thisPlayer).useHand();
+			minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
 		}
 	}
 
@@ -91,19 +99,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@ModifyExpressionValue(method = "canStartSprinting", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
 	private boolean isShieldCrouching(boolean original) {
 		return original || isBlocking();
-	}
-	@Override
-	public float getAttackAnim(float tickDelta) {
-		if(((IOptions)Minecraft.getInstance().options).rhythmicAttacks().get()) {
-			float var2 = this.attackAnim - this.oAttackAnim;
-			if (var2 < 0.0F)
-				++var2;
-
-			float var3 = this.oAttackAnim + var2 * tickDelta;
-			float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-			return var3 > 0.4F && this.getAttackStrengthScale(tickDelta) < charge ? 0.4F + 0.6F * (float)Math.pow((var3 - 0.4F) / 0.6F, 4.0) : var3;
-		}
-		return super.getAttackAnim(tickDelta);
 	}
 
 	@Override

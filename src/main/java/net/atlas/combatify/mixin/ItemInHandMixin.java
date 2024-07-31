@@ -153,17 +153,13 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		poseStack.mulPose(Axis.YP.rotationDegrees(reverse * 13.365F));
 		poseStack.mulPose(Axis.ZP.rotationDegrees(reverse * 78.05F));
 	}
-
-	//This works, trust us
-	@ModifyVariable(method = "tick", slice = @Slice(
-			from = @At(value = "JUMP", ordinal = 3)
-	), at = @At(value = "FIELD", ordinal = 0))
-	public float modifyArmHeight(float f) {
+	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
+	public float modifyArmHeight(float strengthScale) {
 		if (Combatify.CONFIG.chargedAttacks())
-			f *= 0.5f;
-		f = f * f * f * 0.25F + 0.75F;
+			strengthScale *= 0.5f;
+		strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
 		double offset = hudRenderingCategory.attackCooldownHandOffset().get();
-		return (float) (f * (1 - offset) + offset);
+		return  (float) (strengthScale * (1 - offset) + offset);
 	}
 	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isUsingItem()Z", ordinal = 1))
 	private boolean modifyUseItemCheck(boolean original, @Local(ordinal = 0, argsOnly = true) AbstractClientPlayer abstractClientPlayer, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {

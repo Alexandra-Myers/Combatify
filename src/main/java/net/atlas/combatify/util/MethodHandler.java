@@ -46,6 +46,11 @@ import java.util.function.BiConsumer;
 import static net.atlas.combatify.Combatify.CONFIG;
 
 public class MethodHandler {
+	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
+		if (entity instanceof Player player)
+			return player.getAttackStrengthScale(baseTime);
+		return 2.0f;
+	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
 		double y = Mth.clamp(vec3.y, box.minY, box.maxY);
