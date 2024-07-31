@@ -48,6 +48,9 @@
     "TieredItemMixin",
     "TiersMixin",
     "TridentItemMixin",
+    "compatibility.viafabricplus.Attributes1_20_5Mixin",
+    "compatibility.viafabricplus.EntityPacketRewriter1_20_5Mixin",
+    "compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin",
     "cookey.LivingEntityAccessor"
   ],
   "injectors": {
