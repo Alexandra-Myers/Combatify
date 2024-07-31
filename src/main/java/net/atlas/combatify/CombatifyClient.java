@@ -63,7 +63,7 @@ public class CombatifyClient implements ClientModInitializer {
 			OptionInstance.noTooltip(),
 			OptionInstance.forOptionEnum(),
 			new OptionInstance.Enum<>(Arrays.asList(ShieldIndicatorStatus.values()), Codec.INT.xmap(ShieldIndicatorStatus::byId, ShieldIndicatorStatus::getId)),
-			ShieldIndicatorStatus.CROSSHAIR,
+			ShieldIndicatorStatus.OFF,
 			value -> {
 			}
 	);

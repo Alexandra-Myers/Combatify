@@ -11,11 +11,10 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(targets = {"net.raphimc.viaaprilfools.protocol.scombattest8ctov1_16_2.ProtocolCombatTest8cTo1_16_2$1"})
 @ModSpecific("viafabricplus")
 public class ProtocolCombatTest8cTo1_16_2PacketHandlersMixin {
-	@SuppressWarnings("unchecked")
 	@ModifyArg(method = "register", at = @At(value = "INVOKE", target = "Lnet/raphimc/viaaprilfools/protocol/scombattest8ctov1_16_2/ProtocolCombatTest8cTo1_16_2$1;create(Lcom/viaversion/viaversion/api/type/Type;Ljava/lang/Object;)V"), index = 1, remap = false)
-	public <T> T writeUseShieldOnCrouch(T value) {
+	public Object writeUseShieldOnCrouch(Object value) {
 		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
-			return (T) CombatifyClient.shieldCrouch.get();
+			return CombatifyClient.shieldCrouch.get();
 		return value;
 	}
 

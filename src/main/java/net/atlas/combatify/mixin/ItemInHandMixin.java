@@ -97,10 +97,13 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			}
 		}
 		if (Combatify.CONFIG.swordBlocking()) {
-			if (abstractClientPlayer.getUsedItemHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).getBlockingType().isToolBlocker()) {
+			if (!blockingItem.isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).getBlockingType().isToolBlocker()) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform(poseStack, humanoidArm);
+				if (animationsCategory.swingAndUseItem().get()) {
+					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
+				}
 				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
 				renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
 
@@ -175,9 +178,9 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		return original;
 	}
 	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;getUsedItemHand()Lnet/minecraft/world/InteractionHand;", ordinal = 1))
-	private InteractionHand modifyUseHandCheck(InteractionHand original, @Local(ordinal = 0, argsOnly = true) AbstractClientPlayer abstractClientPlayer, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
+	private InteractionHand modifyUseHandCheck(InteractionHand original, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
 		if (fakeUsingItem.get())
-			return MethodHandler.getBlockingItem(abstractClientPlayer).useHand();
+			return interactionHand;
 		return original;
 	}
 	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
@@ -197,7 +200,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
 		assert minecraft.player != null;
-		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions shieldItem && shieldItem.getBlockingType().isToolBlocker() && !shieldItem.getBlockingType().isEmpty()) {
+		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions blocker && blocker.getBlockingType().isToolBlocker() && !blocker.getBlockingType().isEmpty()) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();

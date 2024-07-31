@@ -19,6 +19,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.InteractionHand;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,8 +30,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.atlas.combatify.util.MethodHandler.getBlockingItem;
-
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
 	public LocalPlayerMixin(ClientLevel clientLevel, GameProfile gameProfile) {
@@ -38,11 +37,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 
 	@Shadow
-	public abstract void startUsingItem(InteractionHand interactionHand);
+	public abstract void startUsingItem(@NotNull InteractionHand interactionHand);
 	@Unique
 	boolean wasShieldBlocking = false;
-	@Unique
-	InteractionHand shieldBlockingHand = InteractionHand.OFF_HAND;
 	@Unique
 	BooleanOption force100PercentRecharge;
 
@@ -52,8 +49,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Unique
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
-	@Unique
-	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
+
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void injectOptions(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2, CallbackInfo ci) {
 		force100PercentRecharge = CombatifyClient.getInstance().getConfig().misc().force100PercentRecharge();
@@ -64,10 +60,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		boolean isBlocking = isBlocking();
 		if (isBlocking != wasShieldBlocking) {
 			wasShieldBlocking = isBlocking;
-			InteractionHand hand = getBlockingItem(thisPlayer).useHand();
-			if (isBlocking)
-				shieldBlockingHand = hand;
-			minecraft.gameRenderer.itemInHandRenderer.itemUsed(hand != null ? hand : shieldBlockingHand);
 		}
 	}
 
