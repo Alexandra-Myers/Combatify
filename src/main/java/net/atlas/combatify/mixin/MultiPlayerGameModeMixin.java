@@ -48,7 +48,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	public void redirectReset2(LocalPlayer instance) {
 		if(getPlayerMode() == GameType.ADVENTURE)
 			return;
-		((PlayerExtensions)instance).resetAttackStrengthTicker(true);
+		((PlayerExtensions)instance).resetAttackStrengthTicker(false);
 	}
 
 	@Override
