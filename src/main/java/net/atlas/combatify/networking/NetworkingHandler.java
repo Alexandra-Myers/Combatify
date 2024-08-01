@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ConfigurationTask;
@@ -27,6 +28,7 @@ public class NetworkingHandler {
 		PayloadTypeRegistry.playC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
 		PayloadTypeRegistry.configurationC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
+		PayloadTypeRegistry.playS2C().register(UpdateBridgingStatusPacket.TYPE, UpdateBridgingStatusPacket.CODEC);
 		PayloadTypeRegistry.configurationS2C().register(ClientboundClientInformationRetrievalPacket.TYPE, ClientboundClientInformationRetrievalPacket.CODEC);
 		ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
 			if (ServerConfigurationNetworking.canSend(handler, ClientboundClientInformationRetrievalPacket.TYPE))
@@ -67,6 +69,22 @@ public class NetworkingHandler {
 			moddedPlayers.add(handler.player.getUUID());
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
+	}
+	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {
+		public static final Type<UpdateBridgingStatusPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("c", "update_status"));
+		public static final StreamCodec<FriendlyByteBuf, UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
+
+		public UpdateBridgingStatusPacket(FriendlyByteBuf buf) {
+			this(buf.readBoolean());
+		}
+
+		public void write(FriendlyByteBuf buf) {
+
+		}
+		@Override
+		public @NotNull Type<?> type() {
+			return TYPE;
+		}
 	}
 	public record ServerboundMissPacket() implements CustomPacketPayload {
 		public static final Type<ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));

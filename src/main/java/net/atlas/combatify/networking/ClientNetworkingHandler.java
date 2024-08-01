@@ -17,6 +17,7 @@ import static net.atlas.combatify.Combatify.*;
 public class ClientNetworkingHandler {
 	public static ConnectionState connectionState = ConnectionState.LOGIN;
 	public static void init() {
+		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.UpdateBridgingStatusPacket.TYPE, (packet, context) -> CONFIG.setBridging(packet.enableBridging()));
 		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.RemainingUseSyncPacket.TYPE, (packet, player) -> {
 			Entity entity = Minecraft.getInstance().level.getEntity(packet.id());
 			if (entity instanceof LivingEntityExtensions livingEntity)

@@ -598,4 +598,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public ArmourPiercingMode armourPiercingMode() {
 		return armourPiercingMode.get();
 	}
+
+	public void setBridging(boolean allowBridging) {
+		bedrockBridging.setValue(allowBridging);
+		bedrockBridging.serverManaged = true;
+	}
 }
