@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
@@ -102,8 +103,12 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private Category debug;
 
 	public CombatifyGeneralConfig() {
-		super(id("combatify-general"));
+		this(id("combatify-general"));
 		declareDefaultForMod("combatify");
+	}
+
+	public CombatifyGeneralConfig(ResourceLocation id) {
+		super(id);
 	}
 
 	@Override

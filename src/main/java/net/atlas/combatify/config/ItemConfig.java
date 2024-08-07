@@ -139,10 +139,23 @@ public class ItemConfig extends AtlasConfig {
 
 	public ItemConfig() {
 		super(id("combatify-items"));
+		modify();
 	}
 
 	public static Formula getArmourCalcs() {
 		return armourCalcs;
+	}
+
+	@Override
+	public void reload() {
+		super.reload();
+		modify();
+	}
+
+	@Override
+	public void reloadFromDefault() {
+		super.reloadFromDefault();
+		modify();
 	}
 
 	@Override
@@ -213,7 +226,6 @@ public class ItemConfig extends AtlasConfig {
 		}
 		if (object.has("armor_calculation"))
 			armourCalcs = new Formula(getString(object, "armor_calculation"));
-		modify();
 	}
 	public void parseWeaponType(WeaponType type, JsonObject jsonObject) {
 		Double damageOffset = null;
