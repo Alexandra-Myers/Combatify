@@ -68,7 +68,10 @@ public class NetworkingHandler {
 			}
 			moddedPlayers.add(handler.player.getUUID());
 		});
-		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
+		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
+			ITEMS = new ItemConfig();
+			ITEMS.modify();
+		});
 	}
 	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {
 		public static final Type<UpdateBridgingStatusPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("c", "update_status"));

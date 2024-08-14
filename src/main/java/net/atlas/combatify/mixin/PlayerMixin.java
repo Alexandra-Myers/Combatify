@@ -195,7 +195,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) float attackDamageBonus) {
 		attacked = true;
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
-			attackDamage.set((float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus));
+			attackDamage.set((float) (this.isAutoSpinAttack() ? MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), this.autoSpinAttackDmg + attackDamageBonus) : MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus)));
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {

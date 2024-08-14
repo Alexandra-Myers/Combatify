@@ -10,16 +10,20 @@ import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.mixin.item.ItemAccessor;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -33,17 +37,23 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntFunction;
 
 import static net.atlas.combatify.Combatify.*;
@@ -482,13 +492,13 @@ public class ItemConfig extends AtlasConfig {
 			} else {
 				String ri = repair_ingredient.getAsString();
 				if (ri.startsWith("#"))
-					repairIngredient = Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.tryParse(ri.substring(1))));
+					repairIngredient = Ingredient.of(TagKey.create(Registries.ITEM, Objects.requireNonNull(ResourceLocation.tryParse(ri.substring(1)))));
 				else repairIngredient = Ingredient.of(itemFromName(ri));
 			}
 		}
 		TagKey<Block> incorrect = baseTier.getIncorrectBlocksForDrops();
 		if (jsonObject.has("incorrect_blocks"))
-			incorrect = TagKey.create(Registries.BLOCK, ResourceLocation.tryParse(getString(jsonObject, "incorrect_blocks").substring(1)));
+			incorrect = TagKey.create(Registries.BLOCK, Objects.requireNonNull(ResourceLocation.tryParse(getString(jsonObject, "incorrect_blocks").substring(1))));
 
 		tiers.put(name, ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect, baseTierName));
 	}
@@ -762,14 +772,14 @@ public class ItemConfig extends AtlasConfig {
 			} else {
 				String ri = repair_ingredient.getAsString();
 				if (ri.startsWith("#"))
-					ingredient = Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.tryParse(ri.substring(1))));
+					ingredient = Ingredient.of(TagKey.create(Registries.ITEM, Objects.requireNonNull(ResourceLocation.tryParse(ri.substring(1)))));
 				else ingredient = Ingredient.of(itemFromName(ri));
 			}
 		}
 		if (jsonObject.has("tool_tag")) {
 			String ri = getString(jsonObject, "tool_tag");
 			if (ri.startsWith("#"))
-				toolMineable = TagKey.create(Registries.BLOCK, ResourceLocation.tryParse(ri.substring(1)));
+				toolMineable = TagKey.create(Registries.BLOCK, Objects.requireNonNull(ResourceLocation.tryParse(ri.substring(1))));
 			else LOGGER.error("The resource location provided when setting a tool tag for an item must belong to a tag! " + errorStage("Applying Item Tools"));
 		}
 		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
@@ -780,6 +790,168 @@ public class ItemConfig extends AtlasConfig {
 	}
 	public static String errorStage(String stage) {
 		return "[Config Stage]: " + stage;
+	}
+	@SuppressWarnings("all")
+	public void modify() {
+		for (Item item : BuiltInRegistries.ITEM) {
+			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
+			boolean maxDamageChanged = false;
+			boolean isConfiguredItem = configuredItems.containsKey(item);
+			ConfigurableItemData configurableItemData = null;
+			if (isConfiguredItem) {
+				configurableItemData = configuredItems.get(item);
+				Integer durability = configurableItemData.durability;
+				Integer maxStackSize = configurableItemData.stackSize;
+				Tier tier = configurableItemData.tier;
+				if (tier != null)
+					maxDamageChanged = true;
+				TagKey<Block> mineable = configurableItemData.toolMineableTag;
+				if (durability != null) {
+					setDurability(builder, item, durability);
+					maxDamageChanged = true;
+				}
+				if (maxStackSize != null && !maxDamageChanged)
+					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
+				if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
+			}
+			if (!maxDamageChanged && ((ItemExtensions)item).getTierFromConfig() != null)
+				setDurability(builder, item, ((ItemExtensions)item).getTierFromConfig().getUses());
+			updateModifiers(builder, item, isConfiguredItem, configurableItemData);
+			((ItemAccessor) item).setComponents(builder.build());
+		}
+	}
+	@SuppressWarnings("ALL")
+	public void updateModifiers(DataComponentMap.Builder builder, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
+		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+		ItemAttributeModifiers def = item.getDefaultAttributeModifiers();
+		if (modifier == ItemAttributeModifiers.EMPTY && def != ItemAttributeModifiers.EMPTY)
+			modifier = def;
+		modifier = ((ItemExtensions)item).modifyAttributeModifiers(modifier);
+		if (modifier != null) {
+			if (isConfiguredItem) {
+				if (configurableItemData.type != null) {
+					ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
+					configurableItemData.type.addCombatAttributes(((ItemExtensions)item).getConfigTier(), itemAttributeBuilder);
+					modifier.modifiers().forEach(entry -> {
+						boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
+							|| entry.attribute().is(Attributes.ATTACK_SPEED)
+							|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
+						if (!bl)
+							itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
+					});
+					modifier = itemAttributeBuilder.build();
+				}
+				ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
+				boolean modDamage = false;
+				AtomicReference<ItemAttributeModifiers.Entry> damage = new AtomicReference<>();
+				boolean modSpeed = false;
+				AtomicReference<ItemAttributeModifiers.Entry> speed = new AtomicReference<>();
+				boolean modReach = false;
+				AtomicReference<ItemAttributeModifiers.Entry> reach = new AtomicReference<>();
+				boolean modDefense = false;
+				AtomicReference<ItemAttributeModifiers.Entry> defense = new AtomicReference<>();
+				boolean modToughness = false;
+				AtomicReference<ItemAttributeModifiers.Entry> toughness = new AtomicReference<>();
+				boolean modKnockbackResistance = false;
+				AtomicReference<ItemAttributeModifiers.Entry> knockbackResistance = new AtomicReference<>();
+				def.modifiers().forEach(entry -> {
+					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+						damage.set(entry);
+					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
+						reach.set(entry);
+					else if (entry.attribute().is(Attributes.ATTACK_SPEED))
+						speed.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR))
+						defense.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
+						toughness.set(entry);
+					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
+						knockbackResistance.set(entry);
+					else
+						itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
+				});
+				modifier.modifiers().forEach(entry -> {
+					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+						damage.set(entry);
+					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
+						reach.set(entry);
+					else if (entry.attribute().is(Attributes.ATTACK_SPEED))
+						speed.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR))
+						defense.set(entry);
+					else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
+						toughness.set(entry);
+					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
+						knockbackResistance.set(entry);
+					else
+						itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
+				});
+				if (configurableItemData.damage != null) {
+					modDamage = true;
+					itemAttributeBuilder.add(Attributes.ATTACK_DAMAGE,
+						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
+						EquipmentSlotGroup.MAINHAND);
+				}
+				if (!modDamage && damage.get() != null)
+					itemAttributeBuilder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
+				if (configurableItemData.speed != null) {
+					modSpeed = true;
+					itemAttributeBuilder.add(Attributes.ATTACK_SPEED,
+						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
+						EquipmentSlotGroup.MAINHAND);
+				}
+				if (!modSpeed && speed.get() != null)
+					itemAttributeBuilder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
+				if (configurableItemData.reach != null) {
+					modReach = true;
+					itemAttributeBuilder.add(Attributes.ENTITY_INTERACTION_RANGE,
+						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_ID, configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
+						EquipmentSlotGroup.MAINHAND);
+				}
+				if (!modReach && reach.get() != null)
+					itemAttributeBuilder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
+				ResourceLocation resourceLocation = ResourceLocation.withDefaultNamespace("armor.any");
+				EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
+				if (item instanceof Equipable equipable)
+					slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
+				resourceLocation = switch (slotGroup) {
+					case HEAD -> ResourceLocation.withDefaultNamespace("armor.helmet");
+					case CHEST -> ResourceLocation.withDefaultNamespace("armor.chestplate");
+					case LEGS -> ResourceLocation.withDefaultNamespace("armor.leggings");
+					case FEET -> ResourceLocation.withDefaultNamespace("armor.boots");
+					case BODY -> ResourceLocation.withDefaultNamespace("armor.body");
+					default -> resourceLocation;
+				};
+				if (configurableItemData.defense != null) {
+					modDefense = true;
+					itemAttributeBuilder.add(Attributes.ARMOR,
+						new AttributeModifier(resourceLocation, configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
+						slotGroup);
+				}
+				if (!modDefense && defense.get() != null)
+					itemAttributeBuilder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
+				if (configurableItemData.toughness != null) {
+					modToughness = true;
+					itemAttributeBuilder.add(Attributes.ARMOR_TOUGHNESS,
+						new AttributeModifier(resourceLocation, configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
+						slotGroup);
+				}
+				if (!modToughness && toughness.get() != null)
+					itemAttributeBuilder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
+				if (configurableItemData.armourKbRes != null) {
+					modKnockbackResistance = true;
+					if (configurableItemData.armourKbRes > 0)
+						itemAttributeBuilder.add(Attributes.KNOCKBACK_RESISTANCE,
+							new AttributeModifier(resourceLocation, configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
+							slotGroup);
+				}
+				if (!modKnockbackResistance && knockbackResistance.get() != null)
+					itemAttributeBuilder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
+				if (modDamage || modSpeed || modReach || modDefense || modToughness || modKnockbackResistance)
+					modifier = itemAttributeBuilder.build();
+			}
+		}
+		builder.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
 	}
 	public record Formula(String written) {
 		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {

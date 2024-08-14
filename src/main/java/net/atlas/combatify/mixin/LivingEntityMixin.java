@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.attributes.CustomAttributes;
+import net.atlas.combatify.config.EatingInterruptionMode;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
@@ -129,16 +130,20 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			invulnerableTime = 0;
 		return invulnerableTime;
 	}
-	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0))
+	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		Entity entity = source.getEntity();
-		if (entity instanceof LivingEntity && Combatify.CONFIG.eatingInterruption()) {
-			if (thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK)) {
-				useItemRemaining = thisEntity.getUseItem().getUseDuration(thisEntity);
-				if (level() instanceof ServerLevel serverLevel)
-					for (UUID playerUUID : Combatify.moddedPlayers)
-						if (serverLevel.getPlayerByUUID(playerUUID) instanceof ServerPlayer serverPlayer)
-							ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.RemainingUseSyncPacket(getId(), useItemRemaining));
+		boolean canInterrupt = thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK);
+		if (entity instanceof LivingEntity && level() instanceof ServerLevel serverLevel && canInterrupt) {
+			useItemRemaining = switch (Combatify.CONFIG.eatingInterruptionMode()) {
+                case FULL_RESET -> thisEntity.getUseItem().getUseDuration(thisEntity);
+				case DELAY -> useItemRemaining + invulnerableTime;
+				case null, default -> useItemRemaining;
+			};
+			if (Combatify.CONFIG.eatingInterruptionMode() != EatingInterruptionMode.OFF) {
+				for (UUID playerUUID : Combatify.moddedPlayers)
+					if (serverLevel.getPlayerByUUID(playerUUID) instanceof ServerPlayer serverPlayer)
+						ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.RemainingUseSyncPacket(getId(), useItemRemaining));
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 {
   "anvil_cost": 3,
   "description": {
-    "translate": "enchantment.combatify.defender"
+    "translate": "enchantment.combatify.recovery"
   },
   "effects": {
     "minecraft:attributes": [
@@ -12,12 +12,11 @@
           "per_level_above_first": 1.0
         },
         "attribute": "minecraft:generic.shield_disable_reduction",
-        "id": "combatify:enchantment.defender",
+        "id": "combatify:enchantment.recovery",
         "operation": "add_value"
       }
     ]
   },
-  "exclusive_set": "#minecraft:exclusive_set/damage",
   "max_cost": {
     "base": 75,
     "per_level_above_first": 25

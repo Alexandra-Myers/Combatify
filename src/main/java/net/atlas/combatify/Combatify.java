@@ -6,10 +6,8 @@ import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
-import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ExtendedTier;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -22,16 +20,13 @@ import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
-import net.fabricmc.fabric.mixin.item.ItemAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffects;
@@ -41,7 +36,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -147,33 +141,7 @@ public class Combatify implements ModInitializer {
 			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 		}
 	}
-	@SuppressWarnings("all")
-	public static void modify() {
-		for (Item item : BuiltInRegistries.ITEM) {
-			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
-			boolean maxDamageChanged = false;
-			if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
-				ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
-				Integer durability = configurableItemData.durability;
-				Integer maxStackSize = configurableItemData.stackSize;
-				Tier tier = configurableItemData.tier;
-				if (tier != null)
-					maxDamageChanged = true;
-				TagKey<Block> mineable = configurableItemData.toolMineableTag;
-				if (durability != null) {
-					setDurability(builder, item, durability);
-					maxDamageChanged = true;
-				}
-				if (maxStackSize != null && !maxDamageChanged)
-					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
-				if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
-			}
-			if (!maxDamageChanged && ((ItemExtensions)item).getTierFromConfig() != null)
-				setDurability(builder, item, ((ItemExtensions)item).getTierFromConfig().getUses());
-			MethodHandler.updateModifiers(builder, item);
-			((ItemAccessor) item).setComponents(builder.build());
-		}
-	}
+
 	@SuppressWarnings("deprecation")
 	public static void setDurability(DataComponentMap.Builder builder, @NotNull Item item, int value) {
 		if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
