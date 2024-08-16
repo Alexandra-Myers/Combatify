@@ -961,6 +961,7 @@ public class ItemConfig extends AtlasConfig {
 			ItemStack itemStack = damageSource.getWeaponItem();
 			if (itemStack != null && damageSource.getEntity().level() instanceof ServerLevel serverLevel)
 				result = 1 - Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(serverLevel, itemStack, damageSource.getEntity(), damageSource, result), 0.0F, 1.0F);
+			else result = 1 - result;
 			return amount * result;
 		}
 		public float enchantCalcs(float amount, float enchantLevel) {

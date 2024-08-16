@@ -2,23 +2,37 @@ package net.atlas.combatify.config;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
+import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
+import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
+import net.atlas.atlascore.util.ConfigRepresentable;
+import net.atlas.atlascore.util.JavaToJSONSerialisation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -82,18 +96,14 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder shieldDisableTime;
 	private DoubleHolder breachArmorPiercing;
-	private DoubleHolder snowballDamage;
-	private DoubleHolder eggDamage;
-	private DoubleHolder windChargeDamage;
-	private DoubleHolder bowUncertainty;
-	private DoubleHolder crossbowUncertainty;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
-	private DoubleHolder thrownTridentDamage;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
 	private EnumHolder<HealingMode> healingMode;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
+	private ObjectHolder<ProjectileUncertainty> projectileUncertainty;
+	private ObjectHolder<ProjectileDamage> projectileDamage;
 	private Category ctsB;
 	private Category ctsI;
 	private Category ctsD;
@@ -229,10 +239,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
 		baseHandAttackSpeed.tieToCategory(ctsD);
-		bowUncertainty = createInRange("bowUncertainty", 0.25, 0, 4);
-		bowUncertainty.tieToCategory(ctsD);
-		crossbowUncertainty = createInRange("crossbowUncertainty", 0.25, 0, 4);
-		crossbowUncertainty.tieToCategory(ctsD);
+		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, new JavaToJSONSerialisation<>(ProjectileUncertainty.decoder, ProjectileUncertainty.encoder), ProjectileUncertainty.STREAM_CODEC, false);
+		projectileUncertainty.tieToCategory(ctsD);
 		healingTime = createInRange("healingTime", 2, 0, 100D);
 		healingTime.tieToCategory(ctsD);
 		healingTime.setupTooltip(1);
@@ -325,14 +333,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		breachArmorPiercing = createInRange("breachArmorPiercing", 0.15, 0, 1);
 		breachArmorPiercing.tieToCategory(extraD);
 		breachArmorPiercing.setupTooltip(2);
-		eggDamage = createInRange("eggDamage", 0, 0, 40D);
-		eggDamage.tieToCategory(extraD);
-		snowballDamage = createInRange("snowballDamage", 0, 0, 40D);
-		snowballDamage.tieToCategory(extraD);
-		windChargeDamage = createInRange("windChargeDamage", 1, 0, 40D);
-		windChargeDamage.tieToCategory(extraD);
-		thrownTridentDamage = createInRange("thrownTridentDamage", 8, 0, 40D);
-		thrownTridentDamage.tieToCategory(extraD);
+		projectileDamage = createObject("projectileDamage", ProjectileDamage.DEFAULT, ProjectileDamage.class, new JavaToJSONSerialisation<>(ProjectileDamage.decoder, ProjectileDamage.encoder), ProjectileDamage.STREAM_CODEC);
+		projectileDamage.tieToCategory(extraD);
 
 		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values(), e -> Component.translatable("text.config.combatify-general.option.arrowDisableMode." + e.name().toLowerCase(Locale.ROOT)));
 		arrowDisableMode.tieToCategory(extraE);
@@ -579,22 +581,22 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		return breachArmorPiercing.get();
 	}
 	public Double snowballDamage() {
-		return snowballDamage.get();
+		return projectileDamage.get().snowballDamage;
 	}
 	public Double eggDamage() {
-		return eggDamage.get();
+		return projectileDamage.get().eggDamage;
 	}
 	public Double windChargeDamage() {
-		return windChargeDamage.get();
+		return projectileDamage.get().windChargeDamage;
 	}
 	public Double thrownTridentDamage() {
-		return thrownTridentDamage.get();
+		return projectileDamage.get().thrownTridentDamage;
 	}
 	public Double bowUncertainty() {
-		return bowUncertainty.get();
+		return projectileUncertainty.get().bowUncertainty;
 	}
 	public Double crossbowUncertainty() {
-		return crossbowUncertainty.get();
+		return projectileUncertainty.get().crossbowUncertainty;
 	}
 	public Double baseHandAttackSpeed() {
 		return baseHandAttackSpeed.get();
@@ -618,5 +620,142 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public void setBridging(boolean allowBridging) {
 		bedrockBridging.setValue(allowBridging);
 		bedrockBridging.serverManaged = true;
+	}
+
+	public static class ProjectileUncertainty implements ConfigRepresentable<ProjectileUncertainty> {
+		public static final ProjectileUncertainty DEFAULT = new ProjectileUncertainty(null, 0.25, 0.25);
+		public static final StreamCodec<RegistryFriendlyByteBuf, ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
+            public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileUncertainty projectileUncertainty) {
+                registryFriendlyByteBuf.writeResourceLocation(projectileUncertainty.owner.heldValue.owner().name);
+                registryFriendlyByteBuf.writeUtf(projectileUncertainty.owner.heldValue.name());
+                registryFriendlyByteBuf.writeDouble(projectileUncertainty.bowUncertainty);
+				registryFriendlyByteBuf.writeDouble(projectileUncertainty.crossbowUncertainty);
+            }
+
+            @NotNull
+			@SuppressWarnings("unchecked")
+            public ProjectileUncertainty decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
+                AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readResourceLocation());
+                return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
+            }
+        };
+		public AtlasConfig.ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner;
+		public Double bowUncertainty;
+		public Double crossbowUncertainty;
+		public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
+			try {
+				hashMap.put("bowUncertainty", ProjectileUncertainty.class.getDeclaredField("bowUncertainty"));
+				hashMap.put("crossbowUncertainty", ProjectileUncertainty.class.getDeclaredField("crossbowUncertainty"));
+			} catch (NoSuchFieldException ignored) {
+			}
+
+		});
+		public static final BiFunction<ProjectileUncertainty, String, Component> convertFieldToComponent = (projectileUncertainty, string) -> {
+			try {
+				return Component.translatable(projectileUncertainty.owner.getTranslationKey() + "." + string).append(Component.literal(": ")).append(Component.literal(String.valueOf(projectileUncertainty.fieldRepresentingHolder(string).get(projectileUncertainty))));
+			} catch (IllegalAccessException var3) {
+				return Component.translatable(projectileUncertainty.owner.getTranslationKey() + "." + string);
+			}
+		};
+		public static final BiFunction<ProjectileUncertainty, String, Component> convertFieldToNameComponent = (projectileUncertainty, string) -> Component.translatable(projectileUncertainty.owner.getTranslationKey() + "." + string);
+		public static final BiFunction<ProjectileUncertainty, String, Component> convertFieldToValueComponent = (projectileUncertainty, string) -> {
+			try {
+				return Component.literal(String.valueOf(projectileUncertainty.fieldRepresentingHolder(string).get(projectileUncertainty)));
+			} catch (IllegalAccessException var3) {
+				return Component.translatable(projectileUncertainty.owner.getTranslationKey() + "." + string);
+			}
+		};
+		public static final BiFunction<ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf>, JsonObject, ProjectileUncertainty> decoder = (objectHolder, jsonObject) -> {
+			Double bowUncertainty = 0.25;
+			Double crossbowUncertainty = 0.25;
+			if (jsonObject.has("bowUncertainty")) {
+				bowUncertainty = getDouble(jsonObject, "bowUncertainty");
+			}
+			if (jsonObject.has("crossbowUncertainty")) {
+				crossbowUncertainty = getDouble(jsonObject, "crossbowUncertainty");
+			}
+
+			return new ProjectileUncertainty(objectHolder, bowUncertainty, crossbowUncertainty);
+		};
+		public static final BiConsumer<JsonWriter, ProjectileUncertainty> encoder = (jsonWriter, testClass) -> fields.forEach((string, field) -> {
+            try {
+                jsonWriter.name(string);
+                Object value = field.get(testClass);
+                switch (value) {
+                    case Double d -> jsonWriter.value(d);
+                    case null, default -> throw new IllegalStateException("Unexpected value: " + value);
+                }
+
+            } catch (IllegalAccessException | IOException var11) {
+                throw new RuntimeException(var11);
+            }
+        });
+		public Supplier<Component> resetTranslation = null;
+
+		public ProjectileUncertainty(ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner, Double bowUncertainty, Double crossbowUncertainty) {
+			this.owner = owner;
+			this.bowUncertainty = Mth.clamp(bowUncertainty, 0, 4);
+			this.crossbowUncertainty = Mth.clamp(crossbowUncertainty, 0, 4);
+		}
+		@Override
+		public void setOwnerHolder(ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner) {
+			this.owner = owner;
+		}
+
+		@Override
+		public List<String> fields() {
+			return fields.keySet().stream().toList();
+		}
+
+		@Override
+		public Component getFieldValue(String name) {
+			return convertFieldToValueComponent.apply(this, name);
+		}
+
+		@Override
+		public Component getFieldName(String name) {
+			return convertFieldToNameComponent.apply(this, name);
+		}
+
+		@Override
+		public void listField(String name, Consumer<Component> input) {
+			input.accept(convertFieldToComponent.apply(this, name));
+		}
+
+		@Override
+		public void listFields(Consumer<Component> input) {
+			fields.keySet().forEach((string) -> input.accept(convertFieldToComponent.apply(this, string)));
+		}
+
+		@Override
+		public Field fieldRepresentingHolder(String name) {
+			return fields.get(name);
+		}
+
+		@Override
+		public ArgumentType<?> argumentTypeRepresentingHolder(String name) {
+            Object o;
+            try {
+                o = fields.get(name).get(this);
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+            return switch (o) {
+				case Double ignored -> DoubleArgumentType.doubleArg(0.0, 4.0);
+				case null, default -> null;
+			};
+		}
+
+		@Override
+		@Environment(EnvType.CLIENT)
+		@SuppressWarnings("all")
+		public List<AbstractConfigListEntry<?>> transformIntoConfigEntries() {
+			if (this.resetTranslation == null) this.resetTranslation = () -> Component.translatable(this.owner.getTranslationResetKey());
+			List<AbstractConfigListEntry<?>> entries = new ArrayList<>();
+			entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "bowUncertainty"), this.bowUncertainty, this.resetTranslation.get(), () -> 0.25, (uncertainty) -> this.bowUncertainty = Mth.clamp(uncertainty, 0.0, 4.0), Optional::empty, false));
+			entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "crossbowUncertainty"), this.crossbowUncertainty, this.resetTranslation.get(), () -> 0.25, (uncertainty) -> this.crossbowUncertainty = Mth.clamp(uncertainty, 0.0, 4.0), Optional::empty, false));
+			entries.forEach((entry) -> entry.setEditable(!this.owner.serverManaged));
+			return entries;
+		}
 	}
 }

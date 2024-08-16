@@ -34,8 +34,10 @@
   "instantHealthBonus": 6,
 
   "baseHandAttackSpeed": 2.5,
-  "bowUncertainty": 0.25,
-  "crossbowUncertainty": 0.25,
+  "projectileUncertainty": {
+    "bowUncertainty": 0.25,
+    "crossbowUncertainty": 0.25
+  },
   "healingTime": 2,
   "fastHealingTime": 0.5,
   "instantTippedArrowEffectMultiplier": 0.125,
@@ -69,10 +71,12 @@
   "shieldChargePercentage": 195,
 
   "breachArmorPiercing": 0.15,
-  "eggDamage": 0.0,
-  "snowballDamage": 0.0,
-  "windChargeDamage": 1.0,
-  "thrownTridentDamage": 8.0,
+  "projectileDamage": {
+    "eggDamage": 0.0,
+    "snowballDamage": 0.0,
+    "windChargeDamage": 1.0,
+    "thrownTridentDamage": 8.0
+  },
 
   "arrowDisableMode": "none",
   "armourPiercingMode": "vanilla"
