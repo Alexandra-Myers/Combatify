@@ -178,7 +178,7 @@
   "text.config.combatify-general.option.percentageDamageEffects": "百分比伤害效果",
   "text.config.combatify-general.option.percentageDamageEffects.tooltip.0": "力量 和 虚弱 效果作为百分比而不是固定增添效果。",
   "text.config.combatify-general.option.projectilesHaveIFrames": "投掷物存在无敌帧",
-  "text.config.combatify-general.option.projectilesHaveIFrames.tooltip.0": "投掷物是否存在无敌帧。,
+  "text.config.combatify-general.option.projectilesHaveIFrames.tooltip.0": "投掷物是否存在无敌帧。",
   "text.config.combatify-general.option.resetOnItemChange": "手持更换重置充能",
   "text.config.combatify-general.option.resetOnItemChange.tooltip.0": "在更换手持武器的时候是否重置更新指示器",
   "text.config.combatify-general.option.fastHealing": "加速恢复生命值",
