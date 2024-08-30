@@ -146,7 +146,7 @@
   "text.config.combatify-general.option.bowFatigue": "拉弓疲劳",
   "text.config.combatify-general.option.bowFatigue.tooltip.0": "当拉弓太久会不会拉弓疲劳",
   "text.config.combatify-general.option.bowFatigue.tooltip.1": "   这有两个影响：",
-  "text.config.combatify-general.option.bowFatigue.tooltip.2": "      1. 射出的箭不会很关键。",
+  "text.config.combatify-general.option.bowFatigue.tooltip.2": "      1. 射出的箭不会很关键。（Arrows will not be critical）",
   "text.config.combatify-general.option.bowFatigue.tooltip.3": "      2. 射出的箭会随着拉弓时间推移而降低精度。",
   "text.config.combatify-general.option.canAttackEarly": "允许提前攻击",
   "text.config.combatify-general.option.canAttackEarly.tooltip.0": "是否允许在攻击指示条到达100%前攻击。",
