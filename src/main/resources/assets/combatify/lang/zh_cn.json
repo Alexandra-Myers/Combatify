@@ -139,7 +139,7 @@
   "text.config.combatify-general.option.attackReach.tooltip.0": "是否所有物品使用相同的攻击距离",
   "text.config.combatify-general.option.autoAttackAllowed": "允许自动攻击",
   "text.config.combatify-general.option.autoAttackAllowed.tooltip.0": "服务端选项，关闭后将不允许玩家进行自动攻击",
-  "text.config.combatify-general.option.bedrockBridging": "基岩版/CT8a样式搭路",
+  "text.config.combatify-general.option.bedrockBridging": "基岩版/CTS8a样式搭路",
   "text.config.combatify-general.option.bedrockBridging.tooltip.0": "允许基岩版一样的向前放置方块，细节与Combat Test 8a相匹配",
   "text.config.combatify-general.option.bedrockImpaling": "基岩版样式穿刺魔咒",
   "text.config.combatify-general.option.bedrockImpaling.tooltip.0": "穿刺魔咒会在水中和雨天激活，而非仅在特定实体上",
