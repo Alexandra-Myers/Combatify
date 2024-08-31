@@ -236,8 +236,8 @@
   "text.config.combatify-general.option.healingMode.tooltip.2": "   CTS 8c - 恢复生命值有50%的几率会减少饥饿值。",
   "text.config.combatify-general.option.healingMode.tooltip.3": "   Combatify - 恢复生命值依靠饱和度作为缓冲，直至饱和度达到5，此后每次恢复生命值都会开始消耗饥饿值。",
 
-  "text.config.combatify-general.option.armorPiercingDisablesShields": "穿透停用盾牌",
-  "text.config.combatify-general.option.armorPiercingDisablesShields.tooltip.0": "允许带有穿透的物品停用盾牌",
+  "text.config.combatify-general.option.armorPiercingDisablesShields": "穿甲停用盾牌",
+  "text.config.combatify-general.option.armorPiercingDisablesShields.tooltip.0": "允许带有穿甲的物品停用盾牌",
   "text.config.combatify-general.option.attackSpeed": "绕过充能冷却以获得最大攻击速度",
   "text.config.combatify-general.option.attackSpeed.tooltip.0": "如果该选项关闭并且您的工具具有最大攻击速度（20），将阻止充能重置。",
   "text.config.combatify-general.option.canInteractWhenCrouchShield": "潜行举盾时可互动",
@@ -283,8 +283,8 @@
   "text.config.combatify-general.option.shieldChargePercentage": "V5的盾牌充能百分比",
   "text.config.combatify-general.option.shieldChargePercentage.tooltip.0": "V5的盾牌所需的充能百分比。",
 
-  "text.config.combatify-general.option.breachArmorPiercing": "破甲弹射物速率",
-  "text.config.combatify-general.option.breachArmorPiercing.tooltip.0": "破甲增加的速率。",
+  "text.config.combatify-general.option.breachArmorPiercing": "穿甲弹射物速率",
+  "text.config.combatify-general.option.breachArmorPiercing.tooltip.0": "穿甲增加的速率。",
   "text.config.combatify-general.option.breachArmorPiercing.tooltip.1": "   注： 默认为15%但推荐10%",
   "text.config.combatify-general.option.projectileDamage": "弹射物伤害",
   "text.config.combatify-general.option.projectileDamage.snowballDamage": "雪球伤害",
@@ -306,14 +306,14 @@
   "text.config.combatify-general.option.arrowDisableMode.tooltip.4": "   穿透 - 只有穿透的箭会停用盾牌",
   "text.config.combatify-general.option.arrowDisableMode.tooltip.5": "   暴击或穿透 - 只有暴击或穿透的箭会停用盾牌",
   "text.config.combatify-general.option.arrowDisableMode.tooltip.6": "   暴击且穿透 - 只有暴击且穿透的箭会停用盾牌",
-  "text.config.combatify-general.option.armourPiercingMode": "箭穿透方式",
+  "text.config.combatify-general.option.armourPiercingMode": "箭穿甲方式",
   "text.config.combatify-general.option.armourPiercingMode.vanilla": "原版",
   "text.config.combatify-general.option.armourPiercingMode.apply_before_percentage": "Combatify原始方式",
   "text.config.combatify-general.option.armourPiercingMode.apply_after_percentage": "Combatify新方式",
-  "text.config.combatify-general.option.armourPiercingMode.tooltip.0": "定义激活穿透的模式。",
-  "text.config.combatify-general.option.armourPiercingMode.tooltip.1": "   原版 - 穿透是在装备计算后应用的，并且会从防护值中扣除。（Armor Piercing is applied after armor calcs, and is subtracted from the protection.）",
-  "text.config.combatify-general.option.armourPiercingMode.tooltip.2": "   Combatify原始方式 - 产投是在装备计算之前应用的，并会抵消一定比例的装甲值和韧性。（Armor Piercing is applied before armor calcs, and negates a percentage of the armor and toughness.）",
-  "text.config.combatify-general.option.armourPiercingMode.tooltip.3": "   Combatify新方式 - 穿透是在装备计算之后应用的，并且作为防护值的百分比取出。（Armor Piercing is applied after armor calcs, and is taken out as a percentage of the protection.）",
+  "text.config.combatify-general.option.armourPiercingMode.tooltip.0": "定义激活穿甲的模式。",
+  "text.config.combatify-general.option.armourPiercingMode.tooltip.1": "   原版 - 穿甲是在装备计算后应用的，并且会从防护值中扣除。（Armor Piercing is applied after armor calcs, and is subtracted from the protection.）",
+  "text.config.combatify-general.option.armourPiercingMode.tooltip.2": "   Combatify原始方式 - 穿甲是在装备计算之前应用的，并会抵消一定比例的装甲值和韧性。（Armor Piercing is applied before armor calcs, and negates a percentage of the armor and toughness.）",
+  "text.config.combatify-general.option.armourPiercingMode.tooltip.3": "   Combatify新方式 - 穿甲是在装备计算之后应用的，并且作为防护值的百分比取出。（Armor Piercing is applied after armor calcs, and is taken out as a percentage of the protection.）",
 
   "text.config.combatify-general.option.enableDebugLogging": "启用调试日志记录"
 }
