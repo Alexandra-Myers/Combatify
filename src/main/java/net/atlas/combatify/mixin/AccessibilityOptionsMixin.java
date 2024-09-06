@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.extensions.IOptions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
