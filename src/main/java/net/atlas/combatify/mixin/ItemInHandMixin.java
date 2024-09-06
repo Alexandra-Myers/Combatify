@@ -7,10 +7,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.config.cookey.ModConfig;
-import net.atlas.combatify.config.cookey.category.AnimationsCategory;
-import net.atlas.combatify.config.cookey.category.HudRenderingCategory;
+import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.extensions.IItemInHandRenderer;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.MethodHandler;
@@ -18,18 +15,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.TieredItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
@@ -51,19 +51,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@Shadow @Final private Minecraft minecraft;
 
-	@Unique
-	private AnimationsCategory animationsCategory;
-
-	@Unique
-	private HudRenderingCategory hudRenderingCategory;
-
-    @Inject(method = "<init>", at = @At("TAIL"))
-	private void injectOptions(Minecraft minecraft, EntityRenderDispatcher entityRenderDispatcher, ItemRenderer itemRenderer, CallbackInfo ci) {
-		ModConfig modConfig = CombatifyClient.getInstance().getConfig();
-		animationsCategory = modConfig.animations();
-		hudRenderingCategory = modConfig.hudRendering();
-    }
-
 	@Inject(method = "renderArmWithItem", at = @At("HEAD"), cancellable = true)
 	public void onRenderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
 		HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
@@ -71,12 +58,12 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			: abstractClientPlayer.getMainArm().getOpposite();
 
 		ItemStack blockingItem = MethodHandler.getBlockingItem(abstractClientPlayer).stack();
-		if ((hudRenderingCategory.onlyShowShieldWhenBlocking().get() || animationsCategory.enableToolBlocking().get())
+		if ((CookeyMod.getConfig().hudRendering().onlyShowShieldWhenBlocking().get() || CookeyMod.getConfig().animations().enableToolBlocking().get())
 			&& (itemStack.getItem() instanceof ShieldItem && !(!blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem))) {
 			ci.cancel();
 
 		}
-		if (animationsCategory.enableToolBlocking().get()) {
+		if (CookeyMod.getConfig().animations().enableToolBlocking().get()) {
 			ItemStack otherHandItem = interactionHand == InteractionHand.MAIN_HAND ? this.offHandItem : this.mainHandItem;
 			if (itemStack.getItem() instanceof ShieldItem && (otherHandItem.getItem() instanceof TieredItem && (!blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem))) {
 				ci.cancel();
@@ -86,7 +73,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				poseStack.pushPose();
 				this.applyItemArmTransform(poseStack, humanoidArm, i);
 				this.applyItemBlockTransform(poseStack, humanoidArm);
-				if (animationsCategory.swingAndUseItem().get()) {
+				if (CookeyMod.getConfig().animations().swingAndUseItem().get()) {
 					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 				}
 				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
@@ -101,7 +88,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform(poseStack, humanoidArm);
-				if (animationsCategory.swingAndUseItem().get()) {
+				if (CookeyMod.getConfig().animations().swingAndUseItem().get()) {
 					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 				}
 				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
@@ -115,7 +102,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 
 	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isInvisible()Z", ordinal = 0))
 	public boolean makeArmAppear(boolean original) {
-		return !hudRenderingCategory.showHandWhenInvisible().get() && original;
+		return !CookeyMod.getConfig().hudRendering().showHandWhenInvisible().get() && original;
 	}
 
 	@Redirect(method = "renderArmWithItem",
@@ -124,7 +111,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;applyItemArmAttackTransform(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/entity/HumanoidArm;F)V",
 			ordinal = 1))
 	public void cancelAttackTransform(ItemInHandRenderer itemInHandRenderer, PoseStack poseStack, HumanoidArm humanoidArm, float f) {
-		if (!animationsCategory.swingAndUseItem().get())
+		if (!CookeyMod.getConfig().animations().swingAndUseItem().get())
 			this.applyItemArmAttackTransform(poseStack, humanoidArm, f);
 	}
 
@@ -137,7 +124,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		HumanoidArm humanoidArm = interactionHand == InteractionHand.MAIN_HAND
 			? abstractClientPlayer.getMainArm()
 			: abstractClientPlayer.getMainArm().getOpposite();
-		if (animationsCategory.swingAndUseItem().get() && !abstractClientPlayer.isAutoSpinAttack()) {
+		if (CookeyMod.getConfig().animations().swingAndUseItem().get() && !abstractClientPlayer.isAutoSpinAttack()) {
 			this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 		}
 	}
@@ -158,7 +145,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		if (Combatify.CONFIG.chargedAttacks())
 			strengthScale *= 0.5f;
 		strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
-		double offset = hudRenderingCategory.attackCooldownHandOffset().get();
+		double offset = CookeyMod.getConfig().hudRendering().attackCooldownHandOffset().get();
 		return  (float) (strengthScale * (1 - offset) + offset);
 	}
 	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isUsingItem()Z", ordinal = 1))

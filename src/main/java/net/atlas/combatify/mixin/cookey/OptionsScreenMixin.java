@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin.cookey;
 
+import net.atlas.combatify.CookeyMod;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -31,7 +32,7 @@ public abstract class OptionsScreenMixin extends Screen {
                     shift = At.Shift.AFTER, ordinal = 9),
             locals = LocalCapture.CAPTURE_FAILSOFT)
     public void injectCookeyModButton(CallbackInfo ci, LinearLayout linearLayout, LinearLayout linearLayout2, GridLayout gridLayout, GridLayout.RowHelper rowHelper) {
-        rowHelper.addChild(this.openScreenButton(Component.translatable("options.cookeymod.button"), () -> {
+        if (CookeyMod.getConfig().misc().showModButton().get()) rowHelper.addChild(this.openScreenButton(Component.translatable("options.cookeymod.button"), () -> {
 			assert this.minecraft != null;
 			return ScreenBuilder.buildConfig(this.minecraft.screen);
 		}));

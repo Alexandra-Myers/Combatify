@@ -4,20 +4,17 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.config.cookey.option.BooleanOption;
-import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
-import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.InteractionHand;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
@@ -44,9 +41,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	boolean wasShieldBlocking = false;
 	@Unique
 	InteractionHand shieldBlockingHand = InteractionHand.OFF_HAND;
-	@Unique
-	BooleanOption force100PercentRecharge;
-
 	@Shadow
 	@Final
 	public ClientPacketListener connection;
@@ -56,10 +50,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@Unique
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
-	@Inject(method = "<init>", at = @At("TAIL"))
-	private void injectOptions(Minecraft minecraft, ClientLevel clientLevel, ClientPacketListener clientPacketListener, StatsCounter statsCounter, ClientRecipeBook clientRecipeBook, boolean bl, boolean bl2, CallbackInfo ci) {
-		force100PercentRecharge = CombatifyClient.getInstance().getConfig().misc().force100PercentRecharge();
-	}
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("HEAD"))
 	public void injectSneakShield(CallbackInfo ci) {
@@ -80,7 +70,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
 		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
-			if (force100PercentRecharge.get())
+			if (CookeyMod.getConfig().misc().force100PercentRecharge().get())
 				return false;
 			return (getMissedAttackRecovery() && getAttackStrengthStartValue() - (this.attackStrengthTicker - baseTime) > 4.0F);
 		}
@@ -104,6 +94,6 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Override
 	@Environment(EnvType.CLIENT)
 	public boolean hasEnabledShieldOnCrouch() {
-		return ((IOptions)minecraft.options).shieldCrouch().get();
+		return CombatifyClient.shieldCrouch.get();
 	}
 }

@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin.cookey;
 
-import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.config.cookey.ModConfig;
+import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.AgeableListModel;
@@ -16,7 +15,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.UseAnim;
-import net.atlas.combatify.config.cookey.option.BooleanOption;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,32 +39,18 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
     @Shadow
     protected abstract void poseRightArm(T livingEntity);
 
-
-	@Unique
-	private BooleanOption showEatingInThirdPerson;
-
-	@Unique
-	private BooleanOption enableToolBlocking;
-
-	@Inject(method = "<init>(Lnet/minecraft/client/model/geom/ModelPart;Ljava/util/function/Function;)V", at = @At("TAIL"))
-	private void injectOptions(CallbackInfo ci) {
-		ModConfig modConfig = CombatifyClient.getInstance().getConfig();
-		showEatingInThirdPerson = modConfig.animations().showEatingInThirdPerson();
-		enableToolBlocking = modConfig.animations().enableToolBlocking();
-	}
-
     @Inject(method = "poseRightArm", at = @At("HEAD"), cancellable = true)
     public void addRightArmAnimations(T livingEntity, CallbackInfo ci) {
         HumanoidArm usedHand = livingEntity.getUsedItemHand() == InteractionHand.MAIN_HAND
                 ? livingEntity.getMainArm()
                 : livingEntity.getMainArm().getOpposite();
         boolean poseLeftArmAfterwards = false;
-        if (enableToolBlocking.get()) {
+        if (CookeyMod.getConfig().animations().enableToolBlocking().get()) {
             ItemStack itemInRightArm = livingEntity.getItemInHand(livingEntity.getMainArm() == HumanoidArm.RIGHT ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
             if (itemInRightArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).stack().equals(itemInRightArm))
                 poseLeftArmAfterwards = true;
         }
-        if (showEatingInThirdPerson.get()
+        if (CookeyMod.getConfig().animations().showEatingInThirdPerson().get()
                 && livingEntity.isUsingItem() && usedHand == HumanoidArm.RIGHT && (livingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || livingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
             boolean run = this.applyEatingAnimation(livingEntity, usedHand, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
             if (run) ci.cancel();
@@ -81,12 +65,12 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> extends Ageable
                 ? livingEntity.getMainArm()
                 : livingEntity.getMainArm().getOpposite();
         boolean poseRightArmAfterwards = false;
-        if (enableToolBlocking.get()) {
+        if (CookeyMod.getConfig().animations().enableToolBlocking().get()) {
             ItemStack itemInLeftArm = livingEntity.getItemInHand(livingEntity.getMainArm() == HumanoidArm.RIGHT ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
             if (itemInLeftArm.getItem() instanceof ShieldItem && MethodHandler.getBlockingItem(livingEntity).stack().equals(itemInLeftArm))
                 poseRightArmAfterwards = true;
         }
-        if (showEatingInThirdPerson.get()
+        if (CookeyMod.getConfig().animations().showEatingInThirdPerson().get()
                 && livingEntity.isUsingItem() && usedHand == HumanoidArm.LEFT && (livingEntity.getUseItem().getUseAnimation() == UseAnim.EAT || livingEntity.getUseItem().getUseAnimation() == UseAnim.DRINK)) {
             boolean run = this.applyEatingAnimation(livingEntity, usedHand, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
             if (run) ci.cancel();

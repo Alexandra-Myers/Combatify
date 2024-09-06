@@ -2,7 +2,9 @@
 	"schemaVersion": 1,
 	"id": "combatify",
 	"version": "${version}",
-
+  "provides": [
+    "cookeymod"
+  ],
 	"name": "Combatify",
 	"description": "A mod library and standalone mod that adds features from the combat test snapshots",
 	"authors": [
@@ -19,7 +21,11 @@
       "net.atlas.combatify.Combatify"
     ],
 		"client": [
-      "net.atlas.combatify.CombatifyClient"
+      "net.atlas.combatify.CombatifyClient",
+      "net.atlas.combatify.CookeyMod"
+    ],
+    "modmenu": [
+      "net.atlas.combatify.impl.ModMenuApiImpl"
     ]
 	},
 	"mixins": [

@@ -3,12 +3,11 @@ package net.atlas.combatify.mixin.cookey;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.shedaniel.math.Color;
-import net.atlas.combatify.CombatifyClient;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.atlas.combatify.config.cookey.category.HudRenderingCategory;
+import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.event.OverlayReloadListener;
 import net.atlas.combatify.extensions.OverlayTextureExtension;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,13 +22,8 @@ public abstract class OverlayTextureMixin implements OverlayTextureExtension, Ov
     @Final
     private DynamicTexture texture;
 
-
-	@Unique
-	private HudRenderingCategory hudRenderingCategory;
-
     @Inject(method = "<init>", at = @At("TAIL"))
     public void modifyHitColor(CallbackInfo ci) {
-		hudRenderingCategory = CombatifyClient.getInstance().getConfig().hudRendering();
         this.combatify$reloadOverlay();
         OverlayReloadListener.register(this);
     }
@@ -51,7 +45,7 @@ public abstract class OverlayTextureMixin implements OverlayTextureExtension, Ov
         for (int i = 0; i < 16; ++i) {
             for (int j = 0; j < 16; ++j) {
                 if (i < 8) {
-                    Color color = hudRenderingCategory.damageColor().get();
+                    Color color = CookeyMod.getConfig().hudRendering().damageColor().get();
                     assert nativeImage != null;
                     nativeImage.setPixelRGBA(j, i, getColorInt(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
                 }

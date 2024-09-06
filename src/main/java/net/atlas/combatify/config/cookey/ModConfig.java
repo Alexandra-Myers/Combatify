@@ -2,7 +2,7 @@ package net.atlas.combatify.config.cookey;
 
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
-import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.config.cookey.category.AnimationsCategory;
 import net.atlas.combatify.config.cookey.category.Category;
 import net.atlas.combatify.config.cookey.category.HudRenderingCategory;
@@ -36,8 +36,8 @@ public class ModConfig {
     private final HudRenderingCategory hudRendering;
     private final MiscCategory misc;
 
-    public ModConfig(CombatifyClient mod, Path file) {
-        this.logger = mod.getCookeyModLogger();
+    public ModConfig(Path file) {
+        this.logger = CookeyMod.getCookeyModLogger();
 
         this.file = file;
 
@@ -74,7 +74,7 @@ public class ModConfig {
             try {
                 this.saveConfig();
             } catch (IOException e) {
-                CombatifyClient.getInstance().getCookeyModLogger().error("Failed to save CookeyMod config file!", e);
+                CookeyMod.getCookeyModLogger().error("Failed to save CookeyMod config file!", e);
             }
         }
     }

@@ -2,8 +2,8 @@ package net.atlas.combatify.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
-import net.atlas.combatify.extensions.IOptions;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.DeltaTracker;
@@ -79,10 +79,10 @@ public abstract class GuiMixin {
 					int j = guiGraphics.guiHeight() / 2 - 7 + 16;
 					int k = guiGraphics.guiWidth() / 2 - 8;
 					boolean isShieldCooldown = isShieldOnCooldown();
-					boolean var7 = ((IOptions) this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
-					if (var7 && isShieldCooldown)
+					boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
+					if (shieldIndicatorEnabled && isShieldCooldown)
 						guiGraphics.blitSprite(CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, k, j, 16, 16);
-					else if (var7 && this.minecraft.player.isBlocking())
+					else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
 						guiGraphics.blitSprite(CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, k, j, 16, 16);
 				}
 			}
@@ -91,21 +91,21 @@ public abstract class GuiMixin {
 	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true)
 	public void renderCrosshair1(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
 		boolean isShieldCooldown = isShieldOnCooldown();
-		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
 		assert minecraft.player != null;
-		if(var7 && isShieldCooldown) {
+		if(shieldIndicatorEnabled && isShieldCooldown) {
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
-		} else if(var7 && this.minecraft.player.isBlocking()) {
+		} else if(shieldIndicatorEnabled && this.minecraft.player.isBlocking()) {
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		}
-        float maxIndicator = Math.min(((IOptions)minecraft.options).attackIndicatorMaxValue().get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-		float minIndicator = Math.min(((IOptions)minecraft.options).attackIndicatorMinValue().get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+        float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
 		boolean bl = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
@@ -128,13 +128,13 @@ public abstract class GuiMixin {
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void renderHotbar(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
 		boolean isShieldCooldown = isShieldOnCooldown();
-		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
 		assert minecraft.player != null;
-		if(var7 && isShieldCooldown) {
+		if(shieldIndicatorEnabled && isShieldCooldown) {
 			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
-		} else if(var7 && this.minecraft.player.isBlocking()) {
+		} else if(shieldIndicatorEnabled && this.minecraft.player.isBlocking()) {
 			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
@@ -143,8 +143,8 @@ public abstract class GuiMixin {
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT)
 			o = i - 91 - 22;
-		float maxIndicator = Math.min(((IOptions)minecraft.options).attackIndicatorMaxValue().get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-		float minIndicator = Math.min(((IOptions)minecraft.options).attackIndicatorMinValue().get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
 		boolean bl = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
@@ -170,11 +170,11 @@ public abstract class GuiMixin {
 		assert minecraft.player != null;
 		if (humanoidArm == HumanoidArm.RIGHT)
 			o = i - 91 - 22;
-		boolean var7 = ((IOptions)this.minecraft.options).shieldIndicator().get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
 		boolean isShieldCooldown = isShieldOnCooldown();
-		if (var7 && isShieldCooldown)
+		if (shieldIndicatorEnabled && isShieldCooldown)
 			guiGraphics.blitSprite(HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE, o, n, 18, 18);
-		else if (var7 && this.minecraft.player.isBlocking())
+		else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
 			guiGraphics.blitSprite(HOTBAR_SHIELD_INDICATOR_FULL_SPRITE, o, n, 18, 18);
 	}
 	@Unique

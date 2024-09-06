@@ -3,7 +3,7 @@ package net.atlas.combatify.screen;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
-import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.CookeyMod;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.atlas.combatify.config.cookey.ModConfig;
@@ -16,7 +16,7 @@ public final class ScreenBuilder {
     }
 
     public static Screen buildConfig(Screen prevScreen) {
-        ModConfig config = CombatifyClient.getInstance().getConfig();
+        ModConfig config = CookeyMod.getConfig();
 
         ConfigBuilder builder = ConfigBuilder.create()
                 .setTitle(Component.translatable(ModConfig.TRANSLATION_KEY))
@@ -25,7 +25,7 @@ public final class ScreenBuilder {
                     try {
                         config.saveConfig();
                     } catch (IOException e) {
-                        CombatifyClient.getInstance().getCookeyModLogger().error("Failed to save CookeyMod config file!");
+                        CookeyMod.getCookeyModLogger().error("Failed to save CookeyMod config file!");
                         e.printStackTrace();
                     }
                 });

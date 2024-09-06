@@ -5,14 +5,13 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.screen.ScreenBuilder;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -69,17 +68,9 @@ public abstract class MinecraftMixin {
 	@Shadow
 	public abstract void setScreen(@Nullable Screen screen);
 
-	@Unique
-	KeyMapping openCookeyModMenu;
-
-	@Inject(method = "<init>", at = @At("TAIL"))
-	public void initialize(GameConfig gameConfig, CallbackInfo ci) {
-		openCookeyModMenu = CombatifyClient.getInstance().getKeybinds().openOptions();
-	}
-
 	@Inject(method = "tick", at = @At("TAIL"))
 	public void openMenuOnKeyPress(CallbackInfo ci) {
-		if (openCookeyModMenu.isDown() && this.screen == null)
+		if (CookeyMod.getKeybinds().openOptions().isDown() && this.screen == null)
 			setScreen(ScreenBuilder.buildConfig(null));
 	}
 
@@ -160,7 +151,7 @@ public abstract class MinecraftMixin {
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
 		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
-		boolean bl2 = (((IOptions) options).autoAttack().get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
+		boolean bl2 = (CombatifyClient.autoAttack.get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
 		if (player != null && missTime <= 0) {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
 			if (!cannotPerform) {
