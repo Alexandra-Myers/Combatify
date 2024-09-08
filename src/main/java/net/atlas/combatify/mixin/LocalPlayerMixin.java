@@ -29,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.atlas.combatify.util.MethodHandler.getBlockingItem;
 
+@SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
 	public LocalPlayerMixin(ClientLevel clientLevel, GameProfile gameProfile) {
@@ -44,6 +45,10 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Shadow
 	@Final
 	public ClientPacketListener connection;
+
+	@Shadow
+	public abstract boolean isUsingItem();
+
 	@Unique
 	@Final
 	public Minecraft minecraft = Minecraft.getInstance();
@@ -57,7 +62,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (isBlocking != wasShieldBlocking) {
 			wasShieldBlocking = isBlocking;
 			if (isBlocking) shieldBlockingHand = getBlockingItem(thisPlayer).useHand();
-			minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
+			if (!isUsingItem()) minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
 		}
 	}
 

@@ -16,6 +16,9 @@ import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -49,11 +52,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "AddedMixinMembersNamePattern"})
 @Mixin(value = Player.class, priority = 1400)
 public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions, LivingEntityExtensions {
+	/**
+	 * This is a crime, I know,
+	 * But it's okay we have to do this to fix a CTS bug
+	 */
+	@SuppressWarnings("WrongEntityDataParameterClass")
 	@Unique
-	public boolean hasShieldOnCrouch = true;
+	private static final EntityDataAccessor<Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
 
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
@@ -81,6 +89,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@NotNull
 	public abstract ItemStack getWeaponItem();
 
+	@Shadow
+	public abstract boolean hasContainerOpen();
+
+	@Shadow
+	@Final
+	protected static EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION;
+
+	@Shadow
+	public abstract void tick();
+
 	@Unique
 	protected int attackStrengthStartValue;
 
@@ -96,6 +114,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
+	@Inject(method = "defineSynchedData", at = @At("TAIL"))
+	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
+		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
+	}
 	@Inject(method = "hurt", at = @At("HEAD"))
 	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		oldDamage = amount;
@@ -165,12 +187,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Override
 	public boolean hasEnabledShieldOnCrouch() {
-		return hasShieldOnCrouch;
+		return entityData.get(DATA_PLAYER_USES_SHIELD_CROUCH);
 	}
 
 	@Override
 	public void setShieldOnCrouch(boolean hasShieldOnCrouch) {
-		this.hasShieldOnCrouch = hasShieldOnCrouch;
+		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
 	}
 
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
@@ -312,6 +334,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return true;
 	}
 
+	@Unique
 	protected boolean checkSweepAttack() {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		boolean sweepingItem = ((ItemExtensions)getMainHandItem().getItem()).canSweep();
@@ -321,6 +344,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return sweep;
 	}
 
+	@Unique
 	public void betterSweepAttack(AABB box, float reach, float damage, Entity entity) {
 		float sweepingDamageRatio = (float) (1.0F + getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
 		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
@@ -330,7 +354,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				continue;
 			if (Combatify.CONFIG.sweepingNegatedForTamed()
 				&& (livingEntity instanceof OwnableEntity ownableEntity
-					&& player.is(ownableEntity.getOwner())
+					&& player.getUUID().equals(ownableEntity.getOwnerUUID())
 					|| livingEntity.is(getVehicle())
 					|| livingEntity.isPassengerOfSameVehicle(player)))
 				continue;
