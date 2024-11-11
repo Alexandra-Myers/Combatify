@@ -69,6 +69,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder swordBlocking;
 	private BooleanHolder shieldOnlyWhenCharged;
 	private BooleanHolder sprintCritsEnabled;
+	private BooleanHolder ctsSaturationCap;
 	private BooleanHolder fastHealing;
 	private BooleanHolder letVanillaConnect;
 	private BooleanHolder oldSprintFoodRequirement;
@@ -91,6 +92,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private IntegerHolder attackDecayMinPercentage;
 	private IntegerHolder attackDecayMaxPercentage;
 	private IntegerHolder shieldChargePercentage;
+	private DoubleHolder starvingTime;
 	private DoubleHolder healingTime;
 	private DoubleHolder fastHealingTime;
 	private DoubleHolder instantTippedArrowEffectMultiplier;
@@ -182,6 +184,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ctsB);
 		ctsMomentumPassedToProjectiles.setupTooltip(1);
+		ctsSaturationCap = createBoolean("ctsSaturationCap", true);
+		ctsSaturationCap.tieToCategory(ctsB);
+		ctsSaturationCap.setupTooltip(5);
 		dispensableTridents = createBoolean("dispensableTridents", true);
 		dispensableTridents.tieToCategory(ctsB);
 		dispensableTridents.setupTooltip(1);
@@ -241,6 +246,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		baseHandAttackSpeed.tieToCategory(ctsD);
 		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, new JavaToJSONSerialisation<>(ProjectileUncertainty.decoder, ProjectileUncertainty.encoder), ProjectileUncertainty.STREAM_CODEC, false);
 		projectileUncertainty.tieToCategory(ctsD);
+		starvingTime = createInRange("starvingTime", 2, 0, 100D);
+		starvingTime.tieToCategory(ctsD);
+		starvingTime.setupTooltip(1);
 		healingTime = createInRange("healingTime", 2, 0, 100D);
 		healingTime.tieToCategory(ctsD);
 		healingTime.setupTooltip(1);
@@ -493,6 +501,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean sprintCritsEnabled() {
 		return sprintCritsEnabled.get();
 	}
+	public Boolean ctsSaturationCap() {
+		return ctsSaturationCap.get();
+	}
 	public Boolean fastHealing() {
 		return fastHealing.get();
 	}
@@ -564,6 +575,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();
+	}
+	public Double starvingTime() {
+		return starvingTime.get();
 	}
 	public Double healingTime() {
 		return healingTime.get();

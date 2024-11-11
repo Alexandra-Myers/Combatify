@@ -8,6 +8,10 @@
 ***
 #### Config Changes:
 ***
+- Added the config option `ctsSaturationCap`, enables the feature of CTS where saturation is not capped at the food level, but instead the food's saturation is the lowest your saturation can go.
+
+- Added the config option `starvingTime`, controls the speed of starvation
+
 - Added the config option `fastHealingTime`, controls the speed of 1.9 fast healing
 
 - Replaced the config option `eatingInterruption` with `eatingInterruptionMode`, controls how eating interruption is applied
