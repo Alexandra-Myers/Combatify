@@ -1,4 +1,9 @@
 {
+  "tag.item.combatify.enchantable.shield": "Shield Enchantables",
+  "tag.item.combatify.double_tier_durability": "Doubled Tier Durability",
+  "tag.item.combatify.knives": "Knives",
+  "tag.item.combatify.longswords": "Longswords",
+  "tag.item.combatify.tiered_shields": "Tiered Shields",
   "item.combatify.wooden_knife": "Wooden Knife",
   "item.combatify.stone_knife": "Stone Knife",
   "item.combatify.iron_knife": "Iron Knife",
@@ -177,6 +182,8 @@
   "text.config.combatify-general.option.fistDamage.tooltip.0": "Fist Damage is updated to 1, matching vanilla and the parity change made to Bedrock Edition.",
   "text.config.combatify-general.option.hasMissTime": "Has Miss Time",
   "text.config.combatify-general.option.hasMissTime.tooltip.0": "Whether there will be a ten-tick penalty upon missing an attack.",
+  "text.config.combatify-general.option.hasteFix": "Haste Fix",
+  "text.config.combatify-general.option.hasteFix.tooltip.0": "Whether Haste will be altered to account for the 1.5 attack speed decrease.",
   "text.config.combatify-general.option.iFramesBasedOnWeapon": "I-Frames Based On Weapon",
   "text.config.combatify-general.option.iFramesBasedOnWeapon.tooltip.0": "Whether the I-Frames an opponent receives will be based on their weapon's attack speed.",
   "text.config.combatify-general.option.missedAttackRecovery": "Missed Attack Recovery",

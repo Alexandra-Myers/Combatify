@@ -1,4 +1,6 @@
 {
+  "tag.item.minecraft.enchantable.axe": "Axe Enchantables",
+  "tag.item.minecraft.enchantable.breach": "Breach Enchantables",
   "attribute.name.player.entity_interaction_range": "Attack Reach",
   "attribute.name.generic.shield_disable_time": "Shield Disable Time",
   "attribute.name.generic.shield_disable_reduction": "Shield Disable Reduction",

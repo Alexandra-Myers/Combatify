@@ -84,6 +84,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder instaAttack;
 	private BooleanHolder ctsAttackBalancing;
 	private BooleanHolder improvedMiscEntityAttacks;
+	private BooleanHolder hasteFix;
 	private BooleanHolder enableDebugLogging;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
@@ -196,6 +197,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		hasMissTime = createBoolean("hasMissTime", false);
 		hasMissTime.tieToCategory(ctsB);
 		hasMissTime.setupTooltip(1);
+		hasteFix = createBoolean("hasteFix", false);
+		hasteFix.tieToCategory(ctsB);
+		hasteFix.setupTooltip(1);
 		iFramesBasedOnWeapon = createBoolean("iFramesBasedOnWeapon", true);
 		iFramesBasedOnWeapon.tieToCategory(ctsB);
 		iFramesBasedOnWeapon.setupTooltip(1);
@@ -545,6 +549,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean improvedMiscEntityAttacks() {
 		return improvedMiscEntityAttacks.get();
+	}
+	public Boolean hasteFix() {
+		return hasteFix.get();
 	}
 	public Boolean enableDebugLogging() {
 		return enableDebugLogging.get();

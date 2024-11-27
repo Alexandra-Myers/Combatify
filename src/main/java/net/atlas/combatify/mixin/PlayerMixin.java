@@ -38,7 +38,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -99,8 +98,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	public abstract void tick();
 
+	@Shadow
+	public abstract void resetAttackStrengthTicker();
+
 	@Unique
-	protected int attackStrengthStartValue;
+	protected int attackStrengthMaxValue;
 
 	@Unique
 	public boolean missedAttackRecovery;
@@ -148,10 +150,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if(Combatify.unmoddedPlayers.contains(player.getUUID()))
 			Combatify.isPlayerAttacking.put(player.getUUID(), false);
 	}
-	@Redirect(method = "tick", at = @At(value = "FIELD",target = "Lnet/minecraft/world/entity/player/Player;attackStrengthTicker:I",opcode = Opcodes.PUTFIELD))
-	public void redirectAttackStrengthTicker(Player instance, int value) {
-		--instance.attackStrengthTicker;
-	}
 
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
@@ -161,7 +159,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
 	public void redirectDurability(Player instance, Operation<Void> original) {
 		if (Combatify.CONFIG.resetOnItemChange()) {
-			((PlayerExtensions) instance).resetAttackStrengthTicker(false);
+			resetAttackStrengthTicker(false, true);
 			return;
 		}
 		original.call(instance);
@@ -223,7 +221,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public float redirectStrengthCheck(float original) {
 		original = (float) Mth.clamp(original, Combatify.CONFIG.attackDecayMinCharge(), Combatify.CONFIG.attackDecayMaxCharge());
 		original = (float) (Combatify.CONFIG.attackDecayMinPercentage() + ((original - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageDiff());
-		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthStartValue - this.attackStrengthTicker > 4.0F) ? 1.0F : original;
+		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F) ? 1.0F : original;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
 	public void reset(CallbackInfo ci) {
@@ -294,42 +292,55 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Override
 	public void resetAttackStrengthTicker(boolean hit) {
+		resetAttackStrengthTicker(hit, false);
+	}
+	@Unique
+	public void resetAttackStrengthTicker(boolean hit, boolean force) {
 		this.missedAttackRecovery = !hit && Combatify.CONFIG.missedAttackRecovery();
 		if ((!Combatify.CONFIG.attackSpeed() && getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20) || Combatify.CONFIG.instaAttack())
 			return;
-		int var2 = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-		if (Combatify.CONFIG.enableDebugLogging())
-			Combatify.LOGGER.info("Ticks for charge: " + var2);
-		if (var2 > this.attackStrengthTicker) {
-			this.attackStrengthStartValue = var2;
-			this.attackStrengthTicker = this.attackStrengthStartValue;
+		int chargeTicks = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+		if (force || chargeTicks > (attackStrengthMaxValue - attackStrengthTicker)) {
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
+			this.attackStrengthMaxValue = chargeTicks;
+			this.attackStrengthTicker = 0;
 		}
 	}
 
-	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"), cancellable = true)
-	public void getCurrentItemAttackStrengthDelay(CallbackInfoReturnable<Float> cir) {
+	@ModifyReturnValue(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"))
+	public float getCurrentItemAttackStrengthDelay(float original) {
 		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_ID) != null && !Combatify.isCTS;
-		float f = (float) (getAttributeValue(Attributes.ATTACK_SPEED) - 1.5f);
-		if (hasVanilla)
-			f += 1.5f;
-		f = Mth.clamp(f, 0.1F, 1024.0F);
-		cir.setReturnValue(1.0F / f * 20.0F + (hasVanilla ? 0 : 0.5F));
+		float mod = !Combatify.CONFIG.hasteFix() ? 1.5F : (float) MethodHandler.calculateValueFromBase(getAttribute(Attributes.ATTACK_SPEED), 1.5F);
+		float speed = (float) (getAttributeValue(Attributes.ATTACK_SPEED) - mod);
+		if (hasVanilla || speed < 0)
+			speed += mod;
+		speed = Mth.clamp(speed, 0.1F, 1024.0F);
+		return 1.0F / speed * 20.0F + (hasVanilla ? 0 : 0.5F);
 	}
 
 	@Inject(method = "getAttackStrengthScale", at = @At(value = "HEAD"), cancellable = true)
 	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 2.0F : 1.0F;
-		if (this.attackStrengthStartValue == 0) {
+		if (Combatify.CONFIG.resetOnItemChange()) {
+			int chargeTicks = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+			if (attackStrengthMaxValue != chargeTicks) {
+				if (Combatify.CONFIG.enableDebugLogging())
+					Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
+				this.attackStrengthMaxValue = chargeTicks;
+			}
+		}
+		if (this.attackStrengthMaxValue == 0) {
 			cir.setReturnValue(charge);
 			return;
 		}
-		cir.setReturnValue(Mth.clamp(charge * (1.0F - (this.attackStrengthTicker - baseTime) / this.attackStrengthStartValue), 0.0F, charge));
+		cir.setReturnValue(Mth.clamp(charge * ((this.attackStrengthTicker + baseTime) / this.attackStrengthMaxValue), 0.0F, charge));
 	}
 
 	@Override
 	public boolean isAttackAvailable(float baseTime) {
 		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
-			return (this.missedAttackRecovery && this.attackStrengthStartValue - (this.attackStrengthTicker - baseTime) > 4.0F);
+			return (this.missedAttackRecovery && this.attackStrengthTicker + baseTime > 4.0F);
 		}
 		return true;
 	}
@@ -376,10 +387,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public boolean getMissedAttackRecovery() {
 		return missedAttackRecovery;
 	}
-	@Override
-	public int getAttackStrengthStartValue() {
-		return attackStrengthStartValue;
-	}
+
 	@ModifyReturnValue(method = "entityInteractionRange", at = @At(value = "RETURN"))
 	public double getCurrentAttackReach(double original) {
 		return MethodHandler.getCurrentAttackReach(player, 0.0F);

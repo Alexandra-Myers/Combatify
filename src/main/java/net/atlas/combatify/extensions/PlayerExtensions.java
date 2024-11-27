@@ -16,6 +16,4 @@ public interface PlayerExtensions extends ClientInformationHolder {
 	boolean getMissedAttackRecovery();
 
     void attackAir();
-
-	int getAttackStrengthStartValue();
 }

@@ -31,14 +31,14 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
 			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED) {
 				double speed = calculateValue(attributeSnapshot.base(), attributeSnapshot.modifiers(), attributeSnapshot.attribute());
+				double mod = !Combatify.CONFIG.hasteFix() ? 1.5 : calculateValueFromBase(1.5, attributeSnapshot.modifiers(), attributeSnapshot.attribute());
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
-					.filter(attributeModifier -> attributeModifier.id() == Item.BASE_ATTACK_SPEED_ID)
+					.filter(attributeModifier -> attributeModifier.id().equals(Item.BASE_ATTACK_SPEED_ID))
 					.toList()
 					.isEmpty() && !Combatify.isCTS;
-				for (double newSpeed = speed - 1.5; newSpeed > 0; newSpeed -= 0.001) {
-					if (vanillaMath(newSpeed) == CTSMath(speed, hasVanilla) * 2) {
-						if (newSpeed - 2.5 != 0)
-							modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, newSpeed - 2.5, AttributeModifier.Operation.ADD_VALUE));
+				for (double newSpeed = speed - mod; newSpeed > 0; newSpeed -= 0.0001) {
+					if (vanillaMath(newSpeed) == CTSMath(speed, hasVanilla, mod) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1)) {
+						modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, newSpeed - 2.5, AttributeModifier.Operation.ADD_VALUE));
 						break;
 					}
 				}
@@ -60,6 +60,15 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 			.stream()
 			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_VALUE)
 			.toList();
+
+		for(AttributeModifier attributeModifier : additionList) {
+			attributeInstanceBaseValue += attributeModifier.amount();
+		}
+
+		return calculateValueFromBase(attributeInstanceBaseValue, modifiers, attribute);
+	}
+	@Unique
+	public final double calculateValueFromBase(double attributeInstanceBaseValue, Collection<AttributeModifier> modifiers, Holder<Attribute> attribute) {
 		List<AttributeModifier> multiplyBaseList = modifiers
 			.stream()
 			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
@@ -69,26 +78,24 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
 			.toList();
 
-		for(AttributeModifier attributeModifier : additionList) {
-			attributeInstanceBaseValue += attributeModifier.amount();
-		}
+		double attributeInstanceFinalValue = attributeInstanceBaseValue;
 
 		for(AttributeModifier attributeModifier2 : multiplyBaseList) {
-			attributeInstanceBaseValue += attributeInstanceBaseValue * attributeModifier2.amount();
+			attributeInstanceFinalValue += attributeInstanceBaseValue * attributeModifier2.amount();
 		}
 
 		for(AttributeModifier attributeModifier2 : multiplyTotalList) {
-			attributeInstanceBaseValue *= 1.0 + attributeModifier2.amount();
+			attributeInstanceFinalValue *= 1.0 + attributeModifier2.amount();
 		}
 
-		return attribute.value().sanitizeValue(attributeInstanceBaseValue);
+		return attribute.value().sanitizeValue(attributeInstanceFinalValue);
 	}
 	@Unique
-	private static int CTSMath(double attackSpeed, boolean hasVanilla) {
-		double d = attackSpeed - 1.5;
-		if (hasVanilla)
-			d += 1.5f;
-		d = Mth.clamp(d, 0.1F, 1024.0F);
+	private static int CTSMath(double attackSpeed, boolean hasVanilla, double mod) {
+		double d = attackSpeed - mod;
+		if (hasVanilla || d < 0)
+			d += mod;
+		d = Mth.clamp(d, 0.1, 1024.0);
 		d = 1.0 / d * 20.0 + (hasVanilla ? 0 : 0.5);
 		return (int) (d);
 	}

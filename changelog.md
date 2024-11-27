@@ -14,6 +14,8 @@
 
 - Added the config option `fastHealingTime`, controls the speed of 1.9 fast healing
 
+- Added the config option `hasteFix`, corrects attack speed modifiers to be the same as if they were based on the base value minus 1.5
+
 - Replaced the config option `eatingInterruption` with `eatingInterruptionMode`, controls how eating interruption is applied
 
 - Replaced the config option `saturationHealing` with `healingMode`, controls how healing works, `fastHealing` can be applied independent of the option here

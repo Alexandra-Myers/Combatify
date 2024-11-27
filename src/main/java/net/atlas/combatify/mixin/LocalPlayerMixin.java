@@ -77,7 +77,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
 			if (CookeyMod.getConfig().misc().force100PercentRecharge().get())
 				return false;
-			return (getMissedAttackRecovery() && getAttackStrengthStartValue() - (this.attackStrengthTicker - baseTime) > 4.0F);
+			return (getMissedAttackRecovery() && this.attackStrengthTicker + baseTime > 4.0F);
 		}
 		return true;
 	}
