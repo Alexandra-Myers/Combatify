@@ -33,6 +33,7 @@ public abstract class OptionsMixin {
 		visitor.process("autoAttack", CombatifyClient.autoAttack);
 		visitor.process("shieldCrouch", CombatifyClient.shieldCrouch);
 		visitor.process("rhythmicAttacks", CombatifyClient.rhythmicAttacks);
+		visitor.process("augmentedArmHeight", CombatifyClient.augmentedArmHeight);
 		visitor.process("attackIndicatorMaxValue", CombatifyClient.attackIndicatorMaxValue);
 		visitor.process("attackIndicatorMinValue", CombatifyClient.attackIndicatorMinValue);
 		visitor.process("shieldIndicator", CombatifyClient.shieldIndicator);

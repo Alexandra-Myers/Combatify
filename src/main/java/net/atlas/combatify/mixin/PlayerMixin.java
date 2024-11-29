@@ -220,7 +220,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheck(float original) {
 		original = (float) Mth.clamp(original, Combatify.CONFIG.attackDecayMinCharge(), Combatify.CONFIG.attackDecayMaxCharge());
-		original = (float) (Combatify.CONFIG.attackDecayMinPercentage() + ((original - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageDiff());
 		return !Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F) ? 1.0F : original;
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
@@ -228,7 +227,20 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;walkDist:F"))
-	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 1) float enchantDamage, @Local(ordinal = 2) float strengthScale, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
+		if (Combatify.CONFIG.attackDecay()) {
+			enchantDamage /= strengthScale;
+			float originalAttackDamage;
+			if (Combatify.CONFIG.strengthAppliesToEnchants()) originalAttackDamage = (float) (this.isAutoSpinAttack() ? MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), this.autoSpinAttackDmg + enchantDamage) : MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), enchantDamage));
+			else originalAttackDamage = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+			originalAttackDamage *= bl3.get() ? 1.5F : 1;
+			attackDamage -= (float) ((0.2 + strengthScale * strengthScale * 0.8) * originalAttackDamage);
+			float adjScale = (float) ((strengthScale - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff());
+			originalAttackDamage *= (float) (Combatify.CONFIG.attackDecayMinPercentageBase() + adjScale * adjScale * Combatify.CONFIG.attackDecayMaxPercentageBaseDiff());
+			attackDamage += originalAttackDamage;
+			enchantDamage *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((strengthScale - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
+			combinedDamage.set(attackDamage + enchantDamage);
+		}
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
 			combinedDamage.set(attackDamage);
 		if (Combatify.CONFIG.attackDecay() && !Combatify.CONFIG.sprintCritsEnabled())

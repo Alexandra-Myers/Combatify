@@ -46,7 +46,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder canSweepOnMiss;
 	private BooleanHolder chargedReach;
 	private BooleanHolder creativeAttackReach;
-	private BooleanHolder attackDecay;
+	private ObjectHolder<AttackDecay> attackDecay;
 	private BooleanHolder missedAttackRecovery;
 	private BooleanHolder disableDuringShieldDelay;
 	private BooleanHolder hasMissTime;
@@ -88,10 +88,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder enableDebugLogging;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
-	private IntegerHolder attackDecayMinCharge;
-	private IntegerHolder attackDecayMaxCharge;
-	private IntegerHolder attackDecayMinPercentage;
-	private IntegerHolder attackDecayMaxPercentage;
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder starvingTime;
 	private DoubleHolder healingTime;
@@ -143,9 +139,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	@Override
 	public void defineConfigHolders() {
-		attackDecay = createBoolean("attackDecay", false);
+		attackDecay = createObject("attackDecay", AttackDecay.DEFAULT, AttackDecay.class, new JavaToJSONSerialisation<>(AttackDecay.decoder, AttackDecay.encoder), AttackDecay.STREAM_CODEC, false);
 		attackDecay.tieToCategory(ctsB);
-		attackDecay.setupTooltip(1);
 		attackReach = createBoolean("attackReach", true);
 		attackReach.tieToCategory(ctsB);
 		attackReach.setupTooltip(1);
@@ -326,18 +321,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		swordBlocking.tieToCategory(extraB);
 		swordBlocking.setupTooltip(1);
 
-		attackDecayMinCharge = createInRange("attackDecayMinCharge", 0, 0, 200, false);
-		attackDecayMinCharge.tieToCategory(extraI);
-		attackDecayMinCharge.setupTooltip(1);
-		attackDecayMaxCharge = createInRange("attackDecayMaxCharge", 100, 0, 200, false);
-		attackDecayMaxCharge.tieToCategory(extraI);
-		attackDecayMaxCharge.setupTooltip(1);
-		attackDecayMinPercentage = createInRange("attackDecayMinPercentage", 0, 0, 200, false);
-		attackDecayMinPercentage.tieToCategory(extraI);
-		attackDecayMinPercentage.setupTooltip(2);
-		attackDecayMaxPercentage = createInRange("attackDecayMaxPercentage", 100, 0, 200, false);
-		attackDecayMaxPercentage.tieToCategory(extraI);
-		attackDecayMaxPercentage.setupTooltip(2);
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200, true);
 		shieldChargePercentage.tieToCategory(extraI);
 		shieldChargePercentage.setupTooltip(1);
@@ -434,7 +417,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		return creativeAttackReach.get();
 	}
 	public Boolean attackDecay() {
-		return attackDecay.get();
+		return attackDecay.get().enabled;
 	}
 	public Boolean missedAttackRecovery() {
 		return missedAttackRecovery.get();
@@ -563,10 +546,10 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		return instantHealthBonus.get();
 	}
 	public double attackDecayMinCharge() {
-		return attackDecayMinCharge.get().doubleValue() / 100;
+		return attackDecay.get().minCharge.doubleValue() / 100;
 	}
 	public double attackDecayMaxCharge() {
-		return attackDecayMaxCharge.get().doubleValue() / 100;
+		return attackDecay.get().maxCharge.doubleValue() / 100;
 	}
 	public double attackDecayMaxChargeDiff() {
 		double ret = attackDecayMaxCharge() - attackDecayMinCharge();
@@ -574,11 +557,17 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 			ret = 1;
 		return ret;
 	}
-	public double attackDecayMinPercentage() {
-		return attackDecayMinPercentage.get().doubleValue() / 100;
+	public double attackDecayMinPercentageBase() {
+		return attackDecay.get().minPercentageBase.doubleValue() / 100;
 	}
-	public double attackDecayMaxPercentageDiff() {
-		return (attackDecayMaxPercentage.get().doubleValue() / 100) - attackDecayMinPercentage();
+	public double attackDecayMaxPercentageBaseDiff() {
+		return (attackDecay.get().maxPercentageBase.doubleValue() / 100) - attackDecayMinPercentageBase();
+	}
+	public double attackDecayMinPercentageEnchants() {
+		return attackDecay.get().minPercentageEnchants.doubleValue() / 100;
+	}
+	public double attackDecayMaxPercentageEnchantsDiff() {
+		return (attackDecay.get().maxPercentageEnchants.doubleValue() / 100) - attackDecayMinPercentageEnchants();
 	}
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();

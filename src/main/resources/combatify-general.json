@@ -1,5 +1,13 @@
 {
-  "attackDecay": false,
+  "attackDecay": {
+    "enabled": false,
+    "minCharge": 0,
+    "maxCharge": 100,
+    "minPercentageBase": 20,
+    "maxPercentageBase": 100,
+    "minPercentageEnchants": 0,
+    "maxPercentageEnchants": 100
+  },
   "attackReach": true,
   "autoAttackAllowed": true,
   "bedrockBridging": false,
@@ -64,10 +72,6 @@
   "sweepingNegatedForTamed": false,
   "swordBlocking": false,
 
-  "attackDecayMinCharge": 0,
-  "attackDecayMaxCharge": 100,
-  "attackDecayMinPercentage": 0,
-  "attackDecayMaxPercentage": 100,
   "shieldChargePercentage": 195,
 
   "breachArmorPiercing": 0.15,

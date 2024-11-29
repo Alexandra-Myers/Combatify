@@ -1,12 +1,15 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.extensions.IItemInHandRenderer;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -105,14 +108,14 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		return !CookeyMod.getConfig().hudRendering().showHandWhenInvisible().get() && original;
 	}
 
-	@Redirect(method = "renderArmWithItem",
+	@WrapOperation(method = "renderArmWithItem",
 		at = @At(
 			value = "INVOKE",
 			target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;applyItemArmAttackTransform(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/entity/HumanoidArm;F)V",
 			ordinal = 1))
-	public void cancelAttackTransform(ItemInHandRenderer itemInHandRenderer, PoseStack poseStack, HumanoidArm humanoidArm, float f) {
+	public void cancelAttackTransform(ItemInHandRenderer instance, PoseStack poseStack, HumanoidArm humanoidArm, float f, Operation<Void> original) {
 		if (!CookeyMod.getConfig().animations().swingAndUseItem().get())
-			this.applyItemArmAttackTransform(poseStack, humanoidArm, f);
+			original.call(instance, poseStack, humanoidArm, f);
 	}
 
 	@Inject(method = "renderArmWithItem",
@@ -144,7 +147,8 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	public float modifyArmHeight(float strengthScale) {
 		if (Combatify.CONFIG.chargedAttacks())
 			strengthScale *= 0.5f;
-		strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
+		if (CombatifyClient.augmentedArmHeight.get())
+			strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
 		double offset = CookeyMod.getConfig().hudRendering().attackCooldownHandOffset().get();
 		return  (float) (strengthScale * (1 - offset) + offset);
 	}
