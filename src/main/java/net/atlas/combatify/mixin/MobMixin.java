@@ -1,5 +1,8 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.server.level.ServerLevel;
@@ -18,9 +21,10 @@ public class MobMixin {
 	public float getDamageBonus(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float f) {
 		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f);
 	}
-	@Redirect(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f) {
-		MethodHandler.knockback(instance, d, e, f);
+	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
+		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
+		else original.call(instance, d, e, f);
 	}
 
 }

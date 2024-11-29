@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
@@ -44,7 +45,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -110,8 +110,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Final
 	public float baseValue = 1.0F;
 	@Unique
-	float oldDamage;
-	@Unique
 	boolean attacked;
 
 	@Unique
@@ -121,12 +119,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
 	}
 	@Inject(method = "hurt", at = @At("HEAD"))
-	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		oldDamage = amount;
+	public void injectSnowballKb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
+		originalDamage.set(amount);
 	}
 	@Inject(method = "hurt", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
-	public void changeReturn(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		boolean bl = amount == 0.0F && oldDamage <= 0.0F;
+	public void changeReturn(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
+		boolean bl = amount == 0.0F && originalDamage.get() <= 0.0F;
  		if(bl && Combatify.CONFIG.snowballKB())
 			cir.setReturnValue(super.hurt(source, amount));
 	}
@@ -243,7 +241,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		if (Combatify.CONFIG.strengthAppliesToEnchants())
 			combinedDamage.set(attackDamage);
-		if (Combatify.CONFIG.attackDecay() && !Combatify.CONFIG.sprintCritsEnabled())
+		if (Combatify.CONFIG.vanillaCrits())
 			return;
 		if (bl3.get())
 			combinedDamage.set(combinedDamage.get() / 1.5F);
@@ -256,15 +254,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			&& target instanceof LivingEntity;
 		if (!Combatify.CONFIG.sprintCritsEnabled())
 			isCrit &= !isSprinting();
-		if (!Combatify.CONFIG.attackDecay())
-			isCrit &= player.getAttackStrengthScale(0.5F) > 0.9;
+		if (Combatify.CONFIG.critChargePercentage() > 0)
+			isCrit &= player.getAttackStrengthScale(0.5F) > Combatify.CONFIG.critChargePercentage();
 		bl3.set(isCrit);
-		if (isCrit)
-			combinedDamage.set(combinedDamage.get() * 1.5F);
+		boolean isChargedCrit = !Combatify.CONFIG.chargedCrits() || player.getAttackStrengthScale(0.5F) > Combatify.CONFIG.chargedCritPercentage();
+		if (isCrit) combinedDamage.set(combinedDamage.get() * (float) (isChargedCrit ? Combatify.CONFIG.chargedCritDamage() : Combatify.CONFIG.unchargedCritDamage()));
 	}
-	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f) {
-		MethodHandler.knockback(instance, d, e, f);
+	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
+		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
+		else original.call(instance, d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {

@@ -2,6 +2,8 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
@@ -99,10 +101,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return 10;
 	}
 
-	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
+	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
 		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
-		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
+		if (amount.get() > 0.0F && original.call(instance, source)) {
 			if (itemStack.getItem() instanceof ItemExtensions shieldItem) {
 				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
 					if (Combatify.CONFIG.disableDuringShieldDelay())
@@ -151,12 +153,14 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public float changeIFrames(float constant) {
 		return constant - 10;
 	}
-	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0, argsOnly = true) final DamageSource source) {
+	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source) {
 		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB()))
-			MethodHandler.projectileKnockback(thisEntity, 0.4, e, f);
+			MethodHandler.projectileKnockback(instance, d, e, f);
+		else if (Combatify.CONFIG.ctsKB())
+			MethodHandler.knockback(instance, d, e, f);
 		else
-			MethodHandler.knockback(thisEntity, 0.4, e, f);
+			original.call(instance, d, e, f);
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))

@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.PlayerExtensions;
@@ -46,11 +48,11 @@ public abstract class ServerGamePacketMixin {
 		}
 	}
 
-	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;canInteractWithEntity(Lnet/minecraft/world/phys/AABB;D)Z"))
-	public boolean redirectCheck(ServerPlayer instance, AABB aabb, double v, @Local(ordinal = 0) Entity entity) {
+	@WrapOperation(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;canInteractWithEntity(Lnet/minecraft/world/phys/AABB;D)Z"))
+	public boolean redirectCheck(ServerPlayer instance, AABB aabb, double v, Operation<Boolean> original, @Local(ordinal = 0) Entity entity) {
 		if (entity instanceof ServerPlayer target)
             return CombatUtil.allowReach(player, target);
-		return instance.canInteractWithEntity(aabb, 1);
+		return original.call(instance, aabb, v);
 	}
 
 }

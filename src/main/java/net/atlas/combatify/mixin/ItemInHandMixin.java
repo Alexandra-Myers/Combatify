@@ -32,7 +32,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
@@ -170,19 +169,18 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			return interactionHand;
 		return original;
 	}
-	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
-	private void modifyBowCode(PoseStack instance, float x, float y, float z, @Local(ordinal = 0) HumanoidArm humanoidArm) {
-		int q = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
-		instance.translate(q * -0.2785682, 0.18344387412071228, 0.15731531381607056);
+	@WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
+	private void modifyBowCode(PoseStack instance, float f, float g, float h, Operation<Void> original) {
+		instance.translate(f, 0.18344387412071228, 0.15731531381607056);
 	}
-	@Redirect(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
-	private void modifyBowCode1(PoseStack instance, float x, float y, float z, @Local(ordinal = 0, argsOnly = true) float f, @Local(ordinal = 0, argsOnly = true) ItemStack itemStack) {
+	@WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
+	private void modifyBowCode1(PoseStack instance, float x, float y, float z, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) float f, @Local(ordinal = 0, argsOnly = true) ItemStack itemStack) {
 		assert minecraft.player != null;
 		float r = (float)itemStack.getUseDuration(minecraft.player) - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
 		float m = Mth.sin((r - 0.1F) * 1.3F);
 		float n = MethodHandler.getFatigueForTime((int) r) - 0.1F;
 		float o = m * n;
-		instance.translate(o * 0.0F, o * 0.004F, o * 0.0F);
+		original.call(instance, o * 0.0F, o * 0.004F, o * 0.0F);
 	}
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {

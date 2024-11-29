@@ -46,7 +46,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder canSweepOnMiss;
 	private BooleanHolder chargedReach;
 	private BooleanHolder creativeAttackReach;
-	private ObjectHolder<AttackDecay> attackDecay;
 	private BooleanHolder missedAttackRecovery;
 	private BooleanHolder disableDuringShieldDelay;
 	private BooleanHolder hasMissTime;
@@ -68,7 +67,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder fistDamage;
 	private BooleanHolder swordBlocking;
 	private BooleanHolder shieldOnlyWhenCharged;
-	private BooleanHolder sprintCritsEnabled;
 	private BooleanHolder ctsSaturationCap;
 	private BooleanHolder fastHealing;
 	private BooleanHolder letVanillaConnect;
@@ -76,6 +74,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder projectilesHaveIFrames;
 	private BooleanHolder magicHasIFrames;
 	private BooleanHolder autoAttackAllowed;
+	private BooleanHolder axesAreWeapons;
 	private BooleanHolder configOnlyWeapons;
 	private BooleanHolder tieredShields;
 	private BooleanHolder attackReach;
@@ -101,6 +100,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private EnumHolder<HealingMode> healingMode;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
+	private ObjectHolder<AttackDecay> attackDecay;
+	private ObjectHolder<CritControls> critControls;
 	private ObjectHolder<ProjectileUncertainty> projectileUncertainty;
 	private ObjectHolder<ProjectileDamage> projectileDamage;
 	private Category ctsB;
@@ -147,6 +148,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		autoAttackAllowed = createBoolean("autoAttackAllowed", true);
 		autoAttackAllowed.tieToCategory(ctsB);
 		autoAttackAllowed.setupTooltip(1);
+		axesAreWeapons = createBoolean("axesAreWeapons", true);
+		axesAreWeapons.tieToCategory(ctsB);
+		axesAreWeapons.setupTooltip(1);
 		bedrockBridging = createBoolean("bedrockBridging", false);
 		bedrockBridging.tieToCategory(ctsB);
 		bedrockBridging.setupTooltip(1);
@@ -171,6 +175,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach = createBoolean("creativeAttackReach", false);
 		creativeAttackReach.tieToCategory(ctsB);
 		creativeAttackReach.setupTooltip(1);
+		critControls = createObject("critControls", CritControls.DEFAULT, CritControls.class, new JavaToJSONSerialisation<>(CritControls.decoder, CritControls.encoder), CritControls.STREAM_CODEC, false);
+		critControls.tieToCategory(ctsB);
+		critControls.setupTooltip(1);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
 		ctsAttackBalancing.tieToCategory(ctsB);
 		ctsAttackBalancing.setupTooltip(1);
@@ -216,9 +223,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		snowballKB = createBoolean("snowballKB", true);
 		snowballKB.tieToCategory(ctsB);
 		snowballKB.setupTooltip(1);
-		sprintCritsEnabled = createBoolean("sprintCritsEnabled", true);
-		sprintCritsEnabled.tieToCategory(ctsB);
-		sprintCritsEnabled.setupTooltip(1);
 		strengthAppliesToEnchants = createBoolean("strengthAppliesToEnchants", true);
 		strengthAppliesToEnchants.tieToCategory(ctsB);
 		strengthAppliesToEnchants.setupTooltip(1);
@@ -398,6 +402,10 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean iFramesBasedOnWeapon() {
 		return iFramesBasedOnWeapon.get();
 	}
+
+	public boolean vanillaCrits() {
+		return !sprintCritsEnabled() && !chargedCrits() && critChargePercentage() == 0.9 && chargedCritDamage() == 1.5;
+	}
 	public Boolean bowFatigue() {
 		return bowFatigue.get();
 	}
@@ -410,6 +418,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean chargedAttacks() {
 		return chargedAttacks.get();
 	}
+	public Boolean chargedCrits() {
+		return critControls.get().chargedOrUncharged;
+	}
 	public Boolean chargedReach() {
 		return chargedReach.get();
 	}
@@ -418,6 +429,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean attackDecay() {
 		return attackDecay.get().enabled;
+	}
+	public Boolean axesAreWeapons() {
+		return axesAreWeapons.get();
 	}
 	public Boolean missedAttackRecovery() {
 		return missedAttackRecovery.get();
@@ -486,7 +500,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		return shieldOnlyWhenCharged.get();
 	}
 	public Boolean sprintCritsEnabled() {
-		return sprintCritsEnabled.get();
+		return critControls.get().sprintCritsEnabled;
 	}
 	public Boolean ctsSaturationCap() {
 		return ctsSaturationCap.get();
@@ -568,6 +582,18 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public double attackDecayMaxPercentageEnchantsDiff() {
 		return (attackDecay.get().maxPercentageEnchants.doubleValue() / 100) - attackDecayMinPercentageEnchants();
+	}
+	public double critChargePercentage() {
+		return critControls.get().minCharge / 100.0;
+	}
+	public double chargedCritPercentage() {
+		return critControls.get().chargedCritCharge / 100.0;
+	}
+	public double unchargedCritDamage() {
+		return critControls.get().unchargedCritMultiplier;
+	}
+	public double chargedCritDamage() {
+		return critControls.get().fullCritMultiplier;
 	}
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();

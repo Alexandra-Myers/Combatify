@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin.cookey;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.extensions.OverlayRendered;
@@ -17,7 +19,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntityRenderer.class)
@@ -34,20 +35,20 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     @Shadow
     protected abstract float getWhiteOverlayProgress(T livingEntity, float f);
 
-    @Inject(method = "shouldShowName*", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "shouldShowName*", at = @At("HEAD"), cancellable = true)
     public void showOwnName(T livingEntity, CallbackInfoReturnable<Boolean> cir) {
         if (livingEntity == Minecraft.getInstance().cameraEntity
                 && CookeyMod.getConfig().misc().showOwnNameInThirdPerson().get()) cir.setReturnValue(true);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @Redirect(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/RenderLayer;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;FFFFFF)V"))
-    public void renderWithOverlay(RenderLayer renderLayer, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, Entity livingEntity, float f, float g, float h, float j, float k, float l) {
+    @WrapOperation(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/layers/RenderLayer;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;FFFFFF)V"))
+    public void renderWithOverlay(RenderLayer renderLayer, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, Entity livingEntity, float f, float g, float h, float j, float k, float l, Operation<Void> original) {
         if (renderLayer instanceof OverlayRendered) {
             int overlayCoords = getOverlayCoords((T) livingEntity, this.getWhiteOverlayProgress((T) livingEntity, g));
             ((OverlayRendered<T>) renderLayer).combatify$renderWithOverlay(poseStack, multiBufferSource, i, (T) livingEntity, f, g, h, j, k, l, overlayCoords);
         } else {
-            renderLayer.render(poseStack, multiBufferSource, i, livingEntity, f, g, h, j, k, l);
+            original.call(renderLayer, poseStack, multiBufferSource, i, livingEntity, f, g, h, j, k, l);
         }
     }
 }

@@ -41,7 +41,7 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.maxCharge);
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.minPercentageBase);
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.maxPercentageBase);
-			registryFriendlyByteBuf.writeVarInt(projectileDamage.maxPercentageEnchants);
+			registryFriendlyByteBuf.writeVarInt(projectileDamage.minPercentageEnchants);
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.maxPercentageEnchants);
         }
 
