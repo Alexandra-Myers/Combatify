@@ -149,7 +149,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		if (CombatifyClient.augmentedArmHeight.get())
 			strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
 		double offset = CookeyMod.getConfig().hudRendering().attackCooldownHandOffset().get();
-		return  (float) (strengthScale * (1 - offset) + offset);
+		return (float) (strengthScale * (1 - offset) + offset);
 	}
 	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isUsingItem()Z", ordinal = 1))
 	private boolean modifyUseItemCheck(boolean original, @Local(ordinal = 0, argsOnly = true) AbstractClientPlayer abstractClientPlayer, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
