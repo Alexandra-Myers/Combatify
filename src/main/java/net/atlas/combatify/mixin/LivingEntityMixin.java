@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
@@ -55,6 +56,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract ItemStack getUseItem();
 
+	@Shadow
+	public abstract void indicateDamage(double d, double e);
+
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
@@ -79,7 +83,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
+	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl, @Share("blocked") LocalBooleanRef blocked) {
 		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
 		if (amount.get() > 0.0F && original.call(instance, source)) {
 			if (itemStack.getItem() instanceof ItemExtensions shieldItem) {
@@ -92,6 +96,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				shieldItem.getBlockingType().block(instance, null, itemStack, source, amount, f, g, bl);
 			}
 		}
+		blocked.set(bl.get());
 		return false;
 	}
 	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
@@ -131,7 +136,9 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return constant - 10;
 	}
 	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source) {
+	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Share("blocked") LocalBooleanRef bl) {
+		if (!bl.get())
+			indicateDamage(e, f);
 		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB()))
 			MethodHandler.projectileKnockback(instance, d, e, f);
 		else if (Combatify.CONFIG.ctsKB())

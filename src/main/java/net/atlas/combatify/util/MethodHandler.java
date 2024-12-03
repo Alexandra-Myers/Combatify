@@ -323,11 +323,12 @@ public class MethodHandler {
 		double x2 = attacker.getX() - target.getX();
 		double z2 = attacker.getZ() - target.getZ();
 		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
-		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 		if (((ItemExtensions)blockingItem.getItem()).getBlockingType().isToolBlocker()) {
+			MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 			return;
 		}
 		MethodHandler.knockback(target, 0.5, x2, z2);
 		MethodHandler.knockback(attacker, 0.5, x, z);
+		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 	}
 }
