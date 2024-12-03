@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public class AtlasCoreMixin {
 	@WrapOperation(method = "lambda$onInitialize$0", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/networking/v1/ServerPlayNetworking;send(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"))
 	private static void removeForUnmodded(ServerPlayer player, CustomPacketPayload payload, Operation<Void> original, @Local(ordinal = 0) AtlasConfig atlasConfig) {
-		if (!ServerPlayNetworking.canSend(player, NetworkingHandler.RemainingUseSyncPacket.TYPE) && atlasConfig.name.equals(Combatify.CONFIG.name)) return;
+		if (!ServerPlayNetworking.canSend(player, NetworkingHandler.RemainingUseSyncPacket.TYPE) && atlasConfig.name.getNamespace().equals(Combatify.MOD_ID)) return;
 		original.call(player, payload);
 	}
 }

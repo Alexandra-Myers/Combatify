@@ -20,7 +20,7 @@ public class ConfigCommandMixin {
 	private static void removeForUnmodded(PlayerList instance, Packet<?> packet, @Local(ordinal = 0, argsOnly = true) AtlasConfig atlasConfig) {
 		for (ServerPlayer player : instance.getPlayers()) {
 			if (!ServerPlayNetworking.canSend(player, AtlasCore.AtlasConfigPacket.TYPE)) return;
-			if (!ServerPlayNetworking.canSend(player, NetworkingHandler.RemainingUseSyncPacket.TYPE) && atlasConfig.name.equals(Combatify.CONFIG.name)) return;
+			if (!ServerPlayNetworking.canSend(player, NetworkingHandler.RemainingUseSyncPacket.TYPE) && atlasConfig.name.getNamespace().equals(Combatify.MOD_ID)) return;
 			player.connection.send(packet);
 		}
 	}
