@@ -5,7 +5,7 @@ import com.google.common.collect.HashBiMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
-import net.atlas.combatify.attributes.CustomAttributes;
+import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.ExtendedTier;
@@ -139,7 +139,7 @@ public class Combatify implements ModInitializer {
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
 
-		CustomAttributes.registerAttributes();
+		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {

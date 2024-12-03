@@ -35,15 +35,14 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 		instance.hurtCurrentlyUsedShield(amount.get());
 		g.set(amount.get());
 		amount.set(0.0f);
-		if (!source.is(DamageTypeTags.IS_PROJECTILE) && (entity = source.getDirectEntity()) instanceof LivingEntity) {
-			LivingEntity livingEntity = (LivingEntity)entity;
-			instance.blockUsingShield(livingEntity);
+		if (!source.is(DamageTypeTags.IS_PROJECTILE) && source.getDirectEntity() instanceof LivingEntity livingEntity) {
+			MethodHandler.blockedByShield(instance, livingEntity, source);
 		} else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
 			switch (source.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, blockingItem);
+					arrowDisable(instance, source, blockingItem);
 				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, blockingItem);
+					arrowDisable(instance, source, blockingItem);
 				case null, default -> {
 					// Do nothing
 				}

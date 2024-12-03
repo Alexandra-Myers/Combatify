@@ -15,3 +15,4 @@ accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket
 accessible class net/minecraft/world/effect/HealOrHarmMobEffect
 accessible class net/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor
 accessible class net/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor
+accessible method net/minecraft/world/item/enchantment/Enchantment modifyDamageFilteredValue (Lnet/minecraft/core/component/DataComponentType;Lnet/minecraft/server/level/ServerLevel;ILnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lorg/apache/commons/lang3/mutable/MutableFloat;)V

@@ -37,18 +37,18 @@ public class ShieldBlockingType extends BlockingType {
 		g.set(Math.min(blockStrength, amount.get()));
 		if (!source.is(DamageTypeTags.IS_PROJECTILE) && !source.is(DamageTypeTags.IS_EXPLOSION)) {
 			entity = source.getDirectEntity();
-			if (entity instanceof LivingEntity) {
+			if (entity instanceof LivingEntity livingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());
 				hurt = true;
-				instance.blockUsingShield((LivingEntity) entity);
+				MethodHandler.blockedByShield(instance, livingEntity, source);
 			}
 		} else {
 			g.set(amount.get());
 			switch (source.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, blockingItem);
+					arrowDisable(instance, source, blockingItem);
 				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, blockingItem);
+					arrowDisable(instance, source, blockingItem);
 				case null, default -> {
 					// Do nothing
 				}

@@ -1,7 +1,6 @@
 package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
@@ -9,9 +8,11 @@ import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.item.LongSwordItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
@@ -218,8 +219,9 @@ public class MethodHandler {
 		}
 		return instance;
 	}
-	public static void disableShield(LivingEntity attacker, LivingEntity target, ItemStack blockingItem) {
-		double piercingLevel = ((ItemExtensions)attacker.getMainHandItem().getItem()).getPiercingLevel();
+	public static void disableShield(LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
+		ItemStack attackingItem = attacker.getMainHandItem();
+		double piercingLevel = ((ItemExtensions)attackingItem.getItem()).getPiercingLevel();
 		piercingLevel += CustomEnchantmentHelper.getBreach(attacker);
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
@@ -228,15 +230,20 @@ public class MethodHandler {
 		if (canDisable && shieldItem.getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0)
 				((LivingEntityExtensions) attacker).setPiercingNegation(piercingLevel);
-			float damage = (float) (Combatify.CONFIG.shieldDisableTime() + (float) attacker.getAttributeValue(CustomAttributes.SHIELD_DISABLE_TIME));
-			damage -= (float) (target.getAttributeValue(CustomAttributes.SHIELD_DISABLE_REDUCTION));
+			float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
+			if (attacker.level() instanceof ServerLevel serverLevel) {
+				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, attackingItem, target, damageSource, damage);
+				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
+			}
 			if (target instanceof PlayerExtensions player)
 				player.ctsShieldDisable(damage, blockingItem.getItem());
 		}
 	}
-	public static void arrowDisable(LivingEntity target, ItemStack blockingItem) {
+	public static void arrowDisable(LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
 		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
-		damage -= (float) (target.getAttributeValue(CustomAttributes.SHIELD_DISABLE_REDUCTION));
+		if (target.level() instanceof ServerLevel serverLevel) {
+			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
+		}
 		if (target instanceof PlayerExtensions player)
 			player.ctsShieldDisable(damage, blockingItem.getItem());
 	}
@@ -308,5 +315,19 @@ public class MethodHandler {
 	    Vec3 normalized = newVec.normalize();
 	    double d = originalVec.dot(newVec);
 	    return normalized.multiply(d, d, d);
+	}
+
+	public static void blockedByShield(LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+		double x = target.getX() - attacker.getX();
+		double z = target.getZ() - attacker.getZ();
+		double x2 = attacker.getX() - target.getX();
+		double z2 = attacker.getZ() - target.getZ();
+		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
+		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
+		if (((ItemExtensions)blockingItem.getItem()).getBlockingType().isToolBlocker()) {
+			return;
+		}
+		MethodHandler.knockback(target, 0.5, x2, z2);
+		MethodHandler.knockback(attacker, 0.5, x, z);
 	}
 }

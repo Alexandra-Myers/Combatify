@@ -4,16 +4,16 @@
     "translate": "enchantment.combatify.recovery"
   },
   "effects": {
-    "minecraft:attributes": [
+    "combatify:shield_disable_time": [
       {
-        "amount": {
-          "type": "minecraft:linear",
-          "base": 1.0,
-          "per_level_above_first": 1.0
-        },
-        "attribute": "minecraft:generic.shield_disable_reduction",
-        "id": "combatify:enchantment.recovery",
-        "operation": "add_value"
+        "effect": {
+          "type": "minecraft:add",
+          "value": {
+            "type": "minecraft:linear",
+            "base": -1.0,
+            "per_level_above_first": -1.0
+          }
+        }
       }
     ]
   },

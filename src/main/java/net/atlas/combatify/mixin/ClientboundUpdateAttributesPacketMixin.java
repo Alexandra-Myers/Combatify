@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.extensions.IUpdateAttributesPacket;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.Holder;
@@ -28,7 +27,6 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 	@Override
 	public void combatify$changeAttributes(ServerPlayer reciever) {
 		List<Integer> indexes = new ArrayList<>();
-		List<Integer> toRemove = new ArrayList<>();
 		Map<Integer, AttributeModifier> modifierMap = new HashMap<>();
 		for (ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot : attributes) {
 			if (attributeSnapshot.attribute() == Attributes.ATTACK_SPEED) {
@@ -53,8 +51,6 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				}
 				indexes.add(attributes.indexOf(attributeSnapshot));
 			}
-			if (attributeSnapshot.attribute() == CustomAttributes.SHIELD_DISABLE_REDUCTION || attributeSnapshot.attribute() == CustomAttributes.SHIELD_DISABLE_TIME)
-				toRemove.add(attributes.indexOf(attributeSnapshot));
 		}
 		if (!indexes.isEmpty())
 			for (Integer index : indexes) {
@@ -63,8 +59,6 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				ClientboundUpdateAttributesPacket.AttributeSnapshot attributeSnapshot = attributes.remove(index.intValue());
 				attributes.add(index, new ClientboundUpdateAttributesPacket.AttributeSnapshot(attributeSnapshot.attribute(), attributeSnapshot.base() - 1.5, newModifiers));
 			}
-		if (!toRemove.isEmpty())
-			for (Integer index : toRemove) attributes.remove(index.intValue());
 	}
 	@Unique
 	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Holder<Attribute> attribute) {

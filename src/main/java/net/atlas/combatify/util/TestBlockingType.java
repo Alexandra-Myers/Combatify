@@ -29,7 +29,7 @@ public class TestBlockingType extends SwordBlockingType {
 			if (entity instanceof LivingEntity livingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());
 				hurt = true;
-				instance.blockUsingShield(livingEntity);
+				MethodHandler.blockedByShield(instance, livingEntity, source);
 			}
 		}
 

@@ -9,7 +9,6 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
@@ -141,7 +140,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(Attributes.ENTITY_INTERACTION_RANGE, Combatify.CONFIG.attackReach() ? 2.5 : 3).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5).add(CustomAttributes.SHIELD_DISABLE_REDUCTION).add(CustomAttributes.SHIELD_DISABLE_TIME);
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, Combatify.CONFIG.attackReach() ? 2.5 : 3).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 	}
 	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
 	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {

@@ -34,8 +34,8 @@ public class SwordBlockingType extends PercentageBlockingType {
 	public boolean fulfilBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl, float actualStrength) {
 		boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
 		entity = source.getDirectEntity();
-		if (blocked && entity instanceof LivingEntity)
-			instance.blockUsingShield((LivingEntity) entity);
+		if (blocked && entity instanceof LivingEntity livingEntity)
+			MethodHandler.blockedByShield(instance, livingEntity, source);
 		return true;
 	}
 

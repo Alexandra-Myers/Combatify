@@ -37,9 +37,9 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 			g.set(amount.get());
 			switch (source.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, blockingItem);
+					arrowDisable(instance, source, blockingItem);
 				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, blockingItem);
+					arrowDisable(instance, source, blockingItem);
 				case null, default -> {
 					// Do nothing
 				}
@@ -49,7 +49,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 			if (entity instanceof LivingEntity livingEntity) {
 				instance.hurtCurrentlyUsedShield(g.get());
 				hurt = true;
-				instance.blockUsingShield(livingEntity);
+				MethodHandler.blockedByShield(instance, livingEntity, source);
 			}
 		}
 

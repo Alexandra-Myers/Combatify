@@ -8,7 +8,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.attributes.CustomAttributes;
 import net.atlas.combatify.config.EatingInterruptionMode;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
@@ -22,7 +21,6 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -51,10 +49,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Unique
 	LivingEntity thisEntity = LivingEntity.class.cast(this);
 
-
-	@Shadow
-	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
-
 	@Shadow
 	protected int useItemRemaining;
 
@@ -67,25 +61,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty();
 	}
 
-	@ModifyReturnValue(method = "createLivingAttributes", at = @At(value = "RETURN"))
-	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(CustomAttributes.SHIELD_DISABLE_REDUCTION).add(CustomAttributes.SHIELD_DISABLE_TIME);
-	}
-
 	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
-		double x = target.getX() - this.getX();
-		double z = target.getZ() - this.getZ();
-		double x2 = this.getX() - target.getX();
-		double z2 = this.getZ() - target.getZ();
-		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
-		MethodHandler.disableShield(thisEntity, target, blockingItem);
-		if(((ItemExtensions)blockingItem.getItem()).getBlockingType().isToolBlocker()) {
-			ci.cancel();
-			return;
-		}
-		MethodHandler.knockback(target, 0.5, x2, z2);
-		MethodHandler.knockback(thisEntity, 0.5, x, z);
 		ci.cancel();
 	}
 	@Override
@@ -109,7 +86,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
 					if (Combatify.CONFIG.disableDuringShieldDelay())
 						if (source.getDirectEntity() instanceof LivingEntity attacker)
-							MethodHandler.disableShield(attacker, instance, itemStack);
+							MethodHandler.disableShield(attacker, instance, source, itemStack);
 					return false;
 				}
 				shieldItem.getBlockingType().block(instance, null, itemStack, source, amount, f, g, bl);
