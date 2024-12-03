@@ -11,6 +11,7 @@ import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
+import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.fabricmc.api.EnvType;
@@ -795,7 +796,7 @@ public class ItemConfig extends AtlasConfig {
 	public void modify() {
 		for (Item item : BuiltInRegistries.ITEM) {
 			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
-			boolean maxDamageChanged = false;
+			boolean damageOverridden = false;
 			boolean isConfiguredItem = configuredItems.containsKey(item);
 			ConfigurableItemData configurableItemData = null;
 			if (isConfiguredItem) {
@@ -803,19 +804,21 @@ public class ItemConfig extends AtlasConfig {
 				Integer durability = configurableItemData.durability;
 				Integer maxStackSize = configurableItemData.stackSize;
 				Tier tier = configurableItemData.tier;
-				if (tier != null)
-					maxDamageChanged = true;
 				TagKey<Block> mineable = configurableItemData.toolMineableTag;
+				if (maxStackSize != null)
+					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
 				if (durability != null) {
 					setDurability(builder, item, durability);
-					maxDamageChanged = true;
+					damageOverridden = true;
 				}
-				if (maxStackSize != null && !maxDamageChanged)
-					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
 				if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
 			}
-			if (!maxDamageChanged && ((ItemExtensions)item).getTierFromConfig() != null)
-				setDurability(builder, item, ((ItemExtensions)item).getTierFromConfig().getUses());
+			if (!damageOverridden && ((ItemExtensions)item).getTierFromConfig() != null) {
+				int value = ((ItemExtensions) item).getTierFromConfig().getUses();
+				if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
+					value *= 2;
+				setDurability(builder, item, value);
+			}
 			updateModifiers(builder, item, isConfiguredItem, configurableItemData);
 			((ItemAccessor) item).setComponents(builder.build());
 		}
@@ -824,8 +827,11 @@ public class ItemConfig extends AtlasConfig {
 	public void updateModifiers(DataComponentMap.Builder builder, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
 		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		ItemAttributeModifiers def = item.getDefaultAttributeModifiers();
-		if (modifier == ItemAttributeModifiers.EMPTY && def != ItemAttributeModifiers.EMPTY)
+		ItemAttributeModifiers original = originalModifiers.get(item);
+		if (modifier.equals(ItemAttributeModifiers.EMPTY) && !def.equals(ItemAttributeModifiers.EMPTY))
 			modifier = def;
+		if (!original.equals(ItemAttributeModifiers.EMPTY))
+			modifier = original;
 		modifier = ((ItemExtensions)item).modifyAttributeModifiers(modifier);
 		if (modifier != null) {
 			if (isConfiguredItem) {

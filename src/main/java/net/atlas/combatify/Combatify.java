@@ -2,6 +2,7 @@ package net.atlas.combatify;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.attributes.CustomAttributes;
@@ -21,6 +22,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -36,6 +38,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -59,9 +62,11 @@ public class Combatify implements ModInitializer {
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
 	public static boolean isCTS = false;
+	public static boolean isLoaded = false;
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
+	public static final Map<Item, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<String, BlockingType> defaultTypes = new HashMap<>();
@@ -84,6 +89,7 @@ public class Combatify implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		isLoaded = true;
 		WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
@@ -142,10 +148,7 @@ public class Combatify implements ModInitializer {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public static void setDurability(DataComponentMap.Builder builder, @NotNull Item item, int value) {
-		if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
-			value *= 2;
 		builder.set(DataComponents.DAMAGE, 0);
 		builder.set(DataComponents.MAX_DAMAGE, value);
 		builder.set(DataComponents.MAX_STACK_SIZE, 1);

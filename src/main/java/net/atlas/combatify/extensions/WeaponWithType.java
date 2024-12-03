@@ -11,6 +11,8 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 public interface WeaponWithType extends ItemExtensions {
 	@Override
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
+		if (Combatify.originalModifiers.get(self()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
+			Combatify.originalModifiers.put(self(), original);
 		if (getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
 			return original;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();

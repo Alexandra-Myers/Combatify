@@ -319,33 +319,33 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 	}
 
-	@ModifyReturnValue(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"))
-	public float getCurrentItemAttackStrengthDelay(float original) {
-		boolean hasVanilla = getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_ID) != null && !Combatify.isCTS;
-		float mod = !Combatify.CONFIG.hasteFix() ? 1.5F : (float) MethodHandler.calculateValueFromBase(getAttribute(Attributes.ATTACK_SPEED), 1.5F);
-		float speed = (float) (getAttributeValue(Attributes.ATTACK_SPEED) - mod);
-		if (hasVanilla || speed < 0)
+	@ModifyExpressionValue(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttributeValue(Lnet/minecraft/core/Holder;)D"))
+	public double modifyAttackSpeed(double original, @Share("hasVanilla") LocalBooleanRef hasVanilla) {
+		hasVanilla.set(getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_ID) != null && !Combatify.isCTS);
+		double mod = !Combatify.CONFIG.hasteFix() ? 1.5 : MethodHandler.calculateValueFromBase(getAttribute(Attributes.ATTACK_SPEED), 1.5);
+		double speed = original - mod;
+		if (hasVanilla.get() || speed <= 0)
 			speed += mod;
-		speed = Mth.clamp(speed, 0.1F, 1024.0F);
-		return 1.0F / speed * 20.0F + (hasVanilla ? 0 : 0.5F);
+		return Mth.clamp(speed, 0.1, 1024.0);
 	}
 
-	@Inject(method = "getAttackStrengthScale", at = @At(value = "HEAD"), cancellable = true)
-	public void modifyAttackStrengthScale(float baseTime, CallbackInfoReturnable<Float> cir) {
+	@ModifyReturnValue(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "RETURN"))
+	public float modifyAttackTicks(float original, @Share("hasVanilla") LocalBooleanRef hasVanilla) {
+		return hasVanilla.get() ? original : Math.round(original);
+	}
+
+	@ModifyExpressionValue(method = "getAttackStrengthScale", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getCurrentItemAttackStrengthDelay()F"))
+	public float modifyMaxCharge(float original) {
+		return Combatify.CONFIG.resetOnItemChange() ? (int) (original) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1) : attackStrengthMaxValue;
+	}
+
+	@ModifyReturnValue(method = "getAttackStrengthScale", at = @At(value = "RETURN"))
+	public float modifyAttackStrengthScale(float original) {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 2.0F : 1.0F;
-		if (Combatify.CONFIG.resetOnItemChange()) {
-			int chargeTicks = (int) (this.getCurrentItemAttackStrengthDelay()) * (Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-			if (attackStrengthMaxValue != chargeTicks) {
-				if (Combatify.CONFIG.enableDebugLogging())
-					Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
-				this.attackStrengthMaxValue = chargeTicks;
-			}
-		}
 		if (this.attackStrengthMaxValue == 0) {
-			cir.setReturnValue(charge);
-			return;
+			return charge;
 		}
-		cir.setReturnValue(Mth.clamp(charge * ((this.attackStrengthTicker + baseTime) / this.attackStrengthMaxValue), 0.0F, charge));
+		return charge * original;
 	}
 
 	@Override

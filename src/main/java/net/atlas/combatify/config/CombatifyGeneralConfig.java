@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import net.atlas.atlascore.AtlasCore;
@@ -16,12 +17,19 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.DispenserBlock;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -377,7 +385,31 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	@Override
 	public <T> void alertChange(ConfigValue<T> tConfigValue, T newValue) {
+		switch (newValue) {
+			case Boolean bool when tConfigValue.name().equals("percentageDamageEffects") -> {
+				if (isLoaded) {
+					if (bool) {
+						MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+					} else {
+						MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE);
+						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE);
+					}
+				}
+			}
+			case Boolean bool when tConfigValue.name().equals("dispensableTridents") -> {
+				if (isLoaded) {
+					if (bool) DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
+					else DispenserBlock.registerBehavior(Items.TRIDENT, ((Object2ObjectOpenHashMap<Item, DispenseItemBehavior>) DispenserBlock.DISPENSER_REGISTRY).defaultReturnValue());
+				}
+			}
+			case Boolean ignored when tConfigValue.name().equals("weaponTypesEnabled") || tConfigValue.name().equals("ctsAttackBalancing") -> {
+				if (ITEMS != null) ITEMS.modify();
+			}
+            case null, default -> {
 
+			}
+        }
 	}
 
 	@Override
@@ -675,7 +707,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
                 return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
             }
         };
-		public AtlasConfig.ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner;
+		public ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner;
 		public Double bowUncertainty;
 		public Double crossbowUncertainty;
 		public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {

@@ -37,8 +37,9 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 					.toList()
 					.isEmpty() && !Combatify.isCTS;
 				int mul = Combatify.CONFIG.chargedAttacks() ? 2 : 1;
-				for (double newSpeed = speed - mod; newSpeed > 0; newSpeed -= 0.0001) {
-					if (hasVanilla) newSpeed += mod;
+				double newSpeed = speed - mod;
+				if (hasVanilla || newSpeed <= 0) newSpeed += mod;
+				for (; newSpeed > 0; newSpeed -= 0.0001) {
 					if (vanillaMath(newSpeed / mul) == CTSMath(speed, hasVanilla, mod) * mul) {
 						modifierMap.put(attributes.indexOf(attributeSnapshot), new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, (newSpeed / mul) - 2.5, AttributeModifier.Operation.ADD_VALUE));
 						break;
@@ -99,7 +100,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 	@Unique
 	private static int CTSMath(double attackSpeed, boolean hasVanilla, double mod) {
 		double d = attackSpeed - mod;
-		if (hasVanilla || d < 0)
+		if (hasVanilla || d <= 0)
 			d += mod;
 		d = Mth.clamp(d, 0.1, 1024.0);
 		d = 1.0 / d * 20.0 + (hasVanilla ? 0 : 0.5);

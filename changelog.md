@@ -18,3 +18,5 @@
 #### Fixes:
 ***
 - Fixed attack decay and how it is applied
+
+- Config options which used to require a restart unnecessarily now listen for changes and update in-game
