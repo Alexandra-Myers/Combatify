@@ -13,6 +13,7 @@
     "BowItemMixin",
     "ClientboundUpdateAttributesPacketMixin",
     "CombatRulesMixin",
+    "ConfigCommandMixin",
     "CrossbowItemMixin",
     "DiggerItemMixin",
     "EggMixin",
