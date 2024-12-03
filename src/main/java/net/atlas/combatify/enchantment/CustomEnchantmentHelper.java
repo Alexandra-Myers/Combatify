@@ -3,7 +3,6 @@ package net.atlas.combatify.enchantment;
 import com.google.common.util.concurrent.AtomicDouble;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -11,16 +10,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.ConditionalEffect;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
 import org.apache.commons.lang3.mutable.MutableFloat;
-
-import java.util.List;
-
-import static net.minecraft.world.item.enchantment.Enchantment.damageContext;
 
 public class CustomEnchantmentHelper {
 	public static double getBreach(LivingEntity entity) {
