@@ -34,6 +34,7 @@
     "ProjectileMixin",
     "ProjectileWeaponItemMixin",
     "RamTargetMixin",
+    "RegistrySyncManagerMixin",
     "ResourceLocationMixin",
     "ServerConfigurationPacketMixin",
     "ServerEntityMixin",
