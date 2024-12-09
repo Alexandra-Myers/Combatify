@@ -12,7 +12,6 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
-import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -150,7 +149,24 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
 	public boolean hurtCurrentlyUsedShield(boolean original) {
-		return !((ItemExtensions)useItem.getItem()).getBlockingType().isEmpty() || original;
+		return !MethodHandler.getBlockingItem(player).stack().isEmpty() || original;
+	}
+
+	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getUsedItemHand()Lnet/minecraft/world/InteractionHand;"))
+	public InteractionHand useCurrentBlockingHand(InteractionHand original) {
+		return MethodHandler.getBlockingItem(player).useHand() != null ? MethodHandler.getBlockingItem(player).useHand() : original;
+	}
+
+	@WrapOperation(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
+	public void useCurrentBlockingItem(ItemStack instance, int i, LivingEntity livingEntity, EquipmentSlot equipmentSlot, Operation<Void> original) {
+		instance = !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
+		original.call(instance, i, livingEntity, equipmentSlot);
+	}
+
+	@WrapOperation(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
+	public boolean useCurrentBlockingItem(ItemStack instance, Operation<Boolean> original) {
+		instance = !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
+		return original.call(instance);
 	}
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
@@ -165,19 +181,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
 	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
 		ci.cancel();
-	}
-
-	@Override
-	public boolean ctsShieldDisable(float damage, Item item) {
-		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
-		if (item instanceof TieredShieldItem)
-			for (TieredShieldItem tieredShieldItem : Combatify.shields)
-				if (item != tieredShieldItem)
-					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
-		player.stopUsingItem();
-		player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F);
-		this.level().broadcastEntityEvent(this, (byte)30);
-		return true;
 	}
 
 	@Override

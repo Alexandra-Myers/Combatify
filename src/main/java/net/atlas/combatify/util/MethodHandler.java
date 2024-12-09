@@ -4,8 +4,8 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.item.LongSwordItem;
+import net.atlas.combatify.item.TieredShieldItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
@@ -235,8 +235,8 @@ public class MethodHandler {
 				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, attackingItem, target, damageSource, damage);
 				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
 			}
-			if (target instanceof PlayerExtensions player)
-				player.ctsShieldDisable(damage, blockingItem.getItem());
+			if (target instanceof Player player)
+				disableShield(player, damage, blockingItem.getItem());
 		}
 	}
 	public static void arrowDisable(LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
@@ -244,8 +244,18 @@ public class MethodHandler {
 		if (target.level() instanceof ServerLevel serverLevel) {
 			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
 		}
-		if (target instanceof PlayerExtensions player)
-			player.ctsShieldDisable(damage, blockingItem.getItem());
+		if (target instanceof Player player)
+			disableShield(player, damage, blockingItem.getItem());
+	}
+	public static void disableShield(Player player, float damage, Item item) {
+		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
+		if (item instanceof TieredShieldItem)
+			for (TieredShieldItem tieredShieldItem : Combatify.shields)
+				if (item != tieredShieldItem)
+					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
+		player.stopUsingItem();
+		player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
+		player.level().broadcastEntityEvent(player, (byte)30);
 	}
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {

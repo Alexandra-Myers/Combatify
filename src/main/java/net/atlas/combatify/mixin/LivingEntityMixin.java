@@ -136,8 +136,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return constant - 10;
 	}
 	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Share("blocked") LocalBooleanRef bl) {
-		if (!bl.get())
+	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
+		if (bl.get() && amount > 0)
 			indicateDamage(e, f);
 		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB()))
 			MethodHandler.projectileKnockback(instance, d, e, f);
