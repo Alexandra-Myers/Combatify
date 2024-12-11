@@ -21,7 +21,7 @@ public class ElytraItemMixin extends Item implements ItemExtensions {
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 }

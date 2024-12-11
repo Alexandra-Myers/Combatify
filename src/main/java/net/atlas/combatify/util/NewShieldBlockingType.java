@@ -60,8 +60,8 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.blockStrength != null)
 				return (float) (configurableItemData.blockStrength / 100.0);
 		}
@@ -74,8 +74,8 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.blockKbRes != null)
 				return configurableItemData.blockKbRes;
 		}

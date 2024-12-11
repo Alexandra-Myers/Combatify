@@ -9,6 +9,7 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -24,8 +25,8 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class EnchantmentHelperMixin {
 	@ModifyExpressionValue(method = "getEnchantmentCost", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
 	private static int getEnchantmentValue(int original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.enchantability != null)
 				return configurableItemData.enchantability;
 			if (configurableItemData.isEnchantable != null && original == 0)
@@ -36,8 +37,8 @@ public abstract class EnchantmentHelperMixin {
 
 	@ModifyExpressionValue(method = "selectEnchantment", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;getEnchantmentValue()I"))
 	private static int getEnchantmentValue1(int original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.enchantability != null)
 				return configurableItemData.enchantability;
 			if (configurableItemData.isEnchantable != null && original == 0)

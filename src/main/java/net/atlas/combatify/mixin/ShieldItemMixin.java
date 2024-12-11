@@ -2,9 +2,11 @@ package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -15,14 +17,15 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
     }
 
 	@Override
-	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(this);
+	public BlockingType combatify$getBlockingType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
 			if (configurableItemData.blockingType != null)
 				return configurableItemData.blockingType;
 			WeaponType type;
-			if ((type = configurableItemData.type) != null && Combatify.ITEMS.configuredWeapons.containsKey(type)) {
-				BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(type).blockingType;
+			ConfigurableWeaponData configurableWeaponData;
+			if ((type = configurableItemData.type) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
+				BlockingType blockingType = configurableWeaponData.blockingType;
 				if (blockingType != null)
 					return blockingType;
 			}
@@ -31,7 +34,7 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 }

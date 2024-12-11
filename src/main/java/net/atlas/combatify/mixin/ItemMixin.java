@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(Item.class)
 public abstract class ItemMixin implements ItemExtensions {
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return Item.class.cast(this);
 	}
 	@ModifyReturnValue(method = "isValidRepairItem", at = @At(value = "RETURN"))

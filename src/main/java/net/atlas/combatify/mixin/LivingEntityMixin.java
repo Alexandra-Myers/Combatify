@@ -98,13 +98,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
 		if (amount.get() > 0.0F && original.call(instance, source)) {
 			if (itemStack.getItem() instanceof ItemExtensions shieldItem) {
-				if (shieldItem.getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
+				if (shieldItem.combatify$getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
 					if (Combatify.CONFIG.disableDuringShieldDelay())
 						if (source.getDirectEntity() instanceof LivingEntity attacker)
 							MethodHandler.disableShield(attacker, instance, source, itemStack);
 					return false;
 				}
-				shieldItem.getBlockingType().block(instance, null, itemStack, source, amount, f, g, bl);
+				shieldItem.combatify$getBlockingType().block(instance, null, itemStack, source, amount, f, g, bl);
 			}
 		}
 		blocked.set(bl.get());

@@ -88,7 +88,7 @@ public abstract class MinecraftMixin {
 		if (!original) return false;
 		if (player != null) {
 			ItemExtensions item = ((ItemExtensions) player.getUseItem().getItem());
-			boolean bl = item.getBlockingType().canBlockHit() && !item.getBlockingType().isEmpty();
+			boolean bl = item.combatify$getBlockingType().canBlockHit() && !item.combatify$getBlockingType().isEmpty();
 			if (bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F))
 				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK)
 					startAttack();

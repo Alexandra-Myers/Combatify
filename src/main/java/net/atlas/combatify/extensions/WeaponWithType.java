@@ -2,21 +2,22 @@ package net.atlas.combatify.extensions;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public interface WeaponWithType extends ItemExtensions {
 	@Override
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
-		if (Combatify.originalModifiers.get(self()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
-			Combatify.originalModifiers.put(self(), original);
-		if (getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
+		if (Combatify.originalModifiers.get(combatify$self()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
+			Combatify.originalModifiers.put(combatify$self(), original);
+		if (combatify$getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
 			return original;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
-		getWeaponType().addCombatAttributes(getConfigTier(), builder);
+		combatify$getWeaponType().addCombatAttributes(getConfigTier(), builder);
 		original.modifiers().forEach(entry -> {
 			boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
 				|| entry.attribute().is(Attributes.ATTACK_SPEED)
@@ -26,9 +27,10 @@ public interface WeaponWithType extends ItemExtensions {
 		});
 		return builder.build();
 	}
-	default WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(self()).type;
+	default WeaponType combatify$getWeaponType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
+			WeaponType type = configurableItemData.type;
 			if (type != null)
 				return type;
 		}
@@ -37,10 +39,9 @@ public interface WeaponWithType extends ItemExtensions {
 
 	@Override
 	default double getChargedAttackBonus() {
-		Item item = self();
-		double chargedBonus = getWeaponType().getChargedReach();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+		double chargedBonus = combatify$getWeaponType().getChargedReach();
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			if (configurableItemData.chargedReach != null)
 				chargedBonus = configurableItemData.chargedReach;
 		}
@@ -49,10 +50,9 @@ public interface WeaponWithType extends ItemExtensions {
 
 	@Override
 	default boolean canSweep() {
-		Item item = self();
-		boolean canSweep = getWeaponType().canSweep();
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+		boolean canSweep = combatify$getWeaponType().canSweep();
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			if (configurableItemData.canSweep != null)
 				canSweep = configurableItemData.canSweep;
 		}
@@ -60,14 +60,16 @@ public interface WeaponWithType extends ItemExtensions {
 	}
 
 	@Override
-	default BlockingType getBlockingType() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			BlockingType blockingType = Combatify.ITEMS.configuredItems.get(self()).blockingType;
+	default BlockingType combatify$getBlockingType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
+			BlockingType blockingType = configurableItemData.blockingType;
 			if (blockingType != null)
 				return blockingType;
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).blockingType;
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
+		if (configurableWeaponData != null) {
+			BlockingType blockingType = configurableWeaponData.blockingType;
 			if (blockingType != null)
 				return blockingType;
 		}
@@ -76,13 +78,15 @@ public interface WeaponWithType extends ItemExtensions {
 
 	@Override
 	default double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			Double piercingLevel = Combatify.ITEMS.configuredItems.get(self()).piercingLevel;
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
+			Double piercingLevel = configurableItemData.piercingLevel;
 			if (piercingLevel != null)
 				return piercingLevel;
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			Double piercingLevel = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).piercingLevel;
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
+		if (configurableWeaponData != null) {
+			Double piercingLevel = configurableWeaponData.piercingLevel;
 			if (piercingLevel != null)
 				return piercingLevel;
 		}

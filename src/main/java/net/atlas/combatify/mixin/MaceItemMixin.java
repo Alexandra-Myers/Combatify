@@ -2,9 +2,10 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MaceItem;
@@ -19,9 +20,10 @@ public class MaceItemMixin extends Item implements WeaponWithType {
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+	public WeaponType combatify$getWeaponType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
+			WeaponType type = configurableItemData.type;
 			if (type != null)
 				return type;
 		}
@@ -34,7 +36,7 @@ public class MaceItemMixin extends Item implements WeaponWithType {
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 }

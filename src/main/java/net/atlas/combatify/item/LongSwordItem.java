@@ -1,8 +1,10 @@
 package net.atlas.combatify.item;
 
-import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.WeaponWithType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.BlockTags;
@@ -32,7 +34,7 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 	@Override
 	public ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
-		getWeaponType().addCombatAttributes(getConfigTier(), builder);
+		combatify$getWeaponType().addCombatAttributes(getConfigTier(), builder);
 		return builder.build();
 	}
 
@@ -53,13 +55,15 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 
 	@Override
 	public double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			Double piercingLevel = Combatify.ITEMS.configuredItems.get(this).piercingLevel;
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
+			Double piercingLevel = configurableItemData.piercingLevel;
 			if (piercingLevel != null)
 				return piercingLevel;
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			Double piercingLevel = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).piercingLevel;
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
+		if (configurableWeaponData != null) {
+			Double piercingLevel = configurableWeaponData.piercingLevel;
 			if (piercingLevel != null)
 				return piercingLevel;
 		}
@@ -70,14 +74,15 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+	public WeaponType combatify$getWeaponType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
+			WeaponType type = configurableItemData.type;
 			if (type != null)
 				return type;
 		}

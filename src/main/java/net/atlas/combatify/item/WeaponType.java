@@ -3,6 +3,7 @@ package net.atlas.combatify.item;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -91,8 +92,8 @@ public class WeaponType {
 		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;
 		double damageBonus = tier.getAttackDamageBonus() + modifier;
 		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && ExtendedTier.getLevel(tier) > 0;
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
+		if (configurableWeaponData != null) {
 			if (configurableWeaponData.damageOffset != null) {
 				if (configurableWeaponData.tierable)
 					return damageBonus + configurableWeaponData.damageOffset;
@@ -104,8 +105,8 @@ public class WeaponType {
     }
 
     public double getSpeed(Tier tier) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
+		if (configurableWeaponData != null) {
 			if (configurableWeaponData.speed != null)
 				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed();
 		}
@@ -113,24 +114,24 @@ public class WeaponType {
     }
 
     public double getReach() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
+		if (configurableWeaponData != null) {
 			if (configurableWeaponData.reach != null)
 				return configurableWeaponData.reach - 2.5;
 		}
 		return reach;
     }
 	public double getChargedReach() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
+		if (configurableWeaponData != null) {
 			if (configurableWeaponData.chargedReach != null)
 				return configurableWeaponData.chargedReach;
 		}
 		return 1.0;
 	}
 	public boolean canSweep() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(this)) {
-			ConfigurableWeaponData configurableWeaponData = Combatify.ITEMS.configuredWeapons.get(this);
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
+		if (configurableWeaponData != null) {
 			if (configurableWeaponData.canSweep != null)
 				return configurableWeaponData.canSweep;
 		}

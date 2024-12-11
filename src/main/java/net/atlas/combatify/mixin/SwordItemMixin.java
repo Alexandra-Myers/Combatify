@@ -6,6 +6,7 @@ import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.extensions.*;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -17,14 +18,16 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 	}
 
 	@Override
-	public BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			BlockingType blockingType = Combatify.ITEMS.configuredItems.get(this).blockingType;
+	public BlockingType combatify$getBlockingType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
+			BlockingType blockingType = configurableItemData.blockingType;
 			if (blockingType != null)
 				return blockingType;
 		}
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(getWeaponType())) {
-			BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(getWeaponType()).blockingType;
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
+		if (configurableWeaponData != null) {
+			BlockingType blockingType = configurableWeaponData.blockingType;
 			if (blockingType != null)
 				return blockingType;
 		}
@@ -32,9 +35,10 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+	public WeaponType combatify$getWeaponType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
+			WeaponType type = configurableItemData.type;
 			if (type != null)
 				return type;
 		}
@@ -42,7 +46,7 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 }

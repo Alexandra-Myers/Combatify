@@ -24,7 +24,7 @@ public abstract class TieredItemMixin extends Item implements WeaponWithType {
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 

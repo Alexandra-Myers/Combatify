@@ -28,6 +28,7 @@
     "ItemStackMixin",
     "LivingEntityMixin",
     "MaceItemMixin",
+    "MeleeAttackGoalMixin",
     "MobEffectMixin",
     "MobMixin",
     "PickaxeItemMixin",

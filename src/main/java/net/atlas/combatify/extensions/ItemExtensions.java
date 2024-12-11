@@ -2,8 +2,10 @@ package net.atlas.combatify.extensions;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
@@ -17,10 +19,9 @@ public interface ItemExtensions {
 	}
 
 	default double getChargedAttackBonus() {
-		Item item = self();
-		double chargedBonus = 1.0;
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+        double chargedBonus = 1.0;
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			WeaponType type;
 			if ((type = configurableItemData.type) != null)
 				chargedBonus = type.getChargedReach();
@@ -31,10 +32,9 @@ public interface ItemExtensions {
 	}
 
 	default boolean canSweep() {
-		Item item = self();
-		boolean canSweep = false;
-		if(Combatify.ITEMS.configuredItems.containsKey(item)) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(item);
+        boolean canSweep = false;
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			WeaponType type;
 			if ((type = configurableItemData.type) != null)
 				canSweep = type.canSweep();
@@ -44,14 +44,15 @@ public interface ItemExtensions {
 		return canSweep;
 	}
 
-	default BlockingType getBlockingType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
+	default BlockingType combatify$getBlockingType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			if (configurableItemData.blockingType != null)
 				return configurableItemData.blockingType;
 			WeaponType type;
-			if ((type = configurableItemData.type) != null && Combatify.ITEMS.configuredWeapons.containsKey(type)) {
-				BlockingType blockingType = Combatify.ITEMS.configuredWeapons.get(type).blockingType;
+			ConfigurableWeaponData configurableWeaponData;
+			if ((type = configurableItemData.type) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
+				BlockingType blockingType = configurableWeaponData.blockingType;
 				if (blockingType != null)
 					return blockingType;
 			}
@@ -60,13 +61,14 @@ public interface ItemExtensions {
 	}
 
 	default double getPiercingLevel() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			if (configurableItemData.piercingLevel != null)
 				return configurableItemData.piercingLevel;
 			WeaponType type;
-			if ((type = configurableItemData.type) != null && Combatify.ITEMS.configuredWeapons.containsKey(type)) {
-				Double piercingLevel = Combatify.ITEMS.configuredWeapons.get(type).piercingLevel;
+			ConfigurableWeaponData configurableWeaponData;
+			if ((type = configurableItemData.type) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
+				Double piercingLevel = configurableWeaponData.piercingLevel;
 				if (piercingLevel != null)
 					return piercingLevel;
 			}
@@ -74,7 +76,7 @@ public interface ItemExtensions {
 		return 0;
 	}
 
-	Item self();
+	Item combatify$self();
 
 	default Tier getConfigTier() {
 		Tier tier = getTierFromConfig();
@@ -82,13 +84,14 @@ public interface ItemExtensions {
 		return Tiers.DIAMOND;
 	}
 	default Tier getTierFromConfig() {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self()))
-            return Combatify.ITEMS.configuredItems.get(self()).tier;
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null)
+            return configurableItemData.tier;
 		return null;
 	}
 	default boolean canRepairThroughConfig(ItemStack stack) {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(self())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(self());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
 			if (configurableItemData.repairIngredient != null)
 				return configurableItemData.repairIngredient.test(stack);
 		}

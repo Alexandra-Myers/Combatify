@@ -14,6 +14,7 @@ import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -38,6 +39,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -58,10 +60,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntFunction;
 
 import static net.atlas.combatify.Combatify.*;
+import static net.atlas.combatify.config.ConfigurableEntityData.ENTITY_DATA_STREAM_CODEC;
 import static net.atlas.combatify.config.ConfigurableItemData.ITEM_DATA_STREAM_CODEC;
 import static net.atlas.combatify.config.ConfigurableWeaponData.WEAPON_DATA_STREAM_CODEC;
 
 public class ItemConfig extends AtlasConfig {
+	public Map<EntityType<?>, ConfigurableEntityData> configuredEntities;
 	public Map<Item, ConfigurableItemData> configuredItems;
 	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
@@ -146,6 +150,7 @@ public class ItemConfig extends AtlasConfig {
 		}
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_STREAM_CODEC = StreamCodec.of((buf, item) -> buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)), buf -> BuiltInRegistries.ITEM.get(buf.readResourceLocation()));
+	public static final StreamCodec<RegistryFriendlyByteBuf, EntityType<?>> ENTITY_STREAM_CODEC = StreamCodec.of((buf, entityType) -> buf.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(entityType)), buf -> BuiltInRegistries.ENTITY_TYPE.get(buf.readResourceLocation()));
 	public static Formula armourCalcs = null;
 
 	public ItemConfig() {
@@ -183,6 +188,9 @@ public class ItemConfig extends AtlasConfig {
 		if (!object.has("tiers"))
 			object.add("tiers", new JsonArray());
 		JsonElement tiers = object.get("tiers");
+		if (!object.has("entities"))
+			object.add("entities", new JsonArray());
+		JsonElement entities = object.get("entities");
 		if (tiers instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
@@ -235,8 +243,39 @@ public class ItemConfig extends AtlasConfig {
 					notJSONObject(jsonElement, "Configuring Items");
 			});
 		}
+		if (entities instanceof JsonArray entityArray) {
+			entityArray.asList().forEach(jsonElement -> {
+				if (jsonElement instanceof JsonObject jsonObject) {
+					if (jsonObject.get("name") instanceof JsonArray entitiesWithConfig) {
+						entitiesWithConfig.asList().forEach(
+							entityName -> {
+								EntityType<?> entity = entityFromName(entityName.getAsString());
+								parseEntityType(entity, jsonObject);
+							}
+						);
+					} else {
+						EntityType<?> entity = entityFromJson(jsonObject);
+						parseEntityType(entity, jsonObject);
+					}
+				} else
+					notJSONObject(jsonElement, "Configuring Items");
+			});
+		}
 		if (object.has("armor_calculation"))
 			armourCalcs = new Formula(getString(object, "armor_calculation"));
+	}
+	public void parseEntityType(EntityType<?> type, JsonObject jsonObject) {
+		Integer attackInterval = null;
+
+		ConfigurableEntityData oldData;
+		if (type != null && (oldData = MethodHandler.forEntityType(type)) != null) {
+			attackInterval = oldData.attackInterval;
+		}
+
+		if (jsonObject.has("attack_interval"))
+			attackInterval = getInt(jsonObject, "attack_interval");
+		ConfigurableEntityData configurableWeaponData = new ConfigurableEntityData(attackInterval);
+		configuredEntities.put(type, configurableWeaponData);
 	}
 	public void parseWeaponType(WeaponType type, JsonObject jsonObject) {
 		Double damageOffset = null;
@@ -248,8 +287,8 @@ public class ItemConfig extends AtlasConfig {
 		Double piercingLevel = null;
 		Boolean canSweep = null;
 
-		if (type != null && configuredWeapons.containsKey(type)) {
-			ConfigurableWeaponData oldData = configuredWeapons.get(type);
+		ConfigurableWeaponData oldData;
+		if (type != null && (oldData = MethodHandler.forWeapon(type)) != null) {
 			tierable = oldData.tierable;
 			damageOffset = oldData.damageOffset;
 			speed = oldData.speed;
@@ -310,12 +349,14 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public void defineConfigHolders() {
+		configuredEntities = new HashMap<>();
 		configuredItems = new HashMap<>();
 		configuredWeapons = new HashMap<>();
 	}
 
 	@Override
 	public void resetExtraHolders() {
+		configuredEntities = new HashMap<>();
 		configuredItems = new HashMap<>();
 		configuredWeapons = new HashMap<>();
 		tiers = defaultTiers;
@@ -351,6 +392,14 @@ public class ItemConfig extends AtlasConfig {
 	}
 	public static Boolean getBoolean(JsonObject object, String name) {
 		return object.get(name).getAsBoolean();
+	}
+
+	public static EntityType<?> entityFromJson(JsonObject jsonObject) {
+		return entityFromName(GsonHelper.getAsString(jsonObject, "name"));
+	}
+
+	public static EntityType<?> entityFromName(String string) {
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(string)).orElse(null);
 	}
 
 	public static Item itemFromJson(JsonObject jsonObject) {
@@ -509,6 +558,7 @@ public class ItemConfig extends AtlasConfig {
 		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
 		registeredWeaponTypes = readMap(buf, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
 		registeredTypes = readMap(buf, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
+		configuredEntities = readMap(buf, ENTITY_STREAM_CODEC, ENTITY_DATA_STREAM_CODEC);
 		configuredItems = readMap(buf, ITEM_STREAM_CODEC, ITEM_DATA_STREAM_CODEC);
 		configuredWeapons = readMap(buf, WeaponType.STREAM_CODEC, WEAPON_DATA_STREAM_CODEC);
 		String formula = buf.readUtf();
@@ -551,6 +601,7 @@ public class ItemConfig extends AtlasConfig {
 		writeMap(buf, tiers, NAME_STREAM_CODEC, TIERS_STREAM_CODEC);
 		writeMap(buf, registeredWeaponTypes, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
 		writeMap(buf, Combatify.registeredTypes, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
+		writeMap(buf, configuredEntities, ENTITY_STREAM_CODEC, ENTITY_DATA_STREAM_CODEC);
 		writeMap(buf, configuredItems, ITEM_STREAM_CODEC, ITEM_DATA_STREAM_CODEC);
 		writeMap(buf, configuredWeapons, WeaponType.STREAM_CODEC, WEAPON_DATA_STREAM_CODEC);
 		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written);
@@ -645,8 +696,8 @@ public class ItemConfig extends AtlasConfig {
 		Double armourKbRes = null;
 		Ingredient ingredient = null;
 		TagKey<Block> toolMineable = null;
-		if (configuredItems.containsKey(item)) {
-			ConfigurableItemData oldData = configuredItems.get(item);
+		ConfigurableItemData oldData = MethodHandler.forItem(item);
+		if (oldData != null) {
 			damage = oldData.damage;
 			speed = oldData.speed;
 			reach = oldData.reach;
@@ -797,10 +848,9 @@ public class ItemConfig extends AtlasConfig {
 		for (Item item : BuiltInRegistries.ITEM) {
 			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
 			boolean damageOverridden = false;
-			boolean isConfiguredItem = configuredItems.containsKey(item);
-			ConfigurableItemData configurableItemData = null;
+			ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
+			boolean isConfiguredItem = configurableItemData != null;
 			if (isConfiguredItem) {
-				configurableItemData = configuredItems.get(item);
 				Integer durability = configurableItemData.durability;
 				Integer maxStackSize = configurableItemData.stackSize;
 				Tier tier = configurableItemData.tier;

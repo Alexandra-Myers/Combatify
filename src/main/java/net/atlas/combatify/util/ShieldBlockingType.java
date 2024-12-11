@@ -63,8 +63,8 @@ public class ShieldBlockingType extends BlockingType {
 
 	@Override
 	public float getShieldBlockDamageValue(ItemStack stack) {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.blockStrength != null) {
 				return configurableItemData.blockStrength.floatValue();
 			}
@@ -78,8 +78,8 @@ public class ShieldBlockingType extends BlockingType {
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.blockKbRes != null) {
 				return configurableItemData.blockKbRes;
 			}

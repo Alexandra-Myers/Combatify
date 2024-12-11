@@ -86,7 +86,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			}
 		}
 		if (Combatify.CONFIG.swordBlocking()) {
-			if (!blockingItem.isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).getBlockingType().isToolBlocker()) {
+			if (!blockingItem.isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).combatify$getBlockingType().isToolBlocker()) {
 				poseStack.pushPose();
 				applyItemArmTransform(poseStack, humanoidArm, i);
 				applyItemBlockTransform(poseStack, humanoidArm);
@@ -185,7 +185,7 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Inject(method = "applyItemArmTransform", at = @At(value = "HEAD"), cancellable = true)
 	public void injectSwordBlocking(PoseStack matrices, HumanoidArm arm, float equipProgress, CallbackInfo ci) {
 		assert minecraft.player != null;
-		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions blocker && blocker.getBlockingType().isToolBlocker() && !blocker.getBlockingType().isEmpty()) {
+		if(MethodHandler.getBlockingItem(minecraft.player).getItem() instanceof ItemExtensions blocker && blocker.combatify$getBlockingType().isToolBlocker() && !blocker.combatify$getBlockingType().isEmpty()) {
 			int i = arm == HumanoidArm.RIGHT ? 1 : -1;
 			matrices.translate(((float)i * 0.56F), (-0.52F + 0.0 * -0.6F), -0.72F);
 			ci.cancel();

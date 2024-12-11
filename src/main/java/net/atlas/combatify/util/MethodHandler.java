@@ -2,12 +2,16 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableEntityData;
+import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.MobExtensions;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.item.WeaponType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
@@ -17,10 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -95,9 +96,9 @@ public class MethodHandler {
 		}
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
-		boolean delay = ((ItemExtensions) blockingItem.getItem()).getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		boolean delay = ((ItemExtensions) blockingItem.getItem()).combatify$getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 		if (!blockingItem.isEmpty() && !delay) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
+			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType();
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
 			else
@@ -116,7 +117,7 @@ public class MethodHandler {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).getBlockingType();
+			BlockingType blockingType = ((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType();
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
 			else
@@ -233,7 +234,7 @@ public class MethodHandler {
 			piercingLevel = 0;
 		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;
 		ItemExtensions shieldItem = (ItemExtensions) blockingItem.getItem();
-		if (canDisable && shieldItem.getBlockingType().canBeDisabled()) {
+		if (canDisable && shieldItem.combatify$getBlockingType().canBeDisabled()) {
 			if (piercingLevel > 0)
 				((LivingEntityExtensions) attacker).setPiercingNegation(piercingLevel);
 			float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
@@ -270,8 +271,8 @@ public class MethodHandler {
 			for (InteractionHand hand : InteractionHand.values()) {
 				ItemStack stack = entity.getItemInHand(hand);
 				Item blockingItem = stack.getItem();
-				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!bl && !stack.isEmpty() && stack.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, stack) && ((ItemExtensions)stack.getItem()).getBlockingType().canCrouchBlock()) {
+				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && ((ItemExtensions) blockingItem).combatify$getBlockingType().requireFullCharge();
+				if (!bl && !stack.isEmpty() && stack.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, stack) && ((ItemExtensions)stack.getItem()).combatify$getBlockingType().canCrouchBlock()) {
 					return new FakeUseItem(stack, hand);
 				}
 			}
@@ -337,7 +338,7 @@ public class MethodHandler {
 		double x2 = attacker.getX() - target.getX();
 		double z2 = attacker.getZ() - target.getZ();
 		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
-		if (((ItemExtensions)blockingItem.getItem()).getBlockingType().isToolBlocker()) {
+		if (((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType().isToolBlocker()) {
 			MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 			return;
 		}
@@ -379,5 +380,30 @@ public class MethodHandler {
 			case Zombie zombie -> !(zombie.isEyeInFluid(FluidTags.WATER) || zombie.isEyeInFluid(FluidTags.LAVA));
 			case null, default -> base.call();
 		};
+	}
+
+	public static ConfigurableItemData forItem(Item item) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(item)) {
+			return Combatify.ITEMS.configuredItems.get(item);
+		}
+		return null;
+	}
+
+	public static ConfigurableWeaponData forWeapon(WeaponType weaponType) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredWeapons.containsKey(weaponType)) {
+			return Combatify.ITEMS.configuredWeapons.get(weaponType);
+		}
+		return null;
+	}
+
+	public static ConfigurableEntityData forEntityType(EntityType<?> entityType) {
+		if (Combatify.ITEMS != null && Combatify.ITEMS.configuredEntities.containsKey(entityType)) {
+			return Combatify.ITEMS.configuredEntities.get(entityType);
+		}
+		return null;
+	}
+
+	public static ConfigurableEntityData forEntity(Entity entity) {
+		return forEntityType(entity.getType());
 	}
 }

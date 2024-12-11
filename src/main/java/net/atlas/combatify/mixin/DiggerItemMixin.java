@@ -25,7 +25,7 @@ public abstract class DiggerItemMixin extends TieredItem implements WeaponWithTy
 	}
 
 	@Override
-	public Item self() {
+	public Item combatify$self() {
 		return this;
 	}
 }

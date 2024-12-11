@@ -1,7 +1,8 @@
 package net.atlas.combatify.mixin;
 
-import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.Tier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,9 +14,10 @@ public class ShovelItemMixin extends DiggerItemMixin {
 	}
 
 	@Override
-	public WeaponType getWeaponType() {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(this)) {
-			WeaponType type = Combatify.ITEMS.configuredItems.get(this).type;
+	public WeaponType combatify$getWeaponType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		if (configurableItemData != null) {
+			WeaponType type = configurableItemData.type;
 			if (type != null)
 				return type;
 		}

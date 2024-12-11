@@ -2,7 +2,6 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -40,8 +39,8 @@ public class TestBlockingType extends SwordBlockingType {
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+		if (configurableItemData != null) {
 			if (configurableItemData.blockKbRes != null)
 				return configurableItemData.blockKbRes;
 		}
