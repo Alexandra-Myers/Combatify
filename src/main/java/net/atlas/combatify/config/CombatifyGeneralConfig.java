@@ -93,6 +93,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder improvedMiscEntityAttacks;
 	private BooleanHolder hasteFix;
 	private BooleanHolder enableDebugLogging;
+	private BooleanHolder mobsCanGuard;
+	private BooleanHolder mobsCanSprint;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
@@ -320,6 +322,12 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		midairKB = createBoolean("midairKB", false);
 		midairKB.tieToCategory(extraB);
 		midairKB.setupTooltip(2);
+		mobsCanGuard = createBoolean("mobsCanGuard", false);
+		mobsCanGuard.tieToCategory(extraB);
+		mobsCanGuard.setupTooltip(1);
+		mobsCanSprint = createBoolean("mobsCanSprint", false);
+		mobsCanSprint.tieToCategory(extraB);
+		mobsCanSprint.setupTooltip(1);
 		oldSprintFoodRequirement = createBoolean("oldSprintFoodRequirement", false);
 		oldSprintFoodRequirement.tieToCategory(extraB);
 		oldSprintFoodRequirement.setupTooltip(1);
@@ -581,6 +589,12 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean hasteFix() {
 		return hasteFix.get();
+	}
+	public Boolean mobsCanGuard() {
+		return mobsCanGuard.get();
+	}
+	public Boolean mobsCanSprint() {
+		return mobsCanSprint.get();
 	}
 	public Boolean enableDebugLogging() {
 		return enableDebugLogging.get();

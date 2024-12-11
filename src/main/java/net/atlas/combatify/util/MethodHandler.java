@@ -1,30 +1,36 @@
 package net.atlas.combatify.util;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
+import net.atlas.combatify.extensions.MobExtensions;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -235,8 +241,7 @@ public class MethodHandler {
 				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, attackingItem, target, damageSource, damage);
 				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
 			}
-			if (target instanceof Player player)
-				disableShield(player, damage, blockingItem.getItem());
+			disableShield(target, damage, blockingItem.getItem());
 		}
 	}
 	public static void arrowDisable(LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
@@ -244,18 +249,17 @@ public class MethodHandler {
 		if (target.level() instanceof ServerLevel serverLevel) {
 			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
 		}
-		if (target instanceof Player player)
-			disableShield(player, damage, blockingItem.getItem());
+		disableShield(target, damage, blockingItem.getItem());
 	}
-	public static void disableShield(Player player, float damage, Item item) {
-		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
+	public static void disableShield(LivingEntity target, float damage, Item item) {
+		getCooldowns(target).addCooldown(item, (int)(damage * 20.0F));
 		if (item instanceof TieredShieldItem)
 			for (TieredShieldItem tieredShieldItem : Combatify.shields)
 				if (item != tieredShieldItem)
-					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
-		player.stopUsingItem();
-		player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
-		player.level().broadcastEntityEvent(player, (byte)30);
+					getCooldowns(target).addCooldown(tieredShieldItem, (int)(damage * 20.0F));
+		target.stopUsingItem();
+		target.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + target.level().random.nextFloat() * 0.4F);
+		target.level().broadcastEntityEvent(target, (byte)30);
 	}
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
@@ -276,7 +280,7 @@ public class MethodHandler {
 		return new FakeUseItem(ItemStack.EMPTY, null);
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
-		return entity instanceof Player player && player.getCooldowns().isOnCooldown(var1.getItem());
+		return getCooldowns(entity).isOnCooldown(var1.getItem());
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
@@ -340,5 +344,40 @@ public class MethodHandler {
 		MethodHandler.knockback(target, 0.5, x2, z2);
 		MethodHandler.knockback(attacker, 0.5, x, z);
 		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
+	}
+	public static ItemCooldowns createItemCooldowns() {
+		return new ItemCooldowns();
+	}
+	public static ItemCooldowns getCooldowns(LivingEntity livingEntity) {
+		if (livingEntity instanceof Player player) return player.getCooldowns();
+		return ((LivingEntityExtensions)livingEntity).combatify$getFallbackCooldowns();
+	}
+
+	public static boolean isMobGuarding(Mob mob) {
+		return ((MobExtensions)mob).isGuarding();
+	}
+	public static float getPinchHealth(LivingEntity livingEntity, Difficulty difficulty) {
+		return switch (difficulty) {
+			case PEACEFUL, EASY -> 0.0F;
+			case NORMAL -> livingEntity.getMaxHealth() / 4;
+			case HARD -> livingEntity.getMaxHealth() / 2;
+		};
+	}
+
+	public static boolean shouldSprintToCloseInOnTarget(Difficulty difficulty, double change) {
+		if (difficulty == Difficulty.PEACEFUL || difficulty == Difficulty.EASY) return false;
+		return change < (difficulty == Difficulty.NORMAL ? -1 : 0);
+	}
+
+	public static boolean processSprintAbility(Entity entity, Operation<Boolean> base) {
+		return switch (entity) {
+			case AbstractPiglin ignored -> true;
+			case AbstractSkeleton skeleton -> {
+				ItemStack itemstack = skeleton.getItemInHand(ProjectileUtil.getWeaponHoldingHand(skeleton, Items.BOW));
+				yield !itemstack.is(Items.BOW);
+			}
+			case Zombie zombie -> !(zombie.isEyeInFluid(FluidTags.WATER) || zombie.isEyeInFluid(FluidTags.LAVA));
+			case null, default -> base.call();
+		};
 	}
 }

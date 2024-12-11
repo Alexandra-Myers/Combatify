@@ -75,6 +75,8 @@
   "letVanillaConnect": true,
   "magicHasIFrames": true,
   "midairKB": false,
+  "mobsCanGuard": false,
+  "mobsCanSprint": false,
   "oldSprintFoodRequirement": false,
   "shieldOnlyWhenCharged": false,
   "sweepingNegatedForTamed": false,

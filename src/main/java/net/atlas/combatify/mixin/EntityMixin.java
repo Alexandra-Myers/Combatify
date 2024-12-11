@@ -1,7 +1,10 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,5 +26,11 @@ public abstract class EntityMixin {
 		  return (float) ((Combatify.CONFIG.minHitboxSize() - f) * 0.5F);
 		}
 		return original;
+	}
+
+	@WrapMethod(method = "canSprint")
+	public boolean modifySprint(Operation<Boolean> original) {
+		if (Combatify.CONFIG.mobsCanSprint()) return MethodHandler.processSprintAbility(Entity.class.cast(this), original);
+		return original.call();
 	}
 }

@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -157,16 +158,19 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		return MethodHandler.getBlockingItem(player).useHand() != null ? MethodHandler.getBlockingItem(player).useHand() : original;
 	}
 
-	@WrapOperation(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
-	public void useCurrentBlockingItem(ItemStack instance, int i, LivingEntity livingEntity, EquipmentSlot equipmentSlot, Operation<Void> original) {
-		instance = !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
-		original.call(instance, i, livingEntity, equipmentSlot);
+	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
+	public ItemStack useCurrentBlockingItemStats(ItemStack instance) {
+		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
 	}
 
-	@WrapOperation(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
-	public boolean useCurrentBlockingItem(ItemStack instance, Operation<Boolean> original) {
-		instance = !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
-		return original.call(instance);
+	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
+	public ItemStack useCurrentBlockingItem(ItemStack instance, int i, LivingEntity livingEntity, EquipmentSlot equipmentSlot) {
+		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
+	}
+
+	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
+	public ItemStack useCurrentBlockingItem(ItemStack instance) {
+		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
 	}
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))

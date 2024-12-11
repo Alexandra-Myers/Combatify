@@ -30,7 +30,7 @@ public class ShieldBlockingType extends BlockingType {
 
 	@Override
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if (instance instanceof Player player && player.getCooldowns().isOnCooldown(blockingItem.getItem()))
+		if (MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem.getItem()))
 			return;
 		float blockStrength = this.getShieldBlockDamageValue(blockingItem);
 		boolean hurt = false;

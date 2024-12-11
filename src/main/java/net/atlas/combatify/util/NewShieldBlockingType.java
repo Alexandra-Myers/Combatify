@@ -11,7 +11,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +26,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 
 	@Override
 	public boolean canBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		return !(instance instanceof Player player) || !player.getCooldowns().isOnCooldown(blockingItem.getItem());
+		return !MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem.getItem());
 	}
 
 	@Override

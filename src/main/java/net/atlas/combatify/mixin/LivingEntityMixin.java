@@ -42,6 +42,8 @@ import java.util.UUID;
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
 	@Unique
 	private double piercingNegation;
+	@Unique
+	private ItemCooldowns fallbackCooldowns = MethodHandler.createItemCooldowns();
 
 	public LivingEntityMixin(EntityType<?> entityType, Level level) {
 		super(entityType, level);
@@ -58,6 +60,15 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Shadow
 	public abstract void indicateDamage(double d, double e);
+
+	@Override
+	public ItemCooldowns combatify$getFallbackCooldowns() {
+		return fallbackCooldowns;
+	}
+	@Inject(method = "tick", at = @At(value = "RETURN"))
+	public void tickCooldowns(CallbackInfo ci) {
+		fallbackCooldowns.tick();
+	}
 
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
@@ -145,6 +156,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			MethodHandler.knockback(instance, d, e, f);
 		else
 			original.call(instance, d, e, f);
+	}
+
+	@ModifyExpressionValue(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isUsingItem()Z"))
+	public boolean addCooldownCheck(boolean original, @Local(ordinal = 0) ItemStack itemStack) {
+		return original || MethodHandler.getCooldowns(thisEntity).isOnCooldown(itemStack.getItem());
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))

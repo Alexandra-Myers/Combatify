@@ -1,5 +1,6 @@
 package net.atlas.combatify.util;
 
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -18,6 +19,8 @@ import static net.atlas.combatify.util.MethodHandler.*;
 
 @Environment(EnvType.CLIENT)
 public class ClientMethodHandler {
+	public static boolean guarding;
+	public static final float GUARDING_X_ROT = (float) (-Math.PI / Math.PI);
 	public static HitResult redirectResult(@Nullable HitResult instance) {
 		if (instance == null)
 			return null;
@@ -47,5 +50,12 @@ public class ClientMethodHandler {
 			}
 		}
 		return null;
+	}
+	public static float modifyGuardingXRot(float original) {
+		if (guarding) {
+			guarding = false;
+			return GUARDING_X_ROT;
+		}
+		return original;
 	}
 }
