@@ -378,7 +378,7 @@ public class MethodHandler {
 
 	public static boolean shouldSprintToCloseInOnTarget(Difficulty difficulty, double change) {
 		if (difficulty == Difficulty.PEACEFUL || difficulty == Difficulty.EASY) return false;
-		return change < (difficulty == Difficulty.NORMAL ? -1 : 0);
+		return change < (difficulty == Difficulty.NORMAL ? -0.25 : 0);
 	}
 
 	public static boolean processSprintAbility(Entity entity, Operation<Boolean> base) {
