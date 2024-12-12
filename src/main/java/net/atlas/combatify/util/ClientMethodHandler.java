@@ -83,7 +83,7 @@ public class ClientMethodHandler {
 
 		bobArms(modelPart, modelPart2, g);
 	}
-	public static <T extends Mob> void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headYRot, float headXRot) {
+	public static <T extends Mob> void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headXRot) {
 		float h = Mth.sin(f * 3.1415927F);
 		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
 		modelPart2.zRot = 0.0F;
