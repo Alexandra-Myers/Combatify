@@ -1,12 +1,15 @@
 package net.atlas.combatify.util;
 
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
@@ -16,11 +19,10 @@ import java.util.List;
 import java.util.Objects;
 
 import static net.atlas.combatify.util.MethodHandler.*;
+import static net.minecraft.client.model.AnimationUtils.bobArms;
 
 @Environment(EnvType.CLIENT)
 public class ClientMethodHandler {
-	public static boolean guarding;
-	public static final float GUARDING_X_ROT = (float) (-Math.PI / Math.PI);
 	public static HitResult redirectResult(@Nullable HitResult instance) {
 		if (instance == null)
 			return null;
@@ -51,11 +53,50 @@ public class ClientMethodHandler {
 		}
 		return null;
 	}
-	public static float modifyGuardingXRot(float original) {
-		if (guarding) {
-			guarding = false;
-			return GUARDING_X_ROT;
+	public static void animateBlockingBase(ModelPart arm, boolean rightHanded, float f, float headXRot) {
+		float h = Mth.sin(f * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
+		arm.yRot = (!rightHanded ? -30.0F : 30.0F) * 0.017453292F - (0.1F - h * 0.6F);
+		arm.xRot = arm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+		arm.xRot += h * 1.2F - i * 0.4F;
+	}
+	public static <T extends Mob> void swingWeaponDown(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headXRot) {
+		float h = Mth.sin(f * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
+		modelPart.zRot = 0.0F;
+		modelPart2.zRot = 0.0F;
+		if (mob.getMainArm() == HumanoidArm.RIGHT) {
+			modelPart.yRot = 0.15707964F;
+			modelPart2.yRot = 30.0F * 0.017453292F - 0.15707964F;
+			modelPart.xRot = -1.8849558F + Mth.cos(g * 0.09F) * 0.15F;
+			modelPart2.xRot = modelPart2.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+			modelPart.xRot += h * 2.2F - i * 0.4F;
+			modelPart2.xRot += h * 1.2F - i * 0.4F;
+		} else {
+			modelPart.yRot = -30.0F * 0.017453292F + 0.15707964F;
+			modelPart2.yRot = -0.15707964F;
+			modelPart.xRot = modelPart.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+			modelPart2.xRot = -1.8849558F + Mth.cos(g * 0.09F) * 0.15F;
+			modelPart.xRot += h * 1.2F - i * 0.4F;
+			modelPart2.xRot += h * 2.2F - i * 0.4F;
 		}
-		return original;
+
+		bobArms(modelPart, modelPart2, g);
+	}
+	public static <T extends Mob> void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headYRot, float headXRot) {
+		float h = Mth.sin(f * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
+		modelPart2.zRot = 0.0F;
+		modelPart.zRot = 0.0F;
+		boolean isRightHanded = mob.getMainArm() == HumanoidArm.RIGHT;
+		ModelPart modelPart3 = isRightHanded ? modelPart2 : modelPart;
+		ModelPart modelPart4 = isRightHanded ? modelPart : modelPart2;
+		modelPart3.yRot = -(0.1F - h * 0.6F);
+		modelPart4.yRot = (!isRightHanded ? -30.0F : 30.0F) * 0.017453292F + (0.1F - h * 0.6F);
+		modelPart3.xRot = (float) (-Math.PI / 2.25F);
+		modelPart4.xRot = modelPart4.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+		modelPart2.xRot += h * 1.2F - i * 0.4F;
+		modelPart.xRot += h * 1.2F - i * 0.4F;
+		bobArms(modelPart2, modelPart, g);
 	}
 }

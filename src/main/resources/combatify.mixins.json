@@ -62,7 +62,6 @@
   },
   "client": [
     "AccessibilityOptionsMixin",
-    "AnimationUtilsMixin",
     "ClientAttackAnimMixin",
     "ControlsMixin",
     "GameRendererMixin",

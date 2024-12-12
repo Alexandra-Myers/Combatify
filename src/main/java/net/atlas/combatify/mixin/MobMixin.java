@@ -146,7 +146,14 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions, Li
 
 	@WrapOperation(method = "populateDefaultEquipmentSlots", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EquipmentSlot;getType()Lnet/minecraft/world/entity/EquipmentSlot$Type;"))
 	public EquipmentSlot.Type fakeType(EquipmentSlot instance, Operation<EquipmentSlot.Type> original) {
-		if (instance == EquipmentSlot.OFFHAND) return EquipmentSlot.Type.HUMANOID_ARMOR;
+		if (Combatify.CONFIG.mobsCanGuard() && instance == EquipmentSlot.OFFHAND) return EquipmentSlot.Type.HUMANOID_ARMOR;
+		return original.call(instance);
+	}
+
+
+	@WrapOperation(method = "populateDefaultEquipmentEnchantments", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EquipmentSlot;getType()Lnet/minecraft/world/entity/EquipmentSlot$Type;"))
+	public EquipmentSlot.Type fakeType1(EquipmentSlot instance, Operation<EquipmentSlot.Type> original) {
+		if (Combatify.CONFIG.mobsCanGuard() && instance == EquipmentSlot.OFFHAND) return EquipmentSlot.Type.HUMANOID_ARMOR;
 		return original.call(instance);
 	}
 
