@@ -20,7 +20,7 @@ public class MeleeAttackGoalMixin {
 	@ModifyExpressionValue(method = "canUse", at = @At(value = "CONSTANT", args = "longValue=20"))
 	public long replaceConstWithConfig(long original) {
 		ConfigurableEntityData configurableEntityData = MethodHandler.forEntity(mob);
-		if (configurableEntityData != null)
+		if (configurableEntityData != null && configurableEntityData.attackInterval != null)
 			return configurableEntityData.attackInterval;
 		return original;
 	}
@@ -28,7 +28,7 @@ public class MeleeAttackGoalMixin {
 	@ModifyExpressionValue(method = "resetAttackCooldown", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int replaceConstWithConfig1(int original) {
 		ConfigurableEntityData configurableEntityData = MethodHandler.forEntity(mob);
-		if (configurableEntityData != null)
+		if (configurableEntityData != null && configurableEntityData.attackInterval != null)
 			return configurableEntityData.attackInterval;
 		return original;
 	}
@@ -36,7 +36,7 @@ public class MeleeAttackGoalMixin {
 	@ModifyExpressionValue(method = "getAttackInterval", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int replaceConstWithConfig2(int original) {
 		ConfigurableEntityData configurableEntityData = MethodHandler.forEntity(mob);
-		if (configurableEntityData != null)
+		if (configurableEntityData != null && configurableEntityData.attackInterval != null)
 			return configurableEntityData.attackInterval;
 		return original;
 	}
