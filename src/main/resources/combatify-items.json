@@ -42,6 +42,22 @@
 
   ],
   "entities": [
-
+    {
+      "name": [
+        "minecraft:end_crystal",
+        "minecraft:item_frame",
+        "minecraft:glow_item_frame",
+        "minecraft:painting",
+        "minecraft:armor_stand",
+        "minecraft:interaction",
+        "minecraft:shulker_bullet"
+      ],
+      "tag": [
+        "#c:boats",
+        "#c:minecarts",
+        "#minecraft:redirectable_projectile"
+      ],
+      "is_misc_entity": true
+    }
   ]
 }

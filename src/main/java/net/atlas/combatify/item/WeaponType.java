@@ -4,7 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.util.MethodHandler;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -19,7 +19,7 @@ import java.util.Objects;
 import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID;
 
 public class WeaponType {
-	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> STREAM_CODEC = StreamCodec.of((buf, weaponType) -> buf.writeUtf(weaponType.name), buf -> WeaponType.fromID(buf.readUtf()));
+	public static final StreamCodec<? super FriendlyByteBuf, WeaponType> STREAM_CODEC = StreamCodec.of((buf, weaponType) -> buf.writeUtf(weaponType.name), buf -> WeaponType.fromID(buf.readUtf()));
 	public static final WeaponType EMPTY = createBasicUntierable("empty", 0, 0, 0);
     public static final WeaponType SWORD = createBasic("sword", 2, 0.5, 0.5);
 	public static final WeaponType MACE = createBasic("mace", 2, -1.5, 0);

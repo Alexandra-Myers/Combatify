@@ -123,6 +123,7 @@
   "options.augmentedArmHeight" : "CTS Arm Height",
   "options.shieldIndicator" : "Shield Indicator",
   "text.config.combatify-items.title": "Combatify Items",
+  "text.config.combatify-items.size": "Size",
   "text.config.combatify-general.title": "Combatify",
   "text.config.combatify-general.reset": "Reset",
   "text.config.combatify-general.category.cts_booleans": "CTS Booleans",

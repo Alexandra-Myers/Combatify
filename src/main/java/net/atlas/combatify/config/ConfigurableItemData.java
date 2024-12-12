@@ -11,6 +11,8 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 
+import java.util.Objects;
+
 import static net.atlas.combatify.Combatify.registeredWeaponTypes;
 import static net.atlas.combatify.config.ItemConfig.getTier;
 import static net.atlas.combatify.config.ItemConfig.getTierName;
@@ -22,21 +24,21 @@ public class ConfigurableItemData {
 		buf.writeDouble(configurableItemData.reach == null ? -10 : configurableItemData.reach);
 		buf.writeDouble(configurableItemData.chargedReach == null ? -10 : configurableItemData.chargedReach);
 		buf.writeVarInt(configurableItemData.stackSize == null ? -10 : configurableItemData.stackSize);
-		buf.writeVarInt(configurableItemData.durability == null ? -10 : configurableItemData.durability);
-		buf.writeInt(configurableItemData.cooldown == null ? -10 : configurableItemData.cooldown);
+		ArmourVariable.ARMOUR_VARIABLE_STREAM_CODEC.encode(buf, configurableItemData.durability);
+		buf.writeVarInt(configurableItemData.cooldown == null ? -10 : configurableItemData.cooldown);
 		if(configurableItemData.cooldown != null)
 			buf.writeBoolean(configurableItemData.cooldownAfter);
 		buf.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name);
 		buf.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName());
 		buf.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
 		buf.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
-		buf.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
+		buf.writeVarInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
 		buf.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
-		buf.writeInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
+		buf.writeVarInt(configurableItemData.useDuration == null ? -10 : configurableItemData.useDuration);
 		buf.writeDouble(configurableItemData.piercingLevel == null ? -10 : configurableItemData.piercingLevel);
 		buf.writeInt(configurableItemData.canSweep == null ? -10 : configurableItemData.canSweep ? 1 : 0);
 		buf.writeUtf(configurableItemData.tier == null ? "empty" : getTierName(configurableItemData.tier));
-		buf.writeInt(configurableItemData.defense == null ? -10 : configurableItemData.defense);
+		ArmourVariable.ARMOUR_VARIABLE_STREAM_CODEC.encode(buf, configurableItemData.defense);
 		buf.writeDouble(configurableItemData.toughness == null ? -10 : configurableItemData.toughness);
 		buf.writeDouble(configurableItemData.armourKbRes == null ? -10 : configurableItemData.armourKbRes);
 		buf.writeBoolean(configurableItemData.repairIngredient == null);
@@ -51,8 +53,8 @@ public class ConfigurableItemData {
 		Double reach = buf.readDouble();
 		Double chargedReach = buf.readDouble();
 		Integer stackSize = buf.readVarInt();
-		Integer durability = buf.readVarInt();
-		Integer cooldown = buf.readInt();
+		ArmourVariable durability = ArmourVariable.ARMOUR_VARIABLE_STREAM_CODEC.decode(buf);
+		Integer cooldown = buf.readVarInt();
 		Boolean cooldownAfter = null;
 		if (cooldown != -10)
 			cooldownAfter = buf.readBoolean();
@@ -62,15 +64,15 @@ public class ConfigurableItemData {
 		BlockingType bType = Combatify.registeredTypes.get(blockingType);
 		Double blockStrength = buf.readDouble();
 		Double blockKbRes = buf.readDouble();
-		Integer enchantlevel = buf.readInt();
+		Integer enchantlevel = buf.readVarInt();
 		int isEnchantableAsInt = buf.readInt();
 		Boolean isEnchantable = null;
-		Integer useDuration = buf.readInt();
+		Integer useDuration = buf.readVarInt();
 		Double piercingLevel = buf.readDouble();
 		int canSweepAsInt = buf.readInt();
 		Boolean canSweep = null;
 		Tier tier = getTier(buf.readUtf());
-		Integer defense = buf.readInt();
+		ArmourVariable defense = ArmourVariable.ARMOUR_VARIABLE_STREAM_CODEC.decode(buf);
 		Double toughness = buf.readDouble();
 		Double armourKbRes = buf.readDouble();
 		boolean repairIngredientAbsent = buf.readBoolean();
@@ -87,8 +89,6 @@ public class ConfigurableItemData {
 			chargedReach = null;
 		if (stackSize == -10)
 			stackSize = null;
-		if (durability == -10)
-			durability = null;
 		if (cooldown == -10)
 			cooldown = null;
 		if (blockStrength == -10)
@@ -107,20 +107,18 @@ public class ConfigurableItemData {
 			canSweep = canSweepAsInt == 1;
 		if (registeredWeaponTypes.containsKey(weaponType))
 			type = WeaponType.fromID(weaponType);
-		if (defense == -10)
-			defense = null;
 		if (toughness == -10)
 			toughness = null;
 		if (armourKbRes == -10)
 			armourKbRes = null;
-		return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
+        return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
 	});
 	public final Double damage;
 	public final Double speed;
 	public final Double reach;
 	public final Double chargedReach;
 	public final Integer stackSize;
-	public final Integer durability;
+	public final ArmourVariable durability;
 	public final Integer cooldown;
 	public final Boolean cooldownAfter;
 	public final WeaponType type;
@@ -133,21 +131,21 @@ public class ConfigurableItemData {
 	public final Double piercingLevel;
 	public final Boolean canSweep;
 	public final Tier tier;
-	public final Integer defense;
+	public final ArmourVariable defense;
 	public final Double toughness;
 	public final Double armourKbRes;
 	public final Ingredient repairIngredient;
 	public final TagKey<Block> toolMineableTag;
 
-    ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, Integer durability, Integer defense, Double toughness, Double armourKbRes, Ingredient repairIngredient, TagKey<Block> toolMineableTag) {
-		damage = clamp(attackDamage, -10, 1000);
+    public ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Integer useDuration, Double piercingLevel, Boolean canSweep, Tier tier, ArmourVariable durability, ArmourVariable defense, Double toughness, Double armourKbRes, Ingredient repairIngredient, TagKey<Block> toolMineableTag) {
+		damage = clamp(attackDamage, 0, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
 		this.chargedReach = clamp(chargedReach, 0, 10);
 		this.stackSize = clamp(stackSize, 1, 99);
-		this.durability = max(durability, 1);
+		this.durability = durability;
 		this.cooldown = clamp(cooldown, 1, 1000);
-		this.cooldownAfter = cooldownAfter;
+		this.cooldownAfter = cooldownAfter == null || cooldownAfter;
 		type = weaponType;
 		this.blockingType = blockingType;
 		this.blockStrength = clamp(blockStrength, 0, 1000);
@@ -158,7 +156,7 @@ public class ConfigurableItemData {
 		this.piercingLevel = clamp(piercingLevel, 0, 1);
 		this.canSweep = canSweep;
         this.tier = tier;
-        this.defense = max(defense, 1);
+        this.defense = defense;
         this.toughness = max(toughness, 0);
         this.armourKbRes = clamp(armourKbRes, 0, 1);
         this.repairIngredient = repairIngredient;
@@ -186,5 +184,17 @@ public class ConfigurableItemData {
 		if (value == null)
 			return null;
 		return value < min ? min : Math.min(value, max);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ConfigurableItemData that)) return false;
+        return Objects.equals(damage, that.damage) && Objects.equals(speed, that.speed) && Objects.equals(reach, that.reach) && Objects.equals(chargedReach, that.chargedReach) && Objects.equals(stackSize, that.stackSize) && Objects.equals(durability, that.durability) && Objects.equals(cooldown, that.cooldown) && Objects.equals(cooldownAfter, that.cooldownAfter) && Objects.equals(type, that.type) && Objects.equals(blockingType, that.blockingType) && Objects.equals(blockStrength, that.blockStrength) && Objects.equals(blockKbRes, that.blockKbRes) && Objects.equals(enchantability, that.enchantability) && Objects.equals(isEnchantable, that.isEnchantable) && Objects.equals(useDuration, that.useDuration) && Objects.equals(piercingLevel, that.piercingLevel) && Objects.equals(canSweep, that.canSweep) && Objects.equals(tier, that.tier) && Objects.equals(defense, that.defense) && Objects.equals(toughness, that.toughness) && Objects.equals(armourKbRes, that.armourKbRes) && Objects.equals(repairIngredient, that.repairIngredient) && Objects.equals(toolMineableTag, that.toolMineableTag);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(damage, speed, reach, chargedReach, stackSize, durability, cooldown, cooldownAfter, type, blockingType, blockStrength, blockKbRes, enchantability, isEnchantable, useDuration, piercingLevel, canSweep, tier, defense, toughness, armourKbRes, repairIngredient, toolMineableTag);
 	}
 }

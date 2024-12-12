@@ -6,6 +6,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
+import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
@@ -24,6 +25,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,7 +36,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
@@ -65,9 +66,9 @@ import static net.atlas.combatify.config.ConfigurableItemData.ITEM_DATA_STREAM_C
 import static net.atlas.combatify.config.ConfigurableWeaponData.WEAPON_DATA_STREAM_CODEC;
 
 public class ItemConfig extends AtlasConfig {
-	public Map<EntityType<?>, ConfigurableEntityData> configuredEntities;
-	public Map<Item, ConfigurableItemData> configuredItems;
-	public Map<WeaponType, ConfigurableWeaponData> configuredWeapons;
+	public List<ConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> configuredEntities;
+	public List<ConfigDataWrapper<Item, ConfigurableItemData>> configuredItems;
+	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
 		buf.writeVarInt(ExtendedTier.getLevel(tier));
@@ -149,8 +150,34 @@ public class ItemConfig extends AtlasConfig {
 			throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
 		}
 	});
-	public static final StreamCodec<RegistryFriendlyByteBuf, Item> ITEM_STREAM_CODEC = StreamCodec.of((buf, item) -> buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)), buf -> BuiltInRegistries.ITEM.get(buf.readResourceLocation()));
-	public static final StreamCodec<RegistryFriendlyByteBuf, EntityType<?>> ENTITY_STREAM_CODEC = StreamCodec.of((buf, entityType) -> buf.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(entityType)), buf -> BuiltInRegistries.ENTITY_TYPE.get(buf.readResourceLocation()));
+	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<Item, ConfigurableItemData>> ITEM_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
+		buf.writeCollection(wrapper.objects, (buf1, item) -> buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)));
+		buf.writeCollection(wrapper.tagKeys, (buf1, tagKey) -> buf.writeResourceLocation(tagKey.location()));
+		ITEM_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
+	}, buf -> {
+		List<Item> items = buf.readList(buf1 -> BuiltInRegistries.ITEM.get(buf1.readResourceLocation()));
+		List<TagKey<Item>> tags = buf.readList(buf1 -> TagKey.create(Registries.ITEM, buf1.readResourceLocation()));
+		ConfigurableItemData configurableItemData = ITEM_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
+		return new ConfigDataWrapper<>(items, tags, configurableItemData);
+	});
+	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> ENTITY_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
+		buf.writeCollection(wrapper.objects, (buf1, item) -> buf.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(item)));
+		buf.writeCollection(wrapper.tagKeys, (buf1, tagKey) -> buf.writeResourceLocation(tagKey.location()));
+		ENTITY_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
+	}, buf -> {
+		List<EntityType<?>> items = buf.readList(buf1 -> BuiltInRegistries.ENTITY_TYPE.get(buf1.readResourceLocation()));
+		List<TagKey<EntityType<?>>> tags = buf.readList(buf1 -> TagKey.create(Registries.ENTITY_TYPE, buf1.readResourceLocation()));
+		ConfigurableEntityData configurableEntityData = ENTITY_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
+		return new ConfigDataWrapper<>(items, tags, configurableEntityData);
+	});
+	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> WEAPON_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
+		buf.writeCollection(wrapper.objects, WeaponType.STREAM_CODEC);
+		WEAPON_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
+	}, buf -> {
+		List<WeaponType> items = buf.readList(WeaponType.STREAM_CODEC);
+		ConfigurableWeaponData configurableEntityData = WEAPON_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
+		return new ConfigDataWrapper<>(items, Collections.emptyList(), configurableEntityData);
+	});
 	public static Formula armourCalcs = null;
 
 	public ItemConfig() {
@@ -210,17 +237,38 @@ public class ItemConfig extends AtlasConfig {
 		if (weapons instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					if (jsonObject.get("name") instanceof JsonArray weaponsWithConfig) {
-						weaponsWithConfig.asList().forEach(
-							weaponName -> {
-								WeaponType type = typeFromName(weaponName.getAsString());
-								parseWeaponType(type, jsonObject);
-							}
-						);
-					} else {
-						WeaponType type = typeFromJson(jsonObject);
-						parseWeaponType(type, jsonObject);
+					List<WeaponType> weaponTypes;
+					if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) weaponTypes = itemsWithConfig.asList().stream().map(weaponName -> typeFromName(weaponName.getAsString())).toList();
+					else weaponTypes = Collections.singletonList(typeFromJson(jsonObject));
+
+					List<WeaponType> blankTypes = new ArrayList<>(weaponTypes.stream().filter(Objects::isNull).toList());
+					int added = blankTypes.size();
+					blankTypes.clear();
+					for (int i = 0; i < added; i++) {
+						Double damageOffset = null;
+						Double speed = null;
+						Double reach = null;
+						Boolean tierable = null;
+
+						if (jsonObject.has("tierable"))
+							tierable = getBoolean(jsonObject, "tierable");
+						if (jsonObject.has("damage_offset"))
+							damageOffset = getDouble(jsonObject, "damage_offset");
+						if (jsonObject.has("speed"))
+							speed = getDouble(jsonObject, "speed");
+						if (jsonObject.has("reach"))
+							reach = getDouble(jsonObject, "reach");
+						if (damageOffset == null || speed == null || reach == null || tierable == null) {
+							LOGGER.error("The JSON must contain the weapon type's attributes if a new weapon type is added!" + errorStage("Configuring Weapon Types"));
+							return;
+						}
+						blankTypes.add(tierable ? WeaponType.createBasic(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach) : WeaponType.createBasicUntierable(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach));
 					}
+					if (!blankTypes.isEmpty()) {
+						weaponTypes = weaponTypes.stream().filter(Objects::nonNull).toList();
+						parseAddedWeaponType(blankTypes, jsonObject, null, null, null, null);
+					}
+					parseWeaponType(weaponTypes, jsonObject);
 				} else
 					notJSONObject(jsonElement, "Configuring Weapon Types");
 			});
@@ -228,17 +276,22 @@ public class ItemConfig extends AtlasConfig {
 		if (items instanceof JsonArray itemArray) {
 			itemArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) {
-						itemsWithConfig.asList().forEach(
-							itemName -> {
-								Item item = itemFromName(itemName.getAsString());
-								parseItemConfig(item, jsonObject);
-							}
-						);
-					} else {
-						Item item = itemFromJson(jsonObject);
-						parseItemConfig(item, jsonObject);
+					List<Item> itemList = Collections.emptyList();
+					List<TagKey<Item>> tagsList = Collections.emptyList();
+					if (jsonObject.has("name")) {
+						if (jsonObject.get("name") instanceof JsonArray itemsWithConfig)
+							itemList = itemsWithConfig.asList().stream().map(itemName -> itemFromName(itemName.getAsString())).toList();
+						else itemList = Collections.singletonList(itemFromJson(jsonObject));
 					}
+					if (jsonObject.has("tag")) {
+						if (jsonObject.get("tag") instanceof JsonArray itemsWithConfig) tagsList = itemsWithConfig.asList().stream().map(itemName -> itemTagFromName(itemName.getAsString())).toList();
+						else tagsList = Collections.singletonList(itemTagFromJson(jsonObject));
+					}
+					if (!(jsonObject.has("name") || jsonObject.has("tag"))) {
+						noNamePresent(jsonElement, "Configuring Items");
+						return;
+					}
+					parseItemConfig(itemList, tagsList, jsonObject);
 				} else
 					notJSONObject(jsonElement, "Configuring Items");
 			});
@@ -246,81 +299,66 @@ public class ItemConfig extends AtlasConfig {
 		if (entities instanceof JsonArray entityArray) {
 			entityArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					if (jsonObject.get("name") instanceof JsonArray entitiesWithConfig) {
-						entitiesWithConfig.asList().forEach(
-							entityName -> {
-								EntityType<?> entity = entityFromName(entityName.getAsString());
-								parseEntityType(entity, jsonObject);
-							}
-						);
-					} else {
-						EntityType<?> entity = entityFromJson(jsonObject);
-						parseEntityType(entity, jsonObject);
+					List<? extends EntityType<?>> entityList = Collections.emptyList();
+					List<TagKey<EntityType<?>>> tagsList = Collections.emptyList();
+					if (jsonObject.has("name")) {
+						if (jsonObject.get("name") instanceof JsonArray entitiesWithConfig)
+							entityList = entitiesWithConfig.asList().stream().map(entityName -> BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.tryParse(entityName.getAsString()))).toList();
+						else entityList = Collections.singletonList(entityFromJson(jsonObject));
 					}
+					if (jsonObject.has("tag")) {
+						if (jsonObject.get("tag") instanceof JsonArray entitiesWithConfig) tagsList = entitiesWithConfig.asList().stream().map(entityTagName -> entityTagFromName(entityTagName.getAsString())).toList();
+						else tagsList = Collections.singletonList(entityTagFromJson(jsonObject));
+					}
+					if (!(jsonObject.has("name") || jsonObject.has("tag"))) {
+						noNamePresent(jsonElement, "Configuring Entities");
+						return;
+					}
+					parseEntityType((List<EntityType<?>>) entityList, tagsList, jsonObject);
 				} else
-					notJSONObject(jsonElement, "Configuring Items");
+					notJSONObject(jsonElement, "Configuring Entities");
 			});
 		}
 		if (object.has("armor_calculation"))
 			armourCalcs = new Formula(getString(object, "armor_calculation"));
 	}
-	public void parseEntityType(EntityType<?> type, JsonObject jsonObject) {
+	public void parseEntityType(List<EntityType<?>> entities, List<TagKey<EntityType<?>>> entityTags, JsonObject jsonObject) {
 		Integer attackInterval = null;
-
-		ConfigurableEntityData oldData;
-		if (type != null && (oldData = MethodHandler.forEntityType(type)) != null) {
-			attackInterval = oldData.attackInterval;
-		}
-
+		Double shieldDisableTime = null;
+		Boolean isMiscEntity = null;
 		if (jsonObject.has("attack_interval"))
 			attackInterval = getInt(jsonObject, "attack_interval");
-		ConfigurableEntityData configurableWeaponData = new ConfigurableEntityData(attackInterval);
-		configuredEntities.put(type, configurableWeaponData);
+		if (jsonObject.has("shield_disable_time"))
+			shieldDisableTime = getDouble(jsonObject, "shield_disable_time");
+		if (jsonObject.has("is_misc_entity"))
+			isMiscEntity = getBoolean(jsonObject, "is_misc_entity");
+		ConfigurableEntityData configurableEntityData = new ConfigurableEntityData(attackInterval, shieldDisableTime, isMiscEntity);
+		ConfigDataWrapper<EntityType<?>, ConfigurableEntityData> configDataWrapper = new ConfigDataWrapper<>(entities, entityTags, configurableEntityData);
+		configuredEntities.add(configDataWrapper);
 	}
-	public void parseWeaponType(WeaponType type, JsonObject jsonObject) {
+	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject) {
 		Double damageOffset = null;
 		Double speed = null;
 		Double reach = null;
-		Double chargedReach = null;
-		BlockingType blockingType = null;
 		Boolean tierable = null;
-		Double piercingLevel = null;
-		Boolean canSweep = null;
-
-		ConfigurableWeaponData oldData;
-		if (type != null && (oldData = MethodHandler.forWeapon(type)) != null) {
-			tierable = oldData.tierable;
-			damageOffset = oldData.damageOffset;
-			speed = oldData.speed;
-			reach = oldData.reach;
-			chargedReach = oldData.chargedReach;
-			blockingType = oldData.blockingType;
-			piercingLevel = oldData.piercingLevel;
-			canSweep = oldData.canSweep;
-		}
 
 		if (jsonObject.has("tierable"))
 			tierable = getBoolean(jsonObject, "tierable");
-		else if (tierable == null) {
-			LOGGER.error("The JSON must contain the boolean `tierable` if a weapon type is defined!" + errorStage("Configuring Weapon Types"));
-			return;
-		}
 		if (jsonObject.has("damage_offset"))
 			damageOffset = getDouble(jsonObject, "damage_offset");
 		if (jsonObject.has("speed"))
 			speed = getDouble(jsonObject, "speed");
 		if (jsonObject.has("reach"))
 			reach = getDouble(jsonObject, "reach");
-		if (type == null) {
-			if (damageOffset == null || speed == null || reach == null) {
-				LOGGER.error("The JSON must contain the weapon type's attributes if a new weapon type is added!" + errorStage("Configuring Weapon Types"));
-				return;
-			}
-			type = tierable ? WeaponType.createBasic(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach) : WeaponType.createBasicUntierable(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach);
-			damageOffset = null;
-			speed = null;
-			reach = null;
-		}
+
+		parseAddedWeaponType(types, jsonObject, damageOffset, speed, reach, tierable);
+	}
+	public void parseAddedWeaponType(List<WeaponType> types, JsonObject jsonObject, Double damageOffset, Double speed, Double reach, Boolean tierable) {
+		Double chargedReach = null;
+		BlockingType blockingType = null;
+		Double piercingLevel = null;
+		Boolean canSweep = null;
+
 		if (jsonObject.has("charged_reach"))
 			chargedReach = getDouble(jsonObject, "charged_reach");
 		if (jsonObject.has("blocking_type")) {
@@ -340,7 +378,8 @@ public class ItemConfig extends AtlasConfig {
 		if (jsonObject.has("can_sweep"))
 			canSweep = getBoolean(jsonObject, "can_sweep");
 		ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, piercingLevel, canSweep);
-		configuredWeapons.put(type, configurableWeaponData);
+		ConfigDataWrapper<WeaponType, ConfigurableWeaponData> configDataWrapper = new ConfigDataWrapper<>(types, Collections.emptyList(), configurableWeaponData);
+		configuredWeapons.add(configDataWrapper);
 	}
 	@Override
 	protected InputStream getDefaultedConfig() {
@@ -349,16 +388,16 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public void defineConfigHolders() {
-		configuredEntities = new HashMap<>();
-		configuredItems = new HashMap<>();
-		configuredWeapons = new HashMap<>();
+		configuredEntities = new ArrayList<>();
+		configuredItems = new ArrayList<>();
+		configuredWeapons = new ArrayList<>();
 	}
 
 	@Override
 	public void resetExtraHolders() {
-		configuredEntities = new HashMap<>();
-		configuredItems = new HashMap<>();
-		configuredWeapons = new HashMap<>();
+		configuredEntities = new ArrayList<>();
+		configuredItems = new ArrayList<>();
+		configuredWeapons = new ArrayList<>();
 		tiers = defaultTiers;
 		registeredWeaponTypes = defaultWeaponTypes;
 		registeredTypes = defaultTypes;
@@ -377,12 +416,6 @@ public class ItemConfig extends AtlasConfig {
 		return object.get(name).getAsInt();
 	}
 
-	public static Integer getIntWithFallback(JsonObject object, String name, String fallback) {
-		if (!object.has(name))
-			return object.get(fallback).getAsInt();
-		return object.get(name).getAsInt();
-	}
-
 	public static Float getFloat(JsonObject object, String name) {
 		return object.get(name).getAsFloat();
 	}
@@ -394,12 +427,24 @@ public class ItemConfig extends AtlasConfig {
 		return object.get(name).getAsBoolean();
 	}
 
-	public static EntityType<?> entityFromJson(JsonObject jsonObject) {
-		return entityFromName(GsonHelper.getAsString(jsonObject, "name"));
+	public static TagKey<EntityType<?>> entityTagFromJson(JsonObject jsonObject) {
+		return entityTagFromName(GsonHelper.getAsString(jsonObject, "tag"));
 	}
 
-	public static EntityType<?> entityFromName(String string) {
-        return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(string)).orElse(null);
+	public static TagKey<EntityType<?>> entityTagFromName(String string) {
+		return TagKey.create(Registries.ENTITY_TYPE, Objects.requireNonNull(ResourceLocation.tryParse(stripHexStarter(string))));
+	}
+
+	public static EntityType<?> entityFromJson(JsonObject jsonObject) {
+		return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(GsonHelper.getAsString(jsonObject, "name"))).orElse(null);
+	}
+
+	public static TagKey<Item> itemTagFromJson(JsonObject jsonObject) {
+		return itemTagFromName(GsonHelper.getAsString(jsonObject, "tag"));
+	}
+
+	public static TagKey<Item> itemTagFromName(String string) {
+		return TagKey.create(Registries.ITEM, Objects.requireNonNull(ResourceLocation.tryParse(stripHexStarter(string))));
 	}
 
 	public static Item itemFromJson(JsonObject jsonObject) {
@@ -558,9 +603,9 @@ public class ItemConfig extends AtlasConfig {
 		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
 		registeredWeaponTypes = readMap(buf, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
 		registeredTypes = readMap(buf, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
-		configuredEntities = readMap(buf, ENTITY_STREAM_CODEC, ENTITY_DATA_STREAM_CODEC);
-		configuredItems = readMap(buf, ITEM_STREAM_CODEC, ITEM_DATA_STREAM_CODEC);
-		configuredWeapons = readMap(buf, WeaponType.STREAM_CODEC, WEAPON_DATA_STREAM_CODEC);
+		configuredEntities = buf.readList(ENTITY_WRAPPER_STREAM_CODEC);
+		configuredItems = buf.readList(ITEM_WRAPPER_STREAM_CODEC);
+		configuredWeapons = buf.readList(WEAPON_WRAPPER_STREAM_CODEC);
 		String formula = buf.readUtf();
 		if (!formula.equals("empty"))
 			armourCalcs = new Formula(formula);
@@ -601,9 +646,9 @@ public class ItemConfig extends AtlasConfig {
 		writeMap(buf, tiers, NAME_STREAM_CODEC, TIERS_STREAM_CODEC);
 		writeMap(buf, registeredWeaponTypes, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
 		writeMap(buf, Combatify.registeredTypes, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
-		writeMap(buf, configuredEntities, ENTITY_STREAM_CODEC, ENTITY_DATA_STREAM_CODEC);
-		writeMap(buf, configuredItems, ITEM_STREAM_CODEC, ITEM_DATA_STREAM_CODEC);
-		writeMap(buf, configuredWeapons, WeaponType.STREAM_CODEC, WEAPON_DATA_STREAM_CODEC);
+		buf.writeCollection(configuredEntities, ENTITY_WRAPPER_STREAM_CODEC);
+		buf.writeCollection(configuredItems, ITEM_WRAPPER_STREAM_CODEC);
+		buf.writeCollection(configuredWeapons, WEAPON_WRAPPER_STREAM_CODEC);
 		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written);
 	}
 
@@ -659,6 +704,20 @@ public class ItemConfig extends AtlasConfig {
 			});
 		if (prevScreen != null) builder.setParentScreen(prevScreen);
 		ConfigCategory configCategory = builder.getOrCreateCategory(Component.translatable("text.config.combatify-items.title"));
+		IntFieldBuilder size = new IntFieldBuilder(Component.translatable("text.config.combatify-general.reset"),
+			Component.translatable("text.config.combatify-items.size"),
+			configuredItems.size());
+		size.setMin(0).setSaveConsumer((newSize) -> {
+			int oldSize = configuredItems.size();
+			if (oldSize < newSize) {
+				for (int i = oldSize; i < newSize; i++) {
+					configuredItems.add(i, ConfigDataWrapper.EMPTY_ITEM);
+				}
+			} else if (oldSize > newSize) {
+                configuredItems.subList(newSize, oldSize).clear();
+			}
+		});
+		configCategory.addEntry(size.build());
 		builder.setFallbackCategory(configCategory);
 
 		return builder.build();
@@ -670,9 +729,7 @@ public class ItemConfig extends AtlasConfig {
 		return false;
 	}
 
-	public void parseItemConfig(Item item, JsonObject jsonObject) {
-		if(item == null)
-			return;
+	public void parseItemConfig(List<Item> items, List<TagKey<Item>> tags, JsonObject jsonObject) {
 		Double damage = null;
 		Double speed = null;
 		Double reach = null;
@@ -690,34 +747,12 @@ public class ItemConfig extends AtlasConfig {
 		Double piercingLevel = null;
 		Boolean canSweep = null;
 		Tier tier = null;
-		Integer durability = null;
-		Integer defense = null;
+		ArmourVariable durability = ArmourVariable.EMPTY;
+		ArmourVariable defense = ArmourVariable.EMPTY;
 		Double toughness = null;
 		Double armourKbRes = null;
 		Ingredient ingredient = null;
 		TagKey<Block> toolMineable = null;
-		ConfigurableItemData oldData = MethodHandler.forItem(item);
-		if (oldData != null) {
-			damage = oldData.damage;
-			speed = oldData.speed;
-			reach = oldData.reach;
-			chargedReach = oldData.chargedReach;
-			stack_size = oldData.stackSize;
-			cooldown = oldData.cooldown;
-			cooldownAfterUse = oldData.cooldownAfter;
-			type = oldData.type;
-			blockingType = oldData.blockingType;
-			blockStrength = oldData.blockStrength;
-			blockKbRes = oldData.blockKbRes;
-			enchantment_level = oldData.enchantability;
-			isEnchantable = oldData.isEnchantable;
-			useDuration = oldData.useDuration;
-			piercingLevel = oldData.piercingLevel;
-			canSweep = oldData.canSweep;
-			tier = oldData.tier;
-			durability = oldData.durability;
-			toolMineable = oldData.toolMineableTag;
-		}
 		if (jsonObject.has("damage"))
 			damage = getDouble(jsonObject, "damage");
 		if (jsonObject.has("speed"))
@@ -754,13 +789,8 @@ public class ItemConfig extends AtlasConfig {
 			}
 			blockingType = Combatify.registeredTypes.get(blocking_type);
 		}
-		if (cooldown != null && cooldownAfterUse == null) {
-			if (!jsonObject.has("cooldown_after")) {
-				LOGGER.error("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!" + errorStage("Applying Item Cooldown"));
-				return;
-			}
+		if (cooldown != null && jsonObject.has("cooldown_after"))
 			cooldownAfterUse = getBoolean(jsonObject, "cooldown_after");
-		}
 		if (jsonObject.has("damage_protection"))
 			blockStrength = getDouble(jsonObject, "damage_protection");
 		if (jsonObject.has("block_knockback_resistance"))
@@ -777,39 +807,54 @@ public class ItemConfig extends AtlasConfig {
 			canSweep = getBoolean(jsonObject, "can_sweep");
 		if (jsonObject.has("tier")) {
 			tier = getTier(getString(jsonObject, "tier"));
-			if (toolMineable == null) {
-				toolMineable = switch (item) {
-					case AxeItem ignored -> BlockTags.MINEABLE_WITH_AXE;
-					case HoeItem ignored -> BlockTags.MINEABLE_WITH_HOE;
-					case PickaxeItem ignored -> BlockTags.MINEABLE_WITH_PICKAXE;
-					case ShovelItem ignored -> BlockTags.MINEABLE_WITH_SHOVEL;
-					default -> null;
-				};
-			}
 		}
 		if (jsonObject.has("durability")) {
 			JsonElement durabilityE = jsonObject.get("durability");
 			if (durabilityE instanceof JsonObject durabilityO) {
-				if (!durabilityO.has("any")) {
-					LOGGER.error("The JSON must contain the integer 'any' when armour is configured!" + errorStage("Applying Item Durability"));
-					return;
-				}
-				if (item instanceof ArmorItem armorItem) {
-					durability = getIntWithFallback(durabilityO, armorItem.getType().getName(), "any");
-				} else durability = getInt(durabilityO, "any");
-			} else durability = durabilityE.getAsInt();
+				Integer any = null;
+				if (durabilityO.has("any"))
+					any = getInt(durabilityO, "any");
+				Integer helmet = null;
+				if (durabilityO.has("helmet"))
+					helmet = getInt(durabilityO, "helmet");
+				Integer chestplate = null;
+				if (durabilityO.has("chestplate"))
+					chestplate = getInt(durabilityO, "chestplate");
+				Integer leggings = null;
+				if (durabilityO.has("leggings"))
+					leggings = getInt(durabilityO, "leggings");
+				Integer boots = null;
+				if (durabilityO.has("boots"))
+					boots = getInt(durabilityO, "boots");
+				Integer body = null;
+				if (durabilityO.has("body"))
+					body = getInt(durabilityO, "body");
+				durability = ArmourVariable.create(any, helmet, chestplate, leggings, boots, body);
+			} else durability = ArmourVariable.create(durabilityE.getAsInt());
 		}
 		if (jsonObject.has("armor")) {
 			JsonElement defenseE = jsonObject.get("armor");
 			if (defenseE instanceof JsonObject defenseO) {
-				if (!defenseO.has("any")) {
-					LOGGER.error("The JSON must contain the integer 'any' when armour is configured!" + errorStage("Applying Item Defense"));
-					return;
-				}
-				if (item instanceof ArmorItem armorItem) {
-                    defense = getIntWithFallback(defenseO, armorItem.getType().getName(), "any");
-				} else defense = getInt(defenseO, "any");
-			} else defense = defenseE.getAsInt();
+				Integer any = null;
+				if (defenseO.has("any"))
+					any = getInt(defenseO, "any");
+				Integer helmet = null;
+				if (defenseO.has("helmet"))
+					helmet = getInt(defenseO, "helmet");
+				Integer chestplate = null;
+				if (defenseO.has("chestplate"))
+					chestplate = getInt(defenseO, "chestplate");
+				Integer leggings = null;
+				if (defenseO.has("leggings"))
+					leggings = getInt(defenseO, "leggings");
+				Integer boots = null;
+				if (defenseO.has("boots"))
+					boots = getInt(defenseO, "boots");
+				Integer body = null;
+				if (defenseO.has("body"))
+					body = getInt(defenseO, "body");
+				defense = ArmourVariable.create(any, helmet, chestplate, leggings, boots, body);
+			} else defense = ArmourVariable.create(defenseE.getAsInt());
 		}
 		if (jsonObject.has("armor_toughness"))
 			toughness = getDouble(jsonObject, "armor_toughness");
@@ -829,13 +874,15 @@ public class ItemConfig extends AtlasConfig {
 			}
 		}
 		if (jsonObject.has("tool_tag")) {
-			String ri = getString(jsonObject, "tool_tag");
-			if (ri.startsWith("#"))
-				toolMineable = TagKey.create(Registries.BLOCK, Objects.requireNonNull(ResourceLocation.tryParse(ri.substring(1))));
-			else LOGGER.error("The resource location provided when setting a tool tag for an item must belong to a tag! " + errorStage("Applying Item Tools"));
+			String ri = stripHexStarter(getString(jsonObject, "tool_tag"));
+			toolMineable = TagKey.create(Registries.BLOCK, Objects.requireNonNull(ResourceLocation.tryParse(ri)));
 		}
 		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
-		configuredItems.put(item, configurableItemData);
+		ConfigDataWrapper<Item, ConfigurableItemData> configDataWrapper = new ConfigDataWrapper<>(items, tags, configurableItemData);
+		configuredItems.add(configDataWrapper);
+	}
+	public static void noNamePresent(JsonElement invalid, String stage) {
+		LOGGER.error("No name is present: " + invalid + ", no changes will occur. This may be due to an incorrectly written config file. " + errorStage(stage));
 	}
 	public static void notJSONObject(JsonElement invalid, String stage) {
 		LOGGER.error("Not a JSON Object: " + invalid + " this may be due to an incorrectly written config file. " + errorStage(stage));
@@ -851,7 +898,7 @@ public class ItemConfig extends AtlasConfig {
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 			boolean isConfiguredItem = configurableItemData != null;
 			if (isConfiguredItem) {
-				Integer durability = configurableItemData.durability;
+				Integer durability = configurableItemData.durability.getValue(item);
 				Integer maxStackSize = configurableItemData.stackSize;
 				Tier tier = configurableItemData.tier;
 				TagKey<Block> mineable = configurableItemData.toolMineableTag;
@@ -978,10 +1025,10 @@ public class ItemConfig extends AtlasConfig {
 					case BODY -> ResourceLocation.withDefaultNamespace("armor.body");
 					default -> resourceLocation;
 				};
-				if (configurableItemData.defense != null) {
+				if (configurableItemData.defense.getValue(item) != null) {
 					modDefense = true;
 					itemAttributeBuilder.add(Attributes.ARMOR,
-						new AttributeModifier(resourceLocation, configurableItemData.defense, AttributeModifier.Operation.ADD_VALUE),
+						new AttributeModifier(resourceLocation, configurableItemData.defense.getValue(item), AttributeModifier.Operation.ADD_VALUE),
 						slotGroup);
 				}
 				if (!modDefense && defense.get() != null)
@@ -1008,6 +1055,38 @@ public class ItemConfig extends AtlasConfig {
 			}
 		}
 		builder.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
+	}
+	public record ConfigDataWrapper<T, U>(List<T> objects, List<TagKey<T>> tagKeys, U configurableData) {
+		public static final ConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new ConfigDataWrapper<>(Collections.emptyList(), Collections.emptyList(), new ConfigurableItemData(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, ArmourVariable.EMPTY, ArmourVariable.EMPTY, null, null, null, null));
+		private boolean matches(Holder<T> test) {
+			return objects.contains(test.value()) || tagKeys.stream().anyMatch(test::is);
+		}
+		private boolean matches(T test) {
+			return objects.contains(test);
+		}
+		public U match(Holder<T> test) {
+			if (matches(test)) {
+				return configurableData;
+			}
+			return null;
+		}
+		public U match(T test) {
+			if (matches(test)) {
+				return configurableData;
+			}
+			return null;
+		}
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof ConfigDataWrapper<?, ?> that)) return false;
+            return Objects.equals(objects, that.objects) && Objects.equals(tagKeys, that.tagKeys) && Objects.equals(configurableData, that.configurableData);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(objects, tagKeys, configurableData);
+		}
 	}
 	public record Formula(String written) {
 		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {
