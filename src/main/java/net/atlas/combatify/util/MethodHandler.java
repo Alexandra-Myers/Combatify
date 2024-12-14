@@ -230,7 +230,8 @@ public class MethodHandler {
 	public static void disableShield(LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
 		ItemStack attackingItem = attacker.getMainHandItem();
 		double piercingLevel = ((ItemExtensions)attackingItem.getItem()).getPiercingLevel();
-		piercingLevel += CustomEnchantmentHelper.getBreach(attacker);
+		if (!(target.level() instanceof ServerLevel serverLevel)) piercingLevel += CustomEnchantmentHelper.getBreach(attackingItem, attacker.getRandom());
+		else piercingLevel += CustomEnchantmentHelper.getArmorModifier(serverLevel, attackingItem, target, damageSource);
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
 		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;

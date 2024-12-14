@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -20,7 +22,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -33,7 +35,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
@@ -49,9 +50,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Shadow
 	public abstract Entity getCamera();
 
-	@Shadow
-	public abstract ServerLevel serverLevel();
-
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
 
@@ -59,10 +57,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		super(entityType, level);
 	}
 
-	@Inject(method = "getEnchantedDamage", at = @At(value = "HEAD"), cancellable = true)
-	public void modTrident(Entity target, float f, DamageSource damageSource, CallbackInfoReturnable<Float> cir) {
-		if (getWeaponItem().getItem() instanceof TridentItem)
-			cir.setReturnValue(CustomEnchantmentHelper.modifyDamage(serverLevel(), getWeaponItem(), target, damageSource, f));
+	@WrapOperation(method = "getEnchantedDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+	public float modTrident(ServerLevel serverLevel, ItemStack itemStack, Entity target, DamageSource damageSource, float f, Operation<Float> original) {
+		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, target, damageSource, f, original);
 	}
 
 	@Inject(method = "tick", at = @At(value = "HEAD"))

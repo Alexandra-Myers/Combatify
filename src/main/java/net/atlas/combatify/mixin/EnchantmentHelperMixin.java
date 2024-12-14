@@ -1,7 +1,8 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ArmourPiercingMode;
@@ -10,8 +11,10 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -47,14 +50,14 @@ public abstract class EnchantmentHelperMixin {
 		return original;
 	}
 
-	@ModifyReturnValue(method = "modifyArmorEffectiveness", at = @At(value = "RETURN"))
-	private static float piercerMemories(float original, @Local(ordinal = 0, argsOnly = true) Entity entity, @Local(ordinal = 0, argsOnly = true) float protection) {
+	@WrapMethod(method = "modifyArmorEffectiveness")
+	private static float piercerMemories(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float protection, Operation<Float> original) {
 		return switch (entity) {
 			case LivingEntity ignored when Combatify.CONFIG.armourPiercingMode() == ArmourPiercingMode.APPLY_BEFORE_PERCENTAGE -> protection;
 			case LivingEntity livingEntity when Combatify.CONFIG.armourPiercingMode() == ArmourPiercingMode.APPLY_AFTER_PERCENTAGE -> {
 				Item item = livingEntity.getItemInHand(InteractionHand.MAIN_HAND).getItem();
 				double d = ((ItemExtensions)item).getPiercingLevel();
-				d += CustomEnchantmentHelper.getBreach(livingEntity);
+				d += CustomEnchantmentHelper.getArmorModifier(serverLevel, itemStack, entity, damageSource);
 				d -= ((LivingEntityExtensions)livingEntity).getPiercingNegation();
 				((LivingEntityExtensions)livingEntity).setPiercingNegation(0);
 				yield (float) Mth.clamp(protection * (1 - d), 0, 1);
@@ -64,9 +67,9 @@ public abstract class EnchantmentHelperMixin {
 				double d = ((ItemExtensions)item).getPiercingLevel();
 				d -= ((LivingEntityExtensions)livingEntity).getPiercingNegation();
 				((LivingEntityExtensions)livingEntity).setPiercingNegation(0);
-				yield (float) Mth.clamp(original - d, 0, protection);
+				yield (float) Mth.clamp(original.call(serverLevel, itemStack, entity, damageSource, protection) - d, 0, protection);
 			}
-			case null, default -> original;
+			case null, default -> original.call(serverLevel, itemStack, entity, damageSource, protection);
 		};
 	}
 }

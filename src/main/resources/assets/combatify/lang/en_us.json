@@ -321,9 +321,6 @@
   "text.config.combatify-general.option.shieldChargePercentage": "V5 Shield Charge Percentage",
   "text.config.combatify-general.option.shieldChargePercentage.tooltip.0": "Percentage of charge needed for V5 shield to work.",
 
-  "text.config.combatify-general.option.breachArmorPiercing": "Breach Armor Piercing",
-  "text.config.combatify-general.option.breachArmorPiercing.tooltip.0": "The rate at which Breach increases armor piercing.",
-  "text.config.combatify-general.option.breachArmorPiercing.tooltip.1": "   Note: Default is 15% but 10% is recommended.",
   "text.config.combatify-general.option.projectileDamage": "Projectile Damage",
   "text.config.combatify-general.option.projectileDamage.snowballDamage": "Snowball Damage",
   "text.config.combatify-general.option.projectileDamage.eggDamage": "Egg Damage",

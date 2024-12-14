@@ -84,7 +84,6 @@
 
   "shieldChargePercentage": 195,
 
-  "breachArmorPiercing": 0.15,
   "projectileDamage": {
     "eggDamage": 0.0,
     "snowballDamage": 0.0,

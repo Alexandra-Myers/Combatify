@@ -4,6 +4,8 @@
 ***
 #### Config Changes:
 ***
+- Removed the config option `breachArmorPiercing`, now replaced with calculating based on the `minecraft:armor_effectiveness` component.
+
 - Added the config option `mobsCanGuard`, enables mobs to use shields under certain conditions.
 
 - Added the config option `mobsCanSprint`, adds sprinting to certain mobs, under certain conditions, + sprint hits.

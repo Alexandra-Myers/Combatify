@@ -103,7 +103,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private DoubleHolder fastHealingTime;
 	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder shieldDisableTime;
-	private DoubleHolder breachArmorPiercing;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
@@ -345,9 +344,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		shieldChargePercentage.tieToCategory(extraI);
 		shieldChargePercentage.setupTooltip(1);
 
-		breachArmorPiercing = createInRange("breachArmorPiercing", 0.15, 0, 1);
-		breachArmorPiercing.tieToCategory(extraD);
-		breachArmorPiercing.setupTooltip(2);
 		projectileDamage = createObject("projectileDamage", ProjectileDamage.DEFAULT, ProjectileDamage.class, new JavaToJSONSerialisation<>(ProjectileDamage.decoder, ProjectileDamage.encoder), ProjectileDamage.STREAM_CODEC);
 		projectileDamage.tieToCategory(extraD);
 
@@ -658,9 +654,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Double shieldDisableTime() {
 		return shieldDisableTime.get();
-	}
-	public Double breachArmorPiercing() {
-		return breachArmorPiercing.get();
 	}
 	public Double snowballDamage() {
 		return projectileDamage.get().snowballDamage;

@@ -1,6 +1,8 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -37,9 +39,9 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	public void injectVoidReturnLogic(CallbackInfo ci) {
 		voidReturnLogic(ThrownTrident.class.cast(this), ID_LOYALTY);
 	}
-	@Redirect(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
-	public float dealtDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float f) {
-		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f);
+	@WrapOperation(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
+	public float dealtDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float f, Operation<Float> original) {
+		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f, original);
 	}
 	@ModifyExpressionValue(method = "onHitEntity", at = @At(value = "CONSTANT", args = "floatValue=8.0"))
 	public float editTridentDamage(float original) {
