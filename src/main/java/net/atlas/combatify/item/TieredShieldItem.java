@@ -14,6 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
+import java.util.Optional;
+
 import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.Combatify.shields;
 import static net.atlas.combatify.item.ItemRegistry.registerItem;
@@ -55,10 +57,9 @@ public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 
 	@Override
 	public Tier getConfigTier() {
-		Tier tier = getTierFromConfig();
-		if (tier != null) return tier;
-		return this.tier;
-	}
+		Optional<Tier> tier = getTierFromConfig();
+        return tier.orElse(this.tier);
+    }
 	public static void init() {
 
 	}
@@ -67,12 +68,12 @@ public class TieredShieldItem extends ShieldItem implements ItemExtensions {
 	public BlockingType combatify$getBlockingType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			if (configurableItemData.blockingType != null)
-				return configurableItemData.blockingType;
+			if (configurableItemData.blocker().blockingType() != null)
+				return configurableItemData.blocker().blockingType();
 			WeaponType type;
 			ConfigurableWeaponData configurableWeaponData;
-			if ((type = configurableItemData.type) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
-				BlockingType blockingType = configurableWeaponData.blockingType;
+			if ((type = configurableItemData.weaponStats().weaponType()) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
+				BlockingType blockingType = configurableWeaponData.blockingType();
 				if (blockingType != null)
 					return blockingType;
 			}

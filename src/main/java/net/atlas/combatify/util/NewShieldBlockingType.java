@@ -62,8 +62,8 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 	public float getShieldBlockDamageValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockStrength != null)
-				return (float) (configurableItemData.blockStrength / 100.0);
+			if (configurableItemData.blocker().blockStrength() != null)
+				return (float) (configurableItemData.blocker().blockStrength() / 100.0);
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
 		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
@@ -76,8 +76,8 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockKbRes != null)
-				return configurableItemData.blockKbRes;
+			if (configurableItemData.blocker().blockKbRes() != null)
+				return configurableItemData.blocker().blockKbRes();
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
 		if (ExtendedTier.getLevel(tier) >= 4)

@@ -30,7 +30,7 @@ public interface WeaponWithType extends ItemExtensions {
 	default WeaponType combatify$getWeaponType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null) {
-			WeaponType type = configurableItemData.type;
+			WeaponType type = configurableItemData.weaponStats().weaponType();
 			if (type != null)
 				return type;
 		}
@@ -42,8 +42,8 @@ public interface WeaponWithType extends ItemExtensions {
 		double chargedBonus = combatify$getWeaponType().getChargedReach();
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null) {
-			if (configurableItemData.chargedReach != null)
-				chargedBonus = configurableItemData.chargedReach;
+			if (configurableItemData.weaponStats().chargedReach() != null)
+				chargedBonus = configurableItemData.weaponStats().chargedReach();
 		}
 		return chargedBonus;
 	}
@@ -53,8 +53,8 @@ public interface WeaponWithType extends ItemExtensions {
 		boolean canSweep = combatify$getWeaponType().canSweep();
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null) {
-			if (configurableItemData.canSweep != null)
-				canSweep = configurableItemData.canSweep;
+			if (configurableItemData.weaponStats().canSweep() != null)
+				canSweep = configurableItemData.weaponStats().canSweep();
 		}
 		return canSweep;
 	}
@@ -63,13 +63,13 @@ public interface WeaponWithType extends ItemExtensions {
 	default BlockingType combatify$getBlockingType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null) {
-			BlockingType blockingType = configurableItemData.blockingType;
+			BlockingType blockingType = configurableItemData.blocker().blockingType();
 			if (blockingType != null)
 				return blockingType;
 		}
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
 		if (configurableWeaponData != null) {
-			BlockingType blockingType = configurableWeaponData.blockingType;
+			BlockingType blockingType = configurableWeaponData.blockingType();
 			if (blockingType != null)
 				return blockingType;
 		}
@@ -80,13 +80,13 @@ public interface WeaponWithType extends ItemExtensions {
 	default double getPiercingLevel() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null) {
-			Double piercingLevel = configurableItemData.piercingLevel;
+			Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
 			if (piercingLevel != null)
 				return piercingLevel;
 		}
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
 		if (configurableWeaponData != null) {
-			Double piercingLevel = configurableWeaponData.piercingLevel;
+			Double piercingLevel = configurableWeaponData.piercingLevel();
 			if (piercingLevel != null)
 				return piercingLevel;
 		}

@@ -30,10 +30,10 @@ public abstract class EnchantmentHelperMixin {
 	private static int getEnchantmentValue(int original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.enchantability != null)
-				return configurableItemData.enchantability;
-			if (configurableItemData.isEnchantable != null && original == 0)
-				original = configurableItemData.isEnchantable ? 14 : 0;
+			if (configurableItemData.enchantability() != null)
+				return configurableItemData.enchantability();
+			if (configurableItemData.isEnchantable() != null && original == 0)
+				original = configurableItemData.isEnchantable() ? 14 : 0;
 		}
 		return original;
 	}
@@ -42,10 +42,10 @@ public abstract class EnchantmentHelperMixin {
 	private static int getEnchantmentValue1(int original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.enchantability != null)
-				return configurableItemData.enchantability;
-			if (configurableItemData.isEnchantable != null && original == 0)
-				original = configurableItemData.isEnchantable ? 14 : 0;
+			if (configurableItemData.enchantability() != null)
+				return configurableItemData.enchantability();
+			if (configurableItemData.isEnchantable() != null && original == 0)
+				original = configurableItemData.isEnchantable() ? 14 : 0;
 		}
 		return original;
 	}

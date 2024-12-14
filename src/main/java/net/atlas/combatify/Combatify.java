@@ -154,7 +154,7 @@ public class Combatify implements ModInitializer {
 		builder.set(DataComponents.MAX_STACK_SIZE, 1);
 	}
 	public static void registerWeaponType(WeaponType weaponType) {
-		Combatify.registeredWeaponTypes.put(weaponType.name, weaponType);
+		Combatify.registeredWeaponTypes.put(weaponType.name(), weaponType);
     }
 	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
 		Combatify.registeredTypes.put(blockingType.getName(), blockingType);
@@ -164,7 +164,7 @@ public class Combatify implements ModInitializer {
 		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 	public static void defineDefaultWeaponType(WeaponType type) {
-		defaultWeaponTypes.put(type.name, type);
+		defaultWeaponTypes.put(type.name(), type);
 	}
 	public static <T extends BlockingType> T defineDefaultBlockingType(T blockingType) {
 		defaultTypes.put(blockingType.getName(), blockingType);

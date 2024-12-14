@@ -61,8 +61,8 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockKbRes != null)
-				return configurableItemData.blockKbRes;
+			if (configurableItemData.blocker().blockKbRes() != null)
+				return configurableItemData.blocker().blockKbRes();
 		}
 		return 0;
 	}

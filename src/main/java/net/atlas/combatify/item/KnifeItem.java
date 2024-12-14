@@ -55,7 +55,7 @@ public class KnifeItem extends TieredItem implements WeaponWithType {
 	public WeaponType combatify$getWeaponType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			WeaponType type = configurableItemData.type;
+			WeaponType type = configurableItemData.weaponStats().weaponType();
 			if (type != null)
 				return type;
 		}

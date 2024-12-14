@@ -9,6 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.Optional;
+
 @Mixin(TieredItem.class)
 public abstract class TieredItemMixin extends Item implements WeaponWithType {
 	@Shadow
@@ -30,10 +32,10 @@ public abstract class TieredItemMixin extends Item implements WeaponWithType {
 
 	@Override
 	public Tier getConfigTier() {
-		Tier tier = getTierFromConfig();
-		if (tier != null) {
-			this.tier = tier;
-			return tier;
+		Optional<Tier> tier = getTierFromConfig();
+		if (tier.isPresent()) {
+			this.tier = tier.get();
+			return tier.get();
 		}
 		return getTier();
 	}

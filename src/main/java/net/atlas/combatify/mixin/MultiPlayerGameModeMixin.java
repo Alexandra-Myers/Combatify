@@ -35,8 +35,8 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		boolean isMiscTarget = false;
 		ConfigurableEntityData configurableEntityData;
 		if ((configurableEntityData = MethodHandler.forEntity(target)) != null) {
-			if (configurableEntityData.isMiscEntity != null)
-				isMiscTarget = configurableEntityData.isMiscEntity;
+			if (configurableEntityData.isMiscEntity() != null)
+				isMiscTarget = configurableEntityData.isMiscEntity();
 		}
 		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 	}

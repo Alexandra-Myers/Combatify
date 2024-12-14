@@ -3,6 +3,9 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.*;
+import net.atlas.combatify.config.item.ArmourStats;
+import net.atlas.combatify.config.item.Blocker;
+import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
@@ -31,6 +34,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -242,8 +247,8 @@ public class MethodHandler {
 			float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
 			ConfigurableEntityData configurableEntityData;
 			if ((configurableEntityData = forEntity(target)) != null) {
-				if (configurableEntityData.shieldDisableTime != null)
-					damage = configurableEntityData.shieldDisableTime.floatValue();
+				if (configurableEntityData.shieldDisableTime() != null)
+					damage = configurableEntityData.shieldDisableTime().floatValue();
 			}
 			if (attacker.level() instanceof ServerLevel serverLevel) {
 				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, attackingItem, target, damageSource, damage);
@@ -256,8 +261,8 @@ public class MethodHandler {
 		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
 		ConfigurableEntityData configurableEntityData;
 		if ((configurableEntityData = forEntity(target)) != null) {
-			if (configurableEntityData.shieldDisableTime != null)
-				damage = configurableEntityData.shieldDisableTime.floatValue();
+			if (configurableEntityData.shieldDisableTime() != null)
+				damage = configurableEntityData.shieldDisableTime().floatValue();
 		}
 		if (target.level() instanceof ServerLevel serverLevel) {
 			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
@@ -406,14 +411,14 @@ public class MethodHandler {
 			Double speed = null;
 			Double reach = null;
 			Double chargedReach = null;
-			Integer stack_size = null;
+			Integer stackSize = null;
 			Integer cooldown = null;
 			Boolean cooldownAfterUse = null;
 			WeaponType type = null;
 			BlockingType blockingType = null;
 			Double blockStrength = null;
 			Double blockKbRes = null;
-			Integer enchantment_level = null;
+			Integer enchantmentLevel = null;
 			Boolean isEnchantable = null;
 			Integer useDuration = null;
 			Double piercingLevel = null;
@@ -425,32 +430,41 @@ public class MethodHandler {
 			Double armourKbRes = null;
 			Ingredient ingredient = null;
 			TagKey<Block> toolMineable = null;
+			Tool tool = null;
+			ItemAttributeModifiers itemAttributeModifiers = ItemAttributeModifiers.EMPTY;
 			for (ConfigurableItemData configurableItemData : results) {
-				damage = conditionalChange(configurableItemData.damage, damage);
-				speed = conditionalChange(configurableItemData.speed, speed);
-				reach = conditionalChange(configurableItemData.reach, reach);
-				chargedReach = conditionalChange(configurableItemData.chargedReach, chargedReach);
-				stack_size = conditionalChange(configurableItemData.stackSize, stack_size);
-				cooldown = conditionalChange(configurableItemData.cooldown, cooldown);
-				cooldownAfterUse = conditionalChange(configurableItemData.cooldownAfter, cooldownAfterUse);
-				type = conditionalChange(configurableItemData.type, type);
-				blockingType = conditionalChange(configurableItemData.blockingType, blockingType);
-				blockStrength = conditionalChange(configurableItemData.blockStrength, blockStrength);
-				blockKbRes = conditionalChange(configurableItemData.blockKbRes, blockKbRes);
-				enchantment_level = conditionalChange(configurableItemData.enchantability, enchantment_level);
-				isEnchantable = conditionalChange(configurableItemData.isEnchantable, isEnchantable);
-				useDuration = conditionalChange(configurableItemData.useDuration, useDuration);
-				piercingLevel = conditionalChange(configurableItemData.piercingLevel, piercingLevel);
-				canSweep = conditionalChange(configurableItemData.canSweep, canSweep);
-				tier = conditionalChange(configurableItemData.tier, tier);
-				durability = configurableItemData.durability.isEmpty() ? durability : configurableItemData.durability;
-				defense = configurableItemData.defense.isEmpty() ? defense : configurableItemData.defense;
-				toughness = conditionalChange(configurableItemData.toughness, toughness);
-				armourKbRes = conditionalChange(configurableItemData.armourKbRes, armourKbRes);
-				ingredient = conditionalChange(configurableItemData.repairIngredient, ingredient);
-				toolMineable = conditionalChange(configurableItemData.toolMineableTag, toolMineable);
+				damage = conditionalChange(configurableItemData.weaponStats().attackDamage(), damage);
+				speed = conditionalChange(configurableItemData.weaponStats().attackSpeed(), speed);
+				reach = conditionalChange(configurableItemData.weaponStats().attackReach(), reach);
+				chargedReach = conditionalChange(configurableItemData.weaponStats().chargedReach(), chargedReach);
+				piercingLevel = conditionalChange(configurableItemData.weaponStats().piercingLevel(), piercingLevel);
+				canSweep = conditionalChange(configurableItemData.weaponStats().canSweep(), canSweep);
+				type = conditionalChange(configurableItemData.weaponStats().weaponType(), type);
+				blockingType = conditionalChange(configurableItemData.blocker().blockingType(), blockingType);
+				blockStrength = conditionalChange(configurableItemData.blocker().blockStrength(), blockStrength);
+				blockKbRes = conditionalChange(configurableItemData.blocker().blockKbRes(), blockKbRes);
+				durability = configurableItemData.armourStats().durability().isEmpty() ? durability : configurableItemData.armourStats().durability();
+				defense = configurableItemData.armourStats().defense().isEmpty() ? defense : configurableItemData.armourStats().defense();
+				toughness = conditionalChange(configurableItemData.armourStats().toughness(), toughness);
+				armourKbRes = conditionalChange(configurableItemData.armourStats().armourKbRes(), armourKbRes);
+				stackSize = conditionalChange(configurableItemData.stackSize(), stackSize);
+				cooldown = conditionalChange(configurableItemData.cooldown(), cooldown);
+				cooldownAfterUse = conditionalChange(configurableItemData.cooldownAfter(), cooldownAfterUse);
+				enchantmentLevel = conditionalChange(configurableItemData.enchantability(), enchantmentLevel);
+				isEnchantable = conditionalChange(configurableItemData.isEnchantable(), isEnchantable);
+				useDuration = conditionalChange(configurableItemData.useDuration(), useDuration);
+				tier = conditionalChange(configurableItemData.tier(), tier);
+				ingredient = conditionalChange(configurableItemData.repairIngredient(), ingredient);
+				toolMineable = conditionalChange(configurableItemData.toolMineableTag(), toolMineable);
+				tool = conditionalChange(configurableItemData.tool(), tool);
+				itemAttributeModifiers = configurableItemData.itemAttributeModifiers().equals(ItemAttributeModifiers.EMPTY) ? itemAttributeModifiers : configurableItemData.itemAttributeModifiers();
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
+			WeaponStats weaponStats = new WeaponStats(damage, speed, reach, chargedReach, piercingLevel, type, canSweep);
+			Blocker blocker = new Blocker(blockingType, blockStrength, blockKbRes);
+			ArmourStats armourStats = new ArmourStats(durability, defense, toughness, armourKbRes);
+			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, stackSize, cooldown, cooldownAfterUse, blocker, enchantmentLevel, isEnchantable, useDuration, tier, armourStats, ingredient, toolMineable, tool, itemAttributeModifiers);
+			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
+			return configurableItemData;
 		}
 		return null;
 	}
@@ -471,16 +485,18 @@ public class MethodHandler {
 			Double piercingLevel = null;
 			Boolean canSweep = null;
 			for (ConfigurableWeaponData configurableWeaponData : results) {
-				tierable = conditionalChange(configurableWeaponData.tierable, tierable);
-				damageOffset = conditionalChange(configurableWeaponData.damageOffset, damageOffset);
-				speed = conditionalChange(configurableWeaponData.speed, speed);
-				reach = conditionalChange(configurableWeaponData.reach, reach);
-				chargedReach = conditionalChange(configurableWeaponData.chargedReach, chargedReach);
-				blockingType = conditionalChange(configurableWeaponData.blockingType, blockingType);
-				piercingLevel = conditionalChange(configurableWeaponData.piercingLevel, piercingLevel);
-				canSweep = conditionalChange(configurableWeaponData.canSweep, canSweep);
+				tierable = conditionalChange(configurableWeaponData.tiered(), tierable);
+				damageOffset = conditionalChange(configurableWeaponData.attackDamage(), damageOffset);
+				speed = conditionalChange(configurableWeaponData.attackSpeed(), speed);
+				reach = conditionalChange(configurableWeaponData.attackReach(), reach);
+				chargedReach = conditionalChange(configurableWeaponData.chargedReach(), chargedReach);
+				blockingType = conditionalChange(configurableWeaponData.blockingType(), blockingType);
+				piercingLevel = conditionalChange(configurableWeaponData.piercingLevel(), piercingLevel);
+				canSweep = conditionalChange(configurableWeaponData.canSweep(), canSweep);
 			}
-			return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, piercingLevel, canSweep);
+			ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, piercingLevel, tierable, canSweep, blockingType);
+			if (configurableWeaponData.equals(ConfigurableWeaponData.EMPTY)) return null;
+			return configurableWeaponData;
 		}
 		return null;
 	}
@@ -497,11 +513,13 @@ public class MethodHandler {
 			Double shieldDisableTime = null;
 			Boolean isMiscEntity = null;
 			for (ConfigurableEntityData configurableEntityData : results) {
-				attackInterval = conditionalChange(configurableEntityData.attackInterval, attackInterval);
-				shieldDisableTime = conditionalChange(configurableEntityData.shieldDisableTime, shieldDisableTime);
-				isMiscEntity = conditionalChange(configurableEntityData.isMiscEntity, isMiscEntity);
+				attackInterval = conditionalChange(configurableEntityData.attackInterval(), attackInterval);
+				shieldDisableTime = conditionalChange(configurableEntityData.shieldDisableTime(), shieldDisableTime);
+				isMiscEntity = conditionalChange(configurableEntityData.isMiscEntity(), isMiscEntity);
 			}
-			return new ConfigurableEntityData(attackInterval, shieldDisableTime, isMiscEntity);
+			ConfigurableEntityData configurableEntityData = new ConfigurableEntityData(attackInterval, shieldDisableTime, isMiscEntity);
+			if (configurableEntityData.equals(ConfigurableEntityData.EMPTY)) return null;
+			return configurableEntityData;
 		}
 		return null;
 	}

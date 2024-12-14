@@ -90,8 +90,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		Item item = getItem();
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 		if (configurableItemData != null) {
-			if (configurableItemData.useDuration != null)
-				return configurableItemData.useDuration;
+			if (configurableItemData.useDuration() != null)
+				return configurableItemData.useDuration();
 		} else if (!((ItemExtensions) item).combatify$getBlockingType().isEmpty() && (!((ItemExtensions) item).combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking()))
 			return 72000;
 		return original;
@@ -103,8 +103,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		Item item = getItem();
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 		if (configurableItemData != null) {
-			if (configurableItemData.isEnchantable != null)
-				enchantable = configurableItemData.isEnchantable && !isEnchanted();
+			if (configurableItemData.isEnchantable() != null)
+				enchantable = configurableItemData.isEnchantable() && !isEnchanted();
 		}
 		return enchantable || original;
 	}
@@ -117,8 +117,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 				holder = ((ItemExtensions)item).combatify$getBlockingType().use(useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand());
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 		if (configurableItemData != null && original != InteractionResult.PASS && original != InteractionResult.FAIL) {
-			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter)
-				Objects.requireNonNull(useOnContext.getPlayer()).getCooldowns().addCooldown(item, configurableItemData.cooldown);
+			if (configurableItemData.cooldown() != null && !configurableItemData.cooldownAfter())
+				Objects.requireNonNull(useOnContext.getPlayer()).getCooldowns().addCooldown(item, configurableItemData.cooldown());
 		}
 		if (holder != null)
 			return holder.getResult();
@@ -134,8 +134,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 				holder = ((ItemExtensions)item).combatify$getBlockingType().use(world, player, hand);
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 		if (configurableItemData != null && original.getResult() != InteractionResult.PASS && original.getResult() != InteractionResult.FAIL) {
-			if (configurableItemData.cooldown != null && !configurableItemData.cooldownAfter)
-				player.getCooldowns().addCooldown(item, configurableItemData.cooldown);
+			if (configurableItemData.cooldown() != null && !configurableItemData.cooldownAfter())
+				player.getCooldowns().addCooldown(item, configurableItemData.cooldown());
 		}
 		if (holder != null)
 			return holder;
@@ -145,8 +145,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	public void addCooldown(Level level, LivingEntity livingEntity, int i, CallbackInfo ci) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.cooldown != null && configurableItemData.cooldownAfter && livingEntity instanceof Player player)
-				player.getCooldowns().addCooldown(getItem(), configurableItemData.cooldown);
+			if (configurableItemData.cooldown() != null && configurableItemData.cooldownAfter() && livingEntity instanceof Player player)
+				player.getCooldowns().addCooldown(getItem(), configurableItemData.cooldown());
 		}
 	}
 	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))

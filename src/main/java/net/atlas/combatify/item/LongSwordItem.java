@@ -57,13 +57,13 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 	public double getPiercingLevel() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			Double piercingLevel = configurableItemData.piercingLevel;
+			Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
 			if (piercingLevel != null)
 				return piercingLevel;
 		}
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
 		if (configurableWeaponData != null) {
-			Double piercingLevel = configurableWeaponData.piercingLevel;
+			Double piercingLevel = configurableWeaponData.piercingLevel();
 			if (piercingLevel != null)
 				return piercingLevel;
 		}
@@ -82,7 +82,7 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 	public WeaponType combatify$getWeaponType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			WeaponType type = configurableItemData.type;
+			WeaponType type = configurableItemData.weaponStats().weaponType();
 			if (type != null)
 				return type;
 		}

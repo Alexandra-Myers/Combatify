@@ -1,22 +1,44 @@
 package net.atlas.combatify.config;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.BlockingType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Objects;
+import java.util.Optional;
 
-public class ConfigurableWeaponData {
+import static net.atlas.combatify.config.ConfigurableItemData.clamp;
+
+public record ConfigurableWeaponData(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<Boolean> optionalTiered, Optional<Boolean> optionalCanSweep, Optional<BlockingType> optionalBlockingType) {
+	public static final ConfigurableWeaponData EMPTY = new ConfigurableWeaponData((Double) null, null, null, null, null, null, null, null);
+	public static final Codec<ConfigurableWeaponData> CODEC = RecordCodecBuilder.create(instance ->
+		instance.group(Codec.DOUBLE.optionalFieldOf("damage_offset").forGetter(ConfigurableWeaponData::optionalDamage),
+				Codec.DOUBLE.optionalFieldOf("speed").forGetter(ConfigurableWeaponData::optionalSpeed),
+				Codec.DOUBLE.optionalFieldOf("reach").forGetter(ConfigurableWeaponData::optionalReach),
+				Codec.DOUBLE.optionalFieldOf("charged_reach").forGetter(ConfigurableWeaponData::optionalChargedReach),
+				Codec.DOUBLE.optionalFieldOf("armor_piercing").forGetter(ConfigurableWeaponData::optionalPiercingLevel),
+				Codec.BOOL.optionalFieldOf("tierable").forGetter(ConfigurableWeaponData::optionalTiered),
+				Codec.BOOL.optionalFieldOf("can_sweep").forGetter(ConfigurableWeaponData::optionalCanSweep),
+				BlockingType.SIMPLE_CODEC.optionalFieldOf("blocking_type").forGetter(ConfigurableWeaponData::optionalBlockingType))
+			.apply(instance, ConfigurableWeaponData::new));
+	public static final Codec<ConfigurableWeaponData> ADDED_TYPE_CODEC = RecordCodecBuilder.create(instance ->
+		instance.group(Codec.DOUBLE.optionalFieldOf("charged_reach").forGetter(ConfigurableWeaponData::optionalChargedReach),
+				Codec.DOUBLE.optionalFieldOf("armor_piercing").forGetter(ConfigurableWeaponData::optionalPiercingLevel),
+				Codec.BOOL.optionalFieldOf("can_sweep").forGetter(ConfigurableWeaponData::optionalCanSweep),
+				BlockingType.SIMPLE_CODEC.optionalFieldOf("blocking_type").forGetter(ConfigurableWeaponData::optionalBlockingType))
+			.apply(instance, ConfigurableWeaponData::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableWeaponData> WEAPON_DATA_STREAM_CODEC = StreamCodec.of((buf, configurableWeaponData) -> {
-		buf.writeDouble(configurableWeaponData.damageOffset == null ? -10 : configurableWeaponData.damageOffset);
-		buf.writeDouble(configurableWeaponData.speed == null ? -10 : configurableWeaponData.speed);
-		buf.writeDouble(configurableWeaponData.reach == null ? -10 : configurableWeaponData.reach);
-		buf.writeDouble(configurableWeaponData.chargedReach == null ? -10 : configurableWeaponData.chargedReach);
-		buf.writeInt(configurableWeaponData.tierable == null ? -10 : configurableWeaponData.tierable ? 1 : 0);
-		buf.writeUtf(configurableWeaponData.blockingType == null ? "blank" : configurableWeaponData.blockingType.getName());
-		buf.writeDouble(configurableWeaponData.piercingLevel == null ? -10 : configurableWeaponData.piercingLevel);
-		buf.writeInt(configurableWeaponData.canSweep == null ? -10 : configurableWeaponData.canSweep ? 1 : 0);
+		buf.writeDouble(configurableWeaponData.optionalDamage.orElse(-10D));
+		buf.writeDouble(configurableWeaponData.optionalSpeed.orElse(-10D));
+		buf.writeDouble(configurableWeaponData.optionalReach.orElse(-10D));
+		buf.writeDouble(configurableWeaponData.optionalChargedReach.orElse(-10D));
+		buf.writeInt(configurableWeaponData.optionalTiered.map(aBoolean -> aBoolean ? 1 : 0).orElse(-10));
+		buf.writeUtf(configurableWeaponData.optionalBlockingType.isEmpty() ? "blank" : configurableWeaponData.optionalBlockingType.get().getName());
+		buf.writeDouble(configurableWeaponData.optionalPiercingLevel.orElse(-10D));
+		buf.writeInt(configurableWeaponData.optionalCanSweep.map(aBoolean -> aBoolean ? 1 : 0).orElse(-10));
 	}, buf -> {
 		Double damageOffset = buf.readDouble();
 		Double speed = buf.readDouble();
@@ -43,42 +65,66 @@ public class ConfigurableWeaponData {
 			piercingLevel = null;
 		if (canSweepAsInt != -10)
 			canSweep = canSweepAsInt == 1;
-		return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, bType, piercingLevel, canSweep);
+		return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, piercingLevel, tierable, canSweep, bType);
 	});
-	public final Double damageOffset;
-	public final Double speed;
-	public final Double reach;
-	public final Double chargedReach;
-	public final Boolean tierable;
-	public final BlockingType blockingType;
-	public final Double piercingLevel;
-	public final Boolean canSweep;
-	public ConfigurableWeaponData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Boolean tiered, BlockingType blockingType, Double piercingLevel, Boolean canSweep) {
-		damageOffset = clamp(attackDamage, 0, 1000);
-		speed = clamp(attackSpeed, -1, 7.5);
-		reach = clamp(attackReach, 0, 1024);
-		this.chargedReach = clamp(chargedReach, 0, 10);
-		tierable = tiered;
-		this.blockingType = blockingType;
-		this.piercingLevel = clamp(piercingLevel, 0, 1);
-        this.canSweep = canSweep;
+	public ConfigurableWeaponData(Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<Boolean> optionalCanSweep, Optional<BlockingType> optionalBlockingType) {
+		this(Optional.empty(), Optional.empty(), Optional.empty(), optionalChargedReach, optionalPiercingLevel, Optional.empty(), optionalCanSweep, optionalBlockingType);
+	}
+	public ConfigurableWeaponData(Double optionalDamage, Double optionalSpeed, Double optionalReach, Double optionalChargedReach, Double optionalPiercingLevel, Boolean optionalTiered, Boolean optionalCanSweep, BlockingType optionalBlockingType) {
+		this(Optional.ofNullable(optionalDamage), Optional.ofNullable(optionalSpeed), Optional.ofNullable(optionalReach), Optional.ofNullable(optionalChargedReach), Optional.ofNullable(optionalPiercingLevel), Optional.ofNullable(optionalTiered), Optional.ofNullable(optionalCanSweep), Optional.ofNullable(optionalBlockingType));
+	}
+	public ConfigurableWeaponData(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<Boolean> optionalTiered, Optional<Boolean> optionalCanSweep, Optional<BlockingType> optionalBlockingType) {
+		this.optionalDamage = clamp(optionalDamage, 0, 1000);
+		this.optionalSpeed = clamp(optionalSpeed, -1, 7.5);
+		this.optionalReach = clamp(optionalReach, 0, 1024);
+		this.optionalChargedReach = clamp(optionalChargedReach, 0, 10);
+		this.optionalPiercingLevel = clamp(optionalPiercingLevel, 0, 1);
+		this.optionalTiered = optionalTiered;
+		this.optionalCanSweep = optionalCanSweep;
+		this.optionalBlockingType = optionalBlockingType;
     }
 
-	public static Double clamp(Double value, double min, double max) {
-		if (value == null)
-			return null;
-		return value < min ? min : Math.min(value, max);
+	public Double attackDamage() {
+		return optionalDamage.orElse(null);
+	}
+
+	public Double attackSpeed() {
+		return optionalSpeed.orElse(null);
+	}
+
+	public Double attackReach() {
+		return optionalReach.orElse(null);
+	}
+
+	public Double chargedReach() {
+		return optionalChargedReach.orElse(null);
+	}
+
+	public Double piercingLevel() {
+		return optionalPiercingLevel.orElse(null);
+	}
+
+	public Boolean tiered() {
+		return optionalTiered.orElse(null);
+	}
+
+	public Boolean canSweep() {
+		return optionalCanSweep.orElse(null);
+	}
+
+	public BlockingType blockingType() {
+		return optionalBlockingType.orElse(null);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ConfigurableWeaponData that)) return false;
-        return Objects.equals(damageOffset, that.damageOffset) && Objects.equals(speed, that.speed) && Objects.equals(reach, that.reach) && Objects.equals(chargedReach, that.chargedReach) && Objects.equals(tierable, that.tierable) && Objects.equals(blockingType, that.blockingType) && Objects.equals(piercingLevel, that.piercingLevel) && Objects.equals(canSweep, that.canSweep);
+        return Objects.equals(optionalDamage, that.optionalDamage) && Objects.equals(optionalSpeed, that.optionalSpeed) && Objects.equals(optionalReach, that.optionalReach) && Objects.equals(optionalChargedReach, that.optionalChargedReach) && Objects.equals(optionalTiered, that.optionalTiered) && Objects.equals(optionalBlockingType, that.optionalBlockingType) && Objects.equals(optionalPiercingLevel, that.optionalPiercingLevel) && Objects.equals(optionalCanSweep, that.optionalCanSweep);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(damageOffset, speed, reach, chargedReach, tierable, blockingType, piercingLevel, canSweep);
+		return Objects.hash(optionalDamage, optionalSpeed, optionalReach, optionalChargedReach, optionalTiered, optionalBlockingType, optionalPiercingLevel, optionalCanSweep);
 	}
 }

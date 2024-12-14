@@ -21,13 +21,13 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 	public BlockingType combatify$getBlockingType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			BlockingType blockingType = configurableItemData.blockingType;
+			BlockingType blockingType = configurableItemData.blocker().blockingType();
 			if (blockingType != null)
 				return blockingType;
 		}
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
 		if (configurableWeaponData != null) {
-			BlockingType blockingType = configurableWeaponData.blockingType;
+			BlockingType blockingType = configurableWeaponData.blockingType();
 			if (blockingType != null)
 				return blockingType;
 		}
@@ -38,7 +38,7 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 	public WeaponType combatify$getWeaponType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			WeaponType type = configurableItemData.type;
+			WeaponType type = configurableItemData.weaponStats().weaponType();
 			if (type != null)
 				return type;
 		}

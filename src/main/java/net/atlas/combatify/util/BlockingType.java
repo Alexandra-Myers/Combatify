@@ -2,6 +2,9 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import net.atlas.combatify.Combatify;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -12,18 +15,20 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.EMPTY;
 
 public abstract class BlockingType {
+	public static final Codec<BlockingType> SIMPLE_CODEC = Codec.STRING.validate(blocking_type -> !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type)).xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type.toLowerCase(Locale.ROOT)), BlockingType::getName).orElse(EMPTY);
 	private final String name;
 	private boolean canBeDisabled = true;
 	private boolean canCrouchBlock = true;

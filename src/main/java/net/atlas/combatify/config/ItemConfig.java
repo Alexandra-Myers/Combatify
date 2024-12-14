@@ -4,6 +4,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
+import com.mojang.serialization.*;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
@@ -46,6 +47,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
@@ -78,7 +80,6 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeFloat(tier.getSpeed());
 		Ingredient.CONTENTS_STREAM_CODEC.encode(buf, tier.getRepairIngredient());
 		buf.writeResourceLocation(tier.getIncorrectBlocksForDrops().location());
-		buf.writeUtf(tier instanceof ExtendedTier extendedTier ? extendedTier.baseTierName() : getTierName(tier));
 	}, (buf) -> {
 		int level = buf.readVarInt();
 		int enchantLevel = buf.readVarInt();
@@ -87,18 +88,17 @@ public class ItemConfig extends AtlasConfig {
 		float speed = buf.readFloat();
 		Ingredient repairIngredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
 		TagKey<Block> incorrect = TagKey.create(Registries.BLOCK, buf.readResourceLocation());
-		String baseTier = buf.readUtf();
-		return ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect, baseTier);
+		return ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect);
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> REGISTERED_WEAPON_TYPE_STREAM_CODEC = StreamCodec.of((buf, weaponType) -> {
-		buf.writeUtf(weaponType.name);
-		buf.writeDouble(weaponType.damageOffset);
-		buf.writeDouble(weaponType.speed);
-		buf.writeDouble(weaponType.reach);
-		buf.writeBoolean(weaponType.useAxeDamage);
-		buf.writeBoolean(weaponType.useHoeDamage);
-		buf.writeBoolean(weaponType.useHoeSpeed);
-		buf.writeBoolean(weaponType.tierable);
+		buf.writeUtf(weaponType.name());
+		buf.writeDouble(weaponType.damageOffset());
+		buf.writeDouble(weaponType.speed());
+		buf.writeDouble(weaponType.reach());
+		buf.writeBoolean(weaponType.useAxeDamage());
+		buf.writeBoolean(weaponType.useHoeDamage());
+		buf.writeBoolean(weaponType.useHoeSpeed());
+		buf.writeBoolean(weaponType.tierable());
 	}, buf -> {
 		String name = buf.readUtf();
 		double damageOffset = buf.readDouble();
@@ -108,7 +108,7 @@ public class ItemConfig extends AtlasConfig {
 		boolean useHoeDamage = buf.readBoolean();
 		boolean useHoeSpeed = buf.readBoolean();
 		boolean tierable = buf.readBoolean();
-		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, true);
+		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable);
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> BLOCKING_TYPE_STREAM_CODEC = StreamCodec.of((buf, blockingType) -> {
 		buf.writeUtf(blockingType.getClass().getName());
@@ -245,30 +245,14 @@ public class ItemConfig extends AtlasConfig {
 					int added = blankTypes.size();
 					blankTypes.clear();
 					for (int i = 0; i < added; i++) {
-						Double damageOffset = null;
-						Double speed = null;
-						Double reach = null;
-						Boolean tierable = null;
-
-						if (jsonObject.has("tierable"))
-							tierable = getBoolean(jsonObject, "tierable");
-						if (jsonObject.has("damage_offset"))
-							damageOffset = getDouble(jsonObject, "damage_offset");
-						if (jsonObject.has("speed"))
-							speed = getDouble(jsonObject, "speed");
-						if (jsonObject.has("reach"))
-							reach = getDouble(jsonObject, "reach");
-						if (damageOffset == null || speed == null || reach == null || tierable == null) {
-							LOGGER.error("The JSON must contain the weapon type's attributes if a new weapon type is added!" + errorStage("Configuring Weapon Types"));
-							return;
-						}
-						blankTypes.add(tierable ? WeaponType.createBasic(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach) : WeaponType.createBasicUntierable(GsonHelper.getAsString(jsonObject, "name").toLowerCase(Locale.ROOT), damageOffset, speed, reach));
+						WeaponType weaponType = WeaponType.FULL_CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+						blankTypes.add(weaponType);
 					}
 					if (!blankTypes.isEmpty()) {
 						weaponTypes = weaponTypes.stream().filter(Objects::nonNull).toList();
-						parseAddedWeaponType(blankTypes, jsonObject, null, null, null, null);
+						parseWeaponType(blankTypes, jsonObject, ConfigurableWeaponData.ADDED_TYPE_CODEC);
 					}
-					parseWeaponType(weaponTypes, jsonObject);
+					parseWeaponType(weaponTypes, jsonObject, ConfigurableWeaponData.CODEC);
 				} else
 					notJSONObject(jsonElement, "Configuring Weapon Types");
 			});
@@ -323,61 +307,15 @@ public class ItemConfig extends AtlasConfig {
 			armourCalcs = new Formula(getString(object, "armor_calculation"));
 	}
 	public void parseEntityType(List<EntityType<?>> entities, List<TagKey<EntityType<?>>> entityTags, JsonObject jsonObject) {
-		Integer attackInterval = null;
-		Double shieldDisableTime = null;
-		Boolean isMiscEntity = null;
-		if (jsonObject.has("attack_interval"))
-			attackInterval = getInt(jsonObject, "attack_interval");
-		if (jsonObject.has("shield_disable_time"))
-			shieldDisableTime = getDouble(jsonObject, "shield_disable_time");
-		if (jsonObject.has("is_misc_entity"))
-			isMiscEntity = getBoolean(jsonObject, "is_misc_entity");
-		ConfigurableEntityData configurableEntityData = new ConfigurableEntityData(attackInterval, shieldDisableTime, isMiscEntity);
+		ConfigurableEntityData configurableEntityData = ConfigurableEntityData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
 		ConfigDataWrapper<EntityType<?>, ConfigurableEntityData> configDataWrapper = new ConfigDataWrapper<>(entities, entityTags, configurableEntityData);
 		configuredEntities.add(configDataWrapper);
 	}
-	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject) {
-		Double damageOffset = null;
-		Double speed = null;
-		Double reach = null;
-		Boolean tierable = null;
-
-		if (jsonObject.has("tierable"))
-			tierable = getBoolean(jsonObject, "tierable");
-		if (jsonObject.has("damage_offset"))
-			damageOffset = getDouble(jsonObject, "damage_offset");
-		if (jsonObject.has("speed"))
-			speed = getDouble(jsonObject, "speed");
-		if (jsonObject.has("reach"))
-			reach = getDouble(jsonObject, "reach");
-
-		parseAddedWeaponType(types, jsonObject, damageOffset, speed, reach, tierable);
+	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject, Codec<ConfigurableWeaponData> codec) {
+		ConfigurableWeaponData configurableWeaponData = codec.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+		addWeaponTypeConfiguration(types, configurableWeaponData);
 	}
-	public void parseAddedWeaponType(List<WeaponType> types, JsonObject jsonObject, Double damageOffset, Double speed, Double reach, Boolean tierable) {
-		Double chargedReach = null;
-		BlockingType blockingType = null;
-		Double piercingLevel = null;
-		Boolean canSweep = null;
-
-		if (jsonObject.has("charged_reach"))
-			chargedReach = getDouble(jsonObject, "charged_reach");
-		if (jsonObject.has("blocking_type")) {
-			String blocking_type = getString(jsonObject, "blocking_type");
-			blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-			if (!Combatify.registeredTypes.containsKey(blocking_type)) {
-				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
-				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
-				crashReportCategory.setDetail("Type name", blocking_type);
-				crashReportCategory.setDetail("Json Object", jsonObject);
-				throw new ReportedException(report);
-			}
-			blockingType = Combatify.registeredTypes.get(blocking_type);
-		}
-		if (jsonObject.has("armor_piercing"))
-			piercingLevel = getDouble(jsonObject, "armor_piercing");
-		if (jsonObject.has("can_sweep"))
-			canSweep = getBoolean(jsonObject, "can_sweep");
-		ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, tierable, blockingType, piercingLevel, canSweep);
+	public void addWeaponTypeConfiguration(List<WeaponType> types, ConfigurableWeaponData configurableWeaponData) {
 		ConfigDataWrapper<WeaponType, ConfigurableWeaponData> configDataWrapper = new ConfigDataWrapper<>(types, Collections.emptyList(), configurableWeaponData);
 		configuredWeapons.add(configDataWrapper);
 	}
@@ -398,33 +336,14 @@ public class ItemConfig extends AtlasConfig {
 		configuredEntities = new ArrayList<>();
 		configuredItems = new ArrayList<>();
 		configuredWeapons = new ArrayList<>();
-		tiers = defaultTiers;
-		registeredWeaponTypes = defaultWeaponTypes;
-		registeredTypes = defaultTypes;
+		tiers = HashBiMap.create(defaultTiers);
+		registeredWeaponTypes = new HashMap<>(defaultWeaponTypes);
+		registeredTypes = new HashMap<>(defaultTypes);
 	}
 
 	@Override
 	public <T> void alertChange(ConfigValue<T> tConfigValue, T newValue) {
 
-	}
-
-	public static String getString(JsonObject object, String name) {
-		return object.get(name).getAsString();
-	}
-
-	public static Integer getInt(JsonObject object, String name) {
-		return object.get(name).getAsInt();
-	}
-
-	public static Float getFloat(JsonObject object, String name) {
-		return object.get(name).getAsFloat();
-	}
-
-	public static Double getDouble(JsonObject object, String name) {
-		return object.get(name).getAsDouble();
-	}
-	public static Boolean getBoolean(JsonObject object, String name) {
-		return object.get(name).getAsBoolean();
 	}
 
 	public static TagKey<EntityType<?>> entityTagFromJson(JsonObject jsonObject) {
@@ -556,46 +475,7 @@ public class ItemConfig extends AtlasConfig {
 			return;
 		}
 		String name = getString(jsonObject, "name");
-		if (!jsonObject.has("base_tier")) {
-			LOGGER.error("An added tier by the name of " + name + " has no tier to base off of. This is required for a tier to function." + errorStage("Configuring Tiers"));
-			return;
-		}
-		String baseTierName = getString(jsonObject, "base_tier");
-		Tier baseTier = getTier(baseTierName);
-		int uses = baseTier.getUses();
-		if (jsonObject.has("uses"))
-			uses = getInt(jsonObject, "uses");
-		float speed = baseTier.getSpeed();
-		if (jsonObject.has("mining_speed"))
-			speed = getFloat(jsonObject, "mining_speed");
-		float damage = baseTier.getAttackDamageBonus();
-		if (jsonObject.has("damage_bonus"))
-			damage = getFloat(jsonObject, "damage_bonus");
-		int level = baseTier instanceof ExtendedTier extendedTier ? extendedTier.getLevel() : ExtendedTier.getLevelFromDefault(baseTier);
-		if (jsonObject.has("mining_level"))
-			level = getInt(jsonObject, "mining_level");
-		int enchantLevel = baseTier.getEnchantmentValue();
-		if (jsonObject.has("enchant_level"))
-			enchantLevel = getInt(jsonObject, "enchant_level");
-		Ingredient repairIngredient = baseTier.getRepairIngredient();
-		if (jsonObject.has("repair_ingredient")) {
-			JsonElement repair_ingredient = jsonObject.get("repair_ingredient");
-			if (repair_ingredient instanceof JsonArray jsonArray) {
-				List<ItemStack> ingredients = new ArrayList<>();
-				jsonArray.asList().forEach(jsonElement -> ingredients.add(itemFromName(jsonElement.getAsString()).getDefaultInstance()));
-				repairIngredient = Ingredient.of(ingredients.stream());
-			} else {
-				String ri = repair_ingredient.getAsString();
-				if (ri.startsWith("#"))
-					repairIngredient = Ingredient.of(TagKey.create(Registries.ITEM, Objects.requireNonNull(ResourceLocation.tryParse(ri.substring(1)))));
-				else repairIngredient = Ingredient.of(itemFromName(ri));
-			}
-		}
-		TagKey<Block> incorrect = baseTier.getIncorrectBlocksForDrops();
-		if (jsonObject.has("incorrect_blocks"))
-			incorrect = TagKey.create(Registries.BLOCK, Objects.requireNonNull(ResourceLocation.tryParse(getString(jsonObject, "incorrect_blocks").substring(1))));
-
-		tiers.put(name, ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect, baseTierName));
+		tiers.put(name, ExtendedTier.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow());
 	}
 
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
@@ -730,154 +610,7 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	public void parseItemConfig(List<Item> items, List<TagKey<Item>> tags, JsonObject jsonObject) {
-		Double damage = null;
-		Double speed = null;
-		Double reach = null;
-		Double chargedReach = null;
-		Integer stack_size = null;
-		Integer cooldown = null;
-		Boolean cooldownAfterUse = null;
-		WeaponType type = null;
-		BlockingType blockingType = null;
-		Double blockStrength = null;
-		Double blockKbRes = null;
-		Integer enchantment_level = null;
-		Boolean isEnchantable = null;
-		Integer useDuration = null;
-		Double piercingLevel = null;
-		Boolean canSweep = null;
-		Tier tier = null;
-		ArmourVariable durability = ArmourVariable.EMPTY;
-		ArmourVariable defense = ArmourVariable.EMPTY;
-		Double toughness = null;
-		Double armourKbRes = null;
-		Ingredient ingredient = null;
-		TagKey<Block> toolMineable = null;
-		if (jsonObject.has("damage"))
-			damage = getDouble(jsonObject, "damage");
-		if (jsonObject.has("speed"))
-			speed = getDouble(jsonObject, "speed");
-		if (jsonObject.has("reach"))
-			reach = getDouble(jsonObject, "reach");
-		if (jsonObject.has("charged_reach"))
-			chargedReach = getDouble(jsonObject, "charged_reach");
-		if (jsonObject.has("stack_size"))
-			stack_size = getInt(jsonObject, "stack_size");
-		if (jsonObject.has("cooldown"))
-			cooldown = getInt(jsonObject, "cooldown");
-		if (jsonObject.has("weapon_type")) {
-			String weapon_type = getString(jsonObject, "weapon_type");
-			weapon_type = weapon_type.toLowerCase(Locale.ROOT);
-			if (!registeredWeaponTypes.containsKey(weapon_type)) {
-				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified weapon type does not exist!"), "Applying Item Weapon Type");
-				CrashReportCategory crashReportCategory = report.addCategory("Weapon Type being parsed");
-				crashReportCategory.setDetail("Type name", weapon_type);
-				crashReportCategory.setDetail("Json Object", jsonObject);
-				throw new ReportedException(report);
-			}
-			type = WeaponType.fromID(weapon_type);
-		}
-		if (jsonObject.has("blocking_type")) {
-			String blocking_type = getString(jsonObject, "blocking_type");
-			blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-			if (!Combatify.registeredTypes.containsKey(blocking_type)) {
-				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified blocking type does not exist!"), "Applying Item Blocking Type");
-				CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
-				crashReportCategory.setDetail("Type name", blocking_type);
-				crashReportCategory.setDetail("Json Object", jsonObject);
-				throw new ReportedException(report);
-			}
-			blockingType = Combatify.registeredTypes.get(blocking_type);
-		}
-		if (cooldown != null && jsonObject.has("cooldown_after"))
-			cooldownAfterUse = getBoolean(jsonObject, "cooldown_after");
-		if (jsonObject.has("damage_protection"))
-			blockStrength = getDouble(jsonObject, "damage_protection");
-		if (jsonObject.has("block_knockback_resistance"))
-			blockKbRes = getDouble(jsonObject, "block_knockback_resistance");
-		if (jsonObject.has("enchantment_level"))
-			enchantment_level = getInt(jsonObject, "enchantment_level");
-		if (jsonObject.has("is_enchantable"))
-			isEnchantable = getBoolean(jsonObject, "is_enchantable");
-		if (jsonObject.has("use_duration"))
-			useDuration = getInt(jsonObject, "use_duration");
-		if (jsonObject.has("armor_piercing"))
-			piercingLevel = getDouble(jsonObject, "armor_piercing");
-		if (jsonObject.has("can_sweep"))
-			canSweep = getBoolean(jsonObject, "can_sweep");
-		if (jsonObject.has("tier")) {
-			tier = getTier(getString(jsonObject, "tier"));
-		}
-		if (jsonObject.has("durability")) {
-			JsonElement durabilityE = jsonObject.get("durability");
-			if (durabilityE instanceof JsonObject durabilityO) {
-				Integer any = null;
-				if (durabilityO.has("any"))
-					any = getInt(durabilityO, "any");
-				Integer helmet = null;
-				if (durabilityO.has("helmet"))
-					helmet = getInt(durabilityO, "helmet");
-				Integer chestplate = null;
-				if (durabilityO.has("chestplate"))
-					chestplate = getInt(durabilityO, "chestplate");
-				Integer leggings = null;
-				if (durabilityO.has("leggings"))
-					leggings = getInt(durabilityO, "leggings");
-				Integer boots = null;
-				if (durabilityO.has("boots"))
-					boots = getInt(durabilityO, "boots");
-				Integer body = null;
-				if (durabilityO.has("body"))
-					body = getInt(durabilityO, "body");
-				durability = ArmourVariable.create(any, helmet, chestplate, leggings, boots, body);
-			} else durability = ArmourVariable.create(durabilityE.getAsInt());
-		}
-		if (jsonObject.has("armor")) {
-			JsonElement defenseE = jsonObject.get("armor");
-			if (defenseE instanceof JsonObject defenseO) {
-				Integer any = null;
-				if (defenseO.has("any"))
-					any = getInt(defenseO, "any");
-				Integer helmet = null;
-				if (defenseO.has("helmet"))
-					helmet = getInt(defenseO, "helmet");
-				Integer chestplate = null;
-				if (defenseO.has("chestplate"))
-					chestplate = getInt(defenseO, "chestplate");
-				Integer leggings = null;
-				if (defenseO.has("leggings"))
-					leggings = getInt(defenseO, "leggings");
-				Integer boots = null;
-				if (defenseO.has("boots"))
-					boots = getInt(defenseO, "boots");
-				Integer body = null;
-				if (defenseO.has("body"))
-					body = getInt(defenseO, "body");
-				defense = ArmourVariable.create(any, helmet, chestplate, leggings, boots, body);
-			} else defense = ArmourVariable.create(defenseE.getAsInt());
-		}
-		if (jsonObject.has("armor_toughness"))
-			toughness = getDouble(jsonObject, "armor_toughness");
-		if (jsonObject.has("armor_knockback_resistance"))
-			armourKbRes = getDouble(jsonObject, "armor_knockback_resistance");
-		if (jsonObject.has("repair_ingredient")) {
-			JsonElement repair_ingredient = jsonObject.get("repair_ingredient");
-			if (repair_ingredient instanceof JsonArray jsonArray) {
-				List<ItemStack> ingredients = new ArrayList<>();
-				jsonArray.asList().forEach(jsonElement -> ingredients.add(itemFromName(jsonElement.getAsString()).getDefaultInstance()));
-				ingredient = Ingredient.of(ingredients.stream());
-			} else {
-				String ri = repair_ingredient.getAsString();
-				if (ri.startsWith("#"))
-					ingredient = Ingredient.of(TagKey.create(Registries.ITEM, Objects.requireNonNull(ResourceLocation.tryParse(ri.substring(1)))));
-				else ingredient = Ingredient.of(itemFromName(ri));
-			}
-		}
-		if (jsonObject.has("tool_tag")) {
-			String ri = stripHexStarter(getString(jsonObject, "tool_tag"));
-			toolMineable = TagKey.create(Registries.BLOCK, Objects.requireNonNull(ResourceLocation.tryParse(ri)));
-		}
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, useDuration, piercingLevel, canSweep, tier, durability, defense, toughness, armourKbRes, ingredient, toolMineable);
+		ConfigurableItemData configurableItemData = ConfigurableItemData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
 		ConfigDataWrapper<Item, ConfigurableItemData> configDataWrapper = new ConfigDataWrapper<>(items, tags, configurableItemData);
 		configuredItems.add(configDataWrapper);
 	}
@@ -898,20 +631,22 @@ public class ItemConfig extends AtlasConfig {
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 			boolean isConfiguredItem = configurableItemData != null;
 			if (isConfiguredItem) {
-				Integer durability = configurableItemData.durability.getValue(item);
-				Integer maxStackSize = configurableItemData.stackSize;
-				Tier tier = configurableItemData.tier;
-				TagKey<Block> mineable = configurableItemData.toolMineableTag;
+				Integer durability = configurableItemData.armourStats().durability().getValue(item);
+				Integer maxStackSize = configurableItemData.stackSize();
+				Tier tier = configurableItemData.tier();
+				TagKey<Block> mineable = configurableItemData.toolMineableTag();
+				Tool tool = configurableItemData.tool();
 				if (maxStackSize != null)
 					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
 				if (durability != null) {
 					setDurability(builder, item, durability);
 					damageOverridden = true;
 				}
-				if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
+				if (tool != null) builder.set(DataComponents.TOOL, tool);
+				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
 			}
-			if (!damageOverridden && ((ItemExtensions)item).getTierFromConfig() != null) {
-				int value = ((ItemExtensions) item).getTierFromConfig().getUses();
+			if (!damageOverridden && ((ItemExtensions)item).getTierFromConfig().isPresent()) {
+				int value = ((ItemExtensions) item).getTierFromConfig().get().getUses();
 				if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
 					value *= 2;
 				setDurability(builder, item, value);
@@ -931,133 +666,139 @@ public class ItemConfig extends AtlasConfig {
 			modifier = original;
 		modifier = ((ItemExtensions)item).modifyAttributeModifiers(modifier);
 		if (modifier != null) {
-			if (isConfiguredItem) {
-				if (configurableItemData.type != null) {
+			modifyFromItemConfig: {
+				if (isConfiguredItem) {
+					if (!configurableItemData.itemAttributeModifiers().equals(ItemAttributeModifiers.EMPTY)) {
+						modifier = configurableItemData.itemAttributeModifiers();
+						break modifyFromItemConfig;
+					}
+					if (configurableItemData.weaponStats().weaponType() != null) {
+						ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
+						configurableItemData.weaponStats().weaponType().addCombatAttributes(((ItemExtensions) item).getConfigTier(), itemAttributeBuilder);
+						modifier.modifiers().forEach(entry -> {
+							boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
+								|| entry.attribute().is(Attributes.ATTACK_SPEED)
+								|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
+							if (!bl)
+								itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
+						});
+						modifier = itemAttributeBuilder.build();
+					}
 					ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
-					configurableItemData.type.addCombatAttributes(((ItemExtensions)item).getConfigTier(), itemAttributeBuilder);
-					modifier.modifiers().forEach(entry -> {
-						boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
-							|| entry.attribute().is(Attributes.ATTACK_SPEED)
-							|| entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE);
-						if (!bl)
+					boolean modDamage = false;
+					AtomicReference<ItemAttributeModifiers.Entry> damage = new AtomicReference<>();
+					boolean modSpeed = false;
+					AtomicReference<ItemAttributeModifiers.Entry> speed = new AtomicReference<>();
+					boolean modReach = false;
+					AtomicReference<ItemAttributeModifiers.Entry> reach = new AtomicReference<>();
+					boolean modDefense = false;
+					AtomicReference<ItemAttributeModifiers.Entry> defense = new AtomicReference<>();
+					boolean modToughness = false;
+					AtomicReference<ItemAttributeModifiers.Entry> toughness = new AtomicReference<>();
+					boolean modKnockbackResistance = false;
+					AtomicReference<ItemAttributeModifiers.Entry> knockbackResistance = new AtomicReference<>();
+					def.modifiers().forEach(entry -> {
+						if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+							damage.set(entry);
+						else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
+							reach.set(entry);
+						else if (entry.attribute().is(Attributes.ATTACK_SPEED))
+							speed.set(entry);
+						else if (entry.attribute().is(Attributes.ARMOR))
+							defense.set(entry);
+						else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
+							toughness.set(entry);
+						else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
+							knockbackResistance.set(entry);
+						else
 							itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
 					});
-					modifier = itemAttributeBuilder.build();
-				}
-				ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
-				boolean modDamage = false;
-				AtomicReference<ItemAttributeModifiers.Entry> damage = new AtomicReference<>();
-				boolean modSpeed = false;
-				AtomicReference<ItemAttributeModifiers.Entry> speed = new AtomicReference<>();
-				boolean modReach = false;
-				AtomicReference<ItemAttributeModifiers.Entry> reach = new AtomicReference<>();
-				boolean modDefense = false;
-				AtomicReference<ItemAttributeModifiers.Entry> defense = new AtomicReference<>();
-				boolean modToughness = false;
-				AtomicReference<ItemAttributeModifiers.Entry> toughness = new AtomicReference<>();
-				boolean modKnockbackResistance = false;
-				AtomicReference<ItemAttributeModifiers.Entry> knockbackResistance = new AtomicReference<>();
-				def.modifiers().forEach(entry -> {
-					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
-						damage.set(entry);
-					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
-						reach.set(entry);
-					else if (entry.attribute().is(Attributes.ATTACK_SPEED))
-						speed.set(entry);
-					else if (entry.attribute().is(Attributes.ARMOR))
-						defense.set(entry);
-					else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
-						toughness.set(entry);
-					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
-						knockbackResistance.set(entry);
-					else
-						itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
-				});
-				modifier.modifiers().forEach(entry -> {
-					if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
-						damage.set(entry);
-					else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
-						reach.set(entry);
-					else if (entry.attribute().is(Attributes.ATTACK_SPEED))
-						speed.set(entry);
-					else if (entry.attribute().is(Attributes.ARMOR))
-						defense.set(entry);
-					else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
-						toughness.set(entry);
-					else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
-						knockbackResistance.set(entry);
-					else
-						itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
-				});
-				if (configurableItemData.damage != null) {
-					modDamage = true;
-					itemAttributeBuilder.add(Attributes.ATTACK_DAMAGE,
-						new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
-						EquipmentSlotGroup.MAINHAND);
-				}
-				if (!modDamage && damage.get() != null)
-					itemAttributeBuilder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
-				if (configurableItemData.speed != null) {
-					modSpeed = true;
-					itemAttributeBuilder.add(Attributes.ATTACK_SPEED,
-						new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
-						EquipmentSlotGroup.MAINHAND);
-				}
-				if (!modSpeed && speed.get() != null)
-					itemAttributeBuilder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
-				if (configurableItemData.reach != null) {
-					modReach = true;
-					itemAttributeBuilder.add(Attributes.ENTITY_INTERACTION_RANGE,
-						new AttributeModifier(WeaponType.BASE_ATTACK_REACH_ID, configurableItemData.reach - 2.5, AttributeModifier.Operation.ADD_VALUE),
-						EquipmentSlotGroup.MAINHAND);
-				}
-				if (!modReach && reach.get() != null)
-					itemAttributeBuilder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
-				ResourceLocation resourceLocation = ResourceLocation.withDefaultNamespace("armor.any");
-				EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
-				if (item instanceof Equipable equipable)
-					slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
-				resourceLocation = switch (slotGroup) {
-					case HEAD -> ResourceLocation.withDefaultNamespace("armor.helmet");
-					case CHEST -> ResourceLocation.withDefaultNamespace("armor.chestplate");
-					case LEGS -> ResourceLocation.withDefaultNamespace("armor.leggings");
-					case FEET -> ResourceLocation.withDefaultNamespace("armor.boots");
-					case BODY -> ResourceLocation.withDefaultNamespace("armor.body");
-					default -> resourceLocation;
-				};
-				if (configurableItemData.defense.getValue(item) != null) {
-					modDefense = true;
-					itemAttributeBuilder.add(Attributes.ARMOR,
-						new AttributeModifier(resourceLocation, configurableItemData.defense.getValue(item), AttributeModifier.Operation.ADD_VALUE),
-						slotGroup);
-				}
-				if (!modDefense && defense.get() != null)
-					itemAttributeBuilder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
-				if (configurableItemData.toughness != null) {
-					modToughness = true;
-					itemAttributeBuilder.add(Attributes.ARMOR_TOUGHNESS,
-						new AttributeModifier(resourceLocation, configurableItemData.toughness, AttributeModifier.Operation.ADD_VALUE),
-						slotGroup);
-				}
-				if (!modToughness && toughness.get() != null)
-					itemAttributeBuilder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
-				if (configurableItemData.armourKbRes != null) {
-					modKnockbackResistance = true;
-					if (configurableItemData.armourKbRes > 0)
-						itemAttributeBuilder.add(Attributes.KNOCKBACK_RESISTANCE,
-							new AttributeModifier(resourceLocation, configurableItemData.armourKbRes, AttributeModifier.Operation.ADD_VALUE),
+					modifier.modifiers().forEach(entry -> {
+						if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
+							damage.set(entry);
+						else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
+							reach.set(entry);
+						else if (entry.attribute().is(Attributes.ATTACK_SPEED))
+							speed.set(entry);
+						else if (entry.attribute().is(Attributes.ARMOR))
+							defense.set(entry);
+						else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
+							toughness.set(entry);
+						else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
+							knockbackResistance.set(entry);
+						else
+							itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
+					});
+					if (configurableItemData.weaponStats().attackDamage() != null) {
+						modDamage = true;
+						itemAttributeBuilder.add(Attributes.ATTACK_DAMAGE,
+							new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, configurableItemData.weaponStats().attackDamage() - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADD_VALUE),
+							EquipmentSlotGroup.MAINHAND);
+					}
+					if (!modDamage && damage.get() != null)
+						itemAttributeBuilder.add(damage.get().attribute(), damage.get().modifier(), damage.get().slot());
+					if (configurableItemData.weaponStats().attackSpeed() != null) {
+						modSpeed = true;
+						itemAttributeBuilder.add(Attributes.ATTACK_SPEED,
+							new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_ID, configurableItemData.weaponStats().attackSpeed() - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADD_VALUE),
+							EquipmentSlotGroup.MAINHAND);
+					}
+					if (!modSpeed && speed.get() != null)
+						itemAttributeBuilder.add(speed.get().attribute(), speed.get().modifier(), speed.get().slot());
+					if (configurableItemData.weaponStats().attackReach() != null) {
+						modReach = true;
+						itemAttributeBuilder.add(Attributes.ENTITY_INTERACTION_RANGE,
+							new AttributeModifier(WeaponType.BASE_ATTACK_REACH_ID, configurableItemData.weaponStats().attackReach() - 2.5, AttributeModifier.Operation.ADD_VALUE),
+							EquipmentSlotGroup.MAINHAND);
+					}
+					if (!modReach && reach.get() != null)
+						itemAttributeBuilder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
+					ResourceLocation resourceLocation = ResourceLocation.withDefaultNamespace("armor.any");
+					EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
+					if (item instanceof Equipable equipable)
+						slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
+					resourceLocation = switch (slotGroup) {
+						case HEAD -> ResourceLocation.withDefaultNamespace("armor.helmet");
+						case CHEST -> ResourceLocation.withDefaultNamespace("armor.chestplate");
+						case LEGS -> ResourceLocation.withDefaultNamespace("armor.leggings");
+						case FEET -> ResourceLocation.withDefaultNamespace("armor.boots");
+						case BODY -> ResourceLocation.withDefaultNamespace("armor.body");
+						default -> resourceLocation;
+					};
+					if (configurableItemData.armourStats().defense().getValue(item) != null) {
+						modDefense = true;
+						itemAttributeBuilder.add(Attributes.ARMOR,
+							new AttributeModifier(resourceLocation, configurableItemData.armourStats().defense().getValue(item), AttributeModifier.Operation.ADD_VALUE),
 							slotGroup);
+					}
+					if (!modDefense && defense.get() != null)
+						itemAttributeBuilder.add(defense.get().attribute(), defense.get().modifier(), defense.get().slot());
+					if (configurableItemData.armourStats().toughness() != null) {
+						modToughness = true;
+						itemAttributeBuilder.add(Attributes.ARMOR_TOUGHNESS,
+							new AttributeModifier(resourceLocation, configurableItemData.armourStats().toughness(), AttributeModifier.Operation.ADD_VALUE),
+							slotGroup);
+					}
+					if (!modToughness && toughness.get() != null)
+						itemAttributeBuilder.add(toughness.get().attribute(), toughness.get().modifier(), toughness.get().slot());
+					if (configurableItemData.armourStats().armourKbRes() != null) {
+						modKnockbackResistance = true;
+						if (configurableItemData.armourStats().armourKbRes() > 0)
+							itemAttributeBuilder.add(Attributes.KNOCKBACK_RESISTANCE,
+								new AttributeModifier(resourceLocation, configurableItemData.armourStats().armourKbRes(), AttributeModifier.Operation.ADD_VALUE),
+								slotGroup);
+					}
+					if (!modKnockbackResistance && knockbackResistance.get() != null)
+						itemAttributeBuilder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
+					if (modDamage || modSpeed || modReach || modDefense || modToughness || modKnockbackResistance)
+						modifier = itemAttributeBuilder.build();
 				}
-				if (!modKnockbackResistance && knockbackResistance.get() != null)
-					itemAttributeBuilder.add(knockbackResistance.get().attribute(), knockbackResistance.get().modifier(), knockbackResistance.get().slot());
-				if (modDamage || modSpeed || modReach || modDefense || modToughness || modKnockbackResistance)
-					modifier = itemAttributeBuilder.build();
 			}
 		}
 		builder.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
 	}
 	public record ConfigDataWrapper<T, U>(List<T> objects, List<TagKey<T>> tagKeys, U configurableData) {
-		public static final ConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new ConfigDataWrapper<>(Collections.emptyList(), Collections.emptyList(), new ConfigurableItemData(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, ArmourVariable.EMPTY, ArmourVariable.EMPTY, null, null, null, null));
+		public static final ConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new ConfigDataWrapper<>(Collections.emptyList(), Collections.emptyList(), ConfigurableItemData.EMPTY);
 		private boolean matches(Holder<T> test) {
 			return objects.contains(test.value()) || tagKeys.stream().anyMatch(test::is);
 		}

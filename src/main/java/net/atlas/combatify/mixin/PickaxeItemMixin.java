@@ -17,7 +17,7 @@ public class PickaxeItemMixin extends DiggerItemMixin {
 	public WeaponType combatify$getWeaponType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			WeaponType type = configurableItemData.type;
+			WeaponType type = configurableItemData.weaponStats().weaponType();
 			if (type != null)
 				return type;
 		}

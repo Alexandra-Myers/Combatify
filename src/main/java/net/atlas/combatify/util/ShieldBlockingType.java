@@ -65,23 +65,21 @@ public class ShieldBlockingType extends BlockingType {
 	public float getShieldBlockDamageValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockStrength != null) {
-				return configurableItemData.blockStrength.floatValue();
+			if (configurableItemData.blocker().blockStrength() != null) {
+				return configurableItemData.blocker().blockStrength().floatValue();
 			}
 		}
 		BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
 		DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
-		float f = !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 10.0F : 5.0F;
-
-		return f;
+        return !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 10.0F : 5.0F;
 	}
 
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockKbRes != null) {
-				return configurableItemData.blockKbRes;
+			if (configurableItemData.blocker().blockKbRes() != null) {
+				return configurableItemData.blocker().blockKbRes();
 			}
 		}
 		BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);

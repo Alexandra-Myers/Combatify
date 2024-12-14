@@ -41,8 +41,8 @@ public class TestBlockingType extends SwordBlockingType {
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockKbRes != null)
-				return configurableItemData.blockKbRes;
+			if (configurableItemData.blocker().blockKbRes() != null)
+				return configurableItemData.blocker().blockKbRes();
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
 		if (ExtendedTier.getLevel(tier) >= 4)

@@ -1,15 +1,26 @@
 package net.atlas.combatify.config;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Objects;
+import java.util.Optional;
 
-public class ConfigurableEntityData {
+import static net.atlas.combatify.config.ConfigurableItemData.clamp;
+
+public record ConfigurableEntityData(Optional<Integer> optionalAttackInterval, Optional<Double> optionalShieldDisableTime, Optional<Boolean> optionalIsMiscEntity) {
+	public static final ConfigurableEntityData EMPTY = new ConfigurableEntityData((Integer) null, null, null);
+	public static final Codec<ConfigurableEntityData> CODEC = RecordCodecBuilder.create(instance ->
+		instance.group(Codec.INT.optionalFieldOf("attack_interval").forGetter(ConfigurableEntityData::optionalAttackInterval),
+			Codec.DOUBLE.optionalFieldOf("shield_disable_time").forGetter(ConfigurableEntityData::optionalShieldDisableTime),
+			Codec.BOOL.optionalFieldOf("is_misc_entity").forGetter(ConfigurableEntityData::optionalIsMiscEntity))
+			.apply(instance, ConfigurableEntityData::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableEntityData> ENTITY_DATA_STREAM_CODEC = StreamCodec.of((buf, configurableEntityData) -> {
-		buf.writeVarInt(configurableEntityData.attackInterval == null ? -10 : configurableEntityData.attackInterval);
-		buf.writeDouble(configurableEntityData.shieldDisableTime == null ? -10 : configurableEntityData.shieldDisableTime);
-		buf.writeInt(configurableEntityData.isMiscEntity == null ? -10 : configurableEntityData.isMiscEntity ? 1 : 0);
+		buf.writeVarInt(configurableEntityData.optionalAttackInterval.orElse(-10));
+		buf.writeDouble(configurableEntityData.optionalShieldDisableTime.orElse(-10D));
+		buf.writeInt(configurableEntityData.optionalIsMiscEntity.map(aBoolean -> aBoolean ? 1 : 0).orElse(-10));
 	}, buf -> {
 		Integer attackInterval = buf.readVarInt();
 		Double shieldDisableTime = buf.readDouble();
@@ -21,50 +32,40 @@ public class ConfigurableEntityData {
 			shieldDisableTime = null;
 		if (isMiscEntityAsInt != -10)
 			isMiscEntity = isMiscEntityAsInt == 1;
-        return new ConfigurableEntityData(attackInterval, shieldDisableTime, isMiscEntity);
+		return new ConfigurableEntityData(attackInterval, shieldDisableTime, isMiscEntity);
 	});
-	public final Integer attackInterval;
-	public final Double shieldDisableTime;
-	public final Boolean isMiscEntity;
 
-    public ConfigurableEntityData(Integer attackInterval, Double shieldDisableTime, Boolean isMiscEntity) {
-		this.attackInterval = clamp(attackInterval, 0, 1000);
-		this.shieldDisableTime = clamp(shieldDisableTime, 0, 10);
-		this.isMiscEntity = isMiscEntity;
-    }
-	public static Integer max(Integer value, int min) {
-		if (value == null)
-			return null;
-		return Math.max(value, min);
+	public ConfigurableEntityData(Integer optionalAttackInterval, Double optionalShieldDisableTime, Boolean optionalIsMiscEntity) {
+		this(Optional.ofNullable(optionalAttackInterval), Optional.ofNullable(optionalShieldDisableTime), Optional.ofNullable(optionalIsMiscEntity));
 	}
 
-	public static Double max(Double value, double min) {
-		if (value == null)
-			return null;
-		return Math.max(value, min);
+	public ConfigurableEntityData(Optional<Integer> optionalAttackInterval, Optional<Double> optionalShieldDisableTime, Optional<Boolean> optionalIsMiscEntity) {
+		this.optionalAttackInterval = clamp(optionalAttackInterval, 0, 1000);
+		this.optionalShieldDisableTime = clamp(optionalShieldDisableTime, 0, 10);
+		this.optionalIsMiscEntity = optionalIsMiscEntity;
 	}
 
-	public static Integer clamp(Integer value, int min, int max) {
-		if (value == null)
-			return null;
-		return Math.min(Math.max(value, min), max);
+	public Integer attackInterval() {
+		return optionalAttackInterval.orElse(null);
 	}
 
-	public static Double clamp(Double value, double min, double max) {
-		if (value == null)
-			return null;
-		return value < min ? min : Math.min(value, max);
+	public Double shieldDisableTime() {
+		return optionalShieldDisableTime.orElse(null);
+	}
+
+	public Boolean isMiscEntity() {
+		return optionalIsMiscEntity.orElse(null);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ConfigurableEntityData that)) return false;
-        return Objects.equals(attackInterval, that.attackInterval);
+        return Objects.equals(optionalAttackInterval, that.optionalAttackInterval) && Objects.equals(optionalShieldDisableTime, that.optionalShieldDisableTime) && Objects.equals(optionalIsMiscEntity, that.optionalIsMiscEntity);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(attackInterval);
+		return Objects.hash(optionalAttackInterval, optionalShieldDisableTime, optionalIsMiscEntity);
 	}
 }

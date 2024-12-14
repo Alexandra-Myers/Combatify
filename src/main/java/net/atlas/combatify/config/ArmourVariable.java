@@ -1,21 +1,33 @@
 package net.atlas.combatify.config;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 
 import java.util.Objects;
+import java.util.Optional;
 
-public record ArmourVariable(Integer any, Integer helmet, Integer chestplate, Integer leggings, Integer boots, Integer body) {
-	public static final ArmourVariable EMPTY = new ArmourVariable(null, null, null, null, null, null);
+public record ArmourVariable(Optional<Integer> any, Optional<Integer> helmet, Optional<Integer> chestplate, Optional<Integer> leggings, Optional<Integer> boots, Optional<Integer> body) {
+	public static final Codec<ArmourVariable> SIMPLE_CODEC = Codec.INT.xmap(ArmourVariable::create, armourVariable -> armourVariable.any().orElse(null));
+	public static final Codec<ArmourVariable> FULL_CODEC = RecordCodecBuilder.create(instance ->
+		instance.group(Codec.INT.optionalFieldOf("any").forGetter(ArmourVariable::any),
+			Codec.INT.optionalFieldOf("helmet").forGetter(ArmourVariable::helmet),
+			Codec.INT.optionalFieldOf("chestplate").forGetter(ArmourVariable::chestplate),
+			Codec.INT.optionalFieldOf("leggings").forGetter(ArmourVariable::leggings),
+			Codec.INT.optionalFieldOf("boots").forGetter(ArmourVariable::boots),
+			Codec.INT.optionalFieldOf("body").forGetter(ArmourVariable::body)).apply(instance, ArmourVariable::new));
+	public static final Codec<ArmourVariable> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+	public static final ArmourVariable EMPTY = new ArmourVariable((Integer) null, null, null, null, null, null);
 	public static final StreamCodec<RegistryFriendlyByteBuf, ArmourVariable> ARMOUR_VARIABLE_STREAM_CODEC = StreamCodec.of((buf, armourVariable) -> {
-		buf.writeVarInt(armourVariable.any == null ? -10 : armourVariable.any);
-		buf.writeVarInt(armourVariable.helmet == null ? -10 : armourVariable.helmet);
-		buf.writeVarInt(armourVariable.chestplate == null ? -10 : armourVariable.chestplate);
-		buf.writeVarInt(armourVariable.leggings == null ? -10 : armourVariable.leggings);
-		buf.writeVarInt(armourVariable.boots == null ? -10 : armourVariable.boots);
-		buf.writeVarInt(armourVariable.body == null ? -10 : armourVariable.body);
+		buf.writeVarInt(armourVariable.any.orElse(-10));
+		buf.writeVarInt(armourVariable.helmet.orElse(-10));
+		buf.writeVarInt(armourVariable.chestplate.orElse(-10));
+		buf.writeVarInt(armourVariable.leggings.orElse(-10));
+		buf.writeVarInt(armourVariable.boots.orElse(-10));
+		buf.writeVarInt(armourVariable.body.orElse(-10));
 	}, buf -> {
 		Integer any = buf.readVarInt();
 		Integer helmet = buf.readVarInt();
@@ -37,24 +49,31 @@ public record ArmourVariable(Integer any, Integer helmet, Integer chestplate, In
 			body = null;
 		return new ArmourVariable(any, helmet, chestplate, leggings, boots, body);
 	});
-	public static ArmourVariable create(Integer any) {
-		return new ArmourVariable(ConfigurableItemData.max(any, 1), null, null, null, null, null);
+	public ArmourVariable(Integer any, Integer helmet, Integer chestplate, Integer leggings, Integer boots, Integer body) {
+		this(Optional.ofNullable(any), Optional.ofNullable(helmet), Optional.ofNullable(chestplate), Optional.ofNullable(leggings), Optional.ofNullable(boots), Optional.ofNullable(body));
 	}
-	public static ArmourVariable create(Integer any, Integer helmet, Integer chestplate, Integer leggings, Integer boots, Integer body) {
-		return new ArmourVariable(ConfigurableItemData.max(any, 1), ConfigurableItemData.max(helmet, 1), ConfigurableItemData.max(chestplate, 1), ConfigurableItemData.max(leggings, 1), ConfigurableItemData.max(boots, 1), ConfigurableItemData.max(body, 1));
+	public ArmourVariable(Optional<Integer> any, Optional<Integer> helmet, Optional<Integer> chestplate, Optional<Integer> leggings, Optional<Integer> boots, Optional<Integer> body) {
+		this.any = ConfigurableItemData.max(any, 1);
+		this.helmet = ConfigurableItemData.max(helmet, 1);
+		this.chestplate = ConfigurableItemData.max(chestplate, 1);
+		this.leggings = ConfigurableItemData.max(leggings, 1);
+		this.boots = ConfigurableItemData.max(boots, 1);
+		this.body = ConfigurableItemData.max(body, 1);
+	}
+	public static ArmourVariable create(Integer any) {
+		return new ArmourVariable(any, null, null, null, null, null);
 	}
 	public Integer getValue(Item item) {
 		if (item instanceof ArmorItem armorItem) {
-			Integer forType = switch (armorItem.getType()) {
-				case HELMET -> helmet;
-				case CHESTPLATE -> chestplate;
-				case LEGGINGS -> leggings;
-				case BOOTS -> boots;
-				case BODY -> body;
+			return switch (armorItem.getType()) {
+				case HELMET -> helmet.orElseGet(() -> any.orElse(null));
+				case CHESTPLATE -> chestplate.orElseGet(() -> any.orElse(null));
+				case LEGGINGS -> leggings.orElseGet(() -> any.orElse(null));
+				case BOOTS -> boots.orElseGet(() -> any.orElse(null));
+				case BODY -> body.orElseGet(() -> any.orElse(null));
 			};
-			return forType == null ? any : forType;
-		}
-		return any;
+        }
+		return any.orElse(null);
 	}
 
 	public boolean isEmpty() {

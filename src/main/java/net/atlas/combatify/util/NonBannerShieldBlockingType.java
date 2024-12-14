@@ -11,8 +11,8 @@ public class NonBannerShieldBlockingType extends ShieldBlockingType {
 	public float getShieldBlockDamageValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockStrength != null) {
-				return configurableItemData.blockStrength.floatValue();
+			if (configurableItemData.blocker().blockStrength() != null) {
+				return configurableItemData.blocker().blockStrength().floatValue();
 			}
 		}
 
@@ -23,8 +23,8 @@ public class NonBannerShieldBlockingType extends ShieldBlockingType {
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blockKbRes != null) {
-				return configurableItemData.blockKbRes;
+			if (configurableItemData.blocker().blockKbRes() != null) {
+				return configurableItemData.blocker().blockKbRes();
 			}
 		}
 

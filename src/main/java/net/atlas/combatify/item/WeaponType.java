@@ -1,5 +1,8 @@
 package net.atlas.combatify.item;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.extensions.ExtendedTier;
@@ -14,79 +17,78 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID;
 
-public class WeaponType {
+public record WeaponType(String name, double damageOffset, double speed, double reach, boolean useAxeDamage,
+						 boolean useHoeDamage, boolean useHoeSpeed, boolean tierable) {
 	public static final StreamCodec<? super FriendlyByteBuf, WeaponType> STREAM_CODEC = StreamCodec.of((buf, weaponType) -> buf.writeUtf(weaponType.name), buf -> WeaponType.fromID(buf.readUtf()));
 	public static final WeaponType EMPTY = createBasicUntierable("empty", 0, 0, 0);
-    public static final WeaponType SWORD = createBasic("sword", 2, 0.5, 0.5);
+	public static final WeaponType SWORD = createBasic("sword", 2, 0.5, 0.5);
 	public static final WeaponType MACE = createBasic("mace", 2, -1.5, 0);
 	public static final WeaponType LONGSWORD = createWithHoeDamageFormula("longsword", 0, 0.5, 1);
-    public static final WeaponType AXE = createAxe("axe", 3, -0.5, 0);
-    public static final WeaponType PICKAXE = createBasic("pickaxe", 1, 0, 0);
-    public static final WeaponType HOE = createWithHoeDamageFormulaAndSpeed("hoe", 0, 1, 1);
-    public static final WeaponType SHOVEL = createBasic("shovel", 0, -0.5, 0);
+	public static final WeaponType AXE = createAxe("axe", 3, -0.5, 0);
+	public static final WeaponType PICKAXE = createBasic("pickaxe", 1, 0, 0);
+	public static final WeaponType HOE = createWithHoeDamageFormulaAndSpeed("hoe", 0, 1, 1);
+	public static final WeaponType SHOVEL = createBasic("shovel", 0, -0.5, 0);
 	public static final WeaponType KNIFE = createBasic("knife", 1, 1, 0.25);
-    public static final WeaponType TRIDENT = createWithAxeDamageFormula("trident", 3, -0.5, 1);
-	public final String name;
-	public final double damageOffset;
-	public final double speed;
-	public final double reach;
-	public final boolean useAxeDamage;
-	public final boolean useHoeDamage;
-	public final boolean useHoeSpeed;
-	public final boolean tierable;
+	public static final WeaponType TRIDENT = createWithAxeDamageFormula("trident", 3, -0.5, 1);
+	public static final Codec<WeaponType> SIMPLE_CODEC = Codec.STRING.validate(weapon_type -> !Combatify.registeredWeaponTypes.containsKey(weapon_type) ? DataResult.error(() -> "Attempted to retrieve a Weapon Type that does not exist: " + weapon_type) : DataResult.success(weapon_type)).xmap(weapon_type -> fromID(weapon_type.toLowerCase(Locale.ROOT)), WeaponType::name).orElse(EMPTY);
+	public static final Codec<WeaponType> FULL_CODEC = RecordCodecBuilder.create(instance ->
+		instance.group(Codec.STRING.fieldOf("name").forGetter(WeaponType::name),
+				Codec.DOUBLE.fieldOf("damage_offset").forGetter(WeaponType::damageOffset),
+				Codec.DOUBLE.fieldOf("speed").forGetter(WeaponType::speed),
+				Codec.DOUBLE.fieldOf("reach").forGetter(WeaponType::reach),
+				Codec.BOOL.optionalFieldOf("tierable", true).forGetter(WeaponType::tierable))
+			.apply(instance, (name, damage, speed, reach, tierable) -> tierable ? createBasic(name, damage, speed, reach) : createBasicUntierable(name, damage, speed, reach)));
+	public static final ResourceLocation BASE_ATTACK_SPEED_CTS_ID = ResourceLocation.withDefaultNamespace("base_attack_speed_cts");
+	public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
 
-    public static final ResourceLocation BASE_ATTACK_SPEED_CTS_ID = ResourceLocation.withDefaultNamespace("base_attack_speed_cts");
-    public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
-	public WeaponType(String name, double damageOffset, double speed, double reach, boolean useAxeDamage, boolean useHoeDamage, boolean useHoeSpeed, boolean tierable) {
-		this(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable, false);
+	public static WeaponType createUnsynced(String name, double damageOffset, double speed, double reach, boolean useAxeDamage, boolean useHoeDamage, boolean useHoeSpeed, boolean tierable) {
+		WeaponType type = new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable);
+		if (!Objects.equals(name, "empty"))
+			Combatify.registerWeaponType(type);
+		return type;
 	}
-	public WeaponType(String name, double damageOffset, double speed, double reach, boolean useAxeDamage, boolean useHoeDamage, boolean useHoeSpeed, boolean tierable, boolean duringSync) {
-		this.name = name;
-		this.damageOffset = damageOffset;
-		this.speed = speed;
-		this.reach = reach;
-		this.useAxeDamage = useAxeDamage;
-		this.useHoeDamage = useHoeDamage;
-		this.useHoeSpeed = useHoeSpeed;
-		this.tierable = tierable;
-		if (!Objects.equals(name, "empty") && !duringSync)
-			Combatify.registerWeaponType(this);
-	}
+
 	public static WeaponType createBasic(String name, double damageOffset, double speed, double reach) {
-		return new WeaponType(name, damageOffset, speed, reach, false, false, false, true);
-	}
-	public static WeaponType createBasicUntierable(String name, double damageOffset, double speed, double reach) {
-		return new WeaponType(name, damageOffset, speed, reach, false, false, false, false);
-	}
-	public static WeaponType createWithAxeDamageFormula(String name, double damageOffset, double speed, double reach) {
-		return new WeaponType(name, damageOffset, speed, reach, true, false, false, true);
-	}
-	public static WeaponType createAxe(String name, double damageOffset, double speed, double reach) {
-		return new WeaponType(name, damageOffset, speed, reach, true, false, false, true);
-	}
-	public static WeaponType createWithHoeDamageFormula(String name, double damageOffset, double speed, double reach) {
-		return new WeaponType(name, damageOffset, speed, reach, false, true, false, true);
-	}
-	public static WeaponType createWithHoeDamageFormulaAndSpeed(String name, double damageOffset, double speed, double reach) {
-		return new WeaponType(name, damageOffset, speed, reach, false, true, true, true);
+		return createUnsynced(name, damageOffset, speed, reach, false, false, false, true);
 	}
 
-    public void addCombatAttributes(Tier tier, ItemAttributeModifiers.Builder attributeModifiers) {
+	public static WeaponType createBasicUntierable(String name, double damageOffset, double speed, double reach) {
+		return createUnsynced(name, damageOffset, speed, reach, false, false, false, false);
+	}
+
+	public static WeaponType createWithAxeDamageFormula(String name, double damageOffset, double speed, double reach) {
+		return createUnsynced(name, damageOffset, speed, reach, true, false, false, true);
+	}
+
+	public static WeaponType createAxe(String name, double damageOffset, double speed, double reach) {
+		return createUnsynced(name, damageOffset, speed, reach, true, false, false, true);
+	}
+
+	public static WeaponType createWithHoeDamageFormula(String name, double damageOffset, double speed, double reach) {
+		return createUnsynced(name, damageOffset, speed, reach, false, true, false, true);
+	}
+
+	public static WeaponType createWithHoeDamageFormulaAndSpeed(String name, double damageOffset, double speed, double reach) {
+		return createUnsynced(name, damageOffset, speed, reach, false, true, true, true);
+	}
+
+	public void addCombatAttributes(Tier tier, ItemAttributeModifiers.Builder attributeModifiers) {
 		if (isEmpty())
 			return;
-        double speed = this.getSpeed(tier);
-        double damage = this.getDamage(tier);
-        double reach = this.getReach();
-        attributeModifiers.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, damage, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+		double speed = this.getSpeed(tier);
+		double damage = this.getDamage(tier);
+		double reach = this.reach();
+		attributeModifiers.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, damage, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 		if (!Combatify.CONFIG.instaAttack())
 			attributeModifiers.add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_CTS_ID, speed, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-        if (reach != 0.0F && Combatify.CONFIG.attackReach())
-            attributeModifiers.add(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_ID, reach, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-    }
+		if (reach != 0.0F && Combatify.CONFIG.attackReach())
+			attributeModifiers.add(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(BASE_ATTACK_REACH_ID, reach, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+	}
 
 	public double getDamage(Tier tier) {
 		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;
@@ -94,55 +96,61 @@ public class WeaponType {
 		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && ExtendedTier.getLevel(tier) > 0;
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
-			if (configurableWeaponData.damageOffset != null) {
-				if (configurableWeaponData.tierable)
-					return damageBonus + configurableWeaponData.damageOffset;
+			if (configurableWeaponData.attackDamage() != null) {
+				if (configurableWeaponData.tiered())
+					return damageBonus + configurableWeaponData.attackDamage();
 				else
-					return modifier + configurableWeaponData.damageOffset;
+					return modifier + configurableWeaponData.attackDamage();
 			}
 		}
 		return damageFormula(damageBonus, tier, isNotTier1, modifier);
-    }
+	}
 
-    public double getSpeed(Tier tier) {
+	public double getSpeed(Tier tier) {
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
-			if (configurableWeaponData.speed != null)
-				return configurableWeaponData.speed - Combatify.CONFIG.baseHandAttackSpeed();
+			if (configurableWeaponData.attackSpeed() != null)
+				return configurableWeaponData.attackSpeed() - Combatify.CONFIG.baseHandAttackSpeed();
 		}
 		return speedFormula(tier);
-    }
+	}
 
-    public double getReach() {
+	@Override
+	public double reach() {
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
-			if (configurableWeaponData.reach != null)
-				return configurableWeaponData.reach - 2.5;
+			if (configurableWeaponData.attackReach() != null)
+				return configurableWeaponData.attackReach() - 2.5;
 		}
 		return reach;
-    }
+	}
+
 	public double getChargedReach() {
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
-			if (configurableWeaponData.chargedReach != null)
-				return configurableWeaponData.chargedReach;
+			if (configurableWeaponData.chargedReach() != null)
+				return configurableWeaponData.chargedReach();
 		}
 		return 1.0;
 	}
+
 	public boolean canSweep() {
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
-			if (configurableWeaponData.canSweep != null)
-				return configurableWeaponData.canSweep;
+			if (configurableWeaponData.canSweep() != null)
+				return configurableWeaponData.canSweep();
 		}
 		return false;
 	}
+
 	public boolean isEmpty() {
 		return this == EMPTY;
 	}
+
 	public static WeaponType fromID(String id) {
 		return Combatify.registeredWeaponTypes.get(id);
 	}
+
 	public double damageFormula(double damageBonus, Tier tier, boolean isNotTier1, double modifier) {
 		if (!tierable)
 			return modifier + damageOffset;
@@ -162,6 +170,7 @@ public class WeaponType {
 		}
 		return damageBonus + damageOffset;
 	}
+
 	public double speedFormula(Tier tier) {
 		if (useHoeSpeed) {
 			if (tier == Tiers.WOOD)
@@ -175,6 +184,7 @@ public class WeaponType {
 		}
 		return speed;
 	}
+
 	public static void init() {
 		Combatify.defineDefaultWeaponType(SWORD);
 		Combatify.defineDefaultWeaponType(MACE);

@@ -20,12 +20,12 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 	public BlockingType combatify$getBlockingType() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
 		if (configurableItemData != null) {
-			if (configurableItemData.blockingType != null)
-				return configurableItemData.blockingType;
+			if (configurableItemData.blocker().blockingType() != null)
+				return configurableItemData.blocker().blockingType();
 			WeaponType type;
 			ConfigurableWeaponData configurableWeaponData;
-			if ((type = configurableItemData.type) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
-				BlockingType blockingType = configurableWeaponData.blockingType;
+			if ((type = configurableItemData.weaponStats().weaponType()) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
+				BlockingType blockingType = configurableWeaponData.blockingType();
 				if (blockingType != null)
 					return blockingType;
 			}
