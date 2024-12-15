@@ -44,6 +44,7 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 				Codec.DOUBLE.fieldOf("reach").forGetter(WeaponType::reach),
 				Codec.BOOL.optionalFieldOf("tierable", true).forGetter(WeaponType::tierable))
 			.apply(instance, (name, damage, speed, reach, tierable) -> tierable ? createBasic(name, damage, speed, reach) : createBasicUntierable(name, damage, speed, reach)));
+	public static final Codec<WeaponType> CODEC = Codec.withAlternative(FULL_CODEC, STRICT_CODEC);
 	public static final ResourceLocation BASE_ATTACK_SPEED_CTS_ID = ResourceLocation.withDefaultNamespace("base_attack_speed_cts");
 	public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
 

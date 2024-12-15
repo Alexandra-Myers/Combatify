@@ -39,7 +39,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -160,6 +159,7 @@ public class ItemConfig extends AtlasConfig {
 		return new ConfigDataWrapper<>(items, Collections.emptyList(), configurableEntityData);
 	});
 	public static Formula armourCalcs = null;
+	public static final Codec<Holder<EntityType<?>>> ENTITY_TYPE_CODEC = BuiltInRegistries.ENTITY_TYPE.holderByNameCodec();
 	public static Codec<BiMap<String, ExtendedTier.ExtendedTierImpl>> TIERS_CODEC = Codec.unboundedMap(Codec.STRING, ExtendedTier.CODEC).xmap(HashBiMap::create, Function.identity());
 
 	public ItemConfig() {
@@ -209,19 +209,8 @@ public class ItemConfig extends AtlasConfig {
 		if (weapons instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					List<WeaponType> weaponTypes = Codec.withAlternative(WeaponType.SIMPLE_CODEC.listOf(), WeaponType.SIMPLE_CODEC, Collections::singletonList).fieldOf("name").codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-					List<WeaponType> blankTypes = new ArrayList<>(weaponTypes.stream().filter(Objects::isNull).toList());
-					int added = blankTypes.size();
-					blankTypes.clear();
-					for (int i = 0; i < added; i++) {
-						WeaponType weaponType = WeaponType.FULL_CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-						blankTypes.add(weaponType);
-					}
-					if (!blankTypes.isEmpty()) {
-						weaponTypes = weaponTypes.stream().filter(Objects::nonNull).toList();
-						parseWeaponType(blankTypes, jsonObject, ConfigurableWeaponData.ADDED_TYPE_CODEC);
-					}
-					parseWeaponType(weaponTypes, jsonObject, ConfigurableWeaponData.CODEC);
+					List<WeaponType> weaponTypes = Codec.withAlternative(Codec.withAlternative(WeaponType.STRICT_CODEC.listOf(), WeaponType.STRICT_CODEC, Collections::singletonList).fieldOf("name").codec(), Codec.withAlternative(WeaponType.FULL_CODEC.listOf(), WeaponType.FULL_CODEC, Collections::singletonList)).parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+					parseWeaponType(weaponTypes, jsonObject);
 				} else
 					notJSONObject(jsonElement, "Configuring Weapon Types");
 			});
@@ -229,18 +218,11 @@ public class ItemConfig extends AtlasConfig {
 		if (items instanceof JsonArray itemArray) {
 			itemArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					List<Item> itemList = Collections.emptyList();
-					List<TagKey<Item>> tagsList = Collections.emptyList();
-					if (jsonObject.has("name")) {
-						if (jsonObject.get("name") instanceof JsonArray itemsWithConfig)
-							itemList = itemsWithConfig.asList().stream().map(itemName -> itemFromName(itemName.getAsString())).toList();
-						else itemList = Collections.singletonList(itemFromJson(jsonObject));
-					}
-					if (jsonObject.has("tag")) {
-						if (jsonObject.get("tag") instanceof JsonArray itemsWithConfig) tagsList = itemsWithConfig.asList().stream().map(itemName -> itemTagFromName(itemName.getAsString())).toList();
-						else tagsList = Collections.singletonList(itemTagFromJson(jsonObject));
-					}
-					if (!(jsonObject.has("name") || jsonObject.has("tag"))) {
+					List<Item> itemList = Codec.withAlternative(ItemStack.ITEM_NON_AIR_CODEC.listOf(), ItemStack.ITEM_NON_AIR_CODEC, Collections::singletonList)
+						.xmap(holders -> holders.stream().map(Holder::value).toList(), item -> item.stream().map(item1 -> (Holder<Item>) item1.builtInRegistryHolder()).toList()).lenientOptionalFieldOf("name", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+					Codec<TagKey<Item>> alternating = Codec.withAlternative(TagKey.codec(Registries.ITEM), TagKey.hashedCodec(Registries.ITEM));
+					List<TagKey<Item>> tagsList = Codec.withAlternative(alternating.listOf(), alternating, Collections::singletonList).lenientOptionalFieldOf("tag", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+					if (itemList.isEmpty() && tagsList.isEmpty()) {
 						noNamePresent(jsonElement, "Configuring Items");
 						return;
 					}
@@ -252,18 +234,11 @@ public class ItemConfig extends AtlasConfig {
 		if (entities instanceof JsonArray entityArray) {
 			entityArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					List<? extends EntityType<?>> entityList = Collections.emptyList();
-					List<TagKey<EntityType<?>>> tagsList = Collections.emptyList();
-					if (jsonObject.has("name")) {
-						if (jsonObject.get("name") instanceof JsonArray entitiesWithConfig)
-							entityList = entitiesWithConfig.asList().stream().map(entityName -> BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.tryParse(entityName.getAsString()))).toList();
-						else entityList = Collections.singletonList(entityFromJson(jsonObject));
-					}
-					if (jsonObject.has("tag")) {
-						if (jsonObject.get("tag") instanceof JsonArray entitiesWithConfig) tagsList = entitiesWithConfig.asList().stream().map(entityTagName -> entityTagFromName(entityTagName.getAsString())).toList();
-						else tagsList = Collections.singletonList(entityTagFromJson(jsonObject));
-					}
-					if (!(jsonObject.has("name") || jsonObject.has("tag"))) {
+					List<? extends EntityType<?>> entityList = Codec.withAlternative(ENTITY_TYPE_CODEC.listOf(), ENTITY_TYPE_CODEC, Collections::singletonList)
+						.xmap(holders -> holders.stream().map(Holder::value).toList(), item -> item.stream().map(item1 -> (Holder<EntityType<?>>) item1.builtInRegistryHolder()).toList()).lenientOptionalFieldOf("name", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+					Codec<TagKey<EntityType<?>>> alternating = Codec.withAlternative(TagKey.codec(Registries.ENTITY_TYPE), TagKey.hashedCodec(Registries.ENTITY_TYPE));
+					List<TagKey<EntityType<?>>> tagsList = Codec.withAlternative(alternating.listOf(), alternating, Collections::singletonList).lenientOptionalFieldOf("tag", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+					if (entityList.isEmpty() && tagsList.isEmpty()) {
 						noNamePresent(jsonElement, "Configuring Entities");
 						return;
 					}
@@ -280,8 +255,8 @@ public class ItemConfig extends AtlasConfig {
 		ConfigDataWrapper<EntityType<?>, ConfigurableEntityData> configDataWrapper = new ConfigDataWrapper<>(entities, entityTags, configurableEntityData);
 		configuredEntities.add(configDataWrapper);
 	}
-	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject, Codec<ConfigurableWeaponData> codec) {
-		ConfigurableWeaponData configurableWeaponData = codec.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
+	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject) {
+		ConfigurableWeaponData configurableWeaponData = ConfigurableWeaponData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
 		ConfigDataWrapper<WeaponType, ConfigurableWeaponData> configDataWrapper = new ConfigDataWrapper<>(types, Collections.emptyList(), configurableWeaponData);
 		configuredWeapons.add(configDataWrapper);
 	}
@@ -310,39 +285,6 @@ public class ItemConfig extends AtlasConfig {
 	@Override
 	public <T> void alertChange(ConfigValue<T> tConfigValue, T newValue) {
 
-	}
-
-	public static TagKey<EntityType<?>> entityTagFromJson(JsonObject jsonObject) {
-		return entityTagFromName(GsonHelper.getAsString(jsonObject, "tag"));
-	}
-
-	public static TagKey<EntityType<?>> entityTagFromName(String string) {
-		return TagKey.create(Registries.ENTITY_TYPE, Objects.requireNonNull(ResourceLocation.tryParse(stripHexStarter(string))));
-	}
-
-	public static EntityType<?> entityFromJson(JsonObject jsonObject) {
-		return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(GsonHelper.getAsString(jsonObject, "name"))).orElse(null);
-	}
-
-	public static TagKey<Item> itemTagFromJson(JsonObject jsonObject) {
-		return itemTagFromName(GsonHelper.getAsString(jsonObject, "tag"));
-	}
-
-	public static TagKey<Item> itemTagFromName(String string) {
-		return TagKey.create(Registries.ITEM, Objects.requireNonNull(ResourceLocation.tryParse(stripHexStarter(string))));
-	}
-
-	public static Item itemFromJson(JsonObject jsonObject) {
-		return itemFromName(GsonHelper.getAsString(jsonObject, "name"));
-	}
-
-	public static Item itemFromName(String string) {
-		Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(string)).orElse(null);
-		if (item == Items.AIR) {
-			throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("You can't configure an empty item!"), "Configuring Items"));
-		} else {
-			return item;
-		}
 	}
 
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {

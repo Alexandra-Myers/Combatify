@@ -24,12 +24,6 @@ public record ConfigurableWeaponData(Optional<Double> optionalDamage, Optional<D
 				Codec.BOOL.optionalFieldOf("can_sweep").forGetter(ConfigurableWeaponData::optionalCanSweep),
 				BlockingType.SIMPLE_CODEC.optionalFieldOf("blocking_type").forGetter(ConfigurableWeaponData::optionalBlockingType))
 			.apply(instance, ConfigurableWeaponData::new));
-	public static final Codec<ConfigurableWeaponData> ADDED_TYPE_CODEC = RecordCodecBuilder.create(instance ->
-		instance.group(Codec.DOUBLE.optionalFieldOf("charged_reach").forGetter(ConfigurableWeaponData::optionalChargedReach),
-				Codec.DOUBLE.optionalFieldOf("armor_piercing").forGetter(ConfigurableWeaponData::optionalPiercingLevel),
-				Codec.BOOL.optionalFieldOf("can_sweep").forGetter(ConfigurableWeaponData::optionalCanSweep),
-				BlockingType.SIMPLE_CODEC.optionalFieldOf("blocking_type").forGetter(ConfigurableWeaponData::optionalBlockingType))
-			.apply(instance, ConfigurableWeaponData::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableWeaponData> WEAPON_DATA_STREAM_CODEC = StreamCodec.of((buf, configurableWeaponData) -> {
 		buf.writeDouble(configurableWeaponData.optionalDamage.orElse(-10D));
 		buf.writeDouble(configurableWeaponData.optionalSpeed.orElse(-10D));
@@ -67,9 +61,6 @@ public record ConfigurableWeaponData(Optional<Double> optionalDamage, Optional<D
 			canSweep = canSweepAsInt == 1;
 		return new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, piercingLevel, tierable, canSweep, bType);
 	});
-	public ConfigurableWeaponData(Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<Boolean> optionalCanSweep, Optional<BlockingType> optionalBlockingType) {
-		this(Optional.empty(), Optional.empty(), Optional.empty(), optionalChargedReach, optionalPiercingLevel, Optional.empty(), optionalCanSweep, optionalBlockingType);
-	}
 	public ConfigurableWeaponData(Double optionalDamage, Double optionalSpeed, Double optionalReach, Double optionalChargedReach, Double optionalPiercingLevel, Boolean optionalTiered, Boolean optionalCanSweep, BlockingType optionalBlockingType) {
 		this(Optional.ofNullable(optionalDamage), Optional.ofNullable(optionalSpeed), Optional.ofNullable(optionalReach), Optional.ofNullable(optionalChargedReach), Optional.ofNullable(optionalPiercingLevel), Optional.ofNullable(optionalTiered), Optional.ofNullable(optionalCanSweep), Optional.ofNullable(optionalBlockingType));
 	}
