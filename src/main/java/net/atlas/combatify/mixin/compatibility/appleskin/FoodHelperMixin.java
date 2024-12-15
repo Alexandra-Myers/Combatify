@@ -42,7 +42,7 @@ public class FoodHelperMixin {
 		return switch (Combatify.CONFIG.healingMode()) {
 			case VANILLA -> original;
 			case CTS -> {
-				if (health % 2 == 0) foodLevel.set(foodLevel.get() - 2);
+				if (health % 2 == 0) foodLevel.set(foodLevel.get() - 1);
 				yield 0;
 			}
 			case NEW -> {
