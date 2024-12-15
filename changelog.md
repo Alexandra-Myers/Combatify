@@ -1,6 +1,8 @@
 ### Changes:
 ***
 - Non-player cooldowns.
+
+- Beginning of the items config refactor
 ***
 #### Config Changes:
 ***

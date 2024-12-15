@@ -2,6 +2,7 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -14,8 +15,9 @@ import net.minecraft.world.item.Tier;
 import org.jetbrains.annotations.Nullable;
 
 public class TestBlockingType extends SwordBlockingType {
-	public TestBlockingType(String name) {
-		super(name);
+
+	public TestBlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
 	}
 
 	@Override
@@ -48,5 +50,15 @@ public class TestBlockingType extends SwordBlockingType {
 		if (ExtendedTier.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;
+	}
+
+	@Override
+	public boolean requiresSwordBlocking() {
+		return false;
+	}
+
+	@Override
+	public Factory<? extends BlockingType> factory() {
+		return Combatify.TEST_BLOCKING_TYPE_FACTORY;
 	}
 }

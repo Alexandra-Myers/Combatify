@@ -22,23 +22,24 @@ public interface ExtendedTier extends Tier {
 				Codec.FLOAT.optionalFieldOf("attack_damage_bonus").forGetter(extendedTier -> Optional.of(extendedTier.getAttackDamageBonus())),
 				Codec.FLOAT.optionalFieldOf("mining_speed").forGetter(extendedTier -> Optional.of(extendedTier.getSpeed())),
 				Ingredient.CODEC.optionalFieldOf("repair_ingredient").forGetter(extendedTier -> Optional.of(extendedTier.getRepairIngredient())),
-				TagKey.codec(Registries.BLOCK).optionalFieldOf("incorrect_blocks").forGetter(extendedTier -> Optional.of(extendedTier.getIncorrectBlocksForDrops())),
+				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).optionalFieldOf("incorrect_blocks").forGetter(extendedTier -> Optional.of(extendedTier.getIncorrectBlocksForDrops())),
 				TIER_CODEC.fieldOf("base_tier").forGetter(ExtendedTierImpl::self))
 			.apply(instance, ExtendedTier::create));
 	Codec<ExtendedTierImpl> FULL_CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(Codec.INT.fieldOf("mining_level").forGetter(ExtendedTierImpl::getLevel),
-			Codec.INT.fieldOf("enchant_level").forGetter(ExtendedTierImpl::getEnchantmentValue),
-			Codec.INT.fieldOf("uses").forGetter(ExtendedTierImpl::getUses),
-			Codec.FLOAT.fieldOf("attack_damage_bonus").forGetter(ExtendedTierImpl::getAttackDamageBonus),
-			Codec.FLOAT.fieldOf("mining_speed").forGetter(ExtendedTierImpl::getSpeed),
-			Ingredient.CODEC.fieldOf("repair_ingredient").forGetter(ExtendedTierImpl::getRepairIngredient),
-			TagKey.codec(Registries.BLOCK).fieldOf("incorrect_blocks").forGetter(ExtendedTierImpl::getIncorrectBlocksForDrops))
+				Codec.INT.fieldOf("enchant_level").forGetter(ExtendedTierImpl::getEnchantmentValue),
+				Codec.INT.fieldOf("uses").forGetter(ExtendedTierImpl::getUses),
+				Codec.FLOAT.fieldOf("attack_damage_bonus").forGetter(ExtendedTierImpl::getAttackDamageBonus),
+				Codec.FLOAT.fieldOf("mining_speed").forGetter(ExtendedTierImpl::getSpeed),
+				Ingredient.CODEC.fieldOf("repair_ingredient").forGetter(ExtendedTierImpl::getRepairIngredient),
+				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).fieldOf("incorrect_blocks").forGetter(ExtendedTierImpl::getIncorrectBlocksForDrops))
 			.apply(instance, ExtendedTier::create));
 
 	Codec<ExtendedTierImpl> CODEC = Codec.withAlternative(FULL_CODEC, BASE_CODEC);
 
 	int getLevel();
 
+	@SuppressWarnings("unused")
 	ExtendedTier self();
 
 	static int getLevelFromDefault(Tier tier) {

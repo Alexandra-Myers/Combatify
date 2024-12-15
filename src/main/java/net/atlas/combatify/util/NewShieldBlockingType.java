@@ -20,8 +20,9 @@ import org.jetbrains.annotations.Nullable;
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class NewShieldBlockingType extends PercentageBlockingType {
-	public NewShieldBlockingType(String name) {
-		super(name);
+
+	public NewShieldBlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
 	}
 
 	@Override
@@ -56,6 +57,11 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 			instance.hurtCurrentlyUsedShield(g.get());
 		bl.set(true);
 		return true;
+	}
+
+	@Override
+	public Factory<? extends BlockingType> factory() {
+		return Combatify.NEW_SHIELD_BLOCKING_TYPE_FACTORY;
 	}
 
 	@Override

@@ -401,7 +401,7 @@ public class MethodHandler {
 
 	@SuppressWarnings("deprecation")
 	public static ConfigurableItemData forItem(Item item) {
-		if (Combatify.ITEMS != null) {
+		if (Combatify.ITEMS != null && !Combatify.ITEMS.isModifying) {
 			List<ConfigurableItemData> results = new ArrayList<>();
 			Combatify.ITEMS.configuredItems.forEach(configDataWrapper -> {
 				ConfigurableItemData result = configDataWrapper.match(item.builtInRegistryHolder());
@@ -470,7 +470,7 @@ public class MethodHandler {
 	}
 
 	public static ConfigurableWeaponData forWeapon(WeaponType weaponType) {
-		if (Combatify.ITEMS != null) {
+		if (Combatify.ITEMS != null && !Combatify.ITEMS.isModifying) {
 			List<ConfigurableWeaponData> results = new ArrayList<>();
 			Combatify.ITEMS.configuredWeapons.forEach(configDataWrapper -> {
 				ConfigurableWeaponData result = configDataWrapper.match(weaponType);
@@ -503,7 +503,7 @@ public class MethodHandler {
 
 	@SuppressWarnings("deprecation")
 	public static ConfigurableEntityData forEntityType(EntityType<?> entityType) {
-		if (Combatify.ITEMS != null) {
+		if (Combatify.ITEMS != null && !Combatify.ITEMS.isModifying) {
 			List<ConfigurableEntityData> results = new ArrayList<>();
 			Combatify.ITEMS.configuredEntities.forEach(configDataWrapper -> {
 				ConfigurableEntityData result = configDataWrapper.match(entityType.builtInRegistryHolder());

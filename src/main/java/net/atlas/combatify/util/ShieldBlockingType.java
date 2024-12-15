@@ -24,8 +24,14 @@ import org.jetbrains.annotations.Nullable;
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class ShieldBlockingType extends BlockingType {
-	public ShieldBlockingType(String name) {
-		super(name);
+
+	public ShieldBlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
+	}
+
+	@Override
+	public Factory<? extends BlockingType> factory() {
+		return Combatify.SHIELD_BLOCKING_TYPE_FACTORY;
 	}
 
 	@Override

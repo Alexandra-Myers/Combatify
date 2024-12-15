@@ -74,14 +74,21 @@ public class Combatify implements ModInitializer {
 	public static Map<String, WeaponType> registeredWeaponTypes = new HashMap<>();
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static BiMap<String, Tier> tiers = HashBiMap.create();
+	public static BiMap<ResourceLocation, BlockingType.Factory<?>> registeredTypeFactories = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
-	public static final BlockingType SWORD = defineDefaultBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true).setDelay(false));
-	public static final BlockingType SHIELD = defineDefaultBlockingType(new ShieldBlockingType("shield"));
-	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(new NonBannerShieldBlockingType("shield_no_banner"));
-	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(new CurrentShieldBlockingType("current_shield"));
-	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
-	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
+	public static final BlockingType.Factory<SwordBlockingType> SWORD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("sword"), SwordBlockingType::new);
+	public static final BlockingType.Factory<ShieldBlockingType> SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("shield"), ShieldBlockingType::new);
+	public static final BlockingType.Factory<NonBannerShieldBlockingType> NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("shield_no_banner"), NonBannerShieldBlockingType::new);
+	public static final BlockingType.Factory<CurrentShieldBlockingType> CURRENT_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("current_shield"), CurrentShieldBlockingType::new);
+	public static final BlockingType.Factory<NewShieldBlockingType> NEW_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("new_shield"), NewShieldBlockingType::new);
+	public static final BlockingType.Factory<TestBlockingType> TEST_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("test"), TestBlockingType::new);
+	public static final BlockingType SWORD = defineDefaultBlockingType(BlockingType.builder(SWORD_BLOCKING_TYPE_FACTORY).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("sword"));
+	public static final BlockingType SHIELD = defineDefaultBlockingType(BlockingType.builder(SHIELD_BLOCKING_TYPE_FACTORY).build("shield"));
+	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(BlockingType.builder(NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY).build("shield_no_banner"));
+	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(BlockingType.builder(CURRENT_SHIELD_BLOCKING_TYPE_FACTORY).build("current_shield"));
+	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(BlockingType.builder(NEW_SHIELD_BLOCKING_TYPE_FACTORY).setKbMechanics(false).build("new_shield"));
+	public static final BlockingType EMPTY = BlockingType.builder((name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay) -> new EmptyBlockingType(name)).build("empty");
 
 	public static void markCTS(boolean isCTS) {
 		Combatify.isCTS = isCTS;
@@ -165,6 +172,10 @@ public class Combatify implements ModInitializer {
 	}
 	public static void defineDefaultWeaponType(WeaponType type) {
 		defaultWeaponTypes.put(type.name(), type);
+	}
+	public static <T extends BlockingType> BlockingType.Factory<T> defineBlockingTypeFactory(ResourceLocation name, BlockingType.Factory<T> factory) {
+		registeredTypeFactories.put(name, factory);
+		return factory;
 	}
 	public static <T extends BlockingType> T defineDefaultBlockingType(T blockingType) {
 		defaultTypes.put(blockingType.getName(), blockingType);

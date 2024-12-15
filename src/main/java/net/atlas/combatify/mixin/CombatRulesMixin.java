@@ -40,11 +40,9 @@ public class CombatRulesMixin {
 	@ModifyReturnValue(method = "getDamageAfterAbsorb", at = @At("RETURN"))
 	private static float changeArmourCalcs(float original, @Local(ordinal = 0, argsOnly = true) float amount, @Local(ordinal = 0, argsOnly = true) DamageSource source, @Local(ordinal = 1, argsOnly = true) float armour, @Local(ordinal = 2, argsOnly = true) float toughness) {
 		ItemConfig.Formula calcs = ItemConfig.getArmourCalcs();
-		if (calcs != null) {
-			original = calcs.armourCalcs(amount, source, armour, toughness);
-			if (Combatify.CONFIG.enableDebugLogging())
-				Combatify.LOGGER.info("Damage: " + amount + " Result: " + original);
-		}
+		if (calcs != null) original = calcs.armourCalcs(amount, source, armour, toughness);
+		if (Combatify.CONFIG.enableDebugLogging())
+			Combatify.LOGGER.info("Damage: " + amount + " Result: " + original);
 		return original;
 	}
 	@ModifyReturnValue(method = "getDamageAfterMagicAbsorb", at = @At("RETURN"))

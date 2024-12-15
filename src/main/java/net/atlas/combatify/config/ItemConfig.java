@@ -1,10 +1,12 @@
 package net.atlas.combatify.config;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.serialization.*;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
@@ -22,7 +24,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.mixin.item.ItemAccessor;
 import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -56,10 +57,9 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import static net.atlas.combatify.Combatify.*;
@@ -68,6 +68,7 @@ import static net.atlas.combatify.config.ConfigurableItemData.ITEM_DATA_STREAM_C
 import static net.atlas.combatify.config.ConfigurableWeaponData.WEAPON_DATA_STREAM_CODEC;
 
 public class ItemConfig extends AtlasConfig {
+	public boolean isModifying = false;
 	public List<ConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> configuredEntities;
 	public List<ConfigDataWrapper<Item, ConfigurableItemData>> configuredItems;
 	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
@@ -111,44 +112,24 @@ public class ItemConfig extends AtlasConfig {
 		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable);
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> BLOCKING_TYPE_STREAM_CODEC = StreamCodec.of((buf, blockingType) -> {
-		buf.writeUtf(blockingType.getClass().getName());
+		buf.writeResourceLocation(Combatify.registeredTypeFactories.inverse().get(blockingType.factory()));
 		buf.writeUtf(blockingType.getName());
-		buf.writeBoolean(blockingType.canBeDisabled());
-		buf.writeBoolean(blockingType.canBlockHit());
 		buf.writeBoolean(blockingType.canCrouchBlock());
-		buf.writeBoolean(blockingType.defaultKbMechanics());
-		buf.writeBoolean(blockingType.isToolBlocker());
+		buf.writeBoolean(blockingType.canBlockHit());
+		buf.writeBoolean(blockingType.canBeDisabled());
 		buf.writeBoolean(blockingType.requireFullCharge());
-		buf.writeBoolean(blockingType.requiresSwordBlocking());
+		buf.writeBoolean(blockingType.defaultKbMechanics());
 		buf.writeBoolean(blockingType.hasDelay());
 	}, buf -> {
-		try {
-			Class<?> clazz = BlockingType.class.getClassLoader().loadClass(buf.readUtf());
-			Constructor<?> constructor = clazz.getConstructor(String.class);
-			String name = buf.readUtf();
-			Object object = constructor.newInstance(name);
-			if (object instanceof BlockingType blockingType) {
-				blockingType.setDisablement(buf.readBoolean());
-				blockingType.setBlockHit(buf.readBoolean());
-				blockingType.setCrouchable(buf.readBoolean());
-				blockingType.setKbMechanics(buf.readBoolean());
-				blockingType.setToolBlocker(buf.readBoolean());
-				blockingType.setRequireFullCharge(buf.readBoolean());
-				blockingType.setSwordBlocking(buf.readBoolean());
-				blockingType.setDelay(buf.readBoolean());
-				Combatify.registerBlockingType(blockingType);
-				return blockingType;
-			} else {
-				CrashReport report = CrashReport.forThrowable(new IllegalStateException("The specified class is not an instance of BlockingType!"), "Syncing Blocking Types");
-				CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being synced");
-				crashReportCategory.setDetail("Class", clazz.getName());
-				crashReportCategory.setDetail("Type Name", name);
-				throw new ReportedException(report);
-			}
-		} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-				 ClassNotFoundException | NoSuchMethodException e) {
-			throw new ReportedException(CrashReport.forThrowable(new RuntimeException(e), "Syncing Blocking Types"));
-		}
+		BlockingType.Factory<?> factory = registeredTypeFactories.get(buf.readResourceLocation());
+		String name = buf.readUtf();
+		boolean canCrouchBlock = buf.readBoolean();
+		boolean canBlockHit = buf.readBoolean();
+		boolean canDisable = buf.readBoolean();
+		boolean requireFullCharge = buf.readBoolean();
+		boolean defaultKbMechanics = buf.readBoolean();
+		boolean hasDelay = buf.readBoolean();
+		return factory.create(name, canCrouchBlock, canBlockHit, canDisable, requireFullCharge, defaultKbMechanics, hasDelay);
 	});
 	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<Item, ConfigurableItemData>> ITEM_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
 		buf.writeCollection(wrapper.objects, (buf1, item) -> buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)));
@@ -179,6 +160,7 @@ public class ItemConfig extends AtlasConfig {
 		return new ConfigDataWrapper<>(items, Collections.emptyList(), configurableEntityData);
 	});
 	public static Formula armourCalcs = null;
+	public static Codec<BiMap<String, ExtendedTier.ExtendedTierImpl>> TIERS_CODEC = Codec.unboundedMap(Codec.STRING, ExtendedTier.CODEC).xmap(HashBiMap::create, Function.identity());
 
 	public ItemConfig() {
 		super(id("combatify-items"));
@@ -203,6 +185,7 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	protected void loadExtra(JsonObject object) {
+		isModifying = true;
 		if (!object.has("items"))
 			object.add("items", new JsonArray());
 		JsonElement items = object.get("items");
@@ -213,34 +196,20 @@ public class ItemConfig extends AtlasConfig {
 			object.add("blocking_types", new JsonArray());
 		JsonElement defenders = object.get("blocking_types");
 		if (!object.has("tiers"))
-			object.add("tiers", new JsonArray());
+			object.add("tiers", new JsonObject());
 		JsonElement tiers = object.get("tiers");
 		if (!object.has("entities"))
 			object.add("entities", new JsonArray());
 		JsonElement entities = object.get("entities");
-		if (tiers instanceof JsonArray typeArray) {
-			typeArray.asList().forEach(jsonElement -> {
-				if (jsonElement instanceof JsonObject jsonObject) {
-					parseTiers(jsonObject);
-				} else
-					notJSONObject(jsonElement, "Configuring Tiers");
-			});
-		}
-		if (defenders instanceof JsonArray typeArray) {
-			typeArray.asList().forEach(jsonElement -> {
-				if (jsonElement instanceof JsonObject jsonObject) {
-					parseBlockingType(jsonObject);
-				} else
-					notJSONObject(jsonElement, "Configuring Blocking Types");
-			});
-		}
+		Combatify.tiers = HashBiMap.create(Combatify.defaultTiers);
+		Combatify.tiers.putAll(TIERS_CODEC.parse(JsonOps.INSTANCE, tiers).getOrThrow());
+		registeredTypes = new HashMap<>(defaultTypes);
+		List<BlockingType> altered = BlockingType.CODEC.listOf().orElse(Collections.emptyList()).parse(JsonOps.INSTANCE, defenders).getOrThrow();
+		altered.forEach(Combatify::registerBlockingType);
 		if (weapons instanceof JsonArray typeArray) {
 			typeArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					List<WeaponType> weaponTypes;
-					if (jsonObject.get("name") instanceof JsonArray itemsWithConfig) weaponTypes = itemsWithConfig.asList().stream().map(weaponName -> typeFromName(weaponName.getAsString())).toList();
-					else weaponTypes = Collections.singletonList(typeFromJson(jsonObject));
-
+					List<WeaponType> weaponTypes = Codec.withAlternative(WeaponType.SIMPLE_CODEC.listOf(), WeaponType.SIMPLE_CODEC, Collections::singletonList).fieldOf("name").codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
 					List<WeaponType> blankTypes = new ArrayList<>(weaponTypes.stream().filter(Objects::isNull).toList());
 					int added = blankTypes.size();
 					blankTypes.clear();
@@ -303,8 +272,8 @@ public class ItemConfig extends AtlasConfig {
 					notJSONObject(jsonElement, "Configuring Entities");
 			});
 		}
-		if (object.has("armor_calculation"))
-			armourCalcs = new Formula(getString(object, "armor_calculation"));
+		armourCalcs = Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec().parse(JsonOps.INSTANCE, object).getOrThrow().orElse(null);
+		isModifying = false;
 	}
 	public void parseEntityType(List<EntityType<?>> entities, List<TagKey<EntityType<?>>> entityTags, JsonObject jsonObject) {
 		ConfigurableEntityData configurableEntityData = ConfigurableEntityData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
@@ -313,9 +282,6 @@ public class ItemConfig extends AtlasConfig {
 	}
 	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject, Codec<ConfigurableWeaponData> codec) {
 		ConfigurableWeaponData configurableWeaponData = codec.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-		addWeaponTypeConfiguration(types, configurableWeaponData);
-	}
-	public void addWeaponTypeConfiguration(List<WeaponType> types, ConfigurableWeaponData configurableWeaponData) {
 		ConfigDataWrapper<WeaponType, ConfigurableWeaponData> configDataWrapper = new ConfigDataWrapper<>(types, Collections.emptyList(), configurableWeaponData);
 		configuredWeapons.add(configDataWrapper);
 	}
@@ -379,105 +345,6 @@ public class ItemConfig extends AtlasConfig {
 		}
 	}
 
-	public static WeaponType typeFromJson(JsonObject jsonObject) {
-		String weapon_type = GsonHelper.getAsString(jsonObject, "name");
-		weapon_type = weapon_type.toLowerCase(Locale.ROOT);
-		return typeFromName(weapon_type);
-	}
-	public static WeaponType typeFromName(String name) {
-		if (!registeredWeaponTypes.containsKey(name))
-			return null;
-		return WeaponType.fromID(name);
-	}
-
-	public static void parseBlockingType(JsonObject jsonObject) {
-		String blocking_type = GsonHelper.getAsString(jsonObject, "name");
-		blocking_type = blocking_type.toLowerCase(Locale.ROOT);
-		if (blocking_type.equals("empty") || blocking_type.equals("blank"))
-			return;
-		if (!Combatify.registeredTypes.containsKey(blocking_type) || jsonObject.has("class")) {
-			if (jsonObject.has("class") && jsonObject.get("class") instanceof JsonPrimitive jsonPrimitive && jsonPrimitive.isString()) {
-				try {
-					Class<?> clazz = BlockingType.class.getClassLoader().loadClass(jsonPrimitive.getAsString());
-					Constructor<?> constructor = clazz.getConstructor(String.class);
-					Object object = constructor.newInstance(blocking_type);
-					if (object instanceof BlockingType blockingType) {
-						if (jsonObject.has("require_full_charge"))
-							blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
-						if (jsonObject.has("is_tool"))
-							blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
-						if (jsonObject.has("can_block_hit"))
-							blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
-						if (jsonObject.has("can_crouch_block"))
-							blockingType.setCrouchable(getBoolean(jsonObject, "can_crouch_block"));
-						if (jsonObject.has("can_be_disabled"))
-							blockingType.setDisablement(getBoolean(jsonObject, "can_be_disabled"));
-						if (jsonObject.has("default_kb_mechanics"))
-							blockingType.setKbMechanics(getBoolean(jsonObject, "default_kb_mechanics"));
-						if (jsonObject.has("requires_sword_blocking"))
-							blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
-						if (jsonObject.has("has_shield_delay"))
-							blockingType.setDelay(getBoolean(jsonObject, "has_shield_delay"));
-						Combatify.registerBlockingType(blockingType);
-						return;
-					} else {
-						CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified class is not an instance of BlockingType!"), "Creating Blocking Type");
-						CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
-						crashReportCategory.setDetail("Class", clazz.getName());
-						crashReportCategory.setDetail("Type Name", blocking_type);
-						crashReportCategory.setDetail("Json Object", jsonObject);
-						throw new ReportedException(report);
-					}
-				} catch (ClassNotFoundException | NoSuchMethodException e) {
-					CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("The specified class does not exist, or otherwise lacks a constructor with a String parameter", e), "Creating Blocking Type");
-					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
-					crashReportCategory.setDetail("Class", getString(jsonObject, "class"));
-					crashReportCategory.setDetail("Type Name", blocking_type);
-					crashReportCategory.setDetail("Json Object", jsonObject);
-					throw new ReportedException(report);
-				} catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-					CrashReport report = CrashReport.forThrowable(new RuntimeException(e), "Creating Blocking Type");
-					CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
-					crashReportCategory.setDetail("Class", getString(jsonObject, "class"));
-					crashReportCategory.setDetail("Type Name", blocking_type);
-					crashReportCategory.setDetail("Json Object", jsonObject);
-					throw new ReportedException(report);
-				}
-			} else {
-				CrashReport report = CrashReport.forThrowable(new JsonSyntaxException("You cannot create a blocking type without a class!"), "Creating Blocking Type");
-				CrashReportCategory crashReportCategory = report.addCategory("Blocking Type being parsed");
-				crashReportCategory.setDetail("Type Name", blocking_type);
-				crashReportCategory.setDetail("Json Object", jsonObject);
-				throw new ReportedException(report);
-			}
-		}
-		BlockingType blockingType = Combatify.registeredTypes.get(blocking_type);
-		if (jsonObject.has("require_full_charge"))
-			blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
-		if (jsonObject.has("is_tool"))
-			blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
-		if (jsonObject.has("can_block_hit"))
-			blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
-		if (jsonObject.has("can_crouch_block"))
-			blockingType.setCrouchable(getBoolean(jsonObject, "can_crouch_block"));
-		if (jsonObject.has("can_be_disabled"))
-			blockingType.setDisablement(getBoolean(jsonObject, "can_be_disabled"));
-		if (jsonObject.has("default_kb_mechanics"))
-			blockingType.setKbMechanics(getBoolean(jsonObject, "default_kb_mechanics"));
-		if (jsonObject.has("requires_sword_blocking"))
-			blockingType.setSwordBlocking(getBoolean(jsonObject, "requires_sword_blocking"));
-		if (jsonObject.has("has_shield_delay"))
-			blockingType.setDelay(getBoolean(jsonObject, "has_shield_delay"));
-	}
-	public void parseTiers(JsonObject jsonObject) {
-		if (!jsonObject.has("name")) {
-			LOGGER.error("An added tier does not possess a name. This is due to an incorrectly written config file." + errorStage("Configuring Tiers"));
-			return;
-		}
-		String name = getString(jsonObject, "name");
-		tiers.put(name, ExtendedTier.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow());
-	}
-
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
 		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
@@ -529,7 +396,7 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeCollection(configuredEntities, ENTITY_WRAPPER_STREAM_CODEC);
 		buf.writeCollection(configuredItems, ITEM_WRAPPER_STREAM_CODEC);
 		buf.writeCollection(configuredWeapons, WEAPON_WRAPPER_STREAM_CODEC);
-		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written);
+		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written());
 	}
 
 	public static <B extends FriendlyByteBuf, K, V> Map<K, V> readMap(B buf, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
@@ -829,9 +696,21 @@ public class ItemConfig extends AtlasConfig {
 			return Objects.hash(objects, tagKeys, configurableData);
 		}
 	}
-	public record Formula(String written) {
+	public record Formula(String armour, String enchantment) {
+		public Formula(String written) {
+			this(written.split("enchant:", 2)[0], written.split("enchant:", 2)[1]);
+		}
+		public String written() {
+			return armour + "enchant:" + enchantment;
+		}
+		public static final Codec<Formula> SINGLE_LINE = Codec.STRING.xmap(Formula::new, Formula::written);
+		public static final Codec<Formula> CONCAT_OBJECT = RecordCodecBuilder.create(instance ->
+			instance.group(Codec.STRING.fieldOf("armor_protection").forGetter(Formula::armour),
+				Codec.STRING.fieldOf("enchantment_protection").forGetter(Formula::enchantment))
+				.apply(instance, Formula::new));
+		public static final Codec<Formula> CODEC = Codec.withAlternative(CONCAT_OBJECT, SINGLE_LINE);
 		public float armourCalcs(float amount, DamageSource damageSource, float armour, float armourToughness) {
-			String armourFormula = written.split("enchant:", 2)[0];
+			String armourFormula = this.armour;
 			armourFormula = armourFormula.replaceAll("D", String.valueOf(amount)).replaceAll("P", String.valueOf(armour)).replaceAll("T", String.valueOf(armourToughness));
 			float result = solveFormula(armourFormula);
 			ItemStack itemStack = damageSource.getWeaponItem();
@@ -841,7 +720,7 @@ public class ItemConfig extends AtlasConfig {
 			return amount * result;
 		}
 		public float enchantCalcs(float amount, float enchantLevel) {
-			String enchantFormula = written.split("enchant:", 2)[1];
+			String enchantFormula = this.enchantment;
 			enchantFormula = enchantFormula.replaceAll("D", String.valueOf(amount)).replaceAll("E", String.valueOf(enchantLevel));
 			float result = solveFormula(enchantFormula);
 			return amount * result;

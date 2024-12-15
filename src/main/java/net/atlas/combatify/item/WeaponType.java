@@ -35,7 +35,8 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 	public static final WeaponType SHOVEL = createBasic("shovel", 0, -0.5, 0);
 	public static final WeaponType KNIFE = createBasic("knife", 1, 1, 0.25);
 	public static final WeaponType TRIDENT = createWithAxeDamageFormula("trident", 3, -0.5, 1);
-	public static final Codec<WeaponType> SIMPLE_CODEC = Codec.STRING.validate(weapon_type -> !Combatify.registeredWeaponTypes.containsKey(weapon_type) ? DataResult.error(() -> "Attempted to retrieve a Weapon Type that does not exist: " + weapon_type) : DataResult.success(weapon_type)).xmap(weapon_type -> fromID(weapon_type.toLowerCase(Locale.ROOT)), WeaponType::name).orElse(EMPTY);
+	public static final Codec<WeaponType> SIMPLE_CODEC = Codec.STRING.xmap(weapon_type -> fromID(weapon_type.toLowerCase(Locale.ROOT)), WeaponType::name);
+	public static final Codec<WeaponType> STRICT_CODEC = SIMPLE_CODEC.validate(weapon_type -> weapon_type == null ? DataResult.error(() -> "Attempted to retrieve a Weapon Type that does not exist!") : DataResult.success(weapon_type));
 	public static final Codec<WeaponType> FULL_CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(Codec.STRING.fieldOf("name").forGetter(WeaponType::name),
 				Codec.DOUBLE.fieldOf("damage_offset").forGetter(WeaponType::damageOffset),

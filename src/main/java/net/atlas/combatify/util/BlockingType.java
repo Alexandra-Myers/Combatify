@@ -4,10 +4,12 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,81 +25,81 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.EMPTY;
 
 public abstract class BlockingType {
-	public static final Codec<BlockingType> SIMPLE_CODEC = Codec.STRING.validate(blocking_type -> !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type)).xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type.toLowerCase(Locale.ROOT)), BlockingType::getName).orElse(EMPTY);
+	public static final Codec<BlockingType.Factory<?>> FACTORY_CODEC = ResourceLocation.CODEC.validate(factory -> !Combatify.registeredTypeFactories.containsKey(factory) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type Factory that does not exist: " + factory) : DataResult.success(factory)).xmap(factory -> Combatify.registeredTypeFactories.get(factory), factory -> Combatify.registeredTypeFactories.inverse().get(factory));
+	public static final Codec<BlockingType> SIMPLE_CODEC = Codec.STRING.validate(blocking_type -> blocking_type.equals("empty") || blocking_type.equals("blank") || !Combatify.registeredTypes.containsKey(blocking_type.toLowerCase(Locale.ROOT)) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type)).xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type.toLowerCase(Locale.ROOT)), BlockingType::getName);
+	public static final Codec<BlockingType> MODIFY = RecordCodecBuilder.create(instance ->
+		instance.group(SIMPLE_CODEC.fieldOf("name").forGetter(blockingType -> blockingType),
+				Codec.BOOL.optionalFieldOf("can_crouch_block").forGetter(blockingType -> Optional.of(blockingType.canCrouchBlock)),
+				Codec.BOOL.optionalFieldOf("can_block_hit").forGetter(blockingType -> Optional.of(blockingType.canBlockHit)),
+				Codec.BOOL.optionalFieldOf("can_be_disabled").forGetter(blockingType -> Optional.of(blockingType.canBeDisabled)),
+				Codec.BOOL.optionalFieldOf("require_full_charge").forGetter(blockingType -> Optional.of(blockingType.requireFullCharge)),
+				Codec.BOOL.optionalFieldOf("default_kb_mechanics").forGetter(blockingType -> Optional.of(blockingType.defaultKbMechanics)),
+				Codec.BOOL.optionalFieldOf("has_shield_delay").forGetter(blockingType -> Optional.of(blockingType.hasDelay)))
+			.apply(instance, BlockingType::copy));
+	public static final Codec<BlockingType> CREATE = RecordCodecBuilder.create(instance ->
+		instance.group(FACTORY_CODEC.fieldOf("factory").forGetter(BlockingType::factory),
+				Codec.STRING.fieldOf("name").validate(blocking_type -> blocking_type.equals("empty") || blocking_type.equals("blank") ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::getName),
+				Codec.BOOL.optionalFieldOf("can_crouch_block", true).forGetter(BlockingType::canCrouchBlock),
+				Codec.BOOL.optionalFieldOf("can_block_hit", false).forGetter(BlockingType::canBlockHit),
+				Codec.BOOL.optionalFieldOf("can_be_disabled", true).forGetter(BlockingType::canBeDisabled),
+				Codec.BOOL.optionalFieldOf("require_full_charge", true).forGetter(BlockingType::requireFullCharge),
+				Codec.BOOL.optionalFieldOf("default_kb_mechanics", true).forGetter(BlockingType::defaultKbMechanics),
+				Codec.BOOL.optionalFieldOf("has_shield_delay", true).forGetter(BlockingType::hasDelay))
+			.apply(instance, Factory::create));
+	public static final Codec<BlockingType> CODEC = Codec.withAlternative(MODIFY, CREATE);
 	private final String name;
-	private boolean canBeDisabled = true;
-	private boolean canCrouchBlock = true;
-	private boolean isToolBlocker = false;
-	private boolean canBlockHit = false;
-	private boolean requiresSwordBlocking = false;
-	private boolean requireFullCharge = true;
-	private boolean defaultKbMechanics = true;
-	private boolean hasDelay = true;
+	private final boolean canBeDisabled;
+	private final boolean canCrouchBlock;
+	private final boolean canBlockHit;
+	private final boolean requireFullCharge;
+	private final boolean defaultKbMechanics;
+	private final boolean hasDelay;
 	public boolean canCrouchBlock() {
 		return canCrouchBlock;
 	}
-	public BlockingType setCrouchable(boolean crouchable) {
-		canCrouchBlock = crouchable;
-		return this;
-	}
-
 	public boolean canBlockHit() {
 		return canBlockHit;
 	}
-	public BlockingType setBlockHit(boolean blockHit) {
-		canBlockHit = blockHit;
-		return this;
-	}
 	public boolean isToolBlocker() {
-		return isToolBlocker;
-	}
-	public BlockingType setToolBlocker(boolean isTool) {
-		isToolBlocker = isTool;
-		return this;
+		return false;
 	}
 	public boolean canBeDisabled() {
 		return canBeDisabled;
 	}
-	public BlockingType setDisablement(boolean canDisable) {
-		canBeDisabled = canDisable;
-		return this;
-	}
 	public boolean requireFullCharge() {
 		return requireFullCharge;
-	}
-	public BlockingType setRequireFullCharge(boolean needsFullCharge) {
-		requireFullCharge = needsFullCharge;
-		return this;
 	}
 	public boolean defaultKbMechanics() {
 		return defaultKbMechanics;
 	}
-	public BlockingType setKbMechanics(boolean defaultKbMechanics) {
-		this.defaultKbMechanics = defaultKbMechanics;
-		return this;
-	}
 	public boolean requiresSwordBlocking() {
-		return requiresSwordBlocking;
-	}
-	public BlockingType setSwordBlocking(boolean requiresSwordBlocking) {
-		this.requiresSwordBlocking = requiresSwordBlocking;
-		return this;
+		return false;
 	}
 	public boolean hasDelay() {
 		return hasDelay;
 	}
-	public BlockingType setDelay(boolean hasDelay) {
-		this.hasDelay = hasDelay;
-		return this;
-	}
 
-	public BlockingType(String name) {
+	public BlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
 		this.name = name;
+		this.canCrouchBlock = crouchable;
+		this.canBlockHit = blockHit;
+		this.canBeDisabled = canDisable;
+		this.requireFullCharge = needsFullCharge;
+		this.defaultKbMechanics = defaultKbMechanics;
+		this.hasDelay = hasDelay;
+	}
+	public BlockingType copy(Optional<Boolean> crouchable, Optional<Boolean> blockHit, Optional<Boolean> canDisable, Optional<Boolean> needsFullCharge, Optional<Boolean> defaultKbMechanics, Optional<Boolean> hasDelay) {
+		return factory().create(name, crouchable.orElse(canCrouchBlock), blockHit.orElse(canBlockHit), canDisable.orElse(canBeDisabled), needsFullCharge.orElse(requireFullCharge), defaultKbMechanics.orElse(this.defaultKbMechanics), hasDelay.orElse(this.hasDelay));
+	}
+	public abstract Factory<? extends BlockingType> factory();
+	public static <B extends BlockingType> Builder<B> builder(Factory<B> initialiser) {
+		return new Builder<>(initialiser);
 	}
 	public boolean isEmpty() {
 		return this == EMPTY;
@@ -111,12 +113,12 @@ public abstract class BlockingType {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof BlockingType that)) return false;
-		return canBeDisabled == that.canBeDisabled && canCrouchBlock == that.canCrouchBlock && isToolBlocker() == that.isToolBlocker() && canBlockHit == that.canBlockHit && requiresSwordBlocking == that.requiresSwordBlocking && requireFullCharge == that.requireFullCharge && defaultKbMechanics == that.defaultKbMechanics && Objects.equals(getName(), that.getName());
+		return canBeDisabled == that.canBeDisabled && canCrouchBlock == that.canCrouchBlock && isToolBlocker() == that.isToolBlocker() && canBlockHit == that.canBlockHit && requireFullCharge == that.requireFullCharge && defaultKbMechanics == that.defaultKbMechanics && Objects.equals(getName(), that.getName());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getName(), canBeDisabled, canCrouchBlock, isToolBlocker(), canBlockHit, requiresSwordBlocking, requireFullCharge, defaultKbMechanics);
+		return Objects.hash(getName(), canBeDisabled, canCrouchBlock, isToolBlocker(), canBlockHit, requireFullCharge, defaultKbMechanics);
 	}
 
 	public abstract void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl);
@@ -141,5 +143,48 @@ public abstract class BlockingType {
 	}
 	public Component getStrengthTranslationKey() {
 		return Component.translatable("attribute.name.generic.shield_strength");
+	}
+	public static class Builder<B extends BlockingType> {
+		public final Factory<B> initialiser;
+		public Builder(Factory<B> initialiser) {
+			this.initialiser = initialiser;
+		}
+		private boolean canBeDisabled = true;
+		private boolean canCrouchBlock = true;
+		private boolean canBlockHit = false;
+		private boolean requireFullCharge = true;
+		private boolean defaultKbMechanics = true;
+		private boolean hasDelay = true;
+		public Builder<B> setCrouchable(boolean crouchable) {
+			canCrouchBlock = crouchable;
+			return this;
+		}
+		public Builder<B> setBlockHit(boolean blockHit) {
+			canBlockHit = blockHit;
+			return this;
+		}
+		public Builder<B> setDisablement(boolean canDisable) {
+			canBeDisabled = canDisable;
+			return this;
+		}
+		public Builder<B> setRequireFullCharge(boolean needsFullCharge) {
+			requireFullCharge = needsFullCharge;
+			return this;
+		}
+		public Builder<B> setKbMechanics(boolean defaultKbMechanics) {
+			this.defaultKbMechanics = defaultKbMechanics;
+			return this;
+		}
+		public Builder<B> setDelay(boolean hasDelay) {
+			this.hasDelay = hasDelay;
+			return this;
+		}
+		public BlockingType build(String name) {
+			return initialiser.create(name, canCrouchBlock, canBlockHit, canBeDisabled, requireFullCharge, defaultKbMechanics, hasDelay);
+		}
+	}
+	@FunctionalInterface
+	public interface Factory<B extends BlockingType> {
+		B create(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay);
 	}
 }

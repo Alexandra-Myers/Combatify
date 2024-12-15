@@ -39,7 +39,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 				Codec.STRING.optionalFieldOf("tier").xmap(name -> name.map(ItemConfig::getTier), tier1 -> tier1.map(ItemConfig::getTierName)).forGetter(ConfigurableItemData::optionalTier),
 				ArmourStats.CODEC.optionalFieldOf("armor_information", ArmourStats.EMPTY).forGetter(ConfigurableItemData::armourStats),
 				Ingredient.CODEC.optionalFieldOf("repair_ingredient").forGetter(ConfigurableItemData::optionalIngredient),
-				TagKey.codec(Registries.BLOCK).optionalFieldOf("tool_tag").forGetter(ConfigurableItemData::optionalTag),
+				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).optionalFieldOf("tool_tag").forGetter(ConfigurableItemData::optionalTag),
 				Tool.CODEC.optionalFieldOf("tool").forGetter(ConfigurableItemData::optionalTool),
 				ItemAttributeModifiers.CODEC.optionalFieldOf("item_attribute_modifiers", ItemAttributeModifiers.EMPTY).forGetter(ConfigurableItemData::itemAttributeModifiers))
 			.apply(instance, ConfigurableItemData::new));

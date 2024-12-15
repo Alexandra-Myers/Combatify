@@ -20,7 +20,7 @@ public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> opti
 				Codec.DOUBLE.optionalFieldOf("reach").forGetter(WeaponStats::optionalReach),
 				Codec.DOUBLE.optionalFieldOf("charged_reach").forGetter(WeaponStats::optionalChargedReach),
 				Codec.DOUBLE.optionalFieldOf("armor_piercing").forGetter(WeaponStats::optionalPiercingLevel),
-				WeaponType.SIMPLE_CODEC.optionalFieldOf("weapon_type").forGetter(WeaponStats::optionalWeaponType),
+				WeaponType.STRICT_CODEC.optionalFieldOf("weapon_type").forGetter(WeaponStats::optionalWeaponType),
 				Codec.BOOL.optionalFieldOf("can_sweep").forGetter(WeaponStats::optionalCanSweep))
 			.apply(instance, WeaponStats::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponStats> STREAM_CODEC = StreamCodec.of((buf, weaponStats) -> {

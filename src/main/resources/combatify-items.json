@@ -38,9 +38,9 @@
   "blocking_types": [
 
   ],
-  "tiers": [
+  "tiers": {
 
-  ],
+  },
   "entities": [
     {
       "name": [
