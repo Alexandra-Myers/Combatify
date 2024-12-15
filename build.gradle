@@ -36,6 +36,7 @@ repositories {
 		name = "OpenCollab Snapshots"
 		url = "https://repo.opencollab.dev/maven-snapshots/"
 	}
+	maven { url "https://maven.ryanliptak.com/" }
 }
 
 // All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
@@ -50,6 +51,7 @@ dependencies {
 	modApi "com.terraformersmc:modmenu:11.0.1"
 	modApi "me.shedaniel.cloth:cloth-config-fabric:15.0.127"
 	modImplementation "eu.pb4:polymer-core:0.9.18+1.21.1"
+	modImplementation ("squeek.appleskin:appleskin-fabric:mc1.21-3.0.6")
 
 	implementation "com.moandjiezana.toml:toml4j:${project.toml4j_version}"
 	includeClasspath("com.moandjiezana.toml:toml4j:${project.toml4j_version}") {

@@ -30,7 +30,7 @@ public class FoodDataMixin {
 		return original.call(val, min, Combatify.CONFIG.healingMode() == HealingMode.VANILLA ? max : 20);
 	}
 
-	@ModifyConstant(method = "tick", constant = @Constant(intValue = 18))
+	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int changeConst(int constant) {
 		return Combatify.CONFIG.healingMode().getMinimumHealLevel();
 	}

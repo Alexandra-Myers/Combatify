@@ -131,6 +131,7 @@ public class Combatify implements ModInitializer {
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		});
+
 		LOGGER.info("Init started.");
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())

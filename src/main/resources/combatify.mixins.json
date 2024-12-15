@@ -92,7 +92,9 @@
     "cookey.RemotePlayerMixin",
     "cookey.WindowMixin",
     "cookey.WolfArmorLayerMixin",
-    "cookey.compatibility.optifabric.OFHumanoidArmorLayerMixin"
+    "cookey.compatibility.optifabric.OFHumanoidArmorLayerMixin",
+    "compatibility.appleskin.FoodHelperMixin",
+    "compatibility.appleskin.HUDOverlayHandlerMixin"
   ],
   "mixinPriority": 1200
 }
