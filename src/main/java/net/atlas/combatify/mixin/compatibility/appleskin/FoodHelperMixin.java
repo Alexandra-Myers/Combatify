@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import squeek.appleskin.helpers.FoodHelper;
 
 @ModSpecific("appleskin")
-@Mixin(value = FoodHelper.class, remap = false)
+@Mixin(FoodHelper.class)
 public class FoodHelperMixin {
 	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/food/FoodProperties;)F", at = @At(value = "CONSTANT", args = "floatValue=18.0"))
 	private static float modifyMinHunger(float original) {
@@ -27,17 +27,17 @@ public class FoodHelperMixin {
 		return original.call(a, Combatify.CONFIG.healingMode() == HealingMode.VANILLA ? b : 20);
 	}
 
-	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "CONSTANT", args = "intValue=18"))
+	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "CONSTANT", args = "intValue=18"), remap = false)
 	private static int modifyMinHunger(int original) {
 		return original == Combatify.CONFIG.healingMode().getMinimumHealLevel() ? original : Combatify.CONFIG.healingMode().getMinimumHealLevel();
 	}
-	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "CONSTANT", args = "intValue=20"))
+	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "CONSTANT", args = "intValue=20"), remap = false)
 	private static int changeConst2(int original) {
 		if(Combatify.CONFIG.fastHealing())
 			return original;
 		return 1000000;
 	}
-	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "FIELD", target = "Lsqueek/appleskin/helpers/FoodHelper;REGEN_EXHAUSTION_INCREMENT:F", ordinal = 2))
+	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "FIELD", target = "Lsqueek/appleskin/helpers/FoodHelper;REGEN_EXHAUSTION_INCREMENT:F", ordinal = 2), remap = false)
 	private static float changeExhaustion(float original, @Local(ordinal = 0, argsOnly = true) LocalIntRef foodLevel, @Local(ordinal = 0, argsOnly = true) float saturationLevel, @Local(ordinal = 2) float health) {
 		return switch (Combatify.CONFIG.healingMode()) {
 			case VANILLA -> original;

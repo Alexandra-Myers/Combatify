@@ -17,7 +17,7 @@ import squeek.appleskin.api.event.HUDOverlayEvent;
 import squeek.appleskin.client.HUDOverlayHandler;
 
 @ModSpecific("appleskin")
-@Mixin(value = HUDOverlayHandler.class, remap = false)
+@Mixin(HUDOverlayHandler.class)
 public abstract class HUDOverlayHandlerMixin {
 	@ModifyExpressionValue(method = "shouldShowEstimatedHealth", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int modifyMinHunger(int original) {
