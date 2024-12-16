@@ -85,20 +85,18 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				ci.cancel();
 			}
 		}
-		if (Combatify.CONFIG.swordBlocking()) {
-			if (!blockingItem.isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).combatify$getBlockingType().isToolBlocker()) {
-				poseStack.pushPose();
-				applyItemArmTransform(poseStack, humanoidArm, i);
-				applyItemBlockTransform(poseStack, humanoidArm);
-				if (CookeyMod.getConfig().animations().swingAndUseItem().get()) {
-					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
-				}
-				boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
-				renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
-
-				poseStack.popPose();
-				ci.cancel();
+		if (!blockingItem.isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).combatify$getBlockingType().isToolBlocker() && (!((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking())) {
+			poseStack.pushPose();
+			applyItemArmTransform(poseStack, humanoidArm, i);
+			applyItemBlockTransform(poseStack, humanoidArm);
+			if (CookeyMod.getConfig().animations().swingAndUseItem().get()) {
+				this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 			}
+			boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
+			renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
+
+			poseStack.popPose();
+			ci.cancel();
 		}
 	}
 

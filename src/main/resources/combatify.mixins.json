@@ -76,8 +76,11 @@
     "ModelFixMixins$ZombieVillagerModelFixMixin",
     "MultiPlayerGameModeMixin",
     "OptionsMixin",
+    "PlayerRendererMixin",
     "RendererMixin",
     "VideoSettingsMixin",
+    "compatibility.appleskin.FoodHelperMixin",
+    "compatibility.appleskin.HUDOverlayHandlerMixin",
     "cookey.AbstractClientPlayerMixin",
     "cookey.CameraMixin",
     "cookey.GameRendererMixin",
@@ -92,9 +95,7 @@
     "cookey.RemotePlayerMixin",
     "cookey.WindowMixin",
     "cookey.WolfArmorLayerMixin",
-    "cookey.compatibility.optifabric.OFHumanoidArmorLayerMixin",
-    "compatibility.appleskin.FoodHelperMixin",
-    "compatibility.appleskin.HUDOverlayHandlerMixin"
+    "cookey.compatibility.optifabric.OFHumanoidArmorLayerMixin"
   ],
   "mixinPriority": 1200
 }
