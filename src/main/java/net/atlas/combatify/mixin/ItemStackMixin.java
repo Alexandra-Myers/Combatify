@@ -67,7 +67,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Inject(method = "addAttributeTooltips", at = @At("RETURN"))
 	public void addPiercing(Consumer<Component> consumer, Player player, CallbackInfo ci) {
 		ItemAttributeModifiers itemAttributeModifiers = getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		if (itemAttributeModifiers.showInTooltip()) {
+		if (itemAttributeModifiers.showInTooltip() && player != null) {
 			double piercingLevel = ((ItemExtensions)getItem()).getPiercingLevel();
 			piercingLevel += CustomEnchantmentHelper.getBreach(ItemStack.class.cast(this), player.getRandom());
 			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
