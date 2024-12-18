@@ -19,3 +19,5 @@
 #### Fixes:
 ***
 - Shield durability is now taken in most cases where it was not before
+
+- Fixed third-person shield blocking animation
