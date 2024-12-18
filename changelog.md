@@ -3,6 +3,8 @@
 - Non-player cooldowns.
 
 - Beginning of the items config refactor
+
+- AppleSkin support
 ***
 #### Config Changes:
 ***
