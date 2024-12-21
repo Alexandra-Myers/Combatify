@@ -63,7 +63,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 		if ((CookeyMod.getConfig().hudRendering().onlyShowShieldWhenBlocking().get() || CookeyMod.getConfig().animations().enableToolBlocking().get())
 			&& (itemStack.getItem() instanceof ShieldItem && !(!blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem))) {
 			ci.cancel();
-
 		}
 		if (CookeyMod.getConfig().animations().enableToolBlocking().get()) {
 			ItemStack otherHandItem = interactionHand == InteractionHand.MAIN_HAND ? this.offHandItem : this.mainHandItem;

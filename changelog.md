@@ -5,6 +5,8 @@
 - Beginning of the items config refactor
 
 - AppleSkin support
+
+- New enchantment effect component: `combatify:shield_effectiveness`, modifies the effectiveness of the blocking type.
 ***
 #### Config Changes:
 ***
@@ -17,6 +19,8 @@
 - Added the `entities` block to the items config. Controls aspects of certain entities, currently `attack_interval`, `shield_disable_time`, and `is_misc_entity`.
 
 - Items config refactor, internally now maintains all individual changes, and tags can now be used as a discriminator for items and entities (and multiple tags, if you fancy)
+
+- New blocking type factory: `combatify:original_sword`, uses sword mechanics from 1.7 (and 1.8, to my knowledge)
 ***
 #### Fixes:
 ***
