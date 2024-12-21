@@ -4,10 +4,12 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -46,16 +48,20 @@ public class SwordBlockingType extends PercentageBlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
+	public float getShieldBlockDamageValue(ItemStack stack, RandomSource random) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
-			if (configurableItemData.blocker().blockStrength() != null)
-				return (float) (configurableItemData.blocker().blockStrength() / 100.0);
+			if (configurableItemData.blocker().blockStrength() != null) {
+				float strengthIncrease = CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, 0, true);
+				return Math.min(CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, (float) (configurableItemData.blocker().blockStrength() / 100.0 + (strengthIncrease * 0.1)), false), 1);
+			}
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
 		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Math.max(strengthIncrease, -3);
-		return Math.min(0.3F + (strengthIncrease * 0.1F), 1);
+		strengthIncrease = CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, strengthIncrease, true);
+
+		return Math.min(CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, 0.3F + (strengthIncrease * 0.1F), false), 1);
 	}
 	@Override
 	public double getShieldKnockbackResistanceValue(ItemStack stack) {

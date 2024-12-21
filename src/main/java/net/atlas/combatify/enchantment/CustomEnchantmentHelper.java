@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.effects.AddValue;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
 import java.util.Optional;
@@ -28,6 +29,19 @@ public class CustomEnchantmentHelper {
 		MutableFloat mutableFloat = new MutableFloat(1);
 		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().modifyArmorEffectivness(serverLevel, i, itemStack, entity, damageSource, mutableFloat));
 		return -(mutableFloat.floatValue() - 1);
+	}
+	public static float modifyShieldEffectiveness(ItemStack itemStack, RandomSource randomSource, float value) {
+		MutableFloat mutableFloat = new MutableFloat(value);
+		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS).forEach(enchantmentValueEffect -> mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()))));
+		return mutableFloat.floatValue();
+	}
+	public static float modifyShieldEffectiveness(ItemStack itemStack, RandomSource randomSource, float value, boolean add) {
+		MutableFloat mutableFloat = new MutableFloat(value);
+		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS).forEach(enchantmentValueEffect -> {
+			if (enchantmentValueEffect instanceof AddValue && add) mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()));
+			else if (!(enchantmentValueEffect instanceof AddValue || add)) mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()));
+		}));
+		return mutableFloat.floatValue();
 	}
 	public static float modifyDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float baseDamage, Operation<Float> original) {
 		label1: {

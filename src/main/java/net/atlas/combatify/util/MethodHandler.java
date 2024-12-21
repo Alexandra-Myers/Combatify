@@ -353,6 +353,7 @@ public class MethodHandler {
 		double x = target.getX() - attacker.getX();
 		double z = target.getZ() - attacker.getZ();
 		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
+		target.blockUsingShield(attacker);
 		if (((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType().isToolBlocker()) {
 			MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 			return;

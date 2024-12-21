@@ -3,6 +3,7 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -32,7 +33,7 @@ public class EmptyBlockingType extends BlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
+	public float getShieldBlockDamageValue(ItemStack stack, RandomSource random) {
 		return 0;
 	}
 

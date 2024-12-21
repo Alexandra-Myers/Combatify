@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -52,7 +53,7 @@ public abstract class BlockingType {
 				Codec.BOOL.optionalFieldOf("default_kb_mechanics", true).forGetter(BlockingType::defaultKbMechanics),
 				Codec.BOOL.optionalFieldOf("has_shield_delay", true).forGetter(BlockingType::hasDelay))
 			.apply(instance, Factory::create));
-	public static final Codec<BlockingType> CODEC = Codec.withAlternative(MODIFY, CREATE);
+	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
 	private final String name;
 	private final boolean canBeDisabled;
 	private final boolean canCrouchBlock;
@@ -122,14 +123,14 @@ public abstract class BlockingType {
 	}
 
 	public abstract void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl);
-	public abstract float getShieldBlockDamageValue(ItemStack stack);
+	public abstract float getShieldBlockDamageValue(ItemStack stack, RandomSource random);
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
 	public abstract @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand);
 	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
 		consumer.accept(CommonComponents.EMPTY);
 		consumer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
-		float f = getShieldBlockDamageValue(stack);
+		float f = getShieldBlockDamageValue(stack, player.getRandom());
 		double g = getShieldKnockbackResistanceValue(stack);
 		consumer.accept(CommonComponents.space().append(
 			Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),

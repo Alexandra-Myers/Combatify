@@ -7,11 +7,14 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ExtendedTier;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class TestBlockingType extends SwordBlockingType {
@@ -50,6 +53,12 @@ public class TestBlockingType extends SwordBlockingType {
 		if (ExtendedTier.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;
+	}
+
+	@Override
+	public boolean canUse(Level world, Player user, InteractionHand hand) {
+		ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
+		return hand != InteractionHand.OFF_HAND && oppositeStack.isEmpty();
 	}
 
 	@Override

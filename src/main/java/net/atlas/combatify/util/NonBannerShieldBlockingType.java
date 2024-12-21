@@ -2,6 +2,8 @@ package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
 public class NonBannerShieldBlockingType extends ShieldBlockingType {
@@ -16,15 +18,15 @@ public class NonBannerShieldBlockingType extends ShieldBlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
+	public float getShieldBlockDamageValue(ItemStack stack, RandomSource random) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
 			if (configurableItemData.blocker().blockStrength() != null) {
-				return configurableItemData.blocker().blockStrength().floatValue();
+				return CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, configurableItemData.blocker().blockStrength().floatValue());
 			}
 		}
 
-        return 5.0F;
+        return CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, 5.0F);
 	}
 
 	@Override

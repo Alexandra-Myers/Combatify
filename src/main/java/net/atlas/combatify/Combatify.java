@@ -78,6 +78,7 @@ public class Combatify implements ModInitializer {
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 	public static final BlockingType.Factory<SwordBlockingType> SWORD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("sword"), SwordBlockingType::new);
+	public static final BlockingType.Factory<OldSwordBlockingType> OLD_SWORD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("original_sword"), OldSwordBlockingType::new);
 	public static final BlockingType.Factory<ShieldBlockingType> SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("shield"), ShieldBlockingType::new);
 	public static final BlockingType.Factory<NonBannerShieldBlockingType> NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("shield_no_banner"), NonBannerShieldBlockingType::new);
 	public static final BlockingType.Factory<CurrentShieldBlockingType> CURRENT_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("current_shield"), CurrentShieldBlockingType::new);

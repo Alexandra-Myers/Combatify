@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class CustomEnchantmentEffectComponents {
+	public static DataComponentType<List<EnchantmentValueEffect>> SHIELD_EFFECTIVENESS = register(
+		"combatify:shield_effectiveness", builder -> builder.persistent(EnchantmentValueEffect.CODEC.listOf())
+	);
 	public static DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> SHIELD_DISABLE = register(
 		"combatify:shield_disable_time", builder -> builder.persistent(ConditionalEffect.codec(EnchantmentValueEffect.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
 	);
@@ -22,7 +25,9 @@ public class CustomEnchantmentEffectComponents {
 		);
 	}
 	public static void registerEnchantmentEffectComponents() {
-		if (FabricLoader.getInstance().isModLoaded("polymer-core"))
+		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
+			PolymerComponent.registerEnchantmentEffectComponent(SHIELD_EFFECTIVENESS);
 			PolymerComponent.registerEnchantmentEffectComponent(SHIELD_DISABLE);
+		}
 	}
 }

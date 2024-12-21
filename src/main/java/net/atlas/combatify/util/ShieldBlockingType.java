@@ -4,8 +4,10 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -38,7 +40,7 @@ public class ShieldBlockingType extends BlockingType {
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
 		if (MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem.getItem()))
 			return;
-		float blockStrength = this.getShieldBlockDamageValue(blockingItem);
+		float blockStrength = this.getShieldBlockDamageValue(blockingItem, instance.getRandom());
 		boolean hurt = false;
 		g.set(Math.min(blockStrength, amount.get()));
 		if (!source.is(DamageTypeTags.IS_PROJECTILE) && !source.is(DamageTypeTags.IS_EXPLOSION)) {
@@ -68,16 +70,16 @@ public class ShieldBlockingType extends BlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
+	public float getShieldBlockDamageValue(ItemStack stack, RandomSource random) {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
 		if (configurableItemData != null) {
 			if (configurableItemData.blocker().blockStrength() != null) {
-				return configurableItemData.blocker().blockStrength().floatValue();
+				return CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, configurableItemData.blocker().blockStrength().floatValue());
 			}
 		}
 		BannerPatternLayers bannerPatternLayers = stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
 		DyeColor dyeColor = stack.get(DataComponents.BASE_COLOR);
-        return !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 10.0F : 5.0F;
+        return CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, !bannerPatternLayers.layers().isEmpty() || dyeColor != null ? 10.0F : 5.0F);
 	}
 
 	@Override

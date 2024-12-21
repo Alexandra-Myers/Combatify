@@ -4,10 +4,12 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,8 +61,8 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
-		return 1;
+	public float getShieldBlockDamageValue(ItemStack stack, RandomSource random) {
+		return CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, 1);
 	}
 
 	@Override
@@ -75,7 +77,14 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 
     @Override
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
+		float f = getShieldBlockDamageValue(stack, player.getRandom());
 		double g = getShieldKnockbackResistanceValue(stack);
+		if (f < 1.0) {
+			consumer.accept(CommonComponents.space().append(
+				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
+					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(f),
+					getStrengthTranslationKey())).withStyle(ChatFormatting.DARK_GREEN));
+		}
 		if (g > 0.0) {
 			consumer.accept(CommonComponents.EMPTY);
 			consumer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
