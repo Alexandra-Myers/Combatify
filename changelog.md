@@ -3,6 +3,8 @@
 - Non-player cooldowns.
 
 - Beginning of the items config refactor
+
+- AppleSkin support
 ***
 #### Config Changes:
 ***
@@ -19,3 +21,5 @@
 #### Fixes:
 ***
 - Shield durability is now taken in most cases where it was not before
+
+- Fixed third-person shield blocking animation
