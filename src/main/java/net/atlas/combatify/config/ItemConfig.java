@@ -13,7 +13,8 @@ import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.Tier;
+import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.WeaponType;
@@ -28,6 +29,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,7 +50,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
 
@@ -73,22 +74,22 @@ public class ItemConfig extends AtlasConfig {
 	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
-		buf.writeVarInt(ExtendedTier.getLevel(tier));
-		buf.writeVarInt(tier.getEnchantmentValue());
-		buf.writeVarInt(tier.getUses());
-		buf.writeFloat(tier.getAttackDamageBonus());
-		buf.writeFloat(tier.getSpeed());
-		Ingredient.CONTENTS_STREAM_CODEC.encode(buf, tier.getRepairIngredient());
-		buf.writeResourceLocation(tier.getIncorrectBlocksForDrops().location());
+		buf.writeVarInt(tier.level());
+		buf.writeVarInt(tier.enchantmentValue());
+		buf.writeVarInt(tier.durability());
+		buf.writeFloat(tier.attackDamageBonus());
+		buf.writeFloat(tier.speed());
+		buf.writeResourceLocation(tier.repairItems().location());
+		buf.writeResourceLocation(tier.incorrectBlocksForDrops().location());
 	}, (buf) -> {
 		int level = buf.readVarInt();
 		int enchantLevel = buf.readVarInt();
 		int uses = buf.readVarInt();
 		float damage = buf.readFloat();
 		float speed = buf.readFloat();
-		Ingredient repairIngredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
+		TagKey<Item> repairItems = TagKey.create(Registries.ITEM, buf.readResourceLocation());
 		TagKey<Block> incorrect = TagKey.create(Registries.BLOCK, buf.readResourceLocation());
-		return ExtendedTier.create(level, enchantLevel, uses, damage, speed, repairIngredient, incorrect);
+		return ToolMaterialWrapper.create(level, enchantLevel, uses, damage, speed, repairItems, incorrect);
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> REGISTERED_WEAPON_TYPE_STREAM_CODEC = StreamCodec.of((buf, weaponType) -> {
 		buf.writeUtf(weaponType.name());
@@ -135,7 +136,7 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeCollection(wrapper.tagKeys, (buf1, tagKey) -> buf.writeResourceLocation(tagKey.location()));
 		ITEM_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
 	}, buf -> {
-		List<Item> items = buf.readList(buf1 -> BuiltInRegistries.ITEM.get(buf1.readResourceLocation()));
+		List<Item> items = buf.readList(buf1 -> BuiltInRegistries.ITEM.get(buf1.readResourceLocation()).get().value());
 		List<TagKey<Item>> tags = buf.readList(buf1 -> TagKey.create(Registries.ITEM, buf1.readResourceLocation()));
 		ConfigurableItemData configurableItemData = ITEM_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
 		return new ConfigDataWrapper<>(items, tags, configurableItemData);
@@ -145,7 +146,7 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeCollection(wrapper.tagKeys, (buf1, tagKey) -> buf.writeResourceLocation(tagKey.location()));
 		ENTITY_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
 	}, buf -> {
-		List<EntityType<?>> items = buf.readList(buf1 -> BuiltInRegistries.ENTITY_TYPE.get(buf1.readResourceLocation()));
+		List<EntityType<?>> items = buf.readList(buf1 -> BuiltInRegistries.ENTITY_TYPE.get(buf1.readResourceLocation()).get().value());
 		List<TagKey<EntityType<?>>> tags = buf.readList(buf1 -> TagKey.create(Registries.ENTITY_TYPE, buf1.readResourceLocation()));
 		ConfigurableEntityData configurableEntityData = ENTITY_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
 		return new ConfigDataWrapper<>(items, tags, configurableEntityData);
@@ -160,7 +161,7 @@ public class ItemConfig extends AtlasConfig {
 	});
 	public static Formula armourCalcs = null;
 	public static final Codec<Holder<EntityType<?>>> ENTITY_TYPE_CODEC = BuiltInRegistries.ENTITY_TYPE.holderByNameCodec();
-	public static Codec<BiMap<String, ExtendedTier.ExtendedTierImpl>> TIERS_CODEC = Codec.unboundedMap(Codec.STRING, ExtendedTier.CODEC).xmap(HashBiMap::create, Function.identity());
+	public static Codec<BiMap<String, ToolMaterialWrapper>> TIERS_CODEC = Codec.unboundedMap(Codec.STRING, ToolMaterialWrapper.CODEC).xmap(HashBiMap::create, Function.identity());
 
 	public ItemConfig() {
 		super(id("combatify-items"));
@@ -218,7 +219,7 @@ public class ItemConfig extends AtlasConfig {
 		if (items instanceof JsonArray itemArray) {
 			itemArray.asList().forEach(jsonElement -> {
 				if (jsonElement instanceof JsonObject jsonObject) {
-					List<Item> itemList = Codec.withAlternative(ItemStack.ITEM_NON_AIR_CODEC.listOf(), ItemStack.ITEM_NON_AIR_CODEC, Collections::singletonList)
+					List<Item> itemList = Codec.withAlternative(Item.CODEC.listOf(), Item.CODEC, Collections::singletonList)
 						.xmap(holders -> holders.stream().map(Holder::value).toList(), item -> item.stream().map(item1 -> (Holder<Item>) item1.builtInRegistryHolder()).toList()).lenientOptionalFieldOf("name", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
 					Codec<TagKey<Item>> alternating = Codec.withAlternative(TagKey.codec(Registries.ITEM), TagKey.hashedCodec(Registries.ITEM));
 					List<TagKey<Item>> tagsList = Codec.withAlternative(alternating.listOf(), alternating, Collections::singletonList).lenientOptionalFieldOf("tag", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
@@ -303,25 +304,24 @@ public class ItemConfig extends AtlasConfig {
 
 	public static Tier getTier(String s) {
 		return switch (s.toLowerCase()) {
-			case "wood" -> Tiers.WOOD;
-			case "stone" -> Tiers.STONE;
-			case "iron" -> Tiers.IRON;
-			case "gold" -> Tiers.GOLD;
-			case "diamond" -> Tiers.DIAMOND;
-			case "netherite" -> Tiers.NETHERITE;
+			case "wood" -> Tier.class.cast(ToolMaterial.WOOD);
+			case "stone" -> Tier.class.cast(ToolMaterial.STONE);
+			case "iron" -> Tier.class.cast(ToolMaterial.IRON);
+			case "gold" -> Tier.class.cast(ToolMaterial.GOLD);
+			case "diamond" -> Tier.class.cast(ToolMaterial.DIAMOND);
+			case "netherite" -> Tier.class.cast(ToolMaterial.NETHERITE);
 			default -> getTierRaw(s);
 		};
 	}
 	public static String getTierName(Tier tier) {
-		if (tier instanceof Tiers vanilla) {
-			return switch (vanilla) {
-				case WOOD -> "wood";
-				case GOLD -> "gold";
-				case STONE -> "stone";
-				case IRON -> "iron";
-				case DIAMOND -> "diamond";
-				case NETHERITE -> "netherite";
-			};
+		if (ToolMaterial.class.isInstance(tier)) {
+			ToolMaterial material = ToolMaterial.class.cast(tier);
+			if (material.equals(ToolMaterial.NETHERITE)) return "netherite";
+			if (material.equals(ToolMaterial.DIAMOND)) return "diamond";
+			if (material.equals(ToolMaterial.IRON)) return "iron";
+			if (material.equals(ToolMaterial.STONE)) return "stone";
+			if (material.equals(ToolMaterial.GOLD)) return "gold";
+			return "wood";
 		}
 		return tiers.inverse().get(tier);
 	}
@@ -451,11 +451,12 @@ public class ItemConfig extends AtlasConfig {
 					setDurability(builder, item, durability);
 					damageOverridden = true;
 				}
+				HolderGetter<Block> holderGetter = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
 				if (tool != null) builder.set(DataComponents.TOOL, tool);
-				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, tier.createToolProperties(mineable));
+				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(holderGetter.getOrThrow(tier.incorrectBlocksForDrops())), Tool.Rule.minesAndDrops(holderGetter.getOrThrow(mineable), tier.speed())), 1.0F, 1));
 			}
 			if (!damageOverridden && ((ItemExtensions)item).getTierFromConfig().isPresent()) {
-				int value = ((ItemExtensions) item).getTierFromConfig().get().getUses();
+				int value = ((ItemExtensions) item).getTierFromConfig().get().durability();
 				if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
 					value *= 2;
 				setDurability(builder, item, value);
@@ -467,10 +468,7 @@ public class ItemConfig extends AtlasConfig {
 	@SuppressWarnings("ALL")
 	public void updateModifiers(DataComponentMap.Builder builder, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
 		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		ItemAttributeModifiers def = item.getDefaultAttributeModifiers();
 		ItemAttributeModifiers original = originalModifiers.get(item);
-		if (modifier.equals(ItemAttributeModifiers.EMPTY) && !def.equals(ItemAttributeModifiers.EMPTY))
-			modifier = def;
 		if (!original.equals(ItemAttributeModifiers.EMPTY))
 			modifier = original;
 		modifier = ((ItemExtensions)item).modifyAttributeModifiers(modifier);
@@ -506,22 +504,6 @@ public class ItemConfig extends AtlasConfig {
 					AtomicReference<ItemAttributeModifiers.Entry> toughness = new AtomicReference<>();
 					boolean modKnockbackResistance = false;
 					AtomicReference<ItemAttributeModifiers.Entry> knockbackResistance = new AtomicReference<>();
-					def.modifiers().forEach(entry -> {
-						if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
-							damage.set(entry);
-						else if (entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE))
-							reach.set(entry);
-						else if (entry.attribute().is(Attributes.ATTACK_SPEED))
-							speed.set(entry);
-						else if (entry.attribute().is(Attributes.ARMOR))
-							defense.set(entry);
-						else if (entry.attribute().is(Attributes.ARMOR_TOUGHNESS))
-							toughness.set(entry);
-						else if (entry.attribute().is(Attributes.KNOCKBACK_RESISTANCE))
-							knockbackResistance.set(entry);
-						else
-							itemAttributeBuilder.add(entry.attribute(), entry.modifier(), entry.slot());
-					});
 					modifier.modifiers().forEach(entry -> {
 						if (entry.attribute().is(Attributes.ATTACK_DAMAGE))
 							damage.set(entry);
@@ -564,8 +546,8 @@ public class ItemConfig extends AtlasConfig {
 						itemAttributeBuilder.add(reach.get().attribute(), reach.get().modifier(), reach.get().slot());
 					ResourceLocation resourceLocation = ResourceLocation.withDefaultNamespace("armor.any");
 					EquipmentSlotGroup slotGroup = EquipmentSlotGroup.ARMOR;
-					if (item instanceof Equipable equipable)
-						slotGroup = EquipmentSlotGroup.bySlot(equipable.getEquipmentSlot());
+					if (item.components().has(DataComponents.EQUIPPABLE))
+						slotGroup = EquipmentSlotGroup.bySlot(item.components().get(DataComponents.EQUIPPABLE).slot());
 					resourceLocation = switch (slotGroup) {
 						case HEAD -> ResourceLocation.withDefaultNamespace("armor.helmet");
 						case CHEST -> ResourceLocation.withDefaultNamespace("armor.chestplate");

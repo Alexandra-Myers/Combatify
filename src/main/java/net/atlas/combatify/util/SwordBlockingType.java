@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
@@ -57,7 +57,7 @@ public class SwordBlockingType extends PercentageBlockingType {
 			}
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
+		float strengthIncrease = ToolMaterialWrapper.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Math.max(strengthIncrease, -3);
 		strengthIncrease = CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, strengthIncrease, true);
 

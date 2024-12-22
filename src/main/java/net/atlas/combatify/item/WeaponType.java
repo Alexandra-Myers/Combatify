@@ -5,7 +5,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -13,8 +14,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import java.util.Locale;
@@ -94,8 +93,8 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 
 	public double getDamage(Tier tier) {
 		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;
-		double damageBonus = tier.getAttackDamageBonus() + modifier;
-		boolean isNotTier1 = tier != Tiers.WOOD && tier != Tiers.GOLD && ExtendedTier.getLevel(tier) > 0;
+		double damageBonus = tier.attackDamageBonus() + modifier;
+		boolean isNotTier1 = tier.level() > 0;
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
 			if (configurableWeaponData.attackDamage() != null) {
@@ -158,13 +157,13 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 			return modifier + damageOffset;
 		else if (useAxeDamage) {
 			if (!Combatify.CONFIG.ctsAttackBalancing())
-				return (isNotTier1 ? tier == Tiers.NETHERITE || ExtendedTier.getLevel(tier) >= 4 ? 8 : 7 : 5) + modifier + (ExtendedTier.getLevel(tier) >= 4 && tier != Tiers.NETHERITE ? damageBonus - 3 : 0);
+				return (isNotTier1 ? tier.level() >= 4 ? 8 : 7 : 5) + modifier + (tier.level() >= 4 && !ItemConfig.getTier("netherite").equals(tier) ? damageBonus - 3 : 0);
 			else
 				return damageBonus + 3.0;
 		} else if (useHoeDamage) {
-			if (tier != Tiers.IRON && tier != Tiers.DIAMOND && ExtendedTier.getLevel(tier) != 2 && ExtendedTier.getLevel(tier) != 3) {
-				if (tier == Tiers.NETHERITE || ExtendedTier.getLevel(tier) >= 4)
-					return tier == Tiers.NETHERITE ? 2 + modifier : 2 + damageBonus - 3;
+			if (tier.level() != 2 && tier.level() != 3) {
+				if (tier.level() >= 4)
+					return ItemConfig.getTier("netherite").equals(tier) ? 2 + modifier : damageBonus - 1;
 
 				return modifier;
 			}
@@ -175,11 +174,11 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 
 	public double speedFormula(Tier tier) {
 		if (useHoeSpeed) {
-			if (tier == Tiers.WOOD)
+			if (ItemConfig.getTier("wood").equals(tier))
 				return -0.5;
-			else if (tier == Tiers.IRON)
+			else if (tier.level() == 2 || ItemConfig.getTier("iron").equals(tier))
 				return 0.5;
-			else if (tier == Tiers.DIAMOND || tier == Tiers.GOLD || tier == Tiers.NETHERITE || ExtendedTier.getLevel(tier) >= 4)
+			else if (tier.level() >= 3 || ItemConfig.getTier("gold").equals(tier))
 				return 1.0;
 			else
 				return 0.0;

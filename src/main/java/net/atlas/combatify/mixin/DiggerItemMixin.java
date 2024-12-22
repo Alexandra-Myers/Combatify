@@ -11,10 +11,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(DiggerItem.class)
-public abstract class DiggerItemMixin extends TieredItem implements WeaponWithType {
-	public DiggerItemMixin(Tier tier, Properties properties) {
-		super(tier, properties);
+public abstract class DiggerItemMixin extends Item implements WeaponWithType {
+	public DiggerItemMixin(Properties properties) {
+		super(properties);
 	}
+
 	@WrapOperation(method = "postHurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
 	public void damage(ItemStack instance, int amount, LivingEntity livingEntity, EquipmentSlot equipmentSlot, Operation<Void> original) {

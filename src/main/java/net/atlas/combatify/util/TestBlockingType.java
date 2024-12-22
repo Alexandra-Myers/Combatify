@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
@@ -50,7 +50,7 @@ public class TestBlockingType extends SwordBlockingType {
 				return configurableItemData.blocker().blockKbRes();
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		if (ExtendedTier.getLevel(tier) >= 4)
+		if (ToolMaterialWrapper.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;
 	}

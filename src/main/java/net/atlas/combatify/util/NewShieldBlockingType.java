@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -76,7 +76,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 			}
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = ExtendedTier.getLevel(tier) / 2F - 2F;
+		float strengthIncrease = ToolMaterialWrapper.getLevel(tier) / 2F - 2F;
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		strengthIncrease = CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, strengthIncrease, true);
 
@@ -91,7 +91,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 				return configurableItemData.blocker().blockKbRes();
 		}
 		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		if (ExtendedTier.getLevel(tier) >= 4)
+		if (ToolMaterialWrapper.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;
 	}

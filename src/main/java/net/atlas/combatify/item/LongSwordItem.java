@@ -2,7 +2,7 @@ package net.atlas.combatify.item;
 
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.BlockPos;
@@ -68,9 +68,9 @@ public class LongSwordItem extends TieredItem implements WeaponWithType {
 				return piercingLevel;
 		}
 		Tier tier = getConfigTier();
-		return tier == Tiers.NETHERITE || ExtendedTier.getLevel(tier) >= 4 ? 0.2
-			: tier == Tiers.GOLD || tier == Tiers.WOOD || tier == Tiers.STONE || ExtendedTier.getLevel(tier) <= 1 ? 0.0
-			: (0.1 * (ExtendedTier.getLevel(tier) - 1));
+		return tier == Tiers.NETHERITE || ToolMaterialWrapper.getLevel(tier) >= 4 ? 0.2
+			: tier == Tiers.GOLD || tier == Tiers.WOOD || tier == Tiers.STONE || ToolMaterialWrapper.getLevel(tier) <= 1 ? 0.0
+			: (0.1 * (ToolMaterialWrapper.getLevel(tier) - 1));
 	}
 
 	@Override

@@ -25,11 +25,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.TieredItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -45,13 +43,10 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@Shadow
 	public abstract void renderItem(LivingEntity livingEntity, ItemStack itemStack, ItemDisplayContext displayContext, boolean bl, PoseStack poseStack, MultiBufferSource multiBufferSource, int i);
 
-	@Shadow
-	private ItemStack offHandItem;
-
-	@Shadow
-	private ItemStack mainHandItem;
-
 	@Shadow @Final private Minecraft minecraft;
+
+	@Shadow
+	protected abstract void swingArm(float f, float g, PoseStack poseStack, int i, HumanoidArm humanoidArm);
 
 	@Inject(method = "renderArmWithItem", at = @At("HEAD"), cancellable = true)
 	public void onRenderArmWithItem(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
@@ -65,15 +60,18 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			ci.cancel();
 		}
 		if (CookeyMod.getConfig().animations().enableToolBlocking().get()) {
-			ItemStack otherHandItem = interactionHand == InteractionHand.MAIN_HAND ? this.offHandItem : this.mainHandItem;
-			if (itemStack.getItem() instanceof ShieldItem && (otherHandItem.getItem() instanceof TieredItem && (!blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem))) {
+            if (itemStack.getItem() instanceof ShieldItem && !blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem) {
 				ci.cancel();
 			}
 
-			if (abstractClientPlayer.getUsedItemHand() != interactionHand && (!blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem) && itemStack.getItem() instanceof TieredItem) {
+			if (abstractClientPlayer.getUsedItemHand() != interactionHand && !blockingItem.isEmpty() && blockingItem.getItem() instanceof ShieldItem) {
 				poseStack.pushPose();
 				this.applyItemArmTransform(poseStack, humanoidArm, i);
-				this.applyItemBlockTransform(poseStack, humanoidArm);
+				int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
+				poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
+				poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
+				poseStack.mulPose(Axis.YP.rotationDegrees(reverse * 13.365F));
+				poseStack.mulPose(Axis.ZP.rotationDegrees(reverse * 78.05F));
 				if (CookeyMod.getConfig().animations().swingAndUseItem().get()) {
 					this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
 				}
@@ -83,19 +81,6 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 				poseStack.popPose();
 				ci.cancel();
 			}
-		}
-		if (!blockingItem.isEmpty() && MethodHandler.getBlockingItem(abstractClientPlayer).useHand() == interactionHand && ((ItemExtensions) blockingItem.getItem()).combatify$getBlockingType().isToolBlocker() && (!((ItemExtensions)blockingItem.getItem()).combatify$getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking())) {
-			poseStack.pushPose();
-			applyItemArmTransform(poseStack, humanoidArm, i);
-			applyItemBlockTransform(poseStack, humanoidArm);
-			if (CookeyMod.getConfig().animations().swingAndUseItem().get()) {
-				this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
-			}
-			boolean isRightHand = humanoidArm == HumanoidArm.RIGHT;
-			renderItem(abstractClientPlayer, itemStack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, multiBufferSource, j);
-
-			poseStack.popPose();
-			ci.cancel();
 		}
 	}
 
@@ -107,11 +92,21 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 	@WrapOperation(method = "renderArmWithItem",
 		at = @At(
 			value = "INVOKE",
-			target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;applyItemArmAttackTransform(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/entity/HumanoidArm;F)V",
+			target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;swingArm(FFLcom/mojang/blaze3d/vertex/PoseStack;ILnet/minecraft/world/entity/HumanoidArm;)V",
 			ordinal = 1))
-	public void cancelAttackTransform(ItemInHandRenderer instance, PoseStack poseStack, HumanoidArm humanoidArm, float f, Operation<Void> original) {
+	public void cancelAttackTransform(ItemInHandRenderer instance, float f, float g, PoseStack poseStack, int i, HumanoidArm humanoidArm, Operation<Void> original) {
 		if (!CookeyMod.getConfig().animations().swingAndUseItem().get())
-			original.call(instance, poseStack, humanoidArm, f);
+			original.call(instance, f, g, poseStack, i, humanoidArm);
+	}
+
+	@WrapOperation(method = "renderArmWithItem",
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;swingArm(FFLcom/mojang/blaze3d/vertex/PoseStack;ILnet/minecraft/world/entity/HumanoidArm;)V",
+			ordinal = 2))
+	public void cancelAttackTransform0(ItemInHandRenderer instance, float f, float g, PoseStack poseStack, int i, HumanoidArm humanoidArm, Operation<Void> original) {
+		if (!CookeyMod.getConfig().animations().swingAndUseItem().get())
+			original.call(instance, f, g, poseStack, i, humanoidArm);
 	}
 
 	@Inject(method = "renderArmWithItem",
@@ -124,20 +119,8 @@ public abstract class ItemInHandMixin implements IItemInHandRenderer {
 			? abstractClientPlayer.getMainArm()
 			: abstractClientPlayer.getMainArm().getOpposite();
 		if (CookeyMod.getConfig().animations().swingAndUseItem().get() && !abstractClientPlayer.isAutoSpinAttack()) {
-			this.applyItemArmAttackTransform(poseStack, humanoidArm, h);
+			this.swingArm(h, i, poseStack, humanoidArm == HumanoidArm.RIGHT ? 1 : -1, humanoidArm);
 		}
-	}
-
-    /* Values from 15w33b, thanks to Fuzss for providing them
-    https://github.com/Fuzss/swordblockingcombat/blob/1.15/src/main/java/com/fuzs/swordblockingcombat/client/handler/RenderBlockingHandler.java
-     */
-	@Unique
-	public void applyItemBlockTransform(PoseStack poseStack, HumanoidArm humanoidArm) {
-		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
-		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
-		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
-		poseStack.mulPose(Axis.YP.rotationDegrees(reverse * 13.365F));
-		poseStack.mulPose(Axis.ZP.rotationDegrees(reverse * 78.05F));
 	}
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
 	public float modifyArmHeight(float strengthScale) {

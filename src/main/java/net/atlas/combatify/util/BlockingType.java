@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -125,7 +125,7 @@ public abstract class BlockingType {
 	public abstract void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl);
 	public abstract float getShieldBlockDamageValue(ItemStack stack, RandomSource random);
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
-	public abstract @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand);
+	public abstract @NotNull InteractionResult use(Level world, Player user, InteractionHand hand);
 	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
 		consumer.accept(CommonComponents.EMPTY);

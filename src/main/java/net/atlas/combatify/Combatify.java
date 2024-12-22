@@ -8,7 +8,7 @@ import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.extensions.ExtendedTier;
+import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -30,14 +30,12 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -130,7 +128,7 @@ public class Combatify implements ModInitializer {
 		UseItemCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand) -> {
 			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-			return InteractionResultHolder.pass(player.getItemInHand(hand));
+			return InteractionResult.PASS;
 		});
 
 		LOGGER.info("Init started.");
@@ -183,7 +181,7 @@ public class Combatify implements ModInitializer {
 		defaultTypes.put(blockingType.getName(), blockingType);
 		return registerBlockingType(blockingType);
 	}
-	public static void defineDefaultTier(String name, ExtendedTier tier) {
+	public static void defineDefaultTier(String name, Tier tier) {
 		defaultTiers.put(name, tier);
 		tiers.put(name, tier);
 	}
