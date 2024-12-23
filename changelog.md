@@ -9,10 +9,13 @@
 - New enchantment effect component: `combatify:shield_effectiveness`, modifies the effectiveness of the blocking type.
 
 - Added data components `combatify:blocking_level` and `combatify:piercing_level`. The former controls modifiers to the base blocking protection for the type, effective for all non-vanilla types.
+   * `combatify:blocking_level` is only used for unmodified blocking protection on the item. If the item's `damage_protection` is set, that exact value will be used, ignoring the component.
 
 - Removed integrated CookeyMod, now an optional dependency
 
 - The `minecraft:use_cooldown` component will apply in the few cases mobs use items.
+
+- For Beta 3 onwards, the items config will now be named `combatify-items-v2` to limit the amount of changes to existing configurations that need to be made, and to ensure v1 configurations will remain functional.
 ***
 #### Config Changes:
 ***
@@ -35,6 +38,11 @@
 - Removed `cooldown_after`, completely pointless in every way.
 
 - Prior `repair_ingredient` entries in the tiers and items block are now `repair_items` and are now tags instead of ingredients.
+
+- Split `mining_level` in the tier codec into `weapon_level` and `blocking_level` respectively.
+   * `weapon_level` controls the level as used for weapon type calculations, whereas `blocking_level` directly modifies the default `combatify:blocking_level` component.
+
+- Added the optional field `blocking_level` to the `blocking_information` codec. This takes precedence over the tier's `blocking_level` when used.
 ***
 #### Fixes:
 ***

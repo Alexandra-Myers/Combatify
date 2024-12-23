@@ -168,7 +168,7 @@ public class ItemConfig extends AtlasConfig {
 	public static Codec<BiMap<String, ToolMaterialWrapper>> TIERS_CODEC = Codec.unboundedMap(Codec.STRING, ToolMaterialWrapper.CODEC).xmap(HashBiMap::create, Function.identity());
 
 	public ItemConfig() {
-		super(id("combatify-items"));
+		super(id("combatify-items-v2"));
 		modify();
 	}
 
@@ -267,7 +267,7 @@ public class ItemConfig extends AtlasConfig {
 	}
 	@Override
 	protected InputStream getDefaultedConfig() {
-		return Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-items.json");
+		return Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-items-v2.json");
 	}
 
 	@Override
@@ -441,13 +441,13 @@ public class ItemConfig extends AtlasConfig {
 			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
 			boolean damageOverridden = false;
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
-			Tier tier = null;
 			boolean isConfiguredItem = configurableItemData != null;
 			if (isConfiguredItem) {
 				Integer durability = configurableItemData.armourStats().durability().getValue(item);
 				Integer maxStackSize = configurableItemData.stackSize();
 				Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
-				tier = configurableItemData.tier();
+				Float blockingLevel = configurableItemData.blocker().blockingLevel();
+				Tier tier = configurableItemData.tier();
 				TagKey<Block> mineable = configurableItemData.toolMineableTag();
 				Tool tool = configurableItemData.tool();
 				Enchantable enchantable = configurableItemData.enchantable();
@@ -471,6 +471,8 @@ public class ItemConfig extends AtlasConfig {
 					if ((configurableWeaponData = MethodHandler.forWeapon(item.combatify$getWeaponType())) != null && configurableWeaponData.piercingLevel() != null)
 						builder.set(CustomDataComponents.PIERCING_LEVEL, configurableWeaponData.piercingLevel().floatValue());
 				}
+				if (blockingLevel != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, blockingLevel);
+				else if (tier != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, tier.combatify$blockingLevel());
 				if (tool != null) builder.set(DataComponents.TOOL, tool);
 				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(BuiltInRegistries.BLOCK.getOrThrow(tier.incorrectBlocksForDrops())), Tool.Rule.minesAndDrops(BuiltInRegistries.BLOCK.getOrThrow(mineable), tier.speed())), 1.0F, 1));
 			}
@@ -480,13 +482,12 @@ public class ItemConfig extends AtlasConfig {
 					value *= 2;
 				setDurability(builder, item, value);
 			}
-			updateModifiers(builder, item, tier, isConfiguredItem, configurableItemData);
+			updateModifiers(builder, item, isConfiguredItem, configurableItemData);
 			((ItemAccessor) item).setComponents(builder.build());
 		}
 	}
 	@SuppressWarnings("ALL")
-	public void updateModifiers(DataComponentMap.Builder builder, Item item, @Nullable Tier tier, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
-		if (tier != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, tier.combatify$blockingLevel());
+	public void updateModifiers(DataComponentMap.Builder builder, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
 		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		ItemAttributeModifiers original = originalModifiers.get(item.builtInRegistryHolder());
 		if (!original.equals(ItemAttributeModifiers.EMPTY))

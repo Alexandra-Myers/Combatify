@@ -422,6 +422,7 @@ public class MethodHandler {
 			BlockingType blockingType = null;
 			Double blockStrength = null;
 			Double blockKbRes = null;
+			Float blockingLevel = null;
 			Enchantable enchantable = null;
 			Integer useDuration = null;
 			Double piercingLevel = null;
@@ -446,6 +447,7 @@ public class MethodHandler {
 				blockingType = conditionalChange(configurableItemData.blocker().blockingType(), blockingType);
 				blockStrength = conditionalChange(configurableItemData.blocker().blockStrength(), blockStrength);
 				blockKbRes = conditionalChange(configurableItemData.blocker().blockKbRes(), blockKbRes);
+				blockingLevel = conditionalChange(configurableItemData.blocker().blockingLevel(), blockingLevel);
 				durability = configurableItemData.armourStats().durability().isEmpty() ? durability : configurableItemData.armourStats().durability();
 				defense = configurableItemData.armourStats().defense().isEmpty() ? defense : configurableItemData.armourStats().defense();
 				toughness = conditionalChange(configurableItemData.armourStats().toughness(), toughness);
@@ -461,7 +463,7 @@ public class MethodHandler {
 				itemAttributeModifiers = configurableItemData.itemAttributeModifiers().equals(ItemAttributeModifiers.EMPTY) ? itemAttributeModifiers : configurableItemData.itemAttributeModifiers();
 			}
 			WeaponStats weaponStats = new WeaponStats(damage, speed, reach, chargedReach, piercingLevel, type, canSweep);
-			Blocker blocker = new Blocker(blockingType, blockStrength, blockKbRes);
+			Blocker blocker = new Blocker(blockingType, blockStrength, blockKbRes, blockingLevel);
 			ArmourStats armourStats = new ArmourStats(durability, defense, toughness, armourKbRes);
 			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, stackSize, cooldown, blocker, enchantable, useDuration, tier, armourStats, repairItems, toolMineable, tool, itemAttributeModifiers);
 			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
