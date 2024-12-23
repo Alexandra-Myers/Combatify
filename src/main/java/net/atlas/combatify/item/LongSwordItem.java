@@ -3,7 +3,6 @@ package net.atlas.combatify.item;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.Tier;
-import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.BlockPos;
@@ -51,9 +50,9 @@ public class LongSwordItem extends Item implements WeaponWithType {
 	}
 
 	public static float piercingLevelForTier(Tier tier) {
-		return ToolMaterialWrapper.getLevel(tier) >= 4 ? 0.2F
-			: ToolMaterialWrapper.getLevel(tier) <= 1 ? 0
-			: (0.1F * (ToolMaterialWrapper.getLevel(tier) - 1));
+		return tier.combatify$weaponLevel() >= 4 ? 0.2F
+			: tier.combatify$weaponLevel() <= 1 ? 0
+			: (0.1F * (tier.combatify$weaponLevel() - 1));
 	}
 
 	@Override

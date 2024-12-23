@@ -23,6 +23,8 @@ public interface ItemExtensions {
 	}
 
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
+		if (Combatify.originalModifiers.get(combatify$self().builtInRegistryHolder()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
+			Combatify.originalModifiers.put(combatify$self().builtInRegistryHolder(), original);
 		return original;
 	}
 

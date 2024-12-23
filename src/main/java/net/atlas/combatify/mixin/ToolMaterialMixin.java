@@ -60,7 +60,7 @@ public abstract class ToolMaterialMixin implements Tier {
 	public abstract TagKey<Item> repairItems();
 
 	@Override
-	public int combatify$level() {
+	public int combatify$weaponLevel() {
 		if (thisMaterial.equals(NETHERITE)) return 4;
 		if (thisMaterial.equals(DIAMOND)) return 3;
 		if (thisMaterial.equals(IRON)) return 2;
@@ -68,7 +68,16 @@ public abstract class ToolMaterialMixin implements Tier {
 		return 0;
 	}
 
-    @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ToolMaterial;<init>(Lnet/minecraft/tags/TagKey;IFFILnet/minecraft/tags/TagKey;)V"), index = 3)
+	@Override
+	public float combatify$blockingLevel() {
+		if (thisMaterial.equals(NETHERITE)) return 0;
+		if (thisMaterial.equals(DIAMOND)) return -0.5F;
+		if (thisMaterial.equals(IRON)) return -1;
+		if (thisMaterial.equals(STONE)) return -1.5F;
+		return -2;
+	}
+
+	@ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ToolMaterial;<init>(Lnet/minecraft/tags/TagKey;IFFILnet/minecraft/tags/TagKey;)V"), index = 3)
 	private static float modifyDamage(float f) {
 		if (f > 0 && Combatify.CONFIG.ctsAttackBalancing()) {
 			f -= 1;

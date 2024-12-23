@@ -18,7 +18,11 @@ public interface Tier {
 
 	TagKey<Item> repairItems();
 
-	default int combatify$level() {
+	default int combatify$weaponLevel() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
+
+	default float combatify$blockingLevel() {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 }

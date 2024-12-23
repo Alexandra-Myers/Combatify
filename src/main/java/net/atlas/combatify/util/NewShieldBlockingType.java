@@ -7,7 +7,6 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.Tier;
-import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -90,7 +89,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 				return configurableItemData.blocker().blockKbRes();
 		}
 		Tier tier = stack.getItem().getConfigTier();
-		if (ToolMaterialWrapper.getLevel(tier) >= 4)
+		if (tier.combatify$weaponLevel() >= 4)
 			return 0.5;
 		return 0.25;
 	}

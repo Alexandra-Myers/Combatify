@@ -76,7 +76,8 @@ public class ItemConfig extends AtlasConfig {
 	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
-		buf.writeVarInt(tier.combatify$level());
+		buf.writeFloat(tier.combatify$blockingLevel());
+		buf.writeVarInt(tier.combatify$weaponLevel());
 		buf.writeVarInt(tier.enchantmentValue());
 		buf.writeVarInt(tier.durability());
 		buf.writeFloat(tier.attackDamageBonus());
@@ -84,14 +85,15 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeResourceLocation(tier.repairItems().location());
 		buf.writeResourceLocation(tier.incorrectBlocksForDrops().location());
 	}, (buf) -> {
-		int level = buf.readVarInt();
+		float blockingLevel = buf.readFloat();
+		int weaponLevel = buf.readVarInt();
 		int enchantLevel = buf.readVarInt();
 		int uses = buf.readVarInt();
 		float damage = buf.readFloat();
 		float speed = buf.readFloat();
 		TagKey<Item> repairItems = TagKey.create(Registries.ITEM, buf.readResourceLocation());
 		TagKey<Block> incorrect = TagKey.create(Registries.BLOCK, buf.readResourceLocation());
-		return ToolMaterialWrapper.create(level, enchantLevel, uses, damage, speed, repairItems, incorrect);
+		return ToolMaterialWrapper.create(blockingLevel, weaponLevel, enchantLevel, uses, damage, speed, repairItems, incorrect);
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponType> REGISTERED_WEAPON_TYPE_STREAM_CODEC = StreamCodec.of((buf, weaponType) -> {
 		buf.writeUtf(weaponType.name());
@@ -484,7 +486,7 @@ public class ItemConfig extends AtlasConfig {
 	}
 	@SuppressWarnings("ALL")
 	public void updateModifiers(DataComponentMap.Builder builder, Item item, @Nullable Tier tier, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
-		if (tier != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, (float) (tier.combatify$level()) / 2F - 2F);
+		if (tier != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, tier.combatify$blockingLevel());
 		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		ItemAttributeModifiers original = originalModifiers.get(item.builtInRegistryHolder());
 		if (!original.equals(ItemAttributeModifiers.EMPTY))

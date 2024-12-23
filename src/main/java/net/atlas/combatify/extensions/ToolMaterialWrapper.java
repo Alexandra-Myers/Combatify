@@ -11,21 +11,23 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.Optional;
 
-public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implements Tier {
+public record ToolMaterialWrapper(ToolMaterial toolMaterial, int weaponLevel, float blockingLevel) implements Tier {
 	public static Codec<Tier> TOOL_MATERIAL_CODEC = Codec.STRING.xmap(ItemConfig::getTier, ItemConfig::getTierName);
 	public static Codec<ToolMaterialWrapper> BASE_CODEC = RecordCodecBuilder.create(instance ->
-		instance.group(Codec.INT.optionalFieldOf("mining_level").forGetter(extendedTier -> Optional.of(extendedTier.combatify$level())),
-				Codec.INT.optionalFieldOf("enchant_level").forGetter(extendedTier -> Optional.of(extendedTier.enchantmentValue())),
-				Codec.INT.optionalFieldOf("uses").forGetter(extendedTier -> Optional.of(extendedTier.durability())),
-				Codec.FLOAT.optionalFieldOf("attack_damage_bonus").forGetter(extendedTier -> Optional.of(extendedTier.attackDamageBonus())),
-				Codec.FLOAT.optionalFieldOf("mining_speed").forGetter(extendedTier -> Optional.of(extendedTier.speed())),
-				Codec.withAlternative(TagKey.codec(Registries.ITEM), TagKey.hashedCodec(Registries.ITEM)).optionalFieldOf("repair_items").forGetter(extendedTier -> Optional.of(extendedTier.repairItems())),
-				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).optionalFieldOf("incorrect_blocks").forGetter(extendedTier -> Optional.of(extendedTier.incorrectBlocksForDrops())),
+		instance.group(Codec.FLOAT.optionalFieldOf("blocking_level").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.combatify$blockingLevel())),
+				Codec.INT.optionalFieldOf("weapon_level").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.combatify$weaponLevel())),
+				Codec.INT.optionalFieldOf("enchant_level").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.enchantmentValue())),
+				Codec.INT.optionalFieldOf("uses").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.durability())),
+				Codec.FLOAT.optionalFieldOf("attack_damage_bonus").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.attackDamageBonus())),
+				Codec.FLOAT.optionalFieldOf("mining_speed").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.speed())),
+				Codec.withAlternative(TagKey.codec(Registries.ITEM), TagKey.hashedCodec(Registries.ITEM)).optionalFieldOf("repair_items").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.repairItems())),
+				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).optionalFieldOf("incorrect_blocks").forGetter(toolMaterialWrapper -> Optional.of(toolMaterialWrapper.incorrectBlocksForDrops())),
 				TOOL_MATERIAL_CODEC.fieldOf("base_tier").forGetter(toolMaterialWrapper -> toolMaterialWrapper))
 			.apply(instance, ToolMaterialWrapper::create));
 
 	public static Codec<ToolMaterialWrapper> FULL_CODEC = RecordCodecBuilder.create(instance ->
-		instance.group(Codec.INT.fieldOf("mining_level").forGetter(ToolMaterialWrapper::combatify$level),
+		instance.group(Codec.FLOAT.fieldOf("blocking_level").forGetter(ToolMaterialWrapper::combatify$blockingLevel),
+				Codec.INT.fieldOf("weapon_level").forGetter(ToolMaterialWrapper::combatify$weaponLevel),
 				Codec.INT.fieldOf("enchant_level").forGetter(ToolMaterialWrapper::enchantmentValue),
 				Codec.INT.fieldOf("uses").forGetter(ToolMaterialWrapper::durability),
 				Codec.FLOAT.fieldOf("attack_damage_bonus").forGetter(ToolMaterialWrapper::attackDamageBonus),
@@ -35,14 +37,11 @@ public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implemen
 			.apply(instance, ToolMaterialWrapper::create));
 
 	public static Codec<ToolMaterialWrapper> CODEC = Codec.withAlternative(FULL_CODEC, BASE_CODEC);
-	public static int getLevel(Tier tier) {
-		return tier.combatify$level();
+	public static ToolMaterialWrapper create(Optional<Float> blockingLevel, Optional<Integer> weaponLevel, Optional<Integer> enchantLevel, Optional<Integer> uses, Optional<Float> damage, Optional<Float> speed, Optional<TagKey<Item>> repairItems, Optional<TagKey<Block>> incorrect, Tier baseTier) {
+		return create(blockingLevel.orElse(baseTier.combatify$blockingLevel()), weaponLevel.orElse(baseTier.combatify$weaponLevel()), enchantLevel.orElse(baseTier.enchantmentValue()), uses.orElse(baseTier.durability()), damage.orElse(baseTier.attackDamageBonus()), speed.orElse(baseTier.speed()), repairItems.orElse(baseTier.repairItems()), incorrect.orElse(baseTier.incorrectBlocksForDrops()));
 	}
-	public static ToolMaterialWrapper create(Optional<Integer> level, Optional<Integer> enchantLevel, Optional<Integer> uses, Optional<Float> damage, Optional<Float> speed, Optional<TagKey<Item>> repairItems, Optional<TagKey<Block>> incorrect, Tier baseTier) {
-		return create(level.orElse(getLevel(baseTier)), enchantLevel.orElse(baseTier.enchantmentValue()), uses.orElse(baseTier.durability()), damage.orElse(baseTier.attackDamageBonus()), speed.orElse(baseTier.speed()), repairItems.orElse(baseTier.repairItems()), incorrect.orElse(baseTier.incorrectBlocksForDrops()));
-	}
-	public static ToolMaterialWrapper create(int level, int enchantLevel, int uses, float damage, float speed, TagKey<Item> repairItems, TagKey<Block> incorrect) {
-		return new ToolMaterialWrapper(new ToolMaterial(incorrect, uses, speed, damage, enchantLevel, repairItems), level);
+	public static ToolMaterialWrapper create(float blockingLevel, int weaponLevel, int enchantLevel, int uses, float damage, float speed, TagKey<Item> repairItems, TagKey<Block> incorrect) {
+		return new ToolMaterialWrapper(new ToolMaterial(incorrect, uses, speed, damage, enchantLevel, repairItems), weaponLevel, blockingLevel);
 	}
 
 	@Override
@@ -76,7 +75,12 @@ public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implemen
 	}
 
 	@Override
-	public int combatify$level() {
-		return level();
+	public int combatify$weaponLevel() {
+		return weaponLevel();
+	}
+
+	@Override
+	public float combatify$blockingLevel() {
+		return blockingLevel();
 	}
 }
