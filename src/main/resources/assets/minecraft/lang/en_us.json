@@ -1,13 +1,11 @@
 {
   "tag.item.minecraft.enchantable.axe": "Axe Enchantables",
   "tag.item.minecraft.enchantable.breach": "Breach Enchantables",
-  "attribute.name.player.entity_interaction_range": "Attack Reach",
-  "attribute.name.generic.shield_disable_time": "Shield Disable Time",
-  "attribute.name.generic.shield_disable_reduction": "Shield Disable Reduction",
-  "attribute.name.generic.shield_strength": "Shield Strength",
-  "attribute.name.generic.damage_protection": "Damage Protection",
-  "attribute.name.generic.shield_reduction": "Shield Damage Reduction",
-  "attribute.name.generic.damage_reduction": "Damage Reduction",
-  "attribute.name.generic.longsword_piercing": "Armor Piercing",
+  "attribute.name.entity_interaction_range": "Attack Reach",
+  "attribute.name.shield_strength": "Shield Strength",
+  "attribute.name.damage_protection": "Damage Protection",
+  "attribute.name.shield_reduction": "Shield Damage Reduction",
+  "attribute.name.damage_reduction": "Damage Reduction",
+  "attribute.name.armor_piercing": "Armor Piercing",
   "item.modifiers.use": "When used:"
 }

@@ -2,17 +2,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    " X",
-    " X",
-    " #"
+    "X",
+    "X",
+    "#"
   ],
   "key": {
-    "#": {
-      "item": "combatify:iron_knife"
-    },
-    "X": {
-      "item": "minecraft:iron_ingot"
-    }
+    "#": "combatify:iron_knife",
+    "X": "#minecraft:iron_tool_materials"
   },
   "result": {
     "count": 1,

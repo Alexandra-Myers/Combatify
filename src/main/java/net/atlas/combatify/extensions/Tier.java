@@ -2,7 +2,6 @@ package net.atlas.combatify.extensions;
 
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.block.Block;
 
 public interface Tier {
@@ -19,7 +18,7 @@ public interface Tier {
 
 	TagKey<Item> repairItems();
 
-	int level();
-
-	ToolMaterial asMaterial();
+	default int combatify$level() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 }

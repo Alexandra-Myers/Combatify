@@ -7,8 +7,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.MobExtensions;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.util.MethodHandler;
@@ -24,21 +22,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.atlas.combatify.util.MethodHandler.getPinchHealth;
 import static net.atlas.combatify.util.MethodHandler.shouldSprintToCloseInOnTarget;
 
 @Mixin(Mob.class)
-public abstract class MobMixin extends LivingEntity implements MobExtensions, LivingEntityExtensions {
+public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Unique
 	private double targetDistO = Integer.MAX_VALUE;
 	@Unique
@@ -50,6 +47,11 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions, Li
 	@Shadow
 	@Nullable
 	public abstract LivingEntity getTarget();
+
+	@Mutable
+	@Shadow
+	@Final
+	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
 	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
@@ -89,8 +91,8 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions, Li
 				sprintingMob.setSprinting(false);
 			}
 			if (tickCount % 5 == 0) {
-				if (!canGuard() && isGuarding()) stopGuarding();
-				else if (canGuard() && ((CombatTrackerAccessor)getCombatTracker()).isInCombat() && !isGuarding()) startGuarding();
+				if (!canGuard() && combatify$isGuarding()) stopGuarding();
+				else if (canGuard() && ((CombatTrackerAccessor)getCombatTracker()).isInCombat() && !combatify$isGuarding()) startGuarding();
 			}
 		}
 	}
@@ -107,7 +109,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions, Li
 
 	@Unique
 	protected boolean canGuard() {
-		return Combatify.CONFIG.mobsCanGuard() && onGround() && !((ItemExtensions)this.getOffhandItem().getItem()).combatify$getBlockingType().isEmpty() && !MethodHandler.getCooldowns(Mob.class.cast(this)).isOnCooldown(this.getOffhandItem().getItem());
+		return Combatify.CONFIG.mobsCanGuard() && onGround() && !this.getOffhandItem().getItem().combatify$getBlockingType().isEmpty() && !MethodHandler.getCooldowns(Mob.class.cast(this)).isOnCooldown(this.getOffhandItem());
 	}
 
 	@Unique
@@ -130,7 +132,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions, Li
 	}
 
 	@Override
-	public boolean isGuarding() {
+	public boolean combatify$isGuarding() {
 		return (this.entityData.get(DATA_MOB_FLAGS_ID) & 8) != 0;
 	}
 
@@ -140,16 +142,24 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions, Li
 	}
 
 	@Inject(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
-	public void resetSprint(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+	public void resetSprint(ServerLevel serverLevel, Entity entity, CallbackInfoReturnable<Boolean> cir) {
 		if (isSprinting()) setSprinting(false);
 	}
 
-	@WrapOperation(method = "populateDefaultEquipmentSlots", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EquipmentSlot;getType()Lnet/minecraft/world/entity/EquipmentSlot$Type;"))
-	public EquipmentSlot.Type fakeType(EquipmentSlot instance, Operation<EquipmentSlot.Type> original) {
-		if (Combatify.CONFIG.mobsCanGuard() && instance == EquipmentSlot.OFFHAND) return EquipmentSlot.Type.HUMANOID_ARMOR;
-		return original.call(instance);
+	@Inject(method = "populateDefaultEquipmentSlots", at = @At("HEAD"))
+	public void addOffhand(CallbackInfo ci) {
+		if (Combatify.isLoaded && Combatify.mobConfigIsDirty) {
+			if (Combatify.CONFIG.mobsCanGuard()) {
+				List<EquipmentSlot> clone = new ArrayList<>(EQUIPMENT_POPULATION_ORDER);
+				clone.add(EquipmentSlot.OFFHAND);
+				EQUIPMENT_POPULATION_ORDER = clone;
+			} else {
+				List<EquipmentSlot> clone = new ArrayList<>(EQUIPMENT_POPULATION_ORDER);
+				clone.remove(EquipmentSlot.OFFHAND);
+				EQUIPMENT_POPULATION_ORDER = clone;
+			}
+		}
 	}
-
 
 	@WrapOperation(method = "populateDefaultEquipmentEnchantments", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/EquipmentSlot;getType()Lnet/minecraft/world/entity/EquipmentSlot$Type;"))
 	public EquipmentSlot.Type fakeType1(EquipmentSlot instance, Operation<EquipmentSlot.Type> original) {

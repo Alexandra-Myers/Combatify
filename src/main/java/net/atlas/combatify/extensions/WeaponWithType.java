@@ -3,7 +3,6 @@ package net.atlas.combatify.extensions;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -11,9 +10,10 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public interface WeaponWithType extends ItemExtensions {
 	@Override
+	@SuppressWarnings("deprecation")
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
-		if (Combatify.originalModifiers.get(combatify$self()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
-			Combatify.originalModifiers.put(combatify$self(), original);
+		if (Combatify.originalModifiers.get(combatify$self().builtInRegistryHolder()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
+			Combatify.originalModifiers.put(combatify$self().builtInRegistryHolder(), original);
 		if (combatify$getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
 			return original;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
@@ -26,15 +26,6 @@ public interface WeaponWithType extends ItemExtensions {
 				builder.add(entry.attribute(), entry.modifier(), entry.slot());
 		});
 		return builder.build();
-	}
-	default WeaponType combatify$getWeaponType() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			WeaponType type = configurableItemData.weaponStats().weaponType();
-			if (type != null)
-				return type;
-		}
-		return WeaponType.EMPTY;
 	}
 
 	@Override
@@ -74,22 +65,5 @@ public interface WeaponWithType extends ItemExtensions {
 				return blockingType;
 		}
 		return Combatify.EMPTY;
-	}
-
-	@Override
-	default double getPiercingLevel() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
-			if (piercingLevel != null)
-				return piercingLevel;
-		}
-		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(combatify$getWeaponType());
-		if (configurableWeaponData != null) {
-			Double piercingLevel = configurableWeaponData.piercingLevel();
-			if (piercingLevel != null)
-				return piercingLevel;
-		}
-		return 0;
 	}
 }

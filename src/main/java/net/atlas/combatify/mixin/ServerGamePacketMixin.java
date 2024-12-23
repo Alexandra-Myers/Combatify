@@ -4,8 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.extensions.PlayerExtensions;
-import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,24 +22,24 @@ public abstract class ServerGamePacketMixin {
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
-		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
+		if (!(player.combatify$isAttackAvailable(1.0F)))
 			ci.cancel();
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
-			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
+			if (player.combatify$isRetainingAttack()) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
 				ci.cancel();
 				return;
 			}
-			if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
+			if (!player.combatify$isAttackAvailable(0.0F)) {
 				float var1 = player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
 					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
-					((PlayerExtensions) player).resetAttackStrengthTicker(!((PlayerExtensions) player).getMissedAttackRecovery());
+					player.combatify$resetAttackStrengthTicker(!player.combatify$getMissedAttackRecovery());
 					ci.cancel();
 				}
 
 				if (var1 < 1.0F) {
-					((ServerPlayerExtensions) player).setRetainAttack(true);
+					player.combatify$setRetainAttack(true);
 					ci.cancel();
 				}
 			}

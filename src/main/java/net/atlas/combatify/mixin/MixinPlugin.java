@@ -30,7 +30,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		Logger logger = LogManager.getLogger("CookeyMod");
+		Logger logger = LogManager.getLogger("Combatify");
 		try {
 			ClassNode mixin = MixinService.getService().getBytecodeProvider().getClassNode(mixinClassName, false);
 

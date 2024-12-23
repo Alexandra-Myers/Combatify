@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.CookeyMod;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -37,14 +36,5 @@ public abstract class OptionsMixin {
 		visitor.process("attackIndicatorMaxValue", CombatifyClient.attackIndicatorMaxValue);
 		visitor.process("attackIndicatorMinValue", CombatifyClient.attackIndicatorMinValue);
 		visitor.process("shieldIndicator", CombatifyClient.shieldIndicator);
-	}
-
-	@Inject(method = "save", at = @At("TAIL"))
-	public void saveModConfig(CallbackInfo ci) {
-		try {
-			CookeyMod.getConfig().saveConfig();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

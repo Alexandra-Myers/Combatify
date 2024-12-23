@@ -7,14 +7,20 @@ import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import java.util.Optional;
 
 public interface ItemExtensions {
+	default WeaponType combatify$getWeaponType() {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
+		if (configurableItemData != null) {
+			WeaponType type = configurableItemData.weaponStats().weaponType();
+			if (type != null)
+				return type;
+		}
+		return WeaponType.EMPTY;
+	}
 
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
 		return original;
@@ -62,40 +68,18 @@ public interface ItemExtensions {
 		return Combatify.EMPTY;
 	}
 
-	default double getPiercingLevel() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			if (configurableItemData.weaponStats().piercingLevel() != null)
-				return configurableItemData.weaponStats().piercingLevel();
-			WeaponType type;
-			ConfigurableWeaponData configurableWeaponData;
-			if ((type = configurableItemData.weaponStats().weaponType()) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
-				Double piercingLevel = configurableWeaponData.piercingLevel();
-				if (piercingLevel != null)
-					return piercingLevel;
-			}
-		}
-		return 0;
+	default Item combatify$self() {
+		throw new IllegalStateException("Extension has not been applied");
 	}
-
-	Item combatify$self();
 
 	default Tier getConfigTier() {
 		Optional<Tier> tier = getTierFromConfig();
-        return tier.orElse(Tiers.DIAMOND);
+        return tier.orElse(Combatify.originalTiers.get(combatify$self().builtInRegistryHolder()));
     }
 	default Optional<Tier> getTierFromConfig() {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null)
             return configurableItemData.optionalTier();
 		return Optional.empty();
-	}
-	default boolean canRepairThroughConfig(ItemStack stack) {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			if (configurableItemData.repairIngredient() != null)
-				return configurableItemData.repairIngredient().test(stack);
-		}
-		return false;
 	}
 }

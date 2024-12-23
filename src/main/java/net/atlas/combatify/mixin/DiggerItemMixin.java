@@ -24,9 +24,4 @@ public abstract class DiggerItemMixin extends Item implements WeaponWithType {
 			amount -= 1;
 		original.call(instance, amount, livingEntity, equipmentSlot);
 	}
-
-	@Override
-	public Item combatify$self() {
-		return this;
-	}
 }

@@ -1,6 +1,7 @@
 package net.atlas.combatify.extensions;
 
 public interface ClientInformationHolder {
-	boolean hasEnabledShieldOnCrouch();
-	void setShieldOnCrouch(boolean hasShieldOnCrouch);
+	default void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 }

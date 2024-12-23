@@ -4,13 +4,12 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.Tier;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ShovelItem.class)
 public class ShovelItemMixin extends DiggerItemMixin {
-	public ShovelItemMixin(Tier tier, Properties properties) {
-		super(tier, properties);
+	public ShovelItemMixin(Properties properties) {
+		super(properties);
 	}
 
 	@Override

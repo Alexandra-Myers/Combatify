@@ -4,8 +4,8 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.extensions.ToolMaterialWrapper;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -13,7 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,7 +48,7 @@ public class TestBlockingType extends SwordBlockingType {
 			if (configurableItemData.blocker().blockKbRes() != null)
 				return configurableItemData.blocker().blockKbRes();
 		}
-		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
+		Tier tier = stack.getItem().getConfigTier();
 		if (ToolMaterialWrapper.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;

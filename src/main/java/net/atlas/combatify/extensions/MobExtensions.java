@@ -1,5 +1,7 @@
 package net.atlas.combatify.extensions;
 
-public interface MobExtensions extends LivingEntityExtensions {
-	boolean isGuarding();
+public interface MobExtensions {
+	default boolean combatify$isGuarding() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 }

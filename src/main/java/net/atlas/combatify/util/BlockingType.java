@@ -125,7 +125,10 @@ public abstract class BlockingType {
 	public abstract void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl);
 	public abstract float getShieldBlockDamageValue(ItemStack stack, RandomSource random);
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
-	public abstract @NotNull InteractionResult use(Level world, Player user, InteractionHand hand);
+	public @NotNull InteractionResult use(Level world, Player player, InteractionHand interactionHand) {
+		player.startUsingItem(interactionHand);
+		return InteractionResult.CONSUME;
+	}
 	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
 		consumer.accept(CommonComponents.EMPTY);
@@ -140,10 +143,10 @@ public abstract class BlockingType {
 			consumer.accept(CommonComponents.space().append(
 				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
 					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
-					Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+					Component.translatable("attribute.name.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 	}
 	public Component getStrengthTranslationKey() {
-		return Component.translatable("attribute.name.generic.shield_strength");
+		return Component.translatable("attribute.name.shield_strength");
 	}
 	public static class Builder<B extends BlockingType> {
 		public final Factory<B> initialiser;

@@ -7,12 +7,8 @@
     " X "
   ],
   "key": {
-    "X": {
-      "item": "minecraft:gold_ingot"
-    },
-    "#": {
-      "item": "minecraft:gold_block"
-    }
+    "X": "#minecraft:gold_tool_materials",
+    "#": "minecraft:gold_block"
   },
   "result": {
     "count": 1,

@@ -1,0 +1,22 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "minecraft:special",
+      "base": "combatify:item/golden_shield",
+      "model": {
+        "type": "minecraft:tiered_shield",
+        "tier": "gold"
+      }
+    },
+    "on_true": {
+      "type": "minecraft:special",
+      "base": "combatify:item/golden_shield_blocking",
+      "model": {
+        "type": "minecraft:tiered_shield",
+        "tier": "gold"
+      }
+    },
+    "property": "minecraft:blocking"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "minecraft:special",
+      "base": "combatify:item/netherite_shield",
+      "model": {
+        "type": "minecraft:tiered_shield",
+        "tier": "netherite"
+      }
+    },
+    "on_true": {
+      "type": "minecraft:special",
+      "base": "combatify:item/netherite_shield_blocking",
+      "model": {
+        "type": "minecraft:tiered_shield",
+        "tier": "netherite"
+      }
+    },
+    "property": "minecraft:blocking"
+  }
+}

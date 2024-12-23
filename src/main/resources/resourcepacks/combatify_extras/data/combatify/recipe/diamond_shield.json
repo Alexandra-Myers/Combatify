@@ -7,12 +7,8 @@
     " X "
   ],
   "key": {
-    "X": {
-      "item": "minecraft:diamond"
-    },
-    "#": {
-      "item": "minecraft:diamond_block"
-    }
+    "X": "#minecraft:diamond_tool_materials",
+    "#": "minecraft:diamond_block"
   },
   "result": {
     "count": 1,

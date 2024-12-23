@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "minecraft:diamond"
-            ]
+            "tag": "minecraft:diamond_tool_materials"
           }
         ]
       },

@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
+import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
@@ -18,11 +19,13 @@ import net.atlas.combatify.util.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.*;
+import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -36,6 +39,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -61,10 +65,12 @@ public class Combatify implements ModInitializer {
 	public NetworkingHandler networkingHandler;
 	public static boolean isCTS = false;
 	public static boolean isLoaded = false;
+	public static boolean mobConfigIsDirty = true;
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
-	public static final Map<Item, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
+	public static final Map<Holder<Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
+	public static final Object2ObjectOpenHashMap<Holder<Item>, Tier> originalTiers = new Object2ObjectOpenHashMap<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<String, BlockingType> defaultTypes = new HashMap<>();
@@ -96,6 +102,7 @@ public class Combatify implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		isLoaded = true;
+		originalTiers.defaultReturnValue(ToolMaterial.DIAMOND);
 		WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
@@ -135,6 +142,21 @@ public class Combatify implements ModInitializer {
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
  			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
+		CustomDataComponents.registerDataComponents();
+		DefaultItemComponentEvents.MODIFY.register(modDetectionNetworkChannel, (modifyContext) -> {
+			modifyContext.modify(Items.WOODEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -2F));
+			modifyContext.modify(Items.GOLDEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -2F));
+			modifyContext.modify(Items.STONE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -1.5F));
+			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -1F));
+			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -0.5F));
+			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 0F));
+		});
+		bindItemsToDefaultTier(ToolMaterial.WOOD, Items.WOODEN_SWORD, Items.WOODEN_SHOVEL, Items.WOODEN_AXE, Items.WOODEN_HOE, Items.WOODEN_PICKAXE);
+		bindItemsToDefaultTier(ToolMaterial.GOLD, Items.GOLDEN_SWORD, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE);
+		bindItemsToDefaultTier(ToolMaterial.STONE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_AXE, Items.STONE_HOE, Items.STONE_PICKAXE);
+		bindItemsToDefaultTier(ToolMaterial.IRON, Items.IRON_SWORD, Items.IRON_SHOVEL, Items.IRON_AXE, Items.IRON_HOE, Items.IRON_PICKAXE);
+		bindItemsToDefaultTier(ToolMaterial.DIAMOND, Items.DIAMOND_SWORD, Items.DIAMOND_SHOVEL, Items.DIAMOND_AXE, Items.DIAMOND_HOE, Items.DIAMOND_PICKAXE);
+		bindItemsToDefaultTier(ToolMaterial.NETHERITE, Items.NETHERITE_SWORD, Items.NETHERITE_SHOVEL, Items.NETHERITE_AXE, Items.NETHERITE_HOE, Items.NETHERITE_PICKAXE);
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
@@ -144,6 +166,11 @@ public class Combatify implements ModInitializer {
 			TieredShieldItem.init();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
+			originalTiers.put(TieredShieldItem.WOODEN_SHIELD.builtInRegistryHolder(), ToolMaterial.WOOD);
+			originalTiers.put(TieredShieldItem.GOLD_SHIELD.builtInRegistryHolder(), ToolMaterial.GOLD);
+			originalTiers.put(TieredShieldItem.IRON_SHIELD.builtInRegistryHolder(), ToolMaterial.IRON);
+			originalTiers.put(TieredShieldItem.DIAMOND_SHIELD.builtInRegistryHolder(), ToolMaterial.DIAMOND);
+			originalTiers.put(TieredShieldItem.NETHERITE_SHIELD.builtInRegistryHolder(), ToolMaterial.NETHERITE);
 		}
 
 		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
@@ -184,5 +211,10 @@ public class Combatify implements ModInitializer {
 	public static void defineDefaultTier(String name, Tier tier) {
 		defaultTiers.put(name, tier);
 		tiers.put(name, tier);
+	}
+	public static void bindItemsToDefaultTier(Tier tier, Item... items) {
+		for (Item item : items) {
+			originalTiers.put(item.builtInRegistryHolder(), tier);
+		}
 	}
 }

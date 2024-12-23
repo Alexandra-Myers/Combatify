@@ -33,9 +33,4 @@ public class TridentItemMixin extends Item implements WeaponWithType {
 		}
 		return WeaponType.TRIDENT;
 	}
-
-	@Override
-	public Item combatify$self() {
-		return this;
-	}
 }

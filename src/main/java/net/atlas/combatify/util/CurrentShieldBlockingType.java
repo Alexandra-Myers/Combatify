@@ -38,7 +38,7 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 
 	@Override
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if (MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem.getItem()))
+		if (MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem))
 			return;
 		instance.hurtCurrentlyUsedShield(amount.get());
 		g.set(amount.get());
@@ -91,7 +91,7 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 			consumer.accept(CommonComponents.space().append(
 				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
 					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
-					Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+					Component.translatable("attribute.name.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 		}
 	}
 }

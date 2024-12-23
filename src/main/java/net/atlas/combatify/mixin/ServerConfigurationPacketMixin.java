@@ -2,7 +2,6 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.extensions.ClientInformationHolder;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
@@ -19,16 +18,11 @@ public class ServerConfigurationPacketMixin implements ClientInformationHolder {
 
 	@Inject(method = "handleConfigurationFinished", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;placeNewPlayer(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/network/CommonListenerCookie;)V"))
 	public void injectSettingShieldOnCrouch(ServerboundFinishConfigurationPacket serverboundFinishConfigurationPacket, CallbackInfo ci, @Local(ordinal = 0) ServerPlayer newPlayer) {
-		((PlayerExtensions) newPlayer).setShieldOnCrouch(hasShieldOnCrouch);
+		newPlayer.combatify$setShieldOnCrouch(hasShieldOnCrouch);
 	}
 
 	@Override
-	public boolean hasEnabledShieldOnCrouch() {
-		return hasShieldOnCrouch;
-	}
-
-	@Override
-	public void setShieldOnCrouch(boolean hasShieldOnCrouch) {
+	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
 		this.hasShieldOnCrouch = hasShieldOnCrouch;
 	}
 }

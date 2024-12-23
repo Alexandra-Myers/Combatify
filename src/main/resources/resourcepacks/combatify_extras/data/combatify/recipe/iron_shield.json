@@ -7,12 +7,8 @@
     " X "
   ],
   "key": {
-    "X": {
-      "item": "minecraft:iron_ingot"
-    },
-    "#": {
-      "item": "minecraft:iron_block"
-    }
+    "X": "#minecraft:iron_tool_materials",
+    "#": "minecraft:iron_block"
   },
   "result": {
     "count": 1,

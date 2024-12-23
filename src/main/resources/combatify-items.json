@@ -5,8 +5,9 @@
         "minecraft:snowball",
         "minecraft:egg"
       ],
-      "cooldown": 4,
-      "cooldown_after": false
+      "cooldown": {
+        "seconds": 0.2
+      }
     },
     {
       "name": "minecraft:snowball",

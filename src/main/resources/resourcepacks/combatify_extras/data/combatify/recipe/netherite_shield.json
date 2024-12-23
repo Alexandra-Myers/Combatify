@@ -1,16 +1,10 @@
 {
   "type": "minecraft:smithing_transform",
-  "addition": {
-    "item": "minecraft:netherite_ingot"
-  },
-  "base": {
-    "item": "combatify:diamond_shield"
-  },
+  "addition": "#minecraft:netherite_tool_materials",
+  "base": "combatify:diamond_shield",
   "result": {
     "count": 1,
     "id": "combatify:netherite_shield"
   },
-  "template": {
-    "item": "minecraft:netherite_upgrade_smithing_template"
-  }
+  "template": "minecraft:netherite_upgrade_smithing_template"
 }

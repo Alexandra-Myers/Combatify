@@ -3,13 +3,23 @@ package net.atlas.combatify.extensions;
 import net.minecraft.world.item.ItemCooldowns;
 
 public interface LivingEntityExtensions {
-    double getPiercingNegation();
+    default double combatify$getPiercingNegation() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 
-    boolean hasEnabledShieldOnCrouch();
+    default boolean combatify$hasEnabledShieldOnCrouch() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 
-    ItemCooldowns combatify$getFallbackCooldowns();
+    default ItemCooldowns combatify$getFallbackCooldowns() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 
-    void setPiercingNegation(double negation);
+    default void combatify$setPiercingNegation(double negation) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 
-    void setUseItemRemaining(int useItemRemaining);
+    default void combatify$setUseItemRemaining(int useItemRemaining) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 }

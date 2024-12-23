@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.combatify.extensions.ClientInformationHolder;
 import net.atlas.combatify.util.PlayerData;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,7 +37,7 @@ public class PlayerListMixin {
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;setId(I)V"), method = "respawn")
 	public void providePlayerData(ServerPlayer serverPlayer, boolean bl, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayer> cir, @Local(ordinal = 1) ServerPlayer serverPlayer2) {
-		((ClientInformationHolder)serverPlayer2).setShieldOnCrouch(((ClientInformationHolder)serverPlayer).hasEnabledShieldOnCrouch());
+		serverPlayer2.combatify$setShieldOnCrouch(serverPlayer.combatify$hasEnabledShieldOnCrouch());
 	}
 
 }

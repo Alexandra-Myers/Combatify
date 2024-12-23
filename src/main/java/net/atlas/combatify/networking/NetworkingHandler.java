@@ -2,8 +2,6 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.extensions.ClientInformationHolder;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
@@ -47,13 +45,13 @@ public class NetworkingHandler {
 			player.resetLastActionTime();
 			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition()))
 				return;
-			((PlayerExtensions)player).attackAir();
+			player.combatify$attackAir();
 		});
 		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> {
-			((ClientInformationHolder) context.networkHandler()).setShieldOnCrouch(payload.useShieldOnCrouch);
+			context.networkHandler().combatify$setShieldOnCrouch(payload.useShieldOnCrouch);
 			context.networkHandler().completeTask(ClientRetrievalTask.TYPE);
 		});
-		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> ((ClientInformationHolder)context.player().connection.getPlayer()).setShieldOnCrouch(payload.useShieldOnCrouch));
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> context.player().connection.getPlayer().combatify$setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, RemainingUseSyncPacket.TYPE)) {

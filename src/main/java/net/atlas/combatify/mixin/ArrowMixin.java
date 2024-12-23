@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -22,8 +23,8 @@ public abstract class ArrowMixin extends AbstractArrow {
 
 	@WrapOperation(method = "doPostHurtEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;addEffect(Lnet/minecraft/world/effect/MobEffectInstance;Lnet/minecraft/world/entity/Entity;)Z"))
 	public boolean applyInstantaneousEffect(LivingEntity instance, MobEffectInstance mobEffectInstance, Entity entity, Operation<Boolean> original, @Local(ordinal = 0) MobEffectInstance effectInstance) {
-        if (effectInstance.getEffect().value().isInstantenous()) {
-			effectInstance.getEffect().value().applyInstantenousEffect(this, getEffectSource(), instance, effectInstance.getAmplifier(), Combatify.CONFIG.instantTippedArrowEffectMultiplier());
+        if (effectInstance.getEffect().value().isInstantenous() && instance.level() instanceof ServerLevel serverLevel) {
+			effectInstance.getEffect().value().applyInstantenousEffect(serverLevel, this, getEffectSource(), instance, effectInstance.getAmplifier(), Combatify.CONFIG.instantTippedArrowEffectMultiplier());
 			return true;
 		}
 		return original.call(instance, mobEffectInstance, entity);

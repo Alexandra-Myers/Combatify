@@ -2,7 +2,11 @@ package net.atlas.combatify.extensions;
 
 public interface ServerPlayerExtensions {
 
-	boolean isRetainingAttack();
+	default boolean combatify$isRetainingAttack() {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 
-	void setRetainAttack(boolean retain);
+	default void combatify$setRetainAttack(boolean retain) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
 }

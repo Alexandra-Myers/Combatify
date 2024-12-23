@@ -4,13 +4,12 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.Tier;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(HoeItem.class)
 public class HoeItemMixin extends DiggerItemMixin {
-	public HoeItemMixin(Tier tier, Properties properties) {
-		super(tier, properties);
+	public HoeItemMixin(Properties properties) {
+		super(properties);
 	}
 
 	@Override

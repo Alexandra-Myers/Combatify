@@ -4,8 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.extensions.ItemExtensions;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
 import net.atlas.combatify.util.MethodHandler;
@@ -65,9 +63,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void hitreg(CallbackInfo ci) {
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
-		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
+		if (this.player.combatify$isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
-			customSwing(InteractionHand.MAIN_HAND);
+			combatify$customSwing(InteractionHand.MAIN_HAND);
 			Entity entity = getCamera();
 			if (entity == null)
 				entity = this.player;
@@ -102,10 +100,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public void handleInteract() {
 		if (retainAttack)
 			return;
-		if (!isAttackAvailable(0.0F)) {
+		if (!combatify$isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
-				resetAttackStrengthTicker(!getMissedAttackRecovery());
+				combatify$resetAttackStrengthTicker(!combatify$getMissedAttackRecovery());
 				return;
 			}
 
@@ -114,7 +112,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				return;
 			}
 		}
-		attackAir();
+		combatify$attackAir();
 	}
 	@Inject(method = "updatePlayerAttributes", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getAttribute(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;", ordinal = 1), cancellable = true)
 	public void removeCreativeReach(CallbackInfo ci) {
@@ -124,7 +122,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
+			chargedBonus = item.getChargedAttackBonus();
 			AttributeModifier modifier = new AttributeModifier(Combatify.CHARGED_REACH_ID, chargedBonus, AttributeModifier.Operation.ADD_VALUE);
 			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
@@ -135,11 +133,11 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			ci.cancel();
 	}
 
-	public boolean isRetainingAttack() {
+	public boolean combatify$isRetainingAttack() {
 		return retainAttack;
 	}
 
-	public void setRetainAttack(boolean retain) {
+	public void combatify$setRetainAttack(boolean retain) {
 		retainAttack = retain;
 	}
 }

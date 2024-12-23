@@ -1,6 +1,5 @@
 package net.atlas.combatify.util;
 
-import net.atlas.combatify.Combatify;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;

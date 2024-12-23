@@ -410,6 +410,11 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 			case Boolean ignored when tConfigValue.name().equals("weaponTypesEnabled") || tConfigValue.name().equals("ctsAttackBalancing") -> {
 				if (ITEMS != null) ITEMS.modify();
 			}
+			case Boolean ignored when tConfigValue.name().equals("mobsCanGuard") -> {
+				if (isLoaded) {
+					mobConfigIsDirty = true;
+				}
+			}
             case null, default -> {
 
 			}

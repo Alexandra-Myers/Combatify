@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,8 +43,8 @@ public class EmptyBlockingType extends BlockingType {
 	}
 
 	@Override
-	public @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-		return InteractionResultHolder.pass(user.getItemInHand(hand));
+	public @NotNull InteractionResult use(Level world, Player user, InteractionHand hand) {
+		return InteractionResult.PASS;
 	}
 
 	@Override

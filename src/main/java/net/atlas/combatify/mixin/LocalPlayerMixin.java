@@ -4,8 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.CookeyMod;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,9 +27,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.atlas.combatify.util.MethodHandler.getBlockingItem;
 
-@SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(LocalPlayer.class)
-public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions, LivingEntityExtensions {
+public abstract class LocalPlayerMixin extends AbstractClientPlayer implements PlayerExtensions {
 	public LocalPlayerMixin(ClientLevel clientLevel, GameProfile gameProfile) {
 		super(clientLevel, gameProfile);
 	}
@@ -67,19 +64,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 
 	@Override
-	public void customSwing(InteractionHand interactionHand) {
+	public void combatify$customSwing(InteractionHand interactionHand) {
 		swing(interactionHand, false);
 		connection.send(new ServerboundSwingPacket(interactionHand));
-	}
-
-	@Override
-	public boolean isAttackAvailable(float baseTime) {
-		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
-			if (CookeyMod.getConfig().misc().force100PercentRecharge().get())
-				return false;
-			return (getMissedAttackRecovery() && this.attackStrengthTicker + baseTime > 4.0F);
-		}
-		return true;
 	}
 
 	@ModifyExpressionValue(method = "hasEnoughFoodToStartSprinting", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
@@ -98,7 +85,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public boolean hasEnabledShieldOnCrouch() {
+	public boolean combatify$hasEnabledShieldOnCrouch() {
 		return CombatifyClient.shieldCrouch.get();
 	}
 }

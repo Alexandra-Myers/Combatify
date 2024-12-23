@@ -14,7 +14,7 @@ import java.util.Optional;
 public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implements Tier {
 	public static Codec<Tier> TOOL_MATERIAL_CODEC = Codec.STRING.xmap(ItemConfig::getTier, ItemConfig::getTierName);
 	public static Codec<ToolMaterialWrapper> BASE_CODEC = RecordCodecBuilder.create(instance ->
-		instance.group(Codec.INT.optionalFieldOf("mining_level").forGetter(extendedTier -> Optional.of(extendedTier.level())),
+		instance.group(Codec.INT.optionalFieldOf("mining_level").forGetter(extendedTier -> Optional.of(extendedTier.combatify$level())),
 				Codec.INT.optionalFieldOf("enchant_level").forGetter(extendedTier -> Optional.of(extendedTier.enchantmentValue())),
 				Codec.INT.optionalFieldOf("uses").forGetter(extendedTier -> Optional.of(extendedTier.durability())),
 				Codec.FLOAT.optionalFieldOf("attack_damage_bonus").forGetter(extendedTier -> Optional.of(extendedTier.attackDamageBonus())),
@@ -25,7 +25,7 @@ public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implemen
 			.apply(instance, ToolMaterialWrapper::create));
 
 	public static Codec<ToolMaterialWrapper> FULL_CODEC = RecordCodecBuilder.create(instance ->
-		instance.group(Codec.INT.fieldOf("mining_level").forGetter(ToolMaterialWrapper::level),
+		instance.group(Codec.INT.fieldOf("mining_level").forGetter(ToolMaterialWrapper::combatify$level),
 				Codec.INT.fieldOf("enchant_level").forGetter(ToolMaterialWrapper::enchantmentValue),
 				Codec.INT.fieldOf("uses").forGetter(ToolMaterialWrapper::durability),
 				Codec.FLOAT.fieldOf("attack_damage_bonus").forGetter(ToolMaterialWrapper::attackDamageBonus),
@@ -36,7 +36,7 @@ public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implemen
 
 	public static Codec<ToolMaterialWrapper> CODEC = Codec.withAlternative(FULL_CODEC, BASE_CODEC);
 	public static int getLevel(Tier tier) {
-		return tier.level();
+		return tier.combatify$level();
 	}
 	public static ToolMaterialWrapper create(Optional<Integer> level, Optional<Integer> enchantLevel, Optional<Integer> uses, Optional<Float> damage, Optional<Float> speed, Optional<TagKey<Item>> repairItems, Optional<TagKey<Block>> incorrect, Tier baseTier) {
 		return create(level.orElse(getLevel(baseTier)), enchantLevel.orElse(baseTier.enchantmentValue()), uses.orElse(baseTier.durability()), damage.orElse(baseTier.attackDamageBonus()), speed.orElse(baseTier.speed()), repairItems.orElse(baseTier.repairItems()), incorrect.orElse(baseTier.incorrectBlocksForDrops()));
@@ -73,5 +73,10 @@ public record ToolMaterialWrapper(ToolMaterial toolMaterial, int level) implemen
 	@Override
 	public TagKey<Item> repairItems() {
 		return toolMaterial.repairItems();
+	}
+
+	@Override
+	public int combatify$level() {
+		return level();
 	}
 }

@@ -2,9 +2,9 @@ package net.atlas.combatify.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 
 import java.util.Objects;
@@ -64,13 +64,14 @@ public record ArmourVariable(Optional<Integer> any, Optional<Integer> helmet, Op
 		return new ArmourVariable(any, null, null, null, null, null);
 	}
 	public Integer getValue(Item item) {
-		if (item instanceof ArmorItem armorItem) {
-			return switch (armorItem.getType()) {
-				case HELMET -> helmet.orElseGet(() -> any.orElse(null));
-				case CHESTPLATE -> chestplate.orElseGet(() -> any.orElse(null));
-				case LEGGINGS -> leggings.orElseGet(() -> any.orElse(null));
-				case BOOTS -> boots.orElseGet(() -> any.orElse(null));
+		if (item.components().has(DataComponents.EQUIPPABLE)) {
+			return switch (item.components().get(DataComponents.EQUIPPABLE).slot()) {
+				case HEAD -> helmet.orElseGet(() -> any.orElse(null));
+				case CHEST -> chestplate.orElseGet(() -> any.orElse(null));
+				case LEGS -> leggings.orElseGet(() -> any.orElse(null));
+				case FEET -> boots.orElseGet(() -> any.orElse(null));
 				case BODY -> body.orElseGet(() -> any.orElse(null));
+				default -> any.orElse(null);
 			};
         }
 		return any.orElse(null);

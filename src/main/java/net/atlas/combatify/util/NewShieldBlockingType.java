@@ -3,10 +3,11 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.extensions.ToolMaterialWrapper;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -16,7 +17,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
 import org.jetbrains.annotations.Nullable;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
@@ -29,7 +29,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 
 	@Override
 	public boolean canBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		return !MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem.getItem());
+		return !MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem);
 	}
 
 	@Override
@@ -75,8 +75,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 				return Math.min(CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, (float) (configurableItemData.blocker().blockStrength() / 100.0 + (strengthIncrease * 0.1)), false), 1);
 			}
 		}
-		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
-		float strengthIncrease = ToolMaterialWrapper.getLevel(tier) / 2F - 2F;
+		float strengthIncrease = stack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 0F);
 		strengthIncrease = Mth.ceil(strengthIncrease);
 		strengthIncrease = CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, strengthIncrease, true);
 
@@ -90,7 +89,7 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 			if (configurableItemData.blocker().blockKbRes() != null)
 				return configurableItemData.blocker().blockKbRes();
 		}
-		Tier tier = ((ItemExtensions) stack.getItem()).getConfigTier();
+		Tier tier = stack.getItem().getConfigTier();
 		if (ToolMaterialWrapper.getLevel(tier) >= 4)
 			return 0.5;
 		return 0.25;

@@ -13,9 +13,9 @@ import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.extensions.ToolMaterialWrapper;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
@@ -29,7 +29,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,7 +49,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.level.block.Block;
 
 import javax.annotation.Nullable;
@@ -74,7 +76,7 @@ public class ItemConfig extends AtlasConfig {
 	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
-		buf.writeVarInt(tier.level());
+		buf.writeVarInt(tier.combatify$level());
 		buf.writeVarInt(tier.enchantmentValue());
 		buf.writeVarInt(tier.durability());
 		buf.writeFloat(tier.attackDamageBonus());
@@ -304,19 +306,18 @@ public class ItemConfig extends AtlasConfig {
 
 	public static Tier getTier(String s) {
 		return switch (s.toLowerCase()) {
-			case "wood" -> Tier.class.cast(ToolMaterial.WOOD);
-			case "stone" -> Tier.class.cast(ToolMaterial.STONE);
-			case "iron" -> Tier.class.cast(ToolMaterial.IRON);
-			case "gold" -> Tier.class.cast(ToolMaterial.GOLD);
-			case "diamond" -> Tier.class.cast(ToolMaterial.DIAMOND);
-			case "netherite" -> Tier.class.cast(ToolMaterial.NETHERITE);
+			case "wood" -> ToolMaterial.WOOD;
+			case "stone" -> ToolMaterial.STONE;
+			case "iron" -> ToolMaterial.IRON;
+			case "gold" -> ToolMaterial.GOLD;
+			case "diamond" -> ToolMaterial.DIAMOND;
+			case "netherite" -> ToolMaterial.NETHERITE;
 			default -> getTierRaw(s);
 		};
 	}
 	public static String getTierName(Tier tier) {
-		if (ToolMaterial.class.isInstance(tier)) {
-			ToolMaterial material = ToolMaterial.class.cast(tier);
-			if (material.equals(ToolMaterial.NETHERITE)) return "netherite";
+		if (tier instanceof ToolMaterial material) {
+            if (material.equals(ToolMaterial.NETHERITE)) return "netherite";
 			if (material.equals(ToolMaterial.DIAMOND)) return "diamond";
 			if (material.equals(ToolMaterial.IRON)) return "iron";
 			if (material.equals(ToolMaterial.STONE)) return "stone";
@@ -438,40 +439,55 @@ public class ItemConfig extends AtlasConfig {
 			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
 			boolean damageOverridden = false;
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
+			Tier tier = null;
 			boolean isConfiguredItem = configurableItemData != null;
 			if (isConfiguredItem) {
 				Integer durability = configurableItemData.armourStats().durability().getValue(item);
 				Integer maxStackSize = configurableItemData.stackSize();
-				Tier tier = configurableItemData.tier();
+				Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
+				tier = configurableItemData.tier();
 				TagKey<Block> mineable = configurableItemData.toolMineableTag();
 				Tool tool = configurableItemData.tool();
+				Enchantable enchantable = configurableItemData.enchantable();
+				TagKey<Item> repairItems = configurableItemData.repairItems();
+				UseCooldown cooldown = configurableItemData.cooldown();
+				if (cooldown != null)
+					builder.set(DataComponents.USE_COOLDOWN, cooldown);
 				if (maxStackSize != null)
 					builder.set(DataComponents.MAX_STACK_SIZE, maxStackSize);
 				if (durability != null) {
 					setDurability(builder, item, durability);
 					damageOverridden = true;
 				}
-				HolderGetter<Block> holderGetter = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
+				if (enchantable != null) builder.set(DataComponents.ENCHANTABLE, enchantable);
+				else if (tier != null) builder.set(DataComponents.ENCHANTABLE, new Enchantable(tier.enchantmentValue()));
+				if (repairItems != null) builder.set(DataComponents.REPAIRABLE, new Repairable(BuiltInRegistries.ITEM.getOrThrow(repairItems)));
+				else if (tier != null) builder.set(DataComponents.REPAIRABLE, new Repairable(BuiltInRegistries.ITEM.getOrThrow(tier.repairItems())));
+				if (piercingLevel != null) builder.set(CustomDataComponents.PIERCING_LEVEL, piercingLevel.floatValue());
 				if (tool != null) builder.set(DataComponents.TOOL, tool);
-				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(holderGetter.getOrThrow(tier.incorrectBlocksForDrops())), Tool.Rule.minesAndDrops(holderGetter.getOrThrow(mineable), tier.speed())), 1.0F, 1));
+				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(BuiltInRegistries.BLOCK.getOrThrow(tier.incorrectBlocksForDrops())), Tool.Rule.minesAndDrops(BuiltInRegistries.BLOCK.getOrThrow(mineable), tier.speed())), 1.0F, 1));
 			}
-			if (!damageOverridden && ((ItemExtensions)item).getTierFromConfig().isPresent()) {
-				int value = ((ItemExtensions) item).getTierFromConfig().get().durability();
+			if (!damageOverridden && item.getTierFromConfig().isPresent()) {
+				int value = item.getTierFromConfig().get().durability();
 				if (item.builtInRegistryHolder().is(CombatifyItemTags.DOUBLE_TIER_DURABILITY))
 					value *= 2;
 				setDurability(builder, item, value);
 			}
-			updateModifiers(builder, item, isConfiguredItem, configurableItemData);
+			updateModifiers(builder, item, tier, isConfiguredItem, configurableItemData);
 			((ItemAccessor) item).setComponents(builder.build());
 		}
 	}
 	@SuppressWarnings("ALL")
-	public void updateModifiers(DataComponentMap.Builder builder, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
+	public void updateModifiers(DataComponentMap.Builder builder, Item item, @Nullable Tier tier, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
+		ConfigurableWeaponData configurableWeaponData;
+		if ((configurableWeaponData = MethodHandler.forWeapon(item.combatify$getWeaponType())) != null && configurableWeaponData.piercingLevel() != null)
+			builder.getOrCreate(CustomDataComponents.PIERCING_LEVEL, () -> configurableWeaponData.piercingLevel().floatValue());
+		if (tier != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, (float) (tier.combatify$level()) / 2F - 2F);
 		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		ItemAttributeModifiers original = originalModifiers.get(item);
+		ItemAttributeModifiers original = originalModifiers.get(item.builtInRegistryHolder());
 		if (!original.equals(ItemAttributeModifiers.EMPTY))
 			modifier = original;
-		modifier = ((ItemExtensions)item).modifyAttributeModifiers(modifier);
+		modifier = item.modifyAttributeModifiers(modifier);
 		if (modifier != null) {
 			modifyFromItemConfig: {
 				if (isConfiguredItem) {
@@ -481,7 +497,7 @@ public class ItemConfig extends AtlasConfig {
 					}
 					if (configurableItemData.weaponStats().weaponType() != null) {
 						ItemAttributeModifiers.Builder itemAttributeBuilder = ItemAttributeModifiers.builder();
-						configurableItemData.weaponStats().weaponType().addCombatAttributes(((ItemExtensions) item).getConfigTier(), itemAttributeBuilder);
+						configurableItemData.weaponStats().weaponType().addCombatAttributes(item.getConfigTier(), itemAttributeBuilder);
 						modifier.modifiers().forEach(entry -> {
 							boolean bl = entry.attribute().is(Attributes.ATTACK_DAMAGE)
 								|| entry.attribute().is(Attributes.ATTACK_SPEED)

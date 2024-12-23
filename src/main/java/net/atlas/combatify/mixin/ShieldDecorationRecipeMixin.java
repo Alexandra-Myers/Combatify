@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(ShieldDecorationRecipe.class)
 public class ShieldDecorationRecipeMixin {
 	@ModifyExpressionValue(method = "matches", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
-	public boolean makeAllShieldsWork(boolean original, @Local(ordinal = 2) ItemStack shield) {
+	public boolean makeAllShieldsWork(boolean original, @Local(ordinal = 0) ItemStack shield) {
 		return shield.getItem() instanceof ShieldItem || original;
 	}
 

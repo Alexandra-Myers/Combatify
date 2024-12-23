@@ -1,14 +1,19 @@
 package net.atlas.combatify;
 
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.atlas.combatify.client.ShieldMaterial;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
+import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.minecraft.Util;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ToolMaterial;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -22,6 +27,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final ModelLayerLocation GOLDEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("golden_shield"),"main");
 	public static final ModelLayerLocation DIAMOND_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("diamond_shield"),"main");
 	public static final ModelLayerLocation NETHERITE_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("netherite_shield"),"main");
+	public static final Object2ObjectOpenHashMap<Tier, ModelLayerLocation> tieredShieldModelLayers = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(WOODEN_SHIELD_MODEL_LAYER));
+	public static final Object2ObjectOpenHashMap<Tier, ShieldMaterial> tieredShieldMaterials = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(ShieldMaterial.WOODEN_SHIELD));
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
 	public static final OptionInstance<Boolean> rhythmicAttacks = OptionInstance.createBoolean("options.rhythmicAttack",true);
@@ -68,6 +75,14 @@ public class CombatifyClient implements ClientModInitializer {
 			EntityModelLayerRegistry.registerModelLayer(GOLDEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			tieredShieldModelLayers.put(ToolMaterial.IRON, IRON_SHIELD_MODEL_LAYER);
+			tieredShieldModelLayers.put(ToolMaterial.GOLD, GOLDEN_SHIELD_MODEL_LAYER);
+			tieredShieldModelLayers.put(ToolMaterial.DIAMOND, DIAMOND_SHIELD_MODEL_LAYER);
+			tieredShieldModelLayers.put(ToolMaterial.NETHERITE, NETHERITE_SHIELD_MODEL_LAYER);
+			tieredShieldMaterials.put(ToolMaterial.IRON, ShieldMaterial.IRON_SHIELD);
+			tieredShieldMaterials.put(ToolMaterial.GOLD, ShieldMaterial.GOLDEN_SHIELD);
+			tieredShieldMaterials.put(ToolMaterial.DIAMOND, ShieldMaterial.DIAMOND_SHIELD);
+			tieredShieldMaterials.put(ToolMaterial.NETHERITE, ShieldMaterial.NETHERITE_SHIELD);
 		}
 	}
 }

@@ -94,7 +94,7 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 	public double getDamage(Tier tier) {
 		int modifier = Combatify.CONFIG.fistDamage() ? 1 : 0;
 		double damageBonus = tier.attackDamageBonus() + modifier;
-		boolean isNotTier1 = tier.level() > 0;
+		boolean isNotTier1 = tier.combatify$level() > 0;
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
 		if (configurableWeaponData != null) {
 			if (configurableWeaponData.attackDamage() != null) {
@@ -157,12 +157,12 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 			return modifier + damageOffset;
 		else if (useAxeDamage) {
 			if (!Combatify.CONFIG.ctsAttackBalancing())
-				return (isNotTier1 ? tier.level() >= 4 ? 8 : 7 : 5) + modifier + (tier.level() >= 4 && !ItemConfig.getTier("netherite").equals(tier) ? damageBonus - 3 : 0);
+				return (isNotTier1 ? tier.combatify$level() >= 4 ? 8 : 7 : 5) + modifier + (tier.combatify$level() >= 4 && !ItemConfig.getTier("netherite").equals(tier) ? damageBonus - 3 : 0);
 			else
 				return damageBonus + 3.0;
 		} else if (useHoeDamage) {
-			if (tier.level() != 2 && tier.level() != 3) {
-				if (tier.level() >= 4)
+			if (tier.combatify$level() != 2 && tier.combatify$level() != 3) {
+				if (tier.combatify$level() >= 4)
 					return ItemConfig.getTier("netherite").equals(tier) ? 2 + modifier : damageBonus - 1;
 
 				return modifier;
@@ -176,9 +176,9 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 		if (useHoeSpeed) {
 			if (ItemConfig.getTier("wood").equals(tier))
 				return -0.5;
-			else if (tier.level() == 2 || ItemConfig.getTier("iron").equals(tier))
+			else if (tier.combatify$level() == 2 || ItemConfig.getTier("iron").equals(tier))
 				return 0.5;
-			else if (tier.level() >= 3 || ItemConfig.getTier("gold").equals(tier))
+			else if (tier.combatify$level() >= 3 || ItemConfig.getTier("gold").equals(tier))
 				return 1.0;
 			else
 				return 0.0;

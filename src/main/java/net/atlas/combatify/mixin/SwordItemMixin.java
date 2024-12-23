@@ -11,10 +11,9 @@ import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(SwordItem.class)
-public class SwordItemMixin extends TieredItem implements WeaponWithType {
-
-	public SwordItemMixin(Tier tier, Properties properties) {
-		super(tier, properties);
+public class SwordItemMixin extends Item implements WeaponWithType {
+	public SwordItemMixin(Properties properties) {
+		super(properties);
 	}
 
 	@Override
@@ -43,10 +42,5 @@ public class SwordItemMixin extends TieredItem implements WeaponWithType {
 				return type;
 		}
 		return WeaponType.SWORD;
-	}
-
-	@Override
-	public Item combatify$self() {
-		return this;
 	}
 }

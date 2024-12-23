@@ -3,13 +3,13 @@ package net.atlas.combatify.networking;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import static net.atlas.combatify.Combatify.*;
 
@@ -20,8 +20,8 @@ public class ClientNetworkingHandler {
 		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.UpdateBridgingStatusPacket.TYPE, (packet, context) -> CONFIG.setBridging(packet.enableBridging()));
 		ClientPlayNetworking.registerGlobalReceiver(NetworkingHandler.RemainingUseSyncPacket.TYPE, (packet, player) -> {
 			Entity entity = Minecraft.getInstance().level.getEntity(packet.id());
-			if (entity instanceof LivingEntityExtensions livingEntity)
-				livingEntity.setUseItemRemaining(packet.ticks());
+			if (entity instanceof LivingEntity livingEntity)
+				livingEntity.combatify$setUseItemRemaining(packet.ticks());
 		});
 		ClientConfigurationNetworking.registerGlobalReceiver(NetworkingHandler.ClientboundClientInformationRetrievalPacket.TYPE, (packet, sender) -> {
 			sender.responseSender().sendPacket(ClientPlayNetworking.createC2SPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));

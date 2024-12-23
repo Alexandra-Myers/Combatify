@@ -5,9 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.CookeyMod;
-import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.screen.ScreenBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
@@ -15,6 +12,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -65,15 +64,6 @@ public abstract class MinecraftMixin {
 	@Final
 	public MouseHandler mouseHandler;
 
-	@Shadow
-	public abstract void setScreen(@Nullable Screen screen);
-
-	@Inject(method = "tick", at = @At("TAIL"))
-	public void openMenuOnKeyPress(CallbackInfo ci) {
-		if (CookeyMod.getKeybinds().openOptions().isDown() && this.screen == null)
-			setScreen(ScreenBuilder.buildConfig(null));
-	}
-
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
 		if (screen != null)
@@ -87,9 +77,9 @@ public abstract class MinecraftMixin {
 	public boolean allowBlockHitting(boolean original) {
 		if (!original) return false;
 		if (player != null) {
-			ItemExtensions item = ((ItemExtensions) player.getUseItem().getItem());
+			Item item = player.getUseItem().getItem();
 			boolean bl = item.combatify$getBlockingType().canBlockHit() && !item.combatify$getBlockingType().isEmpty();
-			if (bl && ((PlayerExtensions) this.player).isAttackAvailable(0.0F))
+			if (bl && this.player.combatify$isAttackAvailable(0.0F))
 				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK)
 					startAttack();
 			return bl;
@@ -111,7 +101,7 @@ public abstract class MinecraftMixin {
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
 		if (player == null || hitResult == null)
 			return original.call(instance);
-		if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
+		if (!player.combatify$isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F)
@@ -140,12 +130,12 @@ public abstract class MinecraftMixin {
 	public boolean ensureNotReachingAround(boolean original) {
         if (original) return true;
         assert this.hitResult != null;
-        return ((BlockHitResultExtensions)this.hitResult).isLedgeEdge();
+        return ((BlockHitResult)this.hitResult).combatify$isLedgeEdge();
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer instance, Operation<Void> original) {
 		if (gameMode != null)
-			((IPlayerGameMode) gameMode).swingInAir(instance);
+			gameMode.swingInAir(instance);
 	}
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
@@ -155,7 +145,7 @@ public abstract class MinecraftMixin {
 		if (player != null && missTime <= 0) {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
 			if (!cannotPerform) {
-				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? ((PlayerExtensions) this.player).isAttackAvailable(-1.0F) : this.player.getAttackStrengthScale(-1.0F) >= 1.0F;
+				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? this.player.combatify$isAttackAvailable(-1.0F) : this.player.getAttackStrengthScale(-1.0F) >= 1.0F;
 				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
 					this.retainAttack = false;
 				} else if (bl1 && canAutoAttack && bl2) {
@@ -169,7 +159,7 @@ public abstract class MinecraftMixin {
 	public boolean ensureNotReachingAroundContinue(boolean original) {
 		if (original) return true;
 		assert this.hitResult != null;
-		return ((BlockHitResultExtensions)this.hitResult).isLedgeEdge();
+		return ((BlockHitResult)this.hitResult).combatify$isLedgeEdge();
 	}
 	@ModifyExpressionValue(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
 	public boolean alterResult(boolean original) {

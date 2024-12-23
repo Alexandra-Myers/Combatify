@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.extensions.IPlayerGameMode;
-import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -38,13 +37,13 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 			if (configurableEntityData.isMiscEntity() != null)
 				isMiscTarget = configurableEntityData.isMiscEntity();
 		}
-		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+		instance.combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 	}
 	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset2(LocalPlayer instance) {
 		if(getPlayerMode() == GameType.ADVENTURE)
 			return;
-		((PlayerExtensions)instance).resetAttackStrengthTicker(false);
+		instance.combatify$resetAttackStrengthTicker(false);
 	}
 
 	@Override
@@ -52,8 +51,8 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		ensureHasSentCarriedItem();
 		ClientPlayNetworking.send(new NetworkingHandler.ServerboundMissPacket());
 		if (localPlayerMode != GameType.SPECTATOR) {
-			((PlayerExtensions)player).attackAir();
-			((PlayerExtensions)player).resetAttackStrengthTicker(false);
+			player.combatify$attackAir();
+			player.combatify$resetAttackStrengthTicker(false);
 		}
 	}
 }

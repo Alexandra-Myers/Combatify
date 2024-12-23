@@ -3,7 +3,6 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
@@ -11,14 +10,10 @@ import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ShieldItem.class)
-public class ShieldItemMixin extends Item implements ItemExtensions {
-    public ShieldItemMixin(Properties properties) {
-        super(properties);
-    }
-
+public class ShieldItemMixin extends ItemMixin {
 	@Override
 	public BlockingType combatify$getBlockingType() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
 		if (configurableItemData != null) {
 			if (configurableItemData.blocker().blockingType() != null)
 				return configurableItemData.blocker().blockingType();
@@ -31,10 +26,5 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 			}
 		}
 		return Combatify.registeredTypes.get("shield");
-	}
-
-	@Override
-	public Item combatify$self() {
-		return this;
 	}
 }
