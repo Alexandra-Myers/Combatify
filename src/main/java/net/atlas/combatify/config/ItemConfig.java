@@ -464,6 +464,11 @@ public class ItemConfig extends AtlasConfig {
 				if (repairItems != null) builder.set(DataComponents.REPAIRABLE, new Repairable(BuiltInRegistries.ITEM.getOrThrow(repairItems)));
 				else if (tier != null) builder.set(DataComponents.REPAIRABLE, new Repairable(BuiltInRegistries.ITEM.getOrThrow(tier.repairItems())));
 				if (piercingLevel != null) builder.set(CustomDataComponents.PIERCING_LEVEL, piercingLevel.floatValue());
+				else {
+					ConfigurableWeaponData configurableWeaponData;
+					if ((configurableWeaponData = MethodHandler.forWeapon(item.combatify$getWeaponType())) != null && configurableWeaponData.piercingLevel() != null)
+						builder.set(CustomDataComponents.PIERCING_LEVEL, configurableWeaponData.piercingLevel().floatValue());
+				}
 				if (tool != null) builder.set(DataComponents.TOOL, tool);
 				else if (tier != null && mineable != null) builder.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(BuiltInRegistries.BLOCK.getOrThrow(tier.incorrectBlocksForDrops())), Tool.Rule.minesAndDrops(BuiltInRegistries.BLOCK.getOrThrow(mineable), tier.speed())), 1.0F, 1));
 			}
@@ -479,9 +484,6 @@ public class ItemConfig extends AtlasConfig {
 	}
 	@SuppressWarnings("ALL")
 	public void updateModifiers(DataComponentMap.Builder builder, Item item, @Nullable Tier tier, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
-		ConfigurableWeaponData configurableWeaponData;
-		if ((configurableWeaponData = MethodHandler.forWeapon(item.combatify$getWeaponType())) != null && configurableWeaponData.piercingLevel() != null)
-			builder.getOrCreate(CustomDataComponents.PIERCING_LEVEL, () -> configurableWeaponData.piercingLevel().floatValue());
 		if (tier != null) builder.set(CustomDataComponents.BLOCKING_LEVEL, (float) (tier.combatify$level()) / 2F - 2F);
 		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		ItemAttributeModifiers original = originalModifiers.get(item.builtInRegistryHolder());

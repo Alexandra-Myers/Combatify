@@ -25,7 +25,7 @@ import static net.atlas.combatify.config.ItemConfig.getTierName;
 
 public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> optionalStackSize, Optional<UseCooldown> optionalCooldown, Blocker blocker,
 								   Optional<Enchantable> optionalEnchantable, Optional<Integer> optionalUseDuration,
-								   Optional<Tier> optionalTier, ArmourStats armourStats, Optional<TagKey<Item>> optionalRepairItems, Optional<TagKey<Block>> optionalTag, Optional<Tool> optionalTool,
+								   Optional<Tier> optionalTier, ArmourStats armourStats, Optional<TagKey<Item>> optionalRepairItems, Optional<TagKey<Block>> optionalToolMineable, Optional<Tool> optionalTool,
 								   ItemAttributeModifiers itemAttributeModifiers) {
 
 	public static final ConfigurableItemData EMPTY = new ConfigurableItemData(WeaponStats.EMPTY, (Integer) null, null, Blocker.EMPTY, null, null, null, ArmourStats.EMPTY, null, null, null, ItemAttributeModifiers.EMPTY);
@@ -39,7 +39,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 				Codec.STRING.optionalFieldOf("tier").xmap(name -> name.map(ItemConfig::getTier), tier1 -> tier1.map(ItemConfig::getTierName)).forGetter(ConfigurableItemData::optionalTier),
 				ArmourStats.CODEC.optionalFieldOf("armor_information", ArmourStats.EMPTY).forGetter(ConfigurableItemData::armourStats),
 				Codec.withAlternative(TagKey.codec(Registries.ITEM), TagKey.hashedCodec(Registries.ITEM)).optionalFieldOf("repair_items").forGetter(ConfigurableItemData::optionalRepairItems),
-				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).optionalFieldOf("tool_tag").forGetter(ConfigurableItemData::optionalTag),
+				Codec.withAlternative(TagKey.codec(Registries.BLOCK), TagKey.hashedCodec(Registries.BLOCK)).optionalFieldOf("tool_tag").forGetter(ConfigurableItemData::optionalToolMineable),
 				Tool.CODEC.optionalFieldOf("tool").forGetter(ConfigurableItemData::optionalTool),
 				ItemAttributeModifiers.CODEC.optionalFieldOf("item_attribute_modifiers", ItemAttributeModifiers.EMPTY).forGetter(ConfigurableItemData::itemAttributeModifiers))
 			.apply(instance, ConfigurableItemData::new));
@@ -56,8 +56,8 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 		buf.writeUtf(configurableItemData.optionalTier.isEmpty() ? "empty" : getTierName(configurableItemData.optionalTier.get()));
 		buf.writeBoolean(configurableItemData.optionalRepairItems.isEmpty());
         configurableItemData.optionalRepairItems.ifPresent(itemTagKey -> buf.writeResourceLocation(itemTagKey.location()));
-		buf.writeBoolean(configurableItemData.optionalTag.isEmpty());
-        configurableItemData.optionalTag.ifPresent(blockTagKey -> buf.writeResourceLocation(blockTagKey.location()));
+		buf.writeBoolean(configurableItemData.optionalToolMineable.isEmpty());
+        configurableItemData.optionalToolMineable.ifPresent(blockTagKey -> buf.writeResourceLocation(blockTagKey.location()));
 		buf.writeBoolean(configurableItemData.optionalTool.isEmpty());
         configurableItemData.optionalTool.ifPresent(tool -> Tool.STREAM_CODEC.encode(buf, tool));
 		ItemAttributeModifiers.STREAM_CODEC.encode(buf, configurableItemData.itemAttributeModifiers);
@@ -95,7 +95,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 	}
     public ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> optionalStackSize, Optional<UseCooldown> optionalCooldown, Blocker blocker,
 								Optional<Enchantable> optionalEnchantable, Optional<Integer> optionalUseDuration,
-								Optional<Tier> optionalTier, ArmourStats armourStats, Optional<TagKey<Item>> optionalRepairItems, Optional<TagKey<Block>> optionalTag, Optional<Tool> optionalTool,
+								Optional<Tier> optionalTier, ArmourStats armourStats, Optional<TagKey<Item>> optionalRepairItems, Optional<TagKey<Block>> optionalToolMineable, Optional<Tool> optionalTool,
 								ItemAttributeModifiers itemAttributeModifiers) {
 		this.weaponStats = weaponStats;
 		this.optionalStackSize = clamp(optionalStackSize, 1, 99);
@@ -106,7 +106,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
         this.optionalTier = optionalTier;
 		this.armourStats = armourStats;
         this.optionalRepairItems = optionalRepairItems;
-		this.optionalTag = optionalTag;
+		this.optionalToolMineable = optionalToolMineable;
         this.optionalTool = optionalTool;
 		this.itemAttributeModifiers = itemAttributeModifiers;
     }
@@ -136,7 +136,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 	}
 
 	public TagKey<Block> toolMineableTag() {
-		return optionalTag.orElse(null);
+		return optionalToolMineable.orElse(null);
 	}
 
 	public Tool tool() {
@@ -163,11 +163,11 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ConfigurableItemData that)) return false;
-        return Objects.equals(weaponStats, that.weaponStats) && Objects.equals(optionalStackSize, that.optionalStackSize) && Objects.equals(optionalCooldown, that.optionalCooldown) && Objects.equals(blocker, that.blocker) && Objects.equals(optionalEnchantable, that.optionalEnchantable) && Objects.equals(optionalUseDuration, that.optionalUseDuration) && Objects.equals(optionalTier, that.optionalTier) && Objects.equals(armourStats, that.armourStats) && Objects.equals(optionalRepairItems, that.optionalRepairItems) && Objects.equals(optionalTag, that.optionalTag) && Objects.equals(optionalTool, that.optionalTool) && Objects.equals(itemAttributeModifiers, that.itemAttributeModifiers);
+        return Objects.equals(weaponStats, that.weaponStats) && Objects.equals(optionalStackSize, that.optionalStackSize) && Objects.equals(optionalCooldown, that.optionalCooldown) && Objects.equals(blocker, that.blocker) && Objects.equals(optionalEnchantable, that.optionalEnchantable) && Objects.equals(optionalUseDuration, that.optionalUseDuration) && Objects.equals(optionalTier, that.optionalTier) && Objects.equals(armourStats, that.armourStats) && Objects.equals(optionalRepairItems, that.optionalRepairItems) && Objects.equals(optionalToolMineable, that.optionalToolMineable) && Objects.equals(optionalTool, that.optionalTool) && Objects.equals(itemAttributeModifiers, that.itemAttributeModifiers);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(weaponStats, optionalStackSize, optionalCooldown, blocker, optionalEnchantable, optionalUseDuration, optionalTier, armourStats, optionalRepairItems, optionalTag, optionalTool, itemAttributeModifiers);
+		return Objects.hash(weaponStats, optionalStackSize, optionalCooldown, blocker, optionalEnchantable, optionalUseDuration, optionalTier, armourStats, optionalRepairItems, optionalToolMineable, optionalTool, itemAttributeModifiers);
 	}
 }
