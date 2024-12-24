@@ -21,12 +21,12 @@ import java.util.function.Consumer;
 
 public class EmptyBlockingType extends BlockingType {
 	public EmptyBlockingType(ResourceLocation name) {
-		super(name, false, false, false, false, false, false);
+		super(name, new BlockingTypeData(false, false, false, false, false, false));
 	}
 
 	@Override
 	public Factory<? extends BlockingType> factory() {
-		return (name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay) -> new EmptyBlockingType(name);
+		return (name, blockingTypeData) -> new EmptyBlockingType(name);
 	}
 
 	@Override

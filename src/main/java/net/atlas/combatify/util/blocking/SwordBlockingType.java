@@ -21,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class SwordBlockingType extends PercentageBlockingType {
 
-	public SwordBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
+	public SwordBlockingType(ResourceLocation name, BlockingTypeData data) {
+		super(name, data);
 	}
 
 	@Override
@@ -66,11 +66,6 @@ public class SwordBlockingType extends PercentageBlockingType {
 	@Override
 	public Component getStrengthTranslationKey() {
 		return Component.translatable("attribute.name.damage_reduction");
-	}
-
-	@Override
-	public boolean isToolBlocker() {
-		return true;
 	}
 
 }

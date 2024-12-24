@@ -27,8 +27,8 @@ import java.util.function.Consumer;
 
 public class OldSwordBlockingType extends BlockingType {
 
-	public OldSwordBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
+	public OldSwordBlockingType(ResourceLocation name, BlockingTypeData data) {
+		super(name, data);
 	}
 
 	@Override
@@ -95,11 +95,6 @@ public class OldSwordBlockingType extends BlockingType {
 	@Override
 	public Component getStrengthTranslationKey() {
 		return Component.translatable("attribute.name.damage_reduction");
-	}
-
-	@Override
-	public boolean isToolBlocker() {
-		return true;
 	}
 
 }

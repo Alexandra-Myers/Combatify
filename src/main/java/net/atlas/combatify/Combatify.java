@@ -95,7 +95,7 @@ public class Combatify implements ModInitializer {
 	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(BlockingType.builder(NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY).build("shield_no_banner"));
 	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(BlockingType.builder(CURRENT_SHIELD_BLOCKING_TYPE_FACTORY).build("current_shield"));
 	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(BlockingType.builder(NEW_SHIELD_BLOCKING_TYPE_FACTORY).setKbMechanics(false).build("new_shield"));
-	public static final BlockingType EMPTY = BlockingType.builder((name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay) -> new EmptyBlockingType(name)).build("empty");
+	public static final BlockingType EMPTY = BlockingType.builder((name, blockingTypeData) -> new EmptyBlockingType(name)).build("empty");
 
 	public static void markCTS(boolean isCTS) {
 		Combatify.isCTS = isCTS;

@@ -11,8 +11,8 @@ import net.minecraft.world.item.ItemStack;
 
 public class NonBannerShieldBlockingType extends ShieldBlockingType {
 
-	public NonBannerShieldBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
+	public NonBannerShieldBlockingType(ResourceLocation name, BlockingTypeData data) {
+		super(name, data);
 	}
 
 	@Override

@@ -19,9 +19,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public abstract class PercentageBlockingType extends BlockingType {
-
-	public PercentageBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
+	public PercentageBlockingType(ResourceLocation name, BlockingTypeData data) {
+		super(name, data);
 	}
 
 	@Override

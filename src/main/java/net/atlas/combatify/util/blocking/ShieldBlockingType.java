@@ -26,8 +26,8 @@ import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class ShieldBlockingType extends BlockingType {
 
-	public ShieldBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
+	public ShieldBlockingType(ResourceLocation name, BlockingTypeData data) {
+		super(name, data);
 	}
 
 	@Override
