@@ -20,7 +20,7 @@ public record CanSweep(boolean enabled, boolean showInTooltip) implements Toolti
 				Codec.BOOL.optionalFieldOf("show_in_tooltip", Boolean.FALSE).forGetter(CanSweep::showInTooltip))
 			.apply(instance, CanSweep::new)
 	);
-	public static final Codec<CanSweep> CODEC = Codec.withAlternative(Codec.BOOL.xmap(enabled -> new CanSweep(enabled, false), CanSweep::enabled), FULL_CODEC);
+	public static final Codec<CanSweep> CODEC = Codec.withAlternative(FULL_CODEC, Codec.BOOL.xmap(enabled -> new CanSweep(enabled, false), CanSweep::enabled));
 	public static final StreamCodec<ByteBuf, CanSweep> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, CanSweep::enabled, ByteBufCodecs.BOOL, CanSweep::showInTooltip, CanSweep::new);
 	private static final Component TOOLTIP = Component.translatable("item.can_sweep").withStyle(ChatFormatting.BLUE);
 

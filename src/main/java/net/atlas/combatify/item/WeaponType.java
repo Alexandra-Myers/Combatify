@@ -1,7 +1,9 @@
 package net.atlas.combatify.item;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.custom.Blocker;
@@ -18,6 +20,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -38,14 +42,21 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 	public static final WeaponType TRIDENT = createWithAxeDamageFormula("trident", 3, -0.5, 1);
 	public static final Codec<WeaponType> SIMPLE_CODEC = Codec.STRING.xmap(weapon_type -> fromID(weapon_type.toLowerCase(Locale.ROOT)), WeaponType::name);
 	public static final Codec<WeaponType> STRICT_CODEC = SIMPLE_CODEC.validate(weapon_type -> weapon_type == null ? DataResult.error(() -> "Attempted to retrieve a Weapon Type that does not exist!") : DataResult.success(weapon_type));
-	public static final Codec<WeaponType> FULL_CODEC = RecordCodecBuilder.create(instance ->
+	public static final MapCodec<WeaponType> FULL_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.STRING.fieldOf("name").forGetter(WeaponType::name),
 				Codec.DOUBLE.fieldOf("damage_offset").forGetter(WeaponType::damageOffset),
 				Codec.DOUBLE.fieldOf("speed").forGetter(WeaponType::speed),
 				Codec.DOUBLE.fieldOf("reach").forGetter(WeaponType::reach),
 				Codec.BOOL.optionalFieldOf("tierable", true).forGetter(WeaponType::tierable))
 			.apply(instance, (name, damage, speed, reach, tierable) -> tierable ? createBasic(name, damage, speed, reach) : createBasicUntierable(name, damage, speed, reach)));
-	public static final Codec<WeaponType> CODEC = Codec.withAlternative(FULL_CODEC, STRICT_CODEC);
+	public static final MapCodec<List<WeaponType>> CODEC_DECODE = Codec.mapEither(Codec.withAlternative(STRICT_CODEC.listOf(), STRICT_CODEC, Collections::singletonList).fieldOf("name"), FULL_CODEC.xmap(Collections::singletonList, List::getFirst)).xmap(
+		Either::unwrap,
+		Either::left
+	);
+	public static final MapCodec<List<WeaponType>> CODEC_ENCODE = Codec.mapEither(FULL_CODEC.xmap(Collections::singletonList, List::getFirst), Codec.withAlternative(STRICT_CODEC.listOf(), STRICT_CODEC, Collections::singletonList).fieldOf("name")).xmap(
+		Either::unwrap,
+		Either::left
+	);
 	public static final ResourceLocation BASE_ATTACK_SPEED_CTS_ID = ResourceLocation.withDefaultNamespace("base_attack_speed_cts");
 	public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
 

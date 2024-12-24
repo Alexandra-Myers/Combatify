@@ -31,6 +31,8 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,7 +40,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -73,9 +77,9 @@ import static net.atlas.combatify.config.ConfigurableWeaponData.WEAPON_DATA_STRE
 
 public class ItemConfig extends AtlasConfig {
 	public boolean isModifying = false;
-	public List<ConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> configuredEntities;
-	public List<ConfigDataWrapper<Item, ConfigurableItemData>> configuredItems;
-	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
+	public List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> configuredEntities;
+	public List<RegistryConfigDataWrapper<Item, ConfigurableItemData>> configuredItems;
+	public List<RawConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
 	public static final StreamCodec<RegistryFriendlyByteBuf, ResourceLocation> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
@@ -118,56 +122,20 @@ public class ItemConfig extends AtlasConfig {
 		boolean tierable = buf.readBoolean();
 		return new WeaponType(name, damageOffset, speed, reach, useAxeDamage, useHoeDamage, useHoeSpeed, tierable);
 	});
-	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> BLOCKING_TYPE_STREAM_CODEC = StreamCodec.of((buf, blockingType) -> {
-		buf.writeResourceLocation(Combatify.registeredTypeFactories.inverse().get(blockingType.factory()));
-		buf.writeResourceLocation(blockingType.getName());
-		buf.writeBoolean(blockingType.canCrouchBlock());
-		buf.writeBoolean(blockingType.canBlockHit());
-		buf.writeBoolean(blockingType.canBeDisabled());
-		buf.writeBoolean(blockingType.requireFullCharge());
-		buf.writeBoolean(blockingType.defaultKbMechanics());
-		buf.writeBoolean(blockingType.hasDelay());
-	}, buf -> {
-		BlockingType.Factory<?> factory = registeredTypeFactories.get(buf.readResourceLocation());
-		ResourceLocation name = buf.readResourceLocation();
-		boolean canCrouchBlock = buf.readBoolean();
-		boolean canBlockHit = buf.readBoolean();
-		boolean canDisable = buf.readBoolean();
-		boolean requireFullCharge = buf.readBoolean();
-		boolean defaultKbMechanics = buf.readBoolean();
-		boolean hasDelay = buf.readBoolean();
-		return factory.create(name, canCrouchBlock, canBlockHit, canDisable, requireFullCharge, defaultKbMechanics, hasDelay);
-	});
-	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<Item, ConfigurableItemData>> ITEM_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
-		buf.writeCollection(wrapper.objects, (buf1, item) -> buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item)));
-		buf.writeCollection(wrapper.tagKeys, (buf1, tagKey) -> buf.writeResourceLocation(tagKey.location()));
-		ITEM_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
-	}, buf -> {
-		List<Item> items = buf.readList(buf1 -> BuiltInRegistries.ITEM.get(buf1.readResourceLocation()).get().value());
-		List<TagKey<Item>> tags = buf.readList(buf1 -> TagKey.create(Registries.ITEM, buf1.readResourceLocation()));
-		ConfigurableItemData configurableItemData = ITEM_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
-		return new ConfigDataWrapper<>(items, tags, configurableItemData);
-	});
-	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> ENTITY_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
-		buf.writeCollection(wrapper.objects, (buf1, item) -> buf.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(item)));
-		buf.writeCollection(wrapper.tagKeys, (buf1, tagKey) -> buf.writeResourceLocation(tagKey.location()));
-		ENTITY_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
-	}, buf -> {
-		List<EntityType<?>> items = buf.readList(buf1 -> BuiltInRegistries.ENTITY_TYPE.get(buf1.readResourceLocation()).get().value());
-		List<TagKey<EntityType<?>>> tags = buf.readList(buf1 -> TagKey.create(Registries.ENTITY_TYPE, buf1.readResourceLocation()));
-		ConfigurableEntityData configurableEntityData = ENTITY_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
-		return new ConfigDataWrapper<>(items, tags, configurableEntityData);
-	});
-	public static final StreamCodec<? super FriendlyByteBuf, ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> WEAPON_WRAPPER_STREAM_CODEC = StreamCodec.of((buf, wrapper) -> {
-		buf.writeCollection(wrapper.objects, WeaponType.STREAM_CODEC);
-		WEAPON_DATA_STREAM_CODEC.encode((RegistryFriendlyByteBuf) buf, wrapper.configurableData);
-	}, buf -> {
-		List<WeaponType> items = buf.readList(WeaponType.STREAM_CODEC);
-		ConfigurableWeaponData configurableEntityData = WEAPON_DATA_STREAM_CODEC.decode((RegistryFriendlyByteBuf) buf);
-		return new ConfigDataWrapper<>(items, Collections.emptyList(), configurableEntityData);
-	});
+	public static final MapCodec<RegistryConfigDataWrapper<Item, ConfigurableItemData>> ITEMS_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ITEM,
+		holder -> holder.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air", holder) : DataResult.success(holder),
+		ConfigurableItemData.CODEC);
+	public static final MapCodec<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> ENTITIES_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ENTITY_TYPE,
+		DataResult::success,
+		ConfigurableEntityData.CODEC);
+	public static final MapCodec<RawConfigDataWrapper<WeaponType, ConfigurableWeaponData>> WEAPONS_CODEC_DECODE = RawConfigDataWrapper.mapCodec(WeaponType.CODEC_DECODE,
+		ConfigurableWeaponData.CODEC);
+	public static final MapCodec<RawConfigDataWrapper<WeaponType, ConfigurableWeaponData>> WEAPONS_CODEC_ENCODE = RawConfigDataWrapper.mapCodec(WeaponType.CODEC_ENCODE,
+		ConfigurableWeaponData.CODEC);
+	public static final StreamCodec<RegistryFriendlyByteBuf, RegistryConfigDataWrapper<Item, ConfigurableItemData>> ITEM_WRAPPER_STREAM_CODEC = RegistryConfigDataWrapper.streamCodec(Registries.ITEM, ITEM_DATA_STREAM_CODEC);
+	public static final StreamCodec<RegistryFriendlyByteBuf, RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> ENTITY_WRAPPER_STREAM_CODEC = RegistryConfigDataWrapper.streamCodec(Registries.ENTITY_TYPE, ENTITY_DATA_STREAM_CODEC);
+	public static final StreamCodec<RegistryFriendlyByteBuf, RawConfigDataWrapper<WeaponType, ConfigurableWeaponData>> WEAPON_WRAPPER_STREAM_CODEC = RawConfigDataWrapper.streamCodec(WeaponType.STREAM_CODEC.mapStream(buf -> (RegistryFriendlyByteBuf) buf), WEAPON_DATA_STREAM_CODEC);
 	public static Formula armourCalcs = null;
-	public static final Codec<Holder<EntityType<?>>> ENTITY_TYPE_CODEC = BuiltInRegistries.ENTITY_TYPE.holderByNameCodec();
 	public static Codec<BiMap<String, ToolMaterialWrapper>> TIERS_CODEC = Codec.unboundedMap(Codec.STRING, ToolMaterialWrapper.CODEC).xmap(HashBiMap::create, Function.identity());
 
 	public ItemConfig() {
@@ -214,59 +182,11 @@ public class ItemConfig extends AtlasConfig {
 		registeredTypes = new HashMap<>(defaultTypes);
 		List<BlockingType> altered = BlockingType.CODEC.listOf().orElse(Collections.emptyList()).parse(JsonOps.INSTANCE, defenders).getOrThrow();
 		altered.forEach(Combatify::registerBlockingType);
-		if (weapons instanceof JsonArray typeArray) {
-			typeArray.asList().forEach(jsonElement -> {
-				if (jsonElement instanceof JsonObject jsonObject) {
-					List<WeaponType> weaponTypes = Codec.withAlternative(Codec.withAlternative(WeaponType.STRICT_CODEC.listOf(), WeaponType.STRICT_CODEC, Collections::singletonList).fieldOf("name").codec(), Codec.withAlternative(WeaponType.FULL_CODEC.listOf(), WeaponType.FULL_CODEC, Collections::singletonList)).parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-					parseWeaponType(weaponTypes, jsonObject);
-				} else
-					notJSONObject(jsonElement, "Configuring Weapon Types");
-			});
-		}
-		if (items instanceof JsonArray itemArray) {
-			itemArray.asList().forEach(jsonElement -> {
-				if (jsonElement instanceof JsonObject jsonObject) {
-					List<Item> itemList = Codec.withAlternative(Item.CODEC.listOf(), Item.CODEC, Collections::singletonList)
-						.xmap(holders -> holders.stream().map(Holder::value).toList(), item -> item.stream().map(item1 -> (Holder<Item>) item1.builtInRegistryHolder()).toList()).lenientOptionalFieldOf("name", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-					Codec<TagKey<Item>> alternating = Codec.withAlternative(TagKey.codec(Registries.ITEM), TagKey.hashedCodec(Registries.ITEM));
-					List<TagKey<Item>> tagsList = Codec.withAlternative(alternating.listOf(), alternating, Collections::singletonList).lenientOptionalFieldOf("tag", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-					if (itemList.isEmpty() && tagsList.isEmpty()) {
-						noNamePresent(jsonElement, "Configuring Items");
-						return;
-					}
-					parseItemConfig(itemList, tagsList, jsonObject);
-				} else
-					notJSONObject(jsonElement, "Configuring Items");
-			});
-		}
-		if (entities instanceof JsonArray entityArray) {
-			entityArray.asList().forEach(jsonElement -> {
-				if (jsonElement instanceof JsonObject jsonObject) {
-					List<? extends EntityType<?>> entityList = Codec.withAlternative(ENTITY_TYPE_CODEC.listOf(), ENTITY_TYPE_CODEC, Collections::singletonList)
-						.xmap(holders -> holders.stream().map(Holder::value).toList(), item -> item.stream().map(item1 -> (Holder<EntityType<?>>) item1.builtInRegistryHolder()).toList()).lenientOptionalFieldOf("name", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-					Codec<TagKey<EntityType<?>>> alternating = Codec.withAlternative(TagKey.codec(Registries.ENTITY_TYPE), TagKey.hashedCodec(Registries.ENTITY_TYPE));
-					List<TagKey<EntityType<?>>> tagsList = Codec.withAlternative(alternating.listOf(), alternating, Collections::singletonList).lenientOptionalFieldOf("tag", Collections.emptyList()).codec().parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-					if (entityList.isEmpty() && tagsList.isEmpty()) {
-						noNamePresent(jsonElement, "Configuring Entities");
-						return;
-					}
-					parseEntityType((List<EntityType<?>>) entityList, tagsList, jsonObject);
-				} else
-					notJSONObject(jsonElement, "Configuring Entities");
-			});
-		}
+		configuredWeapons = WEAPONS_CODEC_DECODE.codec().listOf().parse(JsonOps.INSTANCE, weapons).getOrThrow();
+		configuredItems = ITEMS_CODEC.codec().listOf().parse(JsonOps.INSTANCE, items).getOrThrow();
+		configuredEntities = ENTITIES_CODEC.codec().listOf().parse(JsonOps.INSTANCE, entities).getOrThrow();
 		armourCalcs = Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec().parse(JsonOps.INSTANCE, object).getOrThrow().orElse(null);
 		isModifying = false;
-	}
-	public void parseEntityType(List<EntityType<?>> entities, List<TagKey<EntityType<?>>> entityTags, JsonObject jsonObject) {
-		ConfigurableEntityData configurableEntityData = ConfigurableEntityData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-		ConfigDataWrapper<EntityType<?>, ConfigurableEntityData> configDataWrapper = new ConfigDataWrapper<>(entities, entityTags, configurableEntityData);
-		configuredEntities.add(configDataWrapper);
-	}
-	public void parseWeaponType(List<WeaponType> types, JsonObject jsonObject) {
-		ConfigurableWeaponData configurableWeaponData = ConfigurableWeaponData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-		ConfigDataWrapper<WeaponType, ConfigurableWeaponData> configDataWrapper = new ConfigDataWrapper<>(types, Collections.emptyList(), configurableWeaponData);
-		configuredWeapons.add(configDataWrapper);
 	}
 	@Override
 	protected InputStream getDefaultedConfig() {
@@ -299,10 +219,10 @@ public class ItemConfig extends AtlasConfig {
 		super.loadFromNetwork(buf);
 		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
 		registeredWeaponTypes = readMap(buf, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
-		registeredTypes = readMap(buf, RESOURCE_NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
-		configuredEntities = buf.readList(ENTITY_WRAPPER_STREAM_CODEC);
-		configuredItems = buf.readList(ITEM_WRAPPER_STREAM_CODEC);
-		configuredWeapons = buf.readList(WEAPON_WRAPPER_STREAM_CODEC);
+		registeredTypes = readMap(buf, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		configuredEntities = buf.readList(ENTITY_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		configuredItems = buf.readList(ITEM_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		configuredWeapons = buf.readList(WEAPON_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
 		String formula = buf.readUtf();
 		if (!formula.equals("empty"))
 			armourCalcs = new Formula(formula);
@@ -340,10 +260,10 @@ public class ItemConfig extends AtlasConfig {
 		super.saveToNetwork(buf);
 		writeMap(buf, tiers, NAME_STREAM_CODEC, TIERS_STREAM_CODEC);
 		writeMap(buf, registeredWeaponTypes, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
-		writeMap(buf, Combatify.registeredTypes, RESOURCE_NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
-		buf.writeCollection(configuredEntities, ENTITY_WRAPPER_STREAM_CODEC);
-		buf.writeCollection(configuredItems, ITEM_WRAPPER_STREAM_CODEC);
-		buf.writeCollection(configuredWeapons, WEAPON_WRAPPER_STREAM_CODEC);
+		writeMap(buf, Combatify.registeredTypes, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		buf.writeCollection(configuredEntities, ENTITY_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		buf.writeCollection(configuredItems, ITEM_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		buf.writeCollection(configuredWeapons, WEAPON_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
 		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written());
 	}
 
@@ -374,7 +294,24 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public void saveExtra(JsonWriter jsonWriter, PrintWriter printWriter) {
-
+		JsonElement items = new JsonArray();
+		JsonElement weapons = new JsonArray();
+		JsonElement defenders = new JsonArray();
+		JsonElement tiers = new JsonObject();
+		JsonElement entities = new JsonArray();
+		ITEMS_CODEC.codec().listOf().encode(configuredItems, JsonOps.INSTANCE, items);
+		WEAPONS_CODEC_ENCODE.codec().listOf().encode(configuredWeapons, JsonOps.INSTANCE, weapons);
+		ArrayList<BlockingType> blockingTypes = new ArrayList<>(registeredTypes.values());
+		blockingTypes.removeIf(defaultTypes::containsValue);
+		BlockingType.CODEC.listOf().encode(blockingTypes, JsonOps.INSTANCE, defenders);
+		BiMap<String, ToolMaterialWrapper> addedTiers = HashBiMap.create();
+		Combatify.tiers.forEach((s, tier) -> {
+			if (!defaultTiers.containsValue(tier) && tier instanceof ToolMaterialWrapper toolMaterialWrapper)
+				addedTiers.put(s, toolMaterialWrapper);
+		});
+		TIERS_CODEC.encode(addedTiers, JsonOps.INSTANCE, tiers);
+		ENTITIES_CODEC.codec().listOf().encode(configuredEntities, JsonOps.INSTANCE, entities);
+		Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec();
 	}
 
 	@Override
@@ -406,7 +343,7 @@ public class ItemConfig extends AtlasConfig {
 			int oldSize = configuredItems.size();
 			if (oldSize < newSize) {
 				for (int i = oldSize; i < newSize; i++) {
-					configuredItems.add(i, ConfigDataWrapper.EMPTY_ITEM);
+					configuredItems.add(i, RegistryConfigDataWrapper.EMPTY_ITEM);
 				}
 			} else if (oldSize > newSize) {
                 configuredItems.subList(newSize, oldSize).clear();
@@ -423,17 +360,8 @@ public class ItemConfig extends AtlasConfig {
 	public boolean hasScreen() {
 		return false;
 	}
-
-	public void parseItemConfig(List<Item> items, List<TagKey<Item>> tags, JsonObject jsonObject) {
-		ConfigurableItemData configurableItemData = ConfigurableItemData.CODEC.parse(JsonOps.INSTANCE, jsonObject).getOrThrow();
-		ConfigDataWrapper<Item, ConfigurableItemData> configDataWrapper = new ConfigDataWrapper<>(items, tags, configurableItemData);
-		configuredItems.add(configDataWrapper);
-	}
-	public static void noNamePresent(JsonElement invalid, String stage) {
+	public static void noNamePresent(RegistryConfigDataWrapper<?, ?> invalid, String stage) {
 		LOGGER.error("No name is present: " + invalid + ", no changes will occur. This may be due to an incorrectly written config file. " + errorStage(stage));
-	}
-	public static void notJSONObject(JsonElement invalid, String stage) {
-		LOGGER.error("Not a JSON Object: " + invalid + " this may be due to an incorrectly written config file. " + errorStage(stage));
 	}
 	public static String errorStage(String stage) {
 		return "[Config Stage]: " + stage;
@@ -618,36 +546,101 @@ public class ItemConfig extends AtlasConfig {
 		}
 		builder.set(DataComponents.ATTRIBUTE_MODIFIERS, modifier);
 	}
-	public record ConfigDataWrapper<T, U>(List<T> objects, List<TagKey<T>> tagKeys, U configurableData) {
-		public static final ConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new ConfigDataWrapper<>(Collections.emptyList(), Collections.emptyList(), ConfigurableItemData.EMPTY);
-		private boolean matches(Holder<T> test) {
-			return objects.contains(test.value()) || tagKeys.stream().anyMatch(test::is);
+	public interface ConfigDataWrapper<V, U> {
+		boolean matches(V test);
+		default U match(V test) {
+			if (matches(test)) {
+				return configurableData();
+			}
+			return null;
 		}
-		private boolean matches(T test) {
+		U configurableData();
+	}
+	public record RawConfigDataWrapper<T, U>(List<T> objects, U configurableData) implements ConfigDataWrapper<T, U> {
+		public static <T, U> MapCodec<RawConfigDataWrapper<T, U>> mapCodec(MapCodec<List<T>> codec, MapCodec<U> mapCodec) {
+			return RecordCodecBuilder.mapCodec(instance ->
+				instance.group(codec.forGetter(RawConfigDataWrapper::objects),
+						mapCodec.forGetter(RawConfigDataWrapper::configurableData))
+					.apply(instance, RawConfigDataWrapper::new));
+		}
+		public static <T, U> StreamCodec<RegistryFriendlyByteBuf, RawConfigDataWrapper<T, U>> streamCodec(StreamCodec<RegistryFriendlyByteBuf, T> inputCodec, StreamCodec<RegistryFriendlyByteBuf, U> dataCodec) {
+			return StreamCodec.composite(ByteBufCodecs.collection(ArrayList::new, inputCodec), RawConfigDataWrapper::objects,
+				dataCodec, RawConfigDataWrapper::configurableData,
+				RawConfigDataWrapper::new);
+		}
+		@Override
+		public boolean matches(T test) {
 			return objects.contains(test);
 		}
-		public U match(Holder<T> test) {
-			if (matches(test)) {
-				return configurableData;
-			}
-			return null;
-		}
-		public U match(T test) {
-			if (matches(test)) {
-				return configurableData;
-			}
-			return null;
-		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
-			if (!(o instanceof ConfigDataWrapper<?, ?> that)) return false;
-            return Objects.equals(objects, that.objects) && Objects.equals(tagKeys, that.tagKeys) && Objects.equals(configurableData, that.configurableData);
+			if (!(o instanceof RawConfigDataWrapper<?, ?> that)) return false;
+            return Objects.equals(objects, that.objects) && Objects.equals(configurableData, that.configurableData);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(objects, tagKeys, configurableData);
+			return Objects.hash(objects, configurableData);
+		}
+
+		@Override
+		public String toString() {
+			return "RawConfigDataWrapper{" +
+				"objects=" + objects +
+				", configurableData=" + configurableData +
+				'}';
+		}
+	}
+	public record RegistryConfigDataWrapper<T, U>(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) implements ConfigDataWrapper<Holder<T>, U> {
+		public static final RegistryConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new RegistryConfigDataWrapper<>(HolderSet.direct(), Collections.emptyList(), ConfigurableItemData.EMPTY);
+		public RegistryConfigDataWrapper(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) {
+			this.holders = holders;
+			this.tagKeys = tagKeys;
+			this.configurableData = configurableData;
+			if (holders.size() > 0 && tagKeys.isEmpty()) noNamePresent(this, "Configuring Registry");
+		}
+		public boolean matches(Holder<T> test) {
+			return holders.contains(test) || tagKeys.stream().anyMatch(test::is);
+		}
+		public static <T, U> MapCodec<RegistryConfigDataWrapper<T, U>> mapCodec(Registry<T> registry, Function<Holder<T>, DataResult<Holder<T>>> validator, MapCodec<U> mapCodec) {
+			Codec<Holder<T>> holderCodec = registry.holderByNameCodec().validate(validator);
+			Codec<TagKey<T>> tagKeyCodec = Codec.withAlternative(TagKey.codec(registry.key()), TagKey.hashedCodec(registry.key()));
+			return RecordCodecBuilder.mapCodec(instance ->
+				instance.group(Codec.withAlternative(holderCodec.listOf(), holderCodec, Collections::singletonList)
+							.xmap(HolderSet::direct, holders -> holders.stream().toList()).optionalFieldOf("name", HolderSet.direct())
+							.forGetter(RegistryConfigDataWrapper::holders),
+						Codec.withAlternative(tagKeyCodec.listOf(), tagKeyCodec, Collections::singletonList)
+							.optionalFieldOf("tag", Collections.emptyList()).forGetter(RegistryConfigDataWrapper::tagKeys),
+						mapCodec.forGetter(RegistryConfigDataWrapper::configurableData))
+					.apply(instance, RegistryConfigDataWrapper::new));
+		}
+		public static <T, U> StreamCodec<RegistryFriendlyByteBuf, RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<? extends Registry<T>> registry, StreamCodec<RegistryFriendlyByteBuf, U> streamCodec) {
+			return StreamCodec.composite(ByteBufCodecs.holderSet(registry).map(holders -> (HolderSet.Direct<T>) holders, holders -> holders), RegistryConfigDataWrapper::holders,
+			ByteBufCodecs.collection(ArrayList::new, TagKey.streamCodec(registry)), RegistryConfigDataWrapper::tagKeys,
+				streamCodec, RegistryConfigDataWrapper::configurableData,
+				RegistryConfigDataWrapper::new);
+		}
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof RegistryConfigDataWrapper<?, ?> that)) return false;
+            return Objects.equals(holders, that.holders) && Objects.equals(tagKeys, that.tagKeys) && Objects.equals(configurableData, that.configurableData);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(holders, tagKeys, configurableData);
+		}
+
+		@Override
+		public String toString() {
+			return "RegistryConfigDataWrapper{" +
+				"holders=" + holders +
+				", tagKeys=" + tagKeys +
+				", configurableData=" + configurableData +
+				'}';
 		}
 	}
 	public record Formula(String armour, String enchantment) {

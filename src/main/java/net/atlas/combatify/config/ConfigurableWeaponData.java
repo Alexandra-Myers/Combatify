@@ -1,6 +1,7 @@
 package net.atlas.combatify.config;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.component.custom.CanSweep;
@@ -14,7 +15,7 @@ import static net.atlas.combatify.config.ConfigurableItemData.clamp;
 
 public record ConfigurableWeaponData(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<Boolean> optionalTiered, Optional<CanSweep> optionalCanSweep, Optional<Blocker> optionalBlocking) {
 	public static final ConfigurableWeaponData EMPTY = new ConfigurableWeaponData((Double) null, null, null, null, null, null, null, null);
-	public static final Codec<ConfigurableWeaponData> CODEC = RecordCodecBuilder.create(instance ->
+	public static final MapCodec<ConfigurableWeaponData> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.DOUBLE.optionalFieldOf("damage_offset").forGetter(ConfigurableWeaponData::optionalDamage),
 				Codec.DOUBLE.optionalFieldOf("speed").forGetter(ConfigurableWeaponData::optionalSpeed),
 				Codec.DOUBLE.optionalFieldOf("reach").forGetter(ConfigurableWeaponData::optionalReach),

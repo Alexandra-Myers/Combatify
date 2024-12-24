@@ -1,6 +1,7 @@
 package net.atlas.combatify.config;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,7 +13,7 @@ import static net.atlas.combatify.config.ConfigurableItemData.clamp;
 
 public record ConfigurableEntityData(Optional<Integer> optionalAttackInterval, Optional<Double> optionalShieldDisableTime, Optional<Boolean> optionalIsMiscEntity) {
 	public static final ConfigurableEntityData EMPTY = new ConfigurableEntityData((Integer) null, null, null);
-	public static final Codec<ConfigurableEntityData> CODEC = RecordCodecBuilder.create(instance ->
+	public static final MapCodec<ConfigurableEntityData> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.INT.optionalFieldOf("attack_interval").forGetter(ConfigurableEntityData::optionalAttackInterval),
 			Codec.DOUBLE.optionalFieldOf("shield_disable_time").forGetter(ConfigurableEntityData::optionalShieldDisableTime),
 			Codec.BOOL.optionalFieldOf("is_misc_entity").forGetter(ConfigurableEntityData::optionalIsMiscEntity))

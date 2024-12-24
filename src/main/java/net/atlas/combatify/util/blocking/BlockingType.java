@@ -6,11 +6,14 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.Combatify;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -53,7 +56,11 @@ public abstract class BlockingType {
 				BlockingTypeData.CREATE.forGetter(BlockingType::data))
 			.apply(instance, Factory::create));
 	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
-	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation).map(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::getName);
+	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> IDENTITY_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation).map(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::getName);
+	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Factory.STREAM_CODEC, BlockingType::factory,
+		ResourceLocation.STREAM_CODEC, BlockingType::getName,
+		BlockingTypeData.STREAM_CODEC, BlockingType::data,
+		Factory::create);
 	private final ResourceLocation name;
 	private BlockingTypeData data;
 	public BlockingTypeData data() {
@@ -84,7 +91,9 @@ public abstract class BlockingType {
 		this.data = data;
 	}
 	public BlockingType copy(Boolean canBeDisabled, Boolean canCrouchBlock, Boolean canBlockHit, Boolean requireFullCharge, Boolean defaultKbMechanics, Boolean hasDelay) {
-		this.data = this.data.copy(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay);
+		BlockingTypeData newData = this.data.copy(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay);
+		if (Combatify.defaultTypes.containsKey(this.name)) return factory().create(this.name, newData);
+		this.data = newData;
 		return this;
 	}
 	public abstract Factory<? extends BlockingType> factory();
@@ -181,14 +190,22 @@ public abstract class BlockingType {
 	}
 	@FunctionalInterface
 	public interface Factory<B extends BlockingType> {
+		StreamCodec<ByteBuf, Factory<? extends BlockingType>> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(Combatify.registeredTypeFactories::get, Combatify.registeredTypeFactories.inverse()::get);
 		B create(ResourceLocation name, BlockingTypeData blockingTypeData);
 	}
 	public record BlockingTypeData(boolean canBeDisabled, boolean canCrouchBlock, boolean canBlockHit,
 								   boolean requireFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+		public static final StreamCodec<FriendlyByteBuf, BlockingTypeData> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, BlockingTypeData::canBeDisabled,
+			ByteBufCodecs.BOOL, BlockingTypeData::canCrouchBlock,
+			ByteBufCodecs.BOOL, BlockingTypeData::canBlockHit,
+			ByteBufCodecs.BOOL, BlockingTypeData::requireFullCharge,
+			ByteBufCodecs.BOOL, BlockingTypeData::defaultKbMechanics,
+			ByteBufCodecs.BOOL, BlockingTypeData::hasDelay,
+			BlockingTypeData::new);
 		public static final MapCodec<BlockingTypeData> CREATE = RecordCodecBuilder.mapCodec(instance ->
-			instance.group(Codec.BOOL.optionalFieldOf("can_crouch_block", true).forGetter(BlockingTypeData::canCrouchBlock),
+			instance.group(Codec.BOOL.optionalFieldOf("can_be_disabled", true).forGetter(BlockingTypeData::canBeDisabled),
+				Codec.BOOL.optionalFieldOf("can_crouch_block", true).forGetter(BlockingTypeData::canCrouchBlock),
 				Codec.BOOL.optionalFieldOf("can_block_hit", false).forGetter(BlockingTypeData::canBlockHit),
-				Codec.BOOL.optionalFieldOf("can_be_disabled", true).forGetter(BlockingTypeData::canBeDisabled),
 				Codec.BOOL.optionalFieldOf("require_full_charge", true).forGetter(BlockingTypeData::requireFullCharge),
 				Codec.BOOL.optionalFieldOf("default_kb_mechanics", true).forGetter(BlockingTypeData::defaultKbMechanics),
 				Codec.BOOL.optionalFieldOf("has_shield_delay", true).forGetter(BlockingTypeData::hasDelay)).apply(instance, BlockingTypeData::new));

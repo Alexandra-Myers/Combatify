@@ -46,7 +46,7 @@ public record Blocker(BlockingType blockingType, float useSeconds, PostBlockEffe
 	public static final Codec<Blocker> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, Blocker> STREAM_CODEC = StreamCodec.composite(
-		BlockingType.STREAM_CODEC,
+		BlockingType.IDENTITY_STREAM_CODEC,
 		Blocker::blockingType,
 		ByteBufCodecs.FLOAT,
 		Blocker::useSeconds,

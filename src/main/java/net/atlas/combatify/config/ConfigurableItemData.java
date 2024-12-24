@@ -1,6 +1,7 @@
 package net.atlas.combatify.config;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.config.item.ArmourStats;
 import net.atlas.combatify.config.item.BlockingInformation;
@@ -29,7 +30,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 								   ItemAttributeModifiers itemAttributeModifiers) {
 
 	public static final ConfigurableItemData EMPTY = new ConfigurableItemData(WeaponStats.EMPTY, (Integer) null, null, BlockingInformation.EMPTY, null, null, null, ArmourStats.EMPTY, null, null, null, ItemAttributeModifiers.EMPTY);
-	public static final Codec<ConfigurableItemData> CODEC = RecordCodecBuilder.create(instance ->
+	public static final MapCodec<ConfigurableItemData> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(WeaponStats.CODEC.optionalFieldOf("weapon_information", WeaponStats.EMPTY).forGetter(ConfigurableItemData::weaponStats),
 				Codec.INT.optionalFieldOf("stack_size").forGetter(ConfigurableItemData::optionalStackSize),
 				UseCooldown.CODEC.optionalFieldOf("cooldown").forGetter(ConfigurableItemData::optionalCooldown),
