@@ -2,6 +2,7 @@ package net.atlas.combatify.config.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.item.WeaponType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,7 +13,7 @@ import java.util.Optional;
 import static net.atlas.combatify.Combatify.registeredWeaponTypes;
 import static net.atlas.combatify.config.ConfigurableItemData.clamp;
 
-public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<WeaponType> optionalWeaponType, Optional<Boolean> optionalCanSweep) {
+public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<WeaponType> optionalWeaponType, Optional<CanSweep> optionalCanSweep) {
 	public static final WeaponStats EMPTY = new WeaponStats((Double) null, null, null, null, null, null, null);
 	public static final Codec<WeaponStats> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(Codec.DOUBLE.optionalFieldOf("damage").forGetter(WeaponStats::optionalDamage),
@@ -21,7 +22,7 @@ public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> opti
 				Codec.DOUBLE.optionalFieldOf("charged_reach").forGetter(WeaponStats::optionalChargedReach),
 				Codec.DOUBLE.optionalFieldOf("armor_piercing").forGetter(WeaponStats::optionalPiercingLevel),
 				WeaponType.STRICT_CODEC.optionalFieldOf("weapon_type").forGetter(WeaponStats::optionalWeaponType),
-				Codec.BOOL.optionalFieldOf("can_sweep").forGetter(WeaponStats::optionalCanSweep))
+				CanSweep.CODEC.optionalFieldOf("can_sweep").forGetter(WeaponStats::optionalCanSweep))
 			.apply(instance, WeaponStats::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponStats> STREAM_CODEC = StreamCodec.of((buf, weaponStats) -> {
 		buf.writeDouble(weaponStats.optionalDamage.orElse(-10D));
@@ -30,7 +31,8 @@ public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> opti
 		buf.writeDouble(weaponStats.optionalChargedReach.orElse(-10D));
 		buf.writeDouble(weaponStats.optionalPiercingLevel.orElse(-10D));
 		buf.writeUtf(weaponStats.optionalWeaponType.isEmpty() ? "empty" : weaponStats.optionalWeaponType.get().name());
-		buf.writeInt(weaponStats.optionalCanSweep.map(aBoolean -> aBoolean ? 1 : 0).orElse(-10));
+		buf.writeBoolean(weaponStats.optionalCanSweep.isPresent());
+		weaponStats.optionalCanSweep.ifPresent(canSweep -> CanSweep.STREAM_CODEC.encode(buf, canSweep));
 	}, buf -> {
 		Double attackDamage = buf.readDouble();
 		Double attackSpeed = buf.readDouble();
@@ -39,8 +41,8 @@ public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> opti
 		Double piercingLevel = buf.readDouble();
 		String weaponType = buf.readUtf();
 		WeaponType type = null;
-		int canSweepAsInt = buf.readInt();
-		Boolean canSweep = null;
+		boolean canSweepIsPresent = buf.readBoolean();
+		CanSweep canSweep = canSweepIsPresent ? CanSweep.STREAM_CODEC.decode(buf) : null;
 		if (attackDamage == -10)
 			attackDamage = null;
 		if (attackSpeed == -10)
@@ -53,14 +55,12 @@ public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> opti
 			piercingLevel = null;
 		if (registeredWeaponTypes.containsKey(weaponType))
 			type = WeaponType.fromID(weaponType);
-		if (canSweepAsInt != -10)
-			canSweep = canSweepAsInt == 1;
 		return new WeaponStats(attackDamage, attackSpeed, attackReach, chargedReach, piercingLevel, type, canSweep);
 	});
-	public WeaponStats(Double optionalDamage, Double optionalSpeed, Double optionalReach, Double optionalChargedReach, Double optionalPiercingLevel, WeaponType optionalWeaponType, Boolean optionalCanSweep) {
+	public WeaponStats(Double optionalDamage, Double optionalSpeed, Double optionalReach, Double optionalChargedReach, Double optionalPiercingLevel, WeaponType optionalWeaponType, CanSweep optionalCanSweep) {
 		this(Optional.ofNullable(optionalDamage), Optional.ofNullable(optionalSpeed), Optional.ofNullable(optionalReach), Optional.ofNullable(optionalChargedReach), Optional.ofNullable(optionalPiercingLevel), Optional.ofNullable(optionalWeaponType), Optional.ofNullable(optionalCanSweep));
 	}
-	public WeaponStats(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<WeaponType> optionalWeaponType, Optional<Boolean> optionalCanSweep) {
+	public WeaponStats(Optional<Double> optionalDamage, Optional<Double> optionalSpeed, Optional<Double> optionalReach, Optional<Double> optionalChargedReach, Optional<Double> optionalPiercingLevel, Optional<WeaponType> optionalWeaponType, Optional<CanSweep> optionalCanSweep) {
 		this.optionalDamage = clamp(optionalDamage, 0, 1000);
 		this.optionalSpeed = clamp(optionalSpeed, -1, 7.5);
 		this.optionalReach = clamp(optionalReach, 0, 1024);
@@ -93,7 +93,7 @@ public record WeaponStats(Optional<Double> optionalDamage, Optional<Double> opti
 		return optionalWeaponType.orElse(null);
 	}
 
-	public Boolean canSweep() {
+	public CanSweep canSweep() {
 		return optionalCanSweep.orElse(null);
 	}
 

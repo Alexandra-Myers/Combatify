@@ -1,13 +1,16 @@
-package net.atlas.combatify.util;
+package net.atlas.combatify.util.blocking;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -27,7 +30,7 @@ import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class CurrentShieldBlockingType extends ShieldBlockingType {
 
-	public CurrentShieldBlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+	public CurrentShieldBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
 		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
 	}
 
@@ -37,14 +40,12 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 	}
 
 	@Override
-	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if (MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem))
-			return;
-		instance.hurtCurrentlyUsedShield(amount.get());
+	public void block(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+		MethodHandler.hurtCurrentlyUsedShield(instance, amount.get());
 		g.set(amount.get());
 		amount.set(0.0f);
 		if (!source.is(DamageTypeTags.IS_PROJECTILE) && source.getDirectEntity() instanceof LivingEntity livingEntity) {
-			MethodHandler.blockedByShield(instance, livingEntity, source);
+			MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
 		} else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
 			switch (source.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->

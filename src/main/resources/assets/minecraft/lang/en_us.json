@@ -7,5 +7,6 @@
   "attribute.name.shield_reduction": "Shield Damage Reduction",
   "attribute.name.damage_reduction": "Damage Reduction",
   "attribute.name.armor_piercing": "Armor Piercing",
-  "item.modifiers.use": "When used:"
+  "item.modifiers.use": "When used:",
+  "item.can_sweep": "Able to Sweep"
 }

@@ -31,8 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.atlas.combatify.util.MethodHandler.getPinchHealth;
-import static net.atlas.combatify.util.MethodHandler.shouldSprintToCloseInOnTarget;
+import static net.atlas.combatify.util.MethodHandler.*;
 
 @Mixin(Mob.class)
 public abstract class MobMixin extends LivingEntity implements MobExtensions {
@@ -109,7 +108,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 
 	@Unique
 	protected boolean canGuard() {
-		return Combatify.CONFIG.mobsCanGuard() && onGround() && !this.getOffhandItem().getItem().combatify$getBlockingType().isEmpty() && !MethodHandler.getCooldowns(Mob.class.cast(this)).isOnCooldown(this.getOffhandItem());
+		return Combatify.CONFIG.mobsCanGuard() && onGround() && !getBlockingType(this.getOffhandItem()).isEmpty() && !MethodHandler.getCooldowns(Mob.class.cast(this)).isOnCooldown(this.getOffhandItem());
 	}
 
 	@Unique

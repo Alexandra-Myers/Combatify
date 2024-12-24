@@ -12,7 +12,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.effects.AddValue;
@@ -43,6 +45,12 @@ public class CustomEnchantmentHelper {
 			else if (!(enchantmentValueEffect instanceof AddValue || add)) mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()));
 		}));
 		return mutableFloat.floatValue();
+	}
+	public static void applyPostBlockedEffects(ServerLevel serverLevel, ItemStack itemStack, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)
+			.forEach(postBlockEffectConditionalEffect -> {
+				if (postBlockEffectConditionalEffect.matches(Enchantment.damageContext(serverLevel, i, target, damageSource))) postBlockEffectConditionalEffect.effect().doEffect(itemStack, target, attacker, damageSource);
+			}));
 	}
 	public static float modifyDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float baseDamage, Operation<Float> original) {
 		label1: {

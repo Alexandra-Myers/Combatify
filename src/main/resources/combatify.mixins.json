@@ -25,6 +25,7 @@
     "HoeItemMixin",
     "ItemMixin",
     "ItemStackMixin",
+    "LivingEntityAccessor",
     "LivingEntityMixin",
     "MaceItemMixin",
     "MeleeAttackGoalMixin",
@@ -51,6 +52,7 @@
     "ToolMaterialMixin",
     "TridentItemMixin",
     "UseCooldownMixin",
+    "compatibility.polymer.PolymerComponentMixin",
     "compatibility.viafabricplus.Attributes1_20_5Mixin",
     "compatibility.viafabricplus.EntityPacketRewriter1_20_5Mixin",
     "compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin"

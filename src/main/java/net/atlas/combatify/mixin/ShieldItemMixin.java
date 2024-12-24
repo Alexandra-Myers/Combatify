@@ -1,30 +1,22 @@
 package net.atlas.combatify.mixin;
 
-import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
-import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
-import net.minecraft.world.item.*;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ShieldItem.class)
-public class ShieldItemMixin extends ItemMixin {
-	@Override
-	public BlockingType combatify$getBlockingType() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			if (configurableItemData.blocker().blockingType() != null)
-				return configurableItemData.blocker().blockingType();
-			WeaponType type;
-			ConfigurableWeaponData configurableWeaponData;
-			if ((type = configurableItemData.weaponStats().weaponType()) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
-				BlockingType blockingType = configurableWeaponData.blockingType();
-				if (blockingType != null)
-					return blockingType;
-			}
-		}
-		return Combatify.registeredTypes.get("shield");
+public class ShieldItemMixin {
+	@Inject(method = "use", at = @At(value = "HEAD"), cancellable = true)
+	public void removeBlockingIfNotMet(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> cir) {
+		ItemStack heldItem = player.getItemInHand(interactionHand);
+		if (!MethodHandler.getBlocking(heldItem).canUse(heldItem, level, player, interactionHand)) cir.setReturnValue(InteractionResult.PASS);
 	}
 }

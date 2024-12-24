@@ -10,6 +10,8 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.component.CustomDataComponents;
+import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
@@ -365,7 +367,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Unique
 	protected boolean checkSweepAttack() {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-		boolean sweepingItem = getMainHandItem().getItem().canSweep();
+		boolean sweepingItem = getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
 		boolean sweep = getAttackStrengthScale(baseValue) > charge && (getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) > 0.0F || sweepingItem);
 		if (!Combatify.CONFIG.sweepWithSweeping())
 			return sweepingItem && sweep;

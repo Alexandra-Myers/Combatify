@@ -14,11 +14,13 @@ import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
+import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.extensions.ToolMaterialWrapper;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.util.BlockingType;
+import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -75,6 +77,7 @@ public class ItemConfig extends AtlasConfig {
 	public List<ConfigDataWrapper<Item, ConfigurableItemData>> configuredItems;
 	public List<ConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
+	public static final StreamCodec<RegistryFriendlyByteBuf, ResourceLocation> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
 		buf.writeFloat(tier.combatify$blockingLevel());
 		buf.writeVarInt(tier.combatify$weaponLevel());
@@ -117,7 +120,7 @@ public class ItemConfig extends AtlasConfig {
 	});
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> BLOCKING_TYPE_STREAM_CODEC = StreamCodec.of((buf, blockingType) -> {
 		buf.writeResourceLocation(Combatify.registeredTypeFactories.inverse().get(blockingType.factory()));
-		buf.writeUtf(blockingType.getName());
+		buf.writeResourceLocation(blockingType.getName());
 		buf.writeBoolean(blockingType.canCrouchBlock());
 		buf.writeBoolean(blockingType.canBlockHit());
 		buf.writeBoolean(blockingType.canBeDisabled());
@@ -126,7 +129,7 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeBoolean(blockingType.hasDelay());
 	}, buf -> {
 		BlockingType.Factory<?> factory = registeredTypeFactories.get(buf.readResourceLocation());
-		String name = buf.readUtf();
+		ResourceLocation name = buf.readResourceLocation();
 		boolean canCrouchBlock = buf.readBoolean();
 		boolean canBlockHit = buf.readBoolean();
 		boolean canDisable = buf.readBoolean();
@@ -296,7 +299,7 @@ public class ItemConfig extends AtlasConfig {
 		super.loadFromNetwork(buf);
 		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
 		registeredWeaponTypes = readMap(buf, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
-		registeredTypes = readMap(buf, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
+		registeredTypes = readMap(buf, RESOURCE_NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
 		configuredEntities = buf.readList(ENTITY_WRAPPER_STREAM_CODEC);
 		configuredItems = buf.readList(ITEM_WRAPPER_STREAM_CODEC);
 		configuredWeapons = buf.readList(WEAPON_WRAPPER_STREAM_CODEC);
@@ -337,7 +340,7 @@ public class ItemConfig extends AtlasConfig {
 		super.saveToNetwork(buf);
 		writeMap(buf, tiers, NAME_STREAM_CODEC, TIERS_STREAM_CODEC);
 		writeMap(buf, registeredWeaponTypes, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
-		writeMap(buf, Combatify.registeredTypes, NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
+		writeMap(buf, Combatify.registeredTypes, RESOURCE_NAME_STREAM_CODEC, BLOCKING_TYPE_STREAM_CODEC);
 		buf.writeCollection(configuredEntities, ENTITY_WRAPPER_STREAM_CODEC);
 		buf.writeCollection(configuredItems, ITEM_WRAPPER_STREAM_CODEC);
 		buf.writeCollection(configuredWeapons, WEAPON_WRAPPER_STREAM_CODEC);
@@ -447,6 +450,8 @@ public class ItemConfig extends AtlasConfig {
 				Integer maxStackSize = configurableItemData.stackSize();
 				Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
 				Float blockingLevel = configurableItemData.blocker().blockingLevel();
+				CanSweep canSweep = configurableItemData.weaponStats().canSweep();
+				Blocker blocking = configurableItemData.blocker().blocking();
 				Tier tier = configurableItemData.tier();
 				TagKey<Block> mineable = configurableItemData.toolMineableTag();
 				Tool tool = configurableItemData.tool();
@@ -461,6 +466,10 @@ public class ItemConfig extends AtlasConfig {
 					setDurability(builder, item, durability);
 					damageOverridden = true;
 				}
+				if (canSweep != null) builder.set(CustomDataComponents.CAN_SWEEP, canSweep);
+				else if ((canSweep = item.combatify$getWeaponType().canSweep()) != null) builder.set(CustomDataComponents.CAN_SWEEP, canSweep);
+				if (blocking != null) builder.set(CustomDataComponents.BLOCKER, blocking);
+				else if ((blocking = item.combatify$getWeaponType().blocking()) != null) builder.set(CustomDataComponents.BLOCKER, blocking);
 				if (enchantable != null) builder.set(DataComponents.ENCHANTABLE, enchantable);
 				else if (tier != null) builder.set(DataComponents.ENCHANTABLE, new Enchantable(tier.enchantmentValue()));
 				if (repairItems != null) builder.set(DataComponents.REPAIRABLE, new Repairable(BuiltInRegistries.ITEM.getOrThrow(repairItems)));

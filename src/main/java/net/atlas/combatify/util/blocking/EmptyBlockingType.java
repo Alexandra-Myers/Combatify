@@ -1,8 +1,10 @@
-package net.atlas.combatify.util;
+package net.atlas.combatify.util.blocking;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class EmptyBlockingType extends BlockingType {
-	public EmptyBlockingType(String name) {
+	public EmptyBlockingType(ResourceLocation name) {
 		super(name, false, false, false, false, false, false);
 	}
 
@@ -28,7 +30,7 @@ public class EmptyBlockingType extends BlockingType {
 	}
 
 	@Override
-	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+	public void block(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
 
 	}
 
@@ -43,13 +45,8 @@ public class EmptyBlockingType extends BlockingType {
 	}
 
 	@Override
-	public @NotNull InteractionResult use(Level world, Player user, InteractionHand hand) {
+	public @NotNull InteractionResult use(ItemStack itemStack, Level world, Player user, InteractionHand hand) {
 		return InteractionResult.PASS;
-	}
-
-	@Override
-	public boolean canUse(Level world, Player user, InteractionHand hand) {
-		return false;
 	}
 
 	@Override

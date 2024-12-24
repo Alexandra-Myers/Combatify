@@ -58,6 +58,7 @@
   "fastHealingTime": 0.5,
   "instantTippedArrowEffectMultiplier": 0.125,
   "shieldDisableTime": 1.6,
+  "shieldProtectionArc": 130,
   "minHitboxSize": 0.9,
 
   "eatingInterruptionMode": "full_reset",

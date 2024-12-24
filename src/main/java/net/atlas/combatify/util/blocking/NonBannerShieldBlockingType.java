@@ -1,15 +1,17 @@
-package net.atlas.combatify.util;
+package net.atlas.combatify.util.blocking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
 public class NonBannerShieldBlockingType extends ShieldBlockingType {
 
-	public NonBannerShieldBlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+	public NonBannerShieldBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
 		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
 	}
 

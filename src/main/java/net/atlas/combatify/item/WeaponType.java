@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.Tier;
@@ -135,13 +137,16 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 		return 1.0;
 	}
 
-	public boolean canSweep() {
+	public CanSweep canSweep() {
 		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
-		if (configurableWeaponData != null) {
-			if (configurableWeaponData.canSweep() != null)
-				return configurableWeaponData.canSweep();
-		}
-		return false;
+		if (configurableWeaponData != null) return configurableWeaponData.canSweep();
+		return null;
+	}
+
+	public Blocker blocking() {
+		ConfigurableWeaponData configurableWeaponData = MethodHandler.forWeapon(this);
+		if (configurableWeaponData != null) return configurableWeaponData.blocking();
+		return null;
 	}
 
 	public boolean isEmpty() {

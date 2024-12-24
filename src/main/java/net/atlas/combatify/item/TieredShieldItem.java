@@ -1,14 +1,9 @@
 package net.atlas.combatify.item;
 
-import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
-import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
+import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.extensions.Tier;
-import net.atlas.combatify.util.BlockingType;
-import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ShieldItem;
@@ -35,7 +30,8 @@ public class TieredShieldItem extends ShieldItem {
 			.component(CustomDataComponents.BLOCKING_LEVEL, lvl)
 			.repairable(tier.repairItems())
 			.enchantable(tier.enchantmentValue())
-			.component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+			.component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)
+			.component(CustomDataComponents.BLOCKER, Blocker.NEW_SHIELD));
 		this.tier = tier;
 		shields.add(this);
 	}
@@ -52,22 +48,5 @@ public class TieredShieldItem extends ShieldItem {
     }
 	public static void init() {
 
-	}
-
-	@Override
-	public BlockingType combatify$getBlockingType() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(this);
-		if (configurableItemData != null) {
-			if (configurableItemData.blocker().blockingType() != null)
-				return configurableItemData.blocker().blockingType();
-			WeaponType type;
-			ConfigurableWeaponData configurableWeaponData;
-			if ((type = configurableItemData.weaponStats().weaponType()) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
-				BlockingType blockingType = configurableWeaponData.blockingType();
-				if (blockingType != null)
-					return blockingType;
-			}
-		}
-		return Combatify.registeredTypes.get("new_shield");
 	}
 }

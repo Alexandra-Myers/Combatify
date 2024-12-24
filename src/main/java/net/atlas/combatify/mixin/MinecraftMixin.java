@@ -12,7 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +25,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
@@ -77,8 +79,8 @@ public abstract class MinecraftMixin {
 	public boolean allowBlockHitting(boolean original) {
 		if (!original) return false;
 		if (player != null) {
-			Item item = player.getUseItem().getItem();
-			boolean bl = item.combatify$getBlockingType().canBlockHit() && !item.combatify$getBlockingType().isEmpty();
+			ItemStack stack = player.getUseItem();
+			boolean bl = getBlockingType(stack).canBlockHit() && !getBlockingType(stack).isEmpty();
 			if (bl && this.player.combatify$isAttackAvailable(0.0F))
 				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK)
 					startAttack();

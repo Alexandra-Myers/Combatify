@@ -3,22 +3,27 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
+import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.config.ArmourVariable;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.config.item.ArmourStats;
-import net.atlas.combatify.config.item.Blocker;
+import net.atlas.combatify.config.item.BlockingInformation;
 import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.mixin.LivingEntityAccessor;
+import net.atlas.combatify.util.blocking.BlockingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -50,6 +55,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+
+import static net.minecraft.world.entity.LivingEntity.getSlotForHand;
 
 public class MethodHandler {
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
@@ -105,9 +112,9 @@ public class MethodHandler {
 		}
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
-		boolean delay = blockingItem.getItem().combatify$getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 		if (!blockingItem.isEmpty() && !delay) {
-			BlockingType blockingType = blockingItem.getItem().combatify$getBlockingType();
+			BlockingType blockingType = getBlockingType(blockingItem);
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
 			else
@@ -126,7 +133,7 @@ public class MethodHandler {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		if (!blockingItem.isEmpty()) {
-			BlockingType blockingType = blockingItem.getItem().combatify$getBlockingType();
+			BlockingType blockingType = getBlockingType(blockingItem);
 			if (!blockingType.defaultKbMechanics())
 				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
 			else
@@ -235,6 +242,30 @@ public class MethodHandler {
 		}
 		return instance;
 	}
+	public static void hurtCurrentlyUsedShield(LivingEntity livingEntity, float f) {
+		if (!(livingEntity instanceof Player player)) return;
+		FakeUseItem fakeUseItem = getBlockingItem(player);
+		ItemStack blockingItem = fakeUseItem.stack();
+		if (!blockingItem.isEmpty()) {
+			if (!player.level().isClientSide) {
+				player.awardStat(Stats.ITEM_USED.get(blockingItem.getItem()));
+			}
+
+			if (f >= 3.0F) {
+				int i = 1 + Mth.floor(f);
+				InteractionHand interactionHand = fakeUseItem.useHand();
+				blockingItem.hurtAndBreak(i, player, getSlotForHand(interactionHand));
+				fakeUseItem = getBlockingItem(player);
+				if (fakeUseItem.stack().isEmpty()) {
+					if (interactionHand == InteractionHand.MAIN_HAND) player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+					else player.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+
+					if (fakeUseItem.isReal()) ((LivingEntityAccessor)player).setUseItem(ItemStack.EMPTY);
+					player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
+				}
+			}
+		}
+	}
 	public static void disableShield(LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
 		ItemStack attackingItem = attacker.getMainHandItem();
 		double piercingLevel = getPiercingLevel(attackingItem);
@@ -243,8 +274,7 @@ public class MethodHandler {
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
 		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;
-		Item shieldItem = blockingItem.getItem();
-		if (canDisable && shieldItem.combatify$getBlockingType().canBeDisabled()) {
+		if (canDisable && getBlockingType(blockingItem).canBeDisabled()) {
 			if (piercingLevel > 0)
 				attacker.combatify$setPiercingNegation(piercingLevel);
 			float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
@@ -285,20 +315,20 @@ public class MethodHandler {
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
 			if (entity.getUseItem().getUseAnimation() == ItemUseAnimation.BLOCK) {
-				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand());
+				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
 			}
 		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && entity.combatify$hasEnabledShieldOnCrouch()) {
 			for (InteractionHand hand : InteractionHand.values()) {
 				ItemStack stack = entity.getItemInHand(hand);
-				Item blockingItem = stack.getItem();
-				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && blockingItem.combatify$getBlockingType().requireFullCharge();
-				if (!bl && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && stack.getItem().combatify$getBlockingType().canCrouchBlock()) {
-					return new FakeUseItem(stack, hand);
+				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
+				boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
+				if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
+					return new FakeUseItem(stack, hand, false);
 				}
 			}
 		}
 
-		return new FakeUseItem(ItemStack.EMPTY, null);
+		return new FakeUseItem(ItemStack.EMPTY, null, true);
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
 		return getCooldowns(entity).isOnCooldown(var1);
@@ -352,17 +382,9 @@ public class MethodHandler {
 	    return normalized.multiply(d, d, d);
 	}
 
-	public static void blockedByShield(LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
-		double x = target.getX() - attacker.getX();
-		double z = target.getZ() - attacker.getZ();
+	public static void blockedByShield(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
 		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
-		target.blockUsingShield(attacker);
-		if (blockingItem.getItem().combatify$getBlockingType().isToolBlocker()) {
-			MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
-			return;
-		}
-		MethodHandler.knockback(attacker, 0.5, x, z);
-		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
+		getBlocking(blockingItem).doEffect(serverLevel, blockingItem, target, attacker, damageSource);
 	}
 	public static ItemCooldowns createItemCooldowns() {
 		return new ItemCooldowns();
@@ -419,14 +441,14 @@ public class MethodHandler {
 			Integer stackSize = null;
 			UseCooldown cooldown = null;
 			WeaponType type = null;
-			BlockingType blockingType = null;
+			Blocker blocking = null;
 			Double blockStrength = null;
 			Double blockKbRes = null;
 			Float blockingLevel = null;
 			Enchantable enchantable = null;
 			Integer useDuration = null;
 			Double piercingLevel = null;
-			Boolean canSweep = null;
+			CanSweep canSweep = null;
 			Tier tier = null;
 			ArmourVariable durability = ArmourVariable.EMPTY;
 			ArmourVariable defense = ArmourVariable.EMPTY;
@@ -444,7 +466,7 @@ public class MethodHandler {
 				piercingLevel = conditionalChange(configurableItemData.weaponStats().piercingLevel(), piercingLevel);
 				canSweep = conditionalChange(configurableItemData.weaponStats().canSweep(), canSweep);
 				type = conditionalChange(configurableItemData.weaponStats().weaponType(), type);
-				blockingType = conditionalChange(configurableItemData.blocker().blockingType(), blockingType);
+				blocking = conditionalChange(configurableItemData.blocker().blocking(), blocking);
 				blockStrength = conditionalChange(configurableItemData.blocker().blockStrength(), blockStrength);
 				blockKbRes = conditionalChange(configurableItemData.blocker().blockKbRes(), blockKbRes);
 				blockingLevel = conditionalChange(configurableItemData.blocker().blockingLevel(), blockingLevel);
@@ -463,7 +485,7 @@ public class MethodHandler {
 				itemAttributeModifiers = configurableItemData.itemAttributeModifiers().equals(ItemAttributeModifiers.EMPTY) ? itemAttributeModifiers : configurableItemData.itemAttributeModifiers();
 			}
 			WeaponStats weaponStats = new WeaponStats(damage, speed, reach, chargedReach, piercingLevel, type, canSweep);
-			Blocker blocker = new Blocker(blockingType, blockStrength, blockKbRes, blockingLevel);
+			BlockingInformation blocker = new BlockingInformation(blocking, blockStrength, blockKbRes, blockingLevel);
 			ArmourStats armourStats = new ArmourStats(durability, defense, toughness, armourKbRes);
 			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, stackSize, cooldown, blocker, enchantable, useDuration, tier, armourStats, repairItems, toolMineable, tool, itemAttributeModifiers);
 			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
@@ -484,20 +506,20 @@ public class MethodHandler {
 			Double reach = null;
 			Boolean tierable = null;
 			Double chargedReach = null;
-			BlockingType blockingType = null;
+			Blocker blocking = null;
 			Double piercingLevel = null;
-			Boolean canSweep = null;
+			CanSweep canSweep = null;
 			for (ConfigurableWeaponData configurableWeaponData : results) {
 				tierable = conditionalChange(configurableWeaponData.tiered(), tierable);
 				damageOffset = conditionalChange(configurableWeaponData.attackDamage(), damageOffset);
 				speed = conditionalChange(configurableWeaponData.attackSpeed(), speed);
 				reach = conditionalChange(configurableWeaponData.attackReach(), reach);
 				chargedReach = conditionalChange(configurableWeaponData.chargedReach(), chargedReach);
-				blockingType = conditionalChange(configurableWeaponData.blockingType(), blockingType);
+				blocking = conditionalChange(configurableWeaponData.blocking(), blocking);
 				piercingLevel = conditionalChange(configurableWeaponData.piercingLevel(), piercingLevel);
 				canSweep = conditionalChange(configurableWeaponData.canSweep(), canSweep);
 			}
-			ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, piercingLevel, tierable, canSweep, blockingType);
+			ConfigurableWeaponData configurableWeaponData = new ConfigurableWeaponData(damageOffset, speed, reach, chargedReach, piercingLevel, tierable, canSweep, blocking);
 			if (configurableWeaponData.equals(ConfigurableWeaponData.EMPTY)) return null;
 			return configurableWeaponData;
 		}
@@ -533,5 +555,13 @@ public class MethodHandler {
 
 	public static <T> T conditionalChange(T source, T destination) {
 		return source == null ? destination : source;
+	}
+
+	public static BlockingType getBlockingType(ItemStack itemStack) {
+		return getBlocking(itemStack).blockingType();
+	}
+
+	public static Blocker getBlocking(ItemStack itemStack) {
+		return itemStack.getOrDefault(CustomDataComponents.BLOCKER, Blocker.EMPTY);
 	}
 }

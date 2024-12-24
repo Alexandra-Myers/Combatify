@@ -2,9 +2,7 @@ package net.atlas.combatify.extensions;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.util.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -39,35 +37,6 @@ public interface ItemExtensions {
 				chargedBonus = configurableItemData.weaponStats().chargedReach();
 		}
 		return chargedBonus;
-	}
-
-	default boolean canSweep() {
-        boolean canSweep = false;
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			WeaponType type;
-			if ((type = configurableItemData.weaponStats().weaponType()) != null)
-				canSweep = type.canSweep();
-			if (configurableItemData.weaponStats().canSweep() != null)
-				canSweep = configurableItemData.weaponStats().canSweep();
-		}
-		return canSweep;
-	}
-
-	default BlockingType combatify$getBlockingType() {
-		ConfigurableItemData configurableItemData = MethodHandler.forItem(combatify$self());
-		if (configurableItemData != null) {
-			if (configurableItemData.blocker().blockingType() != null)
-				return configurableItemData.blocker().blockingType();
-			WeaponType type;
-			ConfigurableWeaponData configurableWeaponData;
-			if ((type = configurableItemData.weaponStats().weaponType()) != null && (configurableWeaponData = MethodHandler.forWeapon(type)) != null) {
-				BlockingType blockingType = configurableWeaponData.blockingType();
-				if (blockingType != null)
-					return blockingType;
-			}
-		}
-		return Combatify.EMPTY;
 	}
 
 	default Item combatify$self() {

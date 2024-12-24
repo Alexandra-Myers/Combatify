@@ -59,7 +59,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		if (isBlocking != wasShieldBlocking) {
 			wasShieldBlocking = isBlocking;
 			if (isBlocking) shieldBlockingHand = getBlockingItem(thisPlayer).useHand();
-			if (!isUsingItem()) minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
+			if (isBlocking && !isUsingItem()) minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
 		}
 	}
 

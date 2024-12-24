@@ -1,4 +1,4 @@
-package net.atlas.combatify.util;
+package net.atlas.combatify.util.blocking;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
@@ -7,8 +7,10 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.Tier;
+import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -22,17 +24,12 @@ import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class NewShieldBlockingType extends PercentageBlockingType {
 
-	public NewShieldBlockingType(String name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
+	public NewShieldBlockingType(ResourceLocation name, boolean crouchable, boolean blockHit, boolean canDisable, boolean needsFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
 		super(name, crouchable, blockHit, canDisable, needsFullCharge, defaultKbMechanics, hasDelay);
 	}
 
 	@Override
-	public boolean canBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		return !MethodHandler.getCooldowns(instance).isOnCooldown(blockingItem);
-	}
-
-	@Override
-	public boolean fulfilBlock(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl, float actualStrength) {
+	public boolean fulfilBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl, float actualStrength) {
 		boolean hurt = false;
 		if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_PROJECTILE)) {
 			g.set(amount.get());
@@ -48,14 +45,14 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 		} else {
 			entity = source.getDirectEntity();
 			if (entity instanceof LivingEntity livingEntity) {
-				instance.hurtCurrentlyUsedShield(g.get());
+				MethodHandler.hurtCurrentlyUsedShield(instance, g.get());
 				hurt = true;
-				MethodHandler.blockedByShield(instance, livingEntity, source);
+				MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
 			}
 		}
 
 		if (!hurt)
-			instance.hurtCurrentlyUsedShield(g.get());
+			MethodHandler.hurtCurrentlyUsedShield(instance, g.get());
 		bl.set(true);
 		return true;
 	}
@@ -75,7 +72,6 @@ public class NewShieldBlockingType extends PercentageBlockingType {
 			}
 		}
 		float strengthIncrease = stack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 0F);
-		strengthIncrease = Mth.ceil(strengthIncrease);
 		strengthIncrease = CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, strengthIncrease, true);
 
 		return CustomEnchantmentHelper.modifyShieldEffectiveness(stack, random, Math.min(0.5F + (strengthIncrease * 0.1F), 1), false);

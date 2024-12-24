@@ -7,6 +7,7 @@ import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
+import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.Tier;
@@ -16,6 +17,9 @@ import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.*;
+import net.atlas.combatify.util.blocking.*;
+import net.atlas.combatify.util.blocking.condition.BlockingConditions;
+import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.*;
@@ -36,10 +40,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -73,10 +74,10 @@ public class Combatify implements ModInitializer {
 	public static final Object2ObjectOpenHashMap<Holder<Item>, Tier> originalTiers = new Object2ObjectOpenHashMap<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
-	public static final Map<String, BlockingType> defaultTypes = new HashMap<>();
+	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
 	public static final BiMap<String, Tier> defaultTiers = HashBiMap.create();
 	public static Map<String, WeaponType> registeredWeaponTypes = new HashMap<>();
-	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
+	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 	public static BiMap<String, Tier> tiers = HashBiMap.create();
 	public static BiMap<ResourceLocation, BlockingType.Factory<?>> registeredTypeFactories = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
@@ -89,6 +90,7 @@ public class Combatify implements ModInitializer {
 	public static final BlockingType.Factory<NewShieldBlockingType> NEW_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("new_shield"), NewShieldBlockingType::new);
 	public static final BlockingType.Factory<TestBlockingType> TEST_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("test"), TestBlockingType::new);
 	public static final BlockingType SWORD = defineDefaultBlockingType(BlockingType.builder(SWORD_BLOCKING_TYPE_FACTORY).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("sword"));
+	public static final BlockingType ORIGINAL_SWORD = defineDefaultBlockingType(BlockingType.builder(OLD_SWORD_BLOCKING_TYPE_FACTORY).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("original_sword"));
 	public static final BlockingType SHIELD = defineDefaultBlockingType(BlockingType.builder(SHIELD_BLOCKING_TYPE_FACTORY).build("shield"));
 	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(BlockingType.builder(NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY).build("shield_no_banner"));
 	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(BlockingType.builder(CURRENT_SHIELD_BLOCKING_TYPE_FACTORY).build("current_shield"));
@@ -103,6 +105,8 @@ public class Combatify implements ModInitializer {
 	public void onInitialize() {
 		isLoaded = true;
 		originalTiers.defaultReturnValue(ToolMaterial.DIAMOND);
+		BlockingConditions.bootstrap();
+		PostBlockEffects.bootstrap();
 		WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
@@ -144,12 +148,14 @@ public class Combatify implements ModInitializer {
  			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
 		CustomDataComponents.registerDataComponents();
 		DefaultItemComponentEvents.MODIFY.register(modDetectionNetworkChannel, (modifyContext) -> {
+			modifyContext.modify(item -> item instanceof SwordItem, (builder, item) -> builder.set(CustomDataComponents.BLOCKER, Blocker.SWORD));
 			modifyContext.modify(Items.WOODEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -2F));
 			modifyContext.modify(Items.GOLDEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -2F));
 			modifyContext.modify(Items.STONE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -1.5F));
 			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -1F));
 			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -0.5F));
 			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 0F));
+			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.SHIELD));
 		});
 		bindItemsToDefaultTier(ToolMaterial.WOOD, Items.WOODEN_SWORD, Items.WOODEN_SHOVEL, Items.WOODEN_AXE, Items.WOODEN_HOE, Items.WOODEN_PICKAXE);
 		bindItemsToDefaultTier(ToolMaterial.GOLD, Items.GOLDEN_SWORD, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE);

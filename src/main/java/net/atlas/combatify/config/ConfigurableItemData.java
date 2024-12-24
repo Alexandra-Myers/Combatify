@@ -3,7 +3,7 @@ package net.atlas.combatify.config;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.config.item.ArmourStats;
-import net.atlas.combatify.config.item.Blocker;
+import net.atlas.combatify.config.item.BlockingInformation;
 import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.extensions.Tier;
 import net.minecraft.core.registries.Registries;
@@ -23,17 +23,17 @@ import java.util.Optional;
 import static net.atlas.combatify.config.ItemConfig.getTier;
 import static net.atlas.combatify.config.ItemConfig.getTierName;
 
-public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> optionalStackSize, Optional<UseCooldown> optionalCooldown, Blocker blocker,
+public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> optionalStackSize, Optional<UseCooldown> optionalCooldown, BlockingInformation blocker,
 								   Optional<Enchantable> optionalEnchantable, Optional<Integer> optionalUseDuration,
 								   Optional<Tier> optionalTier, ArmourStats armourStats, Optional<TagKey<Item>> optionalRepairItems, Optional<TagKey<Block>> optionalToolMineable, Optional<Tool> optionalTool,
 								   ItemAttributeModifiers itemAttributeModifiers) {
 
-	public static final ConfigurableItemData EMPTY = new ConfigurableItemData(WeaponStats.EMPTY, (Integer) null, null, Blocker.EMPTY, null, null, null, ArmourStats.EMPTY, null, null, null, ItemAttributeModifiers.EMPTY);
+	public static final ConfigurableItemData EMPTY = new ConfigurableItemData(WeaponStats.EMPTY, (Integer) null, null, BlockingInformation.EMPTY, null, null, null, ArmourStats.EMPTY, null, null, null, ItemAttributeModifiers.EMPTY);
 	public static final Codec<ConfigurableItemData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(WeaponStats.CODEC.optionalFieldOf("weapon_information", WeaponStats.EMPTY).forGetter(ConfigurableItemData::weaponStats),
 				Codec.INT.optionalFieldOf("stack_size").forGetter(ConfigurableItemData::optionalStackSize),
 				UseCooldown.CODEC.optionalFieldOf("cooldown").forGetter(ConfigurableItemData::optionalCooldown),
-				Blocker.CODEC.optionalFieldOf("blocking_information", Blocker.EMPTY).forGetter(ConfigurableItemData::blocker),
+				BlockingInformation.CODEC.optionalFieldOf("blocking_information", BlockingInformation.EMPTY).forGetter(ConfigurableItemData::blocker),
 				Enchantable.CODEC.optionalFieldOf("enchantable").forGetter(ConfigurableItemData::optionalEnchantable),
 				Codec.INT.optionalFieldOf("use_duration").forGetter(ConfigurableItemData::optionalUseDuration),
 				Codec.STRING.optionalFieldOf("tier").xmap(name -> name.map(ItemConfig::getTier), tier1 -> tier1.map(ItemConfig::getTierName)).forGetter(ConfigurableItemData::optionalTier),
@@ -45,7 +45,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 			.apply(instance, ConfigurableItemData::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableItemData> ITEM_DATA_STREAM_CODEC = StreamCodec.of((buf, configurableItemData) -> {
 		WeaponStats.STREAM_CODEC.encode(buf, configurableItemData.weaponStats);
-		Blocker.STREAM_CODEC.encode(buf, configurableItemData.blocker);
+		BlockingInformation.STREAM_CODEC.encode(buf, configurableItemData.blocker);
 		ArmourStats.STREAM_CODEC.encode(buf, configurableItemData.armourStats);
 		buf.writeVarInt(configurableItemData.optionalStackSize.orElse(-10));
 		buf.writeBoolean(configurableItemData.optionalCooldown.isPresent());
@@ -63,7 +63,7 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 		ItemAttributeModifiers.STREAM_CODEC.encode(buf, configurableItemData.itemAttributeModifiers);
 	}, buf -> {
 		WeaponStats weaponStats = WeaponStats.STREAM_CODEC.decode(buf);
-		Blocker blocker = Blocker.STREAM_CODEC.decode(buf);
+		BlockingInformation blocker = BlockingInformation.STREAM_CODEC.decode(buf);
 		ArmourStats armourStats = ArmourStats.STREAM_CODEC.decode(buf);
 		Integer stackSize = buf.readVarInt();
 		UseCooldown cooldown = null;
@@ -89,11 +89,11 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> op
 	});
 
 	public ConfigurableItemData(WeaponStats weaponStats, Integer optionalStackSize, UseCooldown optionalCooldown,
-								Blocker blocker, Enchantable optionalEnchantable, Integer optionalUseDuration,
+								BlockingInformation blocker, Enchantable optionalEnchantable, Integer optionalUseDuration,
 								Tier optionalTier, ArmourStats armourStats, TagKey<Item> optionalRepairItems, TagKey<Block> optionalTag, Tool optionalTool, ItemAttributeModifiers itemAttributeModifiers) {
 		this(weaponStats, Optional.ofNullable(optionalStackSize), Optional.ofNullable(optionalCooldown), blocker, Optional.ofNullable(optionalEnchantable), Optional.ofNullable(optionalUseDuration), Optional.ofNullable(optionalTier), armourStats, Optional.ofNullable(optionalRepairItems), Optional.ofNullable(optionalTag), Optional.ofNullable(optionalTool), itemAttributeModifiers);
 	}
-    public ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> optionalStackSize, Optional<UseCooldown> optionalCooldown, Blocker blocker,
+    public ConfigurableItemData(WeaponStats weaponStats, Optional<Integer> optionalStackSize, Optional<UseCooldown> optionalCooldown, BlockingInformation blocker,
 								Optional<Enchantable> optionalEnchantable, Optional<Integer> optionalUseDuration,
 								Optional<Tier> optionalTier, ArmourStats armourStats, Optional<TagKey<Item>> optionalRepairItems, Optional<TagKey<Block>> optionalToolMineable, Optional<Tool> optionalTool,
 								ItemAttributeModifiers itemAttributeModifiers) {

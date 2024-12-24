@@ -27,7 +27,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,8 +34,9 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Objects;
 import java.util.UUID;
+
+import static net.atlas.combatify.util.MethodHandler.getBlocking;
 
 @Mixin(value = LivingEntity.class, priority = 1400)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
@@ -94,17 +94,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	@WrapOperation(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl, @Share("blocked") LocalBooleanRef blocked) {
+	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl, @Share("blocked") LocalBooleanRef blocked) {
 		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
-		Item shieldItem = itemStack.getItem();
 		if (amount.get() > 0.0F && original.call(instance, source)) {
-			if (shieldItem.combatify$getBlockingType().hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(thisEntity) - useItemRemaining < Combatify.CONFIG.shieldDelay()) {
-				if (Combatify.CONFIG.disableDuringShieldDelay())
-					if (source.getDirectEntity() instanceof LivingEntity attacker)
-						MethodHandler.disableShield(attacker, instance, source, itemStack);
-				return false;
-			}
-			shieldItem.combatify$getBlockingType().block(instance, null, itemStack, source, amount, f, g, bl);
+			getBlocking(itemStack).block(serverLevel, instance, source, itemStack, amount, f, g, bl);
 		}
 		blocked.set(bl.get());
 		return false;
@@ -167,12 +160,24 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return Combatify.CONFIG.arrowDisableMode().pierceArrowsBlocked() ? 0 : original;
 	}
 
-	@Inject(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;calculateViewVector(FF)Lnet/minecraft/world/phys/Vec3;"), cancellable = true)
-	public void isDamageSourceBlocked(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
-		Vec3 currentVector = this.calculateViewVector(0.0F, this.getYHeadRot()).normalize();
-		Vec3 sourceVector = Objects.requireNonNull(source.getSourcePosition()).vectorTo(this.position());
-		sourceVector = (new Vec3(sourceVector.x, 0.0, sourceVector.z)).normalize();
-		cir.setReturnValue(sourceVector.dot(currentVector) * 3.1415927410125732 < -0.8726646304130554);
+	@ModifyReturnValue(method = "isDamageSourceBlocked", at = @At(value = "RETURN", ordinal = 0))
+	public boolean isDamageSourceBlocked(boolean original) {
+		return Combatify.CONFIG.shieldProtectionArc() == 360D || original;
+	}
+
+	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D"))
+	public double modifyDotResultToGetRadians(double original) {
+        return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : original * Math.PI;
+	}
+
+	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "CONSTANT", args = "doubleValue=0.0", ordinal = 1))
+	public double modifyCompareValue(double original) {
+		return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc() - 180D);
+	}
+
+	@ModifyReturnValue(method = "getItemBlockingWith", at = @At("RETURN"))
+	public ItemStack removeMojangStupidity(ItemStack original) {
+		return (original == null || !(original.getItem() instanceof ShieldItem)) && !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty() ? Items.SHIELD.getDefaultInstance() : original;
 	}
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {
