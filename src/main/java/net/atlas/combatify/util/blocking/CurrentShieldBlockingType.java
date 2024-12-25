@@ -49,9 +49,9 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 		} else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
 			switch (source.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, source, blockingItem);
+					arrowDisable(instance, source, arrow, blockingItem);
 				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
-					arrowDisable(instance, source, blockingItem);
+					arrowDisable(instance, source, arrow, blockingItem);
 				case null, default -> {
 					// Do nothing
 				}

@@ -36,11 +36,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.EMPTY;
-import static net.atlas.combatify.Combatify.id;
 
 public abstract class BlockingType {
 	public static final Codec<BlockingType.Factory<?>> FACTORY_CODEC = ResourceLocation.CODEC.validate(factory -> !Combatify.registeredTypeFactories.containsKey(factory) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type Factory that does not exist: " + factory) : DataResult.success(factory)).xmap(factory -> Combatify.registeredTypeFactories.get(factory), factory -> Combatify.registeredTypeFactories.inverse().get(factory));
-	public static final Codec<BlockingType> SIMPLE_CODEC = ResourceLocation.CODEC.validate(blocking_type -> blocking_type.equals(id("empty")) || blocking_type.equals(id("blank")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type)).xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::getName);
+	public static final Codec<ResourceLocation> ID_CODEC = ResourceLocation.CODEC.validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
+	public static final Codec<BlockingType> SIMPLE_CODEC = ID_CODEC.xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::getName);
 	public static final Codec<BlockingType> MODIFY = RecordCodecBuilder.create(instance ->
 		instance.group(SIMPLE_CODEC.fieldOf("name").forGetter(blockingType -> blockingType),
 				Codec.BOOL.optionalFieldOf("can_be_disabled").forGetter(blockingType -> Optional.of(blockingType.canBeDisabled())),
@@ -52,11 +52,10 @@ public abstract class BlockingType {
 			.apply(instance, (blockingType, canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay) -> blockingType.copy(canBeDisabled.orElse(null), canCrouchBlock.orElse(null), canBlockHit.orElse(null), requireFullCharge.orElse(null), defaultKbMechanics.orElse(null), hasDelay.orElse(null))));
 	public static final Codec<BlockingType> CREATE = RecordCodecBuilder.create(instance ->
 		instance.group(FACTORY_CODEC.fieldOf("factory").forGetter(BlockingType::factory),
-				ResourceLocation.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(id("empty")) || blocking_type.equals(id("blank")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::getName),
+				ResourceLocation.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::getName),
 				BlockingTypeData.CREATE.forGetter(BlockingType::data))
 			.apply(instance, Factory::create));
 	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
-	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> IDENTITY_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation).map(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::getName);
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Factory.STREAM_CODEC, BlockingType::factory,
 		ResourceLocation.STREAM_CODEC, BlockingType::getName,
 		BlockingTypeData.STREAM_CODEC, BlockingType::data,
@@ -185,7 +184,7 @@ public abstract class BlockingType {
 			return build(ResourceLocation.parse(name));
 		}
 		public BlockingType build(ResourceLocation name) {
-			return initialiser.create(name, new BlockingTypeData(canCrouchBlock, canBlockHit, canBeDisabled, requireFullCharge, defaultKbMechanics, hasDelay));
+			return initialiser.create(name, new BlockingTypeData(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay));
 		}
 	}
 	@FunctionalInterface

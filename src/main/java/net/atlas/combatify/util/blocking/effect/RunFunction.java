@@ -13,7 +13,8 @@ import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -28,7 +29,7 @@ public record RunFunction(ResourceLocation function) implements PostBlockEffect 
 	public static final StreamCodec<RegistryFriendlyByteBuf, RunFunction> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(RunFunction::new, RunFunction::id).mapStream(buf -> buf);
 
 	@Override
-	public void doEffect(ServerLevel serverLevel, ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
 		MinecraftServer minecraftServer = serverLevel.getServer();
 		ServerFunctionManager serverFunctionManager = minecraftServer.getFunctions();
 		Optional<CommandFunction<CommandSourceStack>> optional = serverFunctionManager.get(this.function);
@@ -36,10 +37,10 @@ public record RunFunction(ResourceLocation function) implements PostBlockEffect 
 			CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
 				.withPermission(2)
 				.withSuppressedOutput()
-				.withEntity(target)
+				.withEntity(toApply)
 				.withLevel(serverLevel)
-				.withPosition(target.position())
-				.withRotation(target.getRotationVector());
+				.withPosition(position)
+				.withRotation(toApply.getRotationVector());
 			serverFunctionManager.execute(optional.get(), commandSourceStack);
 		} else {
 			LOGGER.error("Blocking effect run_function failed for non-existent function {}", this.function);

@@ -12,8 +12,12 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class TestBlockingType extends SwordBlockingType {
 
@@ -26,6 +30,15 @@ public class TestBlockingType extends SwordBlockingType {
 		boolean hurt = false;
 		if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_PROJECTILE)) {
 			g.set(amount.get());
+			switch (source.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case null, default -> {
+					// Do nothing
+				}
+			}
 		} else {
 			entity = source.getDirectEntity();
 			if (entity instanceof LivingEntity livingEntity) {

@@ -3,21 +3,18 @@ package net.atlas.combatify.enchantment;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.item.enchantment.effects.AddValue;
+import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
 import java.util.Optional;
@@ -46,10 +43,16 @@ public class CustomEnchantmentHelper {
 		}));
 		return mutableFloat.floatValue();
 	}
-	public static void applyPostBlockedEffects(ServerLevel serverLevel, ItemStack itemStack, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
-		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)
-			.forEach(postBlockEffectConditionalEffect -> {
-				if (postBlockEffectConditionalEffect.matches(Enchantment.damageContext(serverLevel, i, target, damageSource))) postBlockEffectConditionalEffect.effect().doEffect(serverLevel, itemStack, target, attacker, damageSource);
+	public static void applyPostBlockedEffects(ServerLevel serverLevel, EquipmentSlot equipmentSlot, ItemStack itemStack, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+		EnchantmentHelper.runIterationOnItem(itemStack, equipmentSlot, target, (holder, enchantmentLevel, enchantedItemInUse) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)
+			.forEach(targetedConditionalEffect -> {
+				if (targetedConditionalEffect.matches(Enchantment.damageContext(serverLevel, enchantmentLevel, target, damageSource))) {
+					LivingEntity applicable = switch (targetedConditionalEffect.affected()) {
+						case ATTACKER, DAMAGING_ENTITY -> attacker;
+						case VICTIM -> target;
+					};
+					targetedConditionalEffect.effect().doEffect(serverLevel, enchantedItemInUse, attacker, damageSource, enchantmentLevel, applicable, applicable.position());
+				}
 			}));
 	}
 	public static float modifyDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float baseDamage, Operation<Float> original) {
@@ -72,9 +75,16 @@ public class CustomEnchantmentHelper {
 		}
 		return original.call(serverLevel, itemStack, entity, damageSource, baseDamage);
 	}
-	public static float modifyShieldDisable(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float timeSeconds) {
-		MutableFloat mutableFloat = new MutableFloat(timeSeconds);
-		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().modifyDamageFilteredValue(CustomEnchantmentEffectComponents.SHIELD_DISABLE, serverLevel, i, itemStack, entity, damageSource, mutableFloat));
-		return mutableFloat.floatValue();
+	public static float modifyShieldDisable(ServerLevel serverLevel, ItemStack itemStack, Entity target, Entity sourceEntity, DamageSource damageSource, float timeSeconds) {
+		MutableFloat disableTime = new MutableFloat(timeSeconds);
+		if (itemStack != null) EnchantmentHelper.runIterationOnItem(itemStack, (holder, enchantmentLevel) -> modifyDisableTime(EnchantmentTarget.ATTACKER, holder, serverLevel, enchantmentLevel, target, damageSource, disableTime));
+		else if (sourceEntity instanceof LivingEntity livingEntity) EnchantmentHelper.runIterationOnEquipment(livingEntity, (holder, enchantmentLevel, enchantedItemInUse) -> modifyDisableTime(EnchantmentTarget.ATTACKER, holder, serverLevel, enchantmentLevel, target, damageSource, disableTime));
+		if (target instanceof LivingEntity livingEntity) EnchantmentHelper.runIterationOnEquipment(livingEntity, (holder, enchantmentLevel, enchantedItemInUse) -> modifyDisableTime(EnchantmentTarget.VICTIM, holder, serverLevel, enchantmentLevel, target, damageSource, disableTime));
+		return disableTime.floatValue();
+	}
+	public static void modifyDisableTime(EnchantmentTarget enchantmentTarget, Holder<Enchantment> holder, ServerLevel serverLevel, int enchantmentLevel, Entity target, DamageSource damageSource, MutableFloat disableTime) {
+		for (TargetedConditionalEffect<EnchantmentValueEffect> effect : holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_DISABLE)) {
+			if (effect.enchanted() == enchantmentTarget && effect.matches(Enchantment.damageContext(serverLevel, enchantmentLevel, target, damageSource))) disableTime.setValue(effect.effect().process(enchantmentLevel, target.getRandom(), disableTime.floatValue()));
+		}
 	}
 }

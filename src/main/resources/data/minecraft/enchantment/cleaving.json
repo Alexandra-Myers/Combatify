@@ -13,7 +13,8 @@
             "base": 0.5,
             "per_level_above_first": 0.5
           }
-        }
+        },
+        "enchanted": "attacker"
       }
     ],
     "minecraft:damage": [

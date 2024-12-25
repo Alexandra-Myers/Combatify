@@ -9,6 +9,7 @@ accessible method net/minecraft/world/entity/LivingEntity hurtCurrentlyUsedShiel
 accessible method net/minecraft/world/entity/projectile/ThrownTrident isAcceptibleReturnOwner ()Z
 accessible method net/minecraft/world/entity/ai/attributes/AttributeInstance getModifiersOrEmpty (Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Ljava/util/Collection;
 accessible method net/minecraft/world/item/enchantment/EnchantmentHelper runIterationOnItem (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor;)V
+accessible method net/minecraft/world/item/enchantment/EnchantmentHelper runIterationOnItem (Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V
 accessible method net/minecraft/world/item/enchantment/EnchantmentHelper runIterationOnEquipment (Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V
 accessible class net/minecraft/client/Options$FieldAccess
 accessible class net/minecraft/network/protocol/game/ServerboundInteractPacket

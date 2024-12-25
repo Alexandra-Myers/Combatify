@@ -38,6 +38,7 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
@@ -274,23 +275,33 @@ public class MethodHandler {
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
 		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;
-		if (canDisable && getBlockingType(blockingItem).canBeDisabled()) {
+		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
+		ConfigurableEntityData configurableEntityData;
+		if ((configurableEntityData = forEntity(target)) != null) {
+			if (configurableEntityData.shieldDisableTime() != null)
+				damage = configurableEntityData.shieldDisableTime().floatValue();
+		}
+		modifyTime: {
+			if (attacker.level() instanceof ServerLevel serverLevel) {
+				if (canDisable) {
+					damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);
+					break modifyTime;
+				}
+				float newDamage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);
+				if (newDamage > 0) {
+					damage = newDamage;
+					canDisable = true;
+				}
+			}
+		}
+		if (canDisable && damage > 0 && getBlockingType(blockingItem).canBeDisabled()) {
 			if (piercingLevel > 0)
 				attacker.combatify$setPiercingNegation(piercingLevel);
-			float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
-			ConfigurableEntityData configurableEntityData;
-			if ((configurableEntityData = forEntity(target)) != null) {
-				if (configurableEntityData.shieldDisableTime() != null)
-					damage = configurableEntityData.shieldDisableTime().floatValue();
-			}
-			if (attacker.level() instanceof ServerLevel serverLevel) {
-				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, attackingItem, target, damageSource, damage);
-				damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
-			}
 			disableShield(target, damage, blockingItem);
 		}
 	}
-	public static void arrowDisable(LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
+	public static void arrowDisable(LivingEntity target, DamageSource damageSource, AbstractArrow abstractArrow, ItemStack blockingItem) {
+		if (!getBlockingType(blockingItem).canBeDisabled()) return;
 		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
 		ConfigurableEntityData configurableEntityData;
 		if ((configurableEntityData = forEntity(target)) != null) {
@@ -298,9 +309,9 @@ public class MethodHandler {
 				damage = configurableEntityData.shieldDisableTime().floatValue();
 		}
 		if (target.level() instanceof ServerLevel serverLevel) {
-			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, blockingItem, target, damageSource, damage);
+			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getPickupItemStackOrigin(), target, abstractArrow, damageSource, damage);
 		}
-		disableShield(target, damage, blockingItem);
+		disableShield(target, Math.max(damage, 0), blockingItem);
 	}
 	public static void disableShield(LivingEntity target, float damage, ItemStack item) {
 		getCooldowns(target).addCooldown(item, (int)(damage * 20.0F));
@@ -384,7 +395,8 @@ public class MethodHandler {
 
 	public static void blockedByShield(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
 		ItemStack blockingItem = MethodHandler.getBlockingItem(target).stack();
-		getBlocking(blockingItem).doEffect(serverLevel, blockingItem, target, attacker, damageSource);
+		EquipmentSlot equipmentSlot = target.getEquipmentSlotForItem(blockingItem);
+		getBlocking(blockingItem).doEffect(serverLevel, equipmentSlot, blockingItem, target, attacker, damageSource);
 	}
 	public static ItemCooldowns createItemCooldowns() {
 		return new ItemCooldowns();

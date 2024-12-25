@@ -19,11 +19,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class OldSwordBlockingType extends BlockingType {
 
@@ -45,6 +49,16 @@ public class OldSwordBlockingType extends BlockingType {
 			if (entity instanceof LivingEntity livingEntity) {
 				MethodHandler.hurtCurrentlyUsedShield(instance, g.get());
 				MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
+			}
+		} else {
+			switch (source.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case null, default -> {
+					// Do nothing
+				}
 			}
 		}
 

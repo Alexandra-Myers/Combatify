@@ -10,56 +10,79 @@ import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.condition.*;
 import net.atlas.combatify.util.blocking.effect.DoNothing;
-import net.atlas.combatify.util.blocking.effect.KnockbackAttacker;
+import net.atlas.combatify.util.blocking.effect.KnockbackEntity;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
-import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
+import net.atlas.combatify.util.blocking.effect.PostBlockEffectWrapper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentTarget;
 import net.minecraft.world.level.Level;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
-public record Blocker(BlockingType blockingType, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
+public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
+	public Blocker(BlockingType blockingType, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
+		this(blockingType.getName(), useSeconds, new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, postBlockEffect, Optional.empty()), blockingCondition);
+	}
+	public Blocker(ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
+		this(blockingTypeLocation, useSeconds, new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, postBlockEffect, Optional.empty()), blockingCondition);
+	}
 	public static final Blocker EMPTY = new Blocker(Combatify.EMPTY, 0, new DoNothing(), new AnyOf(Collections.emptyList()));
-	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD, 3600, new KnockbackAttacker(), new Unconditional());
-	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD, 3600, new KnockbackAttacker(), new Unconditional());
+	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD, 3600, new KnockbackEntity(), new Unconditional());
+	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD, 3600, new KnockbackEntity(), new Unconditional());
 	public static final Blocker SWORD = new Blocker(Combatify.SWORD, 3600, new DoNothing(), new AllOf(List.of(new RequiresSwordBlocking(), new RequiresEmptyHand(InteractionHand.OFF_HAND))));
-	public static final Codec<Blocker> SIMPLE_CODEC = BlockingType.SIMPLE_CODEC.xmap(blockingType1 -> new Blocker(blockingType1, 3600, new KnockbackAttacker(), new Unconditional()), Blocker::blockingType);
+	public static final Codec<Blocker> SIMPLE_CODEC = BlockingType.ID_CODEC.xmap(blockingType1 -> new Blocker(blockingType1, 3600, new KnockbackEntity(), new Unconditional()), Blocker::blockingTypeLocation);
 	public static final Codec<Blocker> FULL_CODEC = RecordCodecBuilder.create(instance ->
-		instance.group(BlockingType.SIMPLE_CODEC.fieldOf("type").forGetter(Blocker::blockingType),
+		instance.group(BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
 				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
-				PostBlockEffects.MAP_CODEC.forGetter(Blocker::postBlockEffect),
+				PostBlockEffectWrapper.MAP_CODEC.forGetter(Blocker::postBlockEffect),
 				BlockingConditions.MAP_CODEC.forGetter(Blocker::blockingCondition))
 			.apply(instance, Blocker::new));
 	public static final Codec<Blocker> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, Blocker> STREAM_CODEC = StreamCodec.composite(
-		BlockingType.IDENTITY_STREAM_CODEC,
-		Blocker::blockingType,
+		ResourceLocation.STREAM_CODEC,
+		Blocker::blockingTypeLocation,
 		ByteBufCodecs.FLOAT,
 		Blocker::useSeconds,
-		PostBlockEffect.STREAM_CODEC,
+		ByteBufCodecs.fromCodecTrusted(PostBlockEffectWrapper.MAP_CODEC.codec()),
 		Blocker::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		Blocker::blockingCondition,
 		Blocker::new
 	);
 
-	public void doEffect(ServerLevel serverLevel, ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
-		postBlockEffect.doEffect(serverLevel, blockingItem, target, attacker, damageSource);
-		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, blockingItem, target, attacker, damageSource);
+	public BlockingType blockingType() {
+		if (blockingTypeLocation.equals(ResourceLocation.withDefaultNamespace("empty"))) return Combatify.EMPTY;
+		return Combatify.registeredTypes.get(blockingTypeLocation);
+	}
+
+	public void doEffect(ServerLevel serverLevel, EquipmentSlot equipmentSlot, ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+		if (postBlockEffect.matches(Enchantment.damageContext(serverLevel, 1, target, damageSource))) {
+			LivingEntity applicable = switch (postBlockEffect.affected()) {
+				case ATTACKER, DAMAGING_ENTITY -> attacker;
+                case VICTIM -> target;
+			};
+			postBlockEffect.effect().doEffect(serverLevel, new EnchantedItemInUse(blockingItem, equipmentSlot, target), attacker, damageSource, 1, applicable, applicable.position());
+		}
+		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, equipmentSlot, blockingItem, target, attacker, damageSource);
 		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 	}
 
@@ -82,7 +105,7 @@ public record Blocker(BlockingType blockingType, float useSeconds, PostBlockEffe
 	public InteractionResult use(ItemStack itemStack, Level level, Player user, InteractionHand hand, InteractionResult original) {
 		if (original != InteractionResult.PASS) return null;
 		if (!canUse(itemStack, level, user, hand)) return null;
-		return blockingType.use(itemStack, level, user, hand);
+		return blockingType().use(itemStack, level, user, hand);
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

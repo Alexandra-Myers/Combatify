@@ -16,6 +16,7 @@
     "CombatTrackerAccessor",
     "ConfigCommandMixin",
     "CrossbowItemMixin",
+    "DamageSourceMixin",
     "DiggerItemMixin",
     "EggMixin",
     "EnchantmentHelperMixin",

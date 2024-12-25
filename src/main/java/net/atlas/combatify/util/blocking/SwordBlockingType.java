@@ -16,8 +16,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
 public class SwordBlockingType extends PercentageBlockingType {
 
@@ -36,6 +40,18 @@ public class SwordBlockingType extends PercentageBlockingType {
 		entity = source.getDirectEntity();
 		if (blocked && entity instanceof LivingEntity livingEntity)
 			MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
+		else if (source.is(DamageTypeTags.IS_PROJECTILE) || source.is(DamageTypeTags.IS_EXPLOSION)) {
+			switch (source.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case null, default -> {
+					// Do nothing
+				}
+			}
+		}
+
 		return true;
 	}
 

@@ -1,7 +1,6 @@
 package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,19 +9,20 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
 import java.util.Map;
 
-public record AllOf(List<PostBlockEffect> effects) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("all_of");
-	public static final MapCodec<AllOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-		instance.group(PostBlockEffects.MAP_CODEC.codec().listOf().fieldOf("effects").forGetter(AllOf::effects)).apply(instance, AllOf::new));
-	public static final StreamCodec<RegistryFriendlyByteBuf, AllOf> STREAM_CODEC = StreamCodec.composite(PostBlockEffect.STREAM_CODEC.apply(ByteBufCodecs.list()), AllOf::effects, AllOf::new);
+public record EnchantmentEffect(EnchantmentEntityEffect enchantmentEntityEffect) implements PostBlockEffect {
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("enchantment_effect");
+	public static final MapCodec<EnchantmentEffect> MAP_CODEC = EnchantmentEntityEffect.CODEC.fieldOf("effect")
+		.xmap(EnchantmentEffect::new, EnchantmentEffect::enchantmentEntityEffect);
+	public static final StreamCodec<RegistryFriendlyByteBuf, EnchantmentEffect> STREAM_CODEC = ByteBufCodecs.fromCodec(MAP_CODEC.codec()).mapStream(buf -> buf);
+
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
-		effects.forEach(effect -> effect.doEffect(serverLevel, enchantedItemInUse, attacker, damageSource, enchantmentLevel, toApply, position));
+		enchantmentEntityEffect.apply(serverLevel, enchantmentLevel, enchantedItemInUse, toApply, position);
 	}
 
 	@Override
@@ -36,6 +36,6 @@ public record AllOf(List<PostBlockEffect> effects) implements PostBlockEffect {
 	}
 
 	public static void mapStreamCodec(Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, PostBlockEffect>> map) {
-		map.put(ID, STREAM_CODEC.map(allOf -> allOf, blockingCondition -> (AllOf) blockingCondition));
+		map.put(ID, STREAM_CODEC.map(enchantmentEffect -> enchantmentEffect, postBlockEffect -> (EnchantmentEffect) postBlockEffect));
 	}
 }
