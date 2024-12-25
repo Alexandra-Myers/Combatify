@@ -630,7 +630,7 @@ public class ItemConfig extends AtlasConfig {
 			this.holders = holders;
 			this.tagKeys = tagKeys;
 			this.configurableData = configurableData;
-			if (holders.size() > 0 && tagKeys.isEmpty()) noNamePresent(this, "Configuring Registry");
+			if (holders.size() == 0 && tagKeys.isEmpty()) noNamePresent(this, "Configuring Registry");
 		}
 		public boolean matches(Holder<T> test) {
 			return holders.contains(test) || tagKeys.stream().anyMatch(test::is);
