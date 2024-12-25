@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -24,12 +23,12 @@ import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.mixin.item.ItemAccessor;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -45,6 +44,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -64,7 +64,6 @@ import net.minecraft.world.level.block.Block;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -160,6 +159,18 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
+	public void handleExtraSync(AtlasCore.AtlasConfigPacket atlasConfigPacket, ClientPlayNetworking.Context context) {
+		if (CONFIG.enableDebugLogging())
+			LOGGER.info("Loading config details from buffer.");
+		modify();
+	}
+
+	@Override
+	public void handleConfigInformation(AtlasCore.ClientInformPacket clientInformPacket, ServerPlayer serverPlayer, PacketSender packetSender) {
+
+	}
+
+	@Override
 	protected void loadExtra(JsonObject object) {
 		isModifying = true;
 		if (!object.has("items"))
@@ -215,6 +226,26 @@ public class ItemConfig extends AtlasConfig {
 
 	}
 
+	@Override
+	public <T> void alertClientValue(ConfigValue<T> configValue, T t, T t1) {
+
+	}
+
+	@Override
+	public AtlasConfig readClientConfigInformation(RegistryFriendlyByteBuf buf) {
+		super.readClientConfigInformation(buf);
+		HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
+		readMap(buf, NAME_STREAM_CODEC, REGISTERED_WEAPON_TYPE_STREAM_CODEC);
+		readMap(buf, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		buf.readList(ENTITY_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		buf.readList(ITEM_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		buf.readList(WEAPON_WRAPPER_STREAM_CODEC.mapStream(buf1 -> (RegistryFriendlyByteBuf) buf1));
+		String formula = buf.readUtf();
+		if (!formula.equals("empty"))
+			armourCalcs = new Formula(formula);
+		return this;
+	}
+
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
 		tiers = HashBiMap.create(readMap(buf, NAME_STREAM_CODEC, TIERS_STREAM_CODEC));
@@ -267,6 +298,34 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written());
 	}
 
+	@Override
+	public JsonElement saveExtra(JsonElement jsonElement) {
+		JsonElement items = new JsonArray();
+		JsonElement weapons = new JsonArray();
+		JsonElement defenders = new JsonArray();
+		JsonElement tiers = new JsonObject();
+		JsonElement entities = new JsonArray();
+		items = ITEMS_CODEC.codec().listOf().encode(configuredItems, JsonOps.INSTANCE, items).getOrThrow();
+		weapons = WEAPONS_CODEC_ENCODE.codec().listOf().encode(configuredWeapons, JsonOps.INSTANCE, weapons).getOrThrow();
+		ArrayList<BlockingType> blockingTypes = new ArrayList<>(registeredTypes.values());
+		blockingTypes.removeIf(defaultTypes::containsValue);
+		defenders = BlockingType.CODEC.listOf().encode(blockingTypes, JsonOps.INSTANCE, defenders).getOrThrow();
+		BiMap<String, ToolMaterialWrapper> addedTiers = HashBiMap.create();
+		Combatify.tiers.forEach((s, tier) -> {
+			if (!defaultTiers.containsValue(tier) && tier instanceof ToolMaterialWrapper toolMaterialWrapper)
+				addedTiers.put(s, toolMaterialWrapper);
+		});
+		tiers = TIERS_CODEC.encode(addedTiers, JsonOps.INSTANCE, tiers).getOrThrow();
+		entities = ENTITIES_CODEC.codec().listOf().encode(configuredEntities, JsonOps.INSTANCE, entities).getOrThrow();
+		JsonObject result = jsonElement.getAsJsonObject();
+		result.add("items", items);
+		result.add("weapon_types", weapons);
+		result.add("blocking_types", defenders);
+		result.add("tiers", tiers);
+		result.add("entities", entities);
+		return Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec().encode(Optional.ofNullable(armourCalcs), JsonOps.INSTANCE, result).getOrThrow();
+	}
+
 	public static <B extends FriendlyByteBuf, K, V> Map<K, V> readMap(B buf, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
 		return readMap(buf, Maps::newHashMapWithExpectedSize, keyCodec, valueCodec);
 	}
@@ -290,34 +349,6 @@ public class ItemConfig extends AtlasConfig {
 			keyCodec.encode(buf, key);
 			valueCodec.encode(buf, value);
 		});
-	}
-
-	@Override
-	public void saveExtra(JsonWriter jsonWriter, PrintWriter printWriter) {
-		JsonElement items = new JsonArray();
-		JsonElement weapons = new JsonArray();
-		JsonElement defenders = new JsonArray();
-		JsonElement tiers = new JsonObject();
-		JsonElement entities = new JsonArray();
-		ITEMS_CODEC.codec().listOf().encode(configuredItems, JsonOps.INSTANCE, items);
-		WEAPONS_CODEC_ENCODE.codec().listOf().encode(configuredWeapons, JsonOps.INSTANCE, weapons);
-		ArrayList<BlockingType> blockingTypes = new ArrayList<>(registeredTypes.values());
-		blockingTypes.removeIf(defaultTypes::containsValue);
-		BlockingType.CODEC.listOf().encode(blockingTypes, JsonOps.INSTANCE, defenders);
-		BiMap<String, ToolMaterialWrapper> addedTiers = HashBiMap.create();
-		Combatify.tiers.forEach((s, tier) -> {
-			if (!defaultTiers.containsValue(tier) && tier instanceof ToolMaterialWrapper toolMaterialWrapper)
-				addedTiers.put(s, toolMaterialWrapper);
-		});
-		TIERS_CODEC.encode(addedTiers, JsonOps.INSTANCE, tiers);
-		ENTITIES_CODEC.codec().listOf().encode(configuredEntities, JsonOps.INSTANCE, entities);
-		Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec();
-	}
-
-	@Override
-	public void handleExtraSync(AtlasCore.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
-		if (CONFIG.enableDebugLogging())
-			LOGGER.info("Loading config details from buffer.");
 	}
 
 	@Override

@@ -260,6 +260,8 @@
   "text.config.combatify-general.option.instantTippedArrowEffectMultiplier.tooltip.0": "The amount by which the effect of an instantaneous potion will be multiplied by when used as a tipped arrow.",
   "text.config.combatify-general.option.shieldDisableTime": "Base Shield Disable Time",
   "text.config.combatify-general.option.shieldDisableTime.tooltip.0": "Time, in seconds, which the shield will be disabled for without any modifications.",
+  "text.config.combatify-general.option.shieldProtectionArc": "Shield Protection Arc",
+  "text.config.combatify-general.option.shieldProtectionArc.tooltip.0": "Angle in degrees to be used by the shield protection arc.",
   "text.config.combatify-general.option.minHitboxSize": "Minimum Hitbox Size",
   "text.config.combatify-general.option.minHitboxSize.tooltip.0": "Defines the minimum size for entity hitboxes",
 

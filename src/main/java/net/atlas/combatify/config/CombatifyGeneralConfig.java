@@ -1,28 +1,30 @@
 package net.atlas.combatify.config;
 
-import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
+import net.atlas.atlascore.util.Codecs;
 import net.atlas.atlascore.util.ConfigRepresentable;
-import net.atlas.atlascore.util.JavaToJSONSerialisation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -32,12 +34,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.DispenserBlock;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -144,13 +143,18 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	@Override
-	public void saveExtra(JsonWriter jsonWriter, PrintWriter printWriter) {
+	public void handleExtraSync(AtlasCore.AtlasConfigPacket atlasConfigPacket, ClientPlayNetworking.Context context) {
+
+	}
+
+	@Override
+	public void handleConfigInformation(AtlasCore.ClientInformPacket clientInformPacket, ServerPlayer serverPlayer, PacketSender packetSender) {
 
 	}
 
 	@Override
 	public void defineConfigHolders() {
-		attackDecay = createObject("attackDecay", AttackDecay.DEFAULT, AttackDecay.class, new JavaToJSONSerialisation<>(AttackDecay.decoder, AttackDecay.encoder), AttackDecay.STREAM_CODEC, false);
+		attackDecay = createObject("attackDecay", AttackDecay.DEFAULT, AttackDecay.class, AttackDecay.STREAM_CODEC, false);
 		attackDecay.tieToCategory(ctsB);
 		attackReach = createBoolean("attackReach", true);
 		attackReach.tieToCategory(ctsB);
@@ -185,7 +189,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach = createBoolean("creativeAttackReach", false);
 		creativeAttackReach.tieToCategory(ctsB);
 		creativeAttackReach.setupTooltip(1);
-		critControls = createObject("critControls", CritControls.DEFAULT, CritControls.class, new JavaToJSONSerialisation<>(CritControls.decoder, CritControls.encoder), CritControls.STREAM_CODEC, false);
+		critControls = createObject("critControls", CritControls.DEFAULT, CritControls.class, CritControls.STREAM_CODEC, false);
 		critControls.tieToCategory(ctsB);
 		critControls.setupTooltip(1);
 		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
@@ -257,7 +261,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
 		baseHandAttackSpeed.tieToCategory(ctsD);
-		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, new JavaToJSONSerialisation<>(ProjectileUncertainty.decoder, ProjectileUncertainty.encoder), ProjectileUncertainty.STREAM_CODEC, false);
+		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, ProjectileUncertainty.STREAM_CODEC, false);
 		projectileUncertainty.tieToCategory(ctsD);
 		starvingTime = createInRange("starvingTime", 2, 0, 100D);
 		starvingTime.tieToCategory(ctsD);
@@ -298,11 +302,11 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		canInteractWhenCrouchShield.tieToCategory(extraB);
 		configOnlyWeapons = createBoolean("configOnlyWeapons", false);
 		configOnlyWeapons.tieToCategory(extraB);
-		configOnlyWeapons.setRestartRequired(true);
+		configOnlyWeapons.setRestartRequired(RestartRequiredMode.RESTART_BOTH);
 		configOnlyWeapons.setupTooltip(1);
 		tieredShields = createBoolean("tieredShields", false);
 		tieredShields.tieToCategory(extraB);
-		tieredShields.setRestartRequired(true);
+		tieredShields.setRestartRequired(RestartRequiredMode.RESTART_BOTH);
 		tieredShields.setupTooltip(1);
 		disableDuringShieldDelay = createBoolean("disableDuringShieldDelay", false);
 		disableDuringShieldDelay.tieToCategory(extraB);
@@ -348,7 +352,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		shieldChargePercentage.tieToCategory(extraI);
 		shieldChargePercentage.setupTooltip(1);
 
-		projectileDamage = createObject("projectileDamage", ProjectileDamage.DEFAULT, ProjectileDamage.class, new JavaToJSONSerialisation<>(ProjectileDamage.decoder, ProjectileDamage.encoder), ProjectileDamage.STREAM_CODEC);
+		projectileDamage = createObject("projectileDamage", ProjectileDamage.DEFAULT, ProjectileDamage.class, ProjectileDamage.STREAM_CODEC);
 		projectileDamage.tieToCategory(extraD);
 
 		arrowDisableMode = createEnum("arrowDisableMode", ArrowDisableMode.NONE, ArrowDisableMode.class, ArrowDisableMode.values(), e -> Component.translatable("text.config.combatify-general.option.arrowDisableMode." + e.name().toLowerCase(Locale.ROOT)));
@@ -426,12 +430,12 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	@Override
-	protected void loadExtra(JsonObject jsonObject) {
+	public <T> void alertClientValue(ConfigValue<T> configValue, T t, T t1) {
 
 	}
 
 	@Override
-	public void handleExtraSync(AtlasCore.AtlasConfigPacket packet, LocalPlayer player, PacketSender sender) {
+	protected void loadExtra(JsonObject jsonObject) {
 
 	}
 
@@ -723,12 +727,18 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 			@SuppressWarnings("unchecked")
             public ProjectileUncertainty decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
                 AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readResourceLocation());
-                return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
+                return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
             }
         };
-		public ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner;
+		public ConfigHolder<ProjectileUncertainty> owner;
 		public Double bowUncertainty;
 		public Double crossbowUncertainty;
+		public Double bowUncertainty() {
+			return bowUncertainty;
+		}
+		public Double crossbowUncertainty() {
+			return crossbowUncertainty;
+		}
 		public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 			try {
 				hashMap.put("bowUncertainty", ProjectileUncertainty.class.getDeclaredField("bowUncertainty"));
@@ -752,40 +762,24 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 				return Component.translatable(projectileUncertainty.owner.getTranslationKey() + "." + string);
 			}
 		};
-		public static final BiFunction<ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf>, JsonObject, ProjectileUncertainty> decoder = (objectHolder, jsonObject) -> {
-			Double bowUncertainty = 0.25;
-			Double crossbowUncertainty = 0.25;
-			if (jsonObject.has("bowUncertainty")) {
-				bowUncertainty = getDouble(jsonObject, "bowUncertainty");
-			}
-			if (jsonObject.has("crossbowUncertainty")) {
-				crossbowUncertainty = getDouble(jsonObject, "crossbowUncertainty");
-			}
-
-			return new ProjectileUncertainty(objectHolder, bowUncertainty, crossbowUncertainty);
-		};
-		public static final BiConsumer<JsonWriter, ProjectileUncertainty> encoder = (jsonWriter, testClass) -> fields.forEach((string, field) -> {
-            try {
-                jsonWriter.name(string);
-                Object value = field.get(testClass);
-                switch (value) {
-                    case Double d -> jsonWriter.value(d);
-                    case null, default -> throw new IllegalStateException("Unexpected value: " + value);
-                }
-
-            } catch (IllegalAccessException | IOException var11) {
-                throw new RuntimeException(var11);
-            }
-        });
 		public Supplier<Component> resetTranslation = null;
 
-		public ProjectileUncertainty(ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner, Double bowUncertainty, Double crossbowUncertainty) {
+		public ProjectileUncertainty(ConfigHolder<ProjectileUncertainty> owner, Double bowUncertainty, Double crossbowUncertainty) {
 			this.owner = owner;
 			this.bowUncertainty = Mth.clamp(bowUncertainty, 0, 4);
 			this.crossbowUncertainty = Mth.clamp(crossbowUncertainty, 0, 4);
 		}
+
 		@Override
-		public void setOwnerHolder(ConfigHolder<ProjectileUncertainty, RegistryFriendlyByteBuf> owner) {
+		public Codec<ProjectileUncertainty> getCodec(ConfigHolder<ProjectileUncertainty> configHolder) {
+			return RecordCodecBuilder.create(instance ->
+				instance.group(Codecs.doubleRange(0, 4).optionalFieldOf("bowUncertainty", 0.25).forGetter(ProjectileUncertainty::bowUncertainty),
+					Codecs.doubleRange(0, 4).optionalFieldOf("crossbowUncertainty", 0.25).forGetter(ProjectileUncertainty::crossbowUncertainty))
+					.apply(instance, (bowUncertainty, crossbowUncertainty) -> new ProjectileUncertainty(configHolder, bowUncertainty, crossbowUncertainty)));
+		}
+
+		@Override
+		public void setOwnerHolder(ConfigHolder<ProjectileUncertainty> owner) {
 			this.owner = owner;
 		}
 

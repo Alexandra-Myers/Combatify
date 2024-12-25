@@ -1,16 +1,17 @@
 package net.atlas.combatify.config;
 
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
 import net.atlas.atlascore.config.AtlasConfig;
+import net.atlas.atlascore.util.Codecs;
 import net.atlas.atlascore.util.ConfigRepresentable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -18,18 +19,17 @@ import net.minecraft.Util;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static net.atlas.atlascore.config.AtlasConfig.*;
+import static net.atlas.atlascore.config.AtlasConfig.ConfigHolder;
 
 public class CritControls implements ConfigRepresentable<CritControls> {
 	public static final CritControls DEFAULT = new CritControls(null, true, false, 0, 195, 1.25, 1.5);
@@ -49,16 +49,34 @@ public class CritControls implements ConfigRepresentable<CritControls> {
 		@SuppressWarnings("unchecked")
         public CritControls decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
             AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readResourceLocation());
-            return new CritControls((AtlasConfig.ConfigHolder<CritControls, RegistryFriendlyByteBuf>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
+            return new CritControls((AtlasConfig.ConfigHolder<CritControls>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
         }
     };
-	public AtlasConfig.ConfigHolder<CritControls, RegistryFriendlyByteBuf> owner;
+	public AtlasConfig.ConfigHolder<CritControls> owner;
 	public Boolean sprintCritsEnabled;
 	public Boolean chargedOrUncharged;
 	public Integer minCharge;
 	public Integer chargedCritCharge;
 	public Double unchargedCritMultiplier;
 	public Double fullCritMultiplier;
+	public Boolean sprintCritsEnabled() {
+		return sprintCritsEnabled;
+	}
+	public Boolean chargedOrUncharged() {
+		return chargedOrUncharged;
+	}
+	public Integer minCharge() {
+		return minCharge;
+	}
+	public Integer chargedCritCharge() {
+		return chargedCritCharge;
+	}
+	public Double unchargedCritMultiplier() {
+		return unchargedCritMultiplier;
+	}
+	public Double fullCritMultiplier() {
+		return fullCritMultiplier;
+	}
 	public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 		try {
 			hashMap.put("sprintCritsEnabled", CritControls.class.getDeclaredField("sprintCritsEnabled"));
@@ -86,52 +104,9 @@ public class CritControls implements ConfigRepresentable<CritControls> {
 			return Component.translatable(projectileDamage.owner.getTranslationKey() + "." + string);
 		}
 	};
-	public static final BiFunction<AtlasConfig.ConfigHolder<CritControls, RegistryFriendlyByteBuf>, JsonObject, CritControls> decoder = (objectHolder, jsonObject) -> {
-		Boolean sprintCritsEnabled = true;
-		Boolean chargedOrUncharged = false;
-		Integer minCharge = 0;
-		Integer chargedCritCharge = 195;
-		Double unchargedCritMultiplier = 1.25;
-		Double fullCritMultiplier = 1.5;
-		if (jsonObject.has("sprintCritsEnabled")) {
-			sprintCritsEnabled = getBoolean(jsonObject, "sprintCritsEnabled");
-		}
-		if (jsonObject.has("chargedOrUncharged")) {
-			chargedOrUncharged = getBoolean(jsonObject, "chargedOrUncharged");
-		}
-		if (jsonObject.has("minCharge")) {
-			minCharge = getInt(jsonObject, "minCharge");
-		}
-		if (jsonObject.has("chargedCritCharge")) {
-			chargedCritCharge = getInt(jsonObject, "chargedCritCharge");
-		}
-		if (jsonObject.has("unchargedCritMultiplier")) {
-			unchargedCritMultiplier = getDouble(jsonObject, "unchargedCritMultiplier");
-		}
-		if (jsonObject.has("fullCritMultiplier")) {
-			fullCritMultiplier = getDouble(jsonObject, "fullCritMultiplier");
-		}
-
-		return new CritControls(objectHolder, sprintCritsEnabled, chargedOrUncharged, minCharge, chargedCritCharge, unchargedCritMultiplier, fullCritMultiplier);
-	};
-	public static final BiConsumer<JsonWriter, CritControls> encoder = (jsonWriter, testClass) -> fields.forEach((string, field) -> {
-        try {
-            jsonWriter.name(string);
-            Object value = field.get(testClass);
-            switch (value) {
-				case Boolean b -> jsonWriter.value(b);
-                case Integer d -> jsonWriter.value(d);
-				case Double d -> jsonWriter.value(d);
-                case null, default -> throw new IllegalStateException("Unexpected value: " + value);
-            }
-
-        } catch (IllegalAccessException | IOException var11) {
-            throw new RuntimeException(var11);
-        }
-    });
 	public Supplier<Component> resetTranslation = null;
 
-	public CritControls(AtlasConfig.ConfigHolder<CritControls, RegistryFriendlyByteBuf> owner, Boolean sprintCritsEnabled, Boolean chargedOrUncharged, Integer minCharge, Integer chargedCritCharge, Double unchargedCritMultiplier, Double fullCritMultiplier) {
+	public CritControls(AtlasConfig.ConfigHolder<CritControls> owner, Boolean sprintCritsEnabled, Boolean chargedOrUncharged, Integer minCharge, Integer chargedCritCharge, Double unchargedCritMultiplier, Double fullCritMultiplier) {
 		this.owner = owner;
 		this.sprintCritsEnabled = sprintCritsEnabled;
 		this.chargedOrUncharged = chargedOrUncharged;
@@ -140,8 +115,21 @@ public class CritControls implements ConfigRepresentable<CritControls> {
 		this.unchargedCritMultiplier = Mth.clamp(unchargedCritMultiplier, 1, 4);
 		this.fullCritMultiplier = Mth.clamp(fullCritMultiplier, 1, 4);
 	}
+
 	@Override
-	public void setOwnerHolder(AtlasConfig.ConfigHolder<CritControls, RegistryFriendlyByteBuf> owner) {
+	public Codec<CritControls> getCodec(ConfigHolder<CritControls> configHolder) {
+		return RecordCodecBuilder.create(instance ->
+			instance.group(Codec.BOOL.optionalFieldOf("sprintCritsEnabled", true).forGetter(CritControls::sprintCritsEnabled),
+				Codec.BOOL.optionalFieldOf("chargedOrUncharged", false).forGetter(CritControls::chargedOrUncharged),
+				ExtraCodecs.intRange(0, 200).optionalFieldOf("minCharge", 0).forGetter(CritControls::minCharge),
+				ExtraCodecs.intRange(0, 200).optionalFieldOf("chargedCritCharge", 195).forGetter(CritControls::chargedCritCharge),
+				Codecs.doubleRange(1, 4).optionalFieldOf("unchargedCritMultiplier", 1.25).forGetter(CritControls::unchargedCritMultiplier),
+				Codecs.doubleRange(1, 4).optionalFieldOf("fullCritMultiplier", 1.5).forGetter(CritControls::fullCritMultiplier))
+				.apply(instance, (sprintCritsEnabled, chargedOrUncharged, minCharge, chargedCritCharge, unchargedCritMultiplier, fullCritMultiplier) -> new CritControls(configHolder, sprintCritsEnabled, chargedOrUncharged, minCharge, chargedCritCharge, unchargedCritMultiplier, fullCritMultiplier)));
+	}
+
+	@Override
+	public void setOwnerHolder(AtlasConfig.ConfigHolder<CritControls> owner) {
 		this.owner = owner;
 	}
 

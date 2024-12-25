@@ -1,97 +1,89 @@
 {
-  "attackDecay": {
-    "enabled": false,
-    "minCharge": 0,
-    "maxCharge": 100,
-    "minPercentageBase": 20,
-    "maxPercentageBase": 100,
-    "minPercentageEnchants": 0,
-    "maxPercentageEnchants": 100
+  "cts_booleans": {
+    "attackDecay": {},
+    "attackReach": true,
+    "autoAttackAllowed": true,
+    "axesAreWeapons": true,
+    "bedrockBridging": false,
+    "bedrockImpaling": true,
+    "bowFatigue": true,
+    "canAttackEarly": false,
+    "canSweepOnMiss": true,
+    "chargedAttacks": true,
+    "chargedReach": true,
+    "creativeAttackReach": false,
+    "critControls": {},
+    "ctsAttackBalancing": true,
+    "ctsKB": true,
+    "ctsMomentumPassedToProjectiles": true,
+    "ctsSaturationCap": true,
+    "dispensableTridents": true,
+    "fistDamage": false,
+    "hasMissTime": false,
+    "hasteFix": false,
+    "iFramesBasedOnWeapon": true,
+    "missedAttackRecovery": true,
+    "percentageDamageEffects": true,
+    "projectilesHaveIFrames": false,
+    "resetOnItemChange": false,
+    "fastHealing": false,
+    "snowballKB": true,
+    "strengthAppliesToEnchants": true,
+    "sweepWithSweeping": true,
+    "swingThroughGrass": true,
+    "tridentVoidReturn": true,
+    "weaponTypesEnabled": true
   },
-  "attackReach": true,
-  "autoAttackAllowed": true,
-  "axesAreWeapons": true,
-  "bedrockBridging": false,
-  "bedrockImpaling": true,
-  "bowFatigue": true,
-  "canAttackEarly": false,
-  "canSweepOnMiss": true,
-  "chargedAttacks": true,
-  "chargedReach": true,
-  "creativeAttackReach": false,
-  "critControls": {
-    "sprintCritsEnabled": true,
-    "chargedOrUncharged": false,
-    "minCharge": 0,
-    "chargedCritCharge": 195,
-    "unchargedCritMultiplier": 1.25,
-    "fullCritMultiplier": 1.5
+  "cts_integers": {
+    "shieldDelay": 0,
+    "instantHealthBonus": 6
   },
-  "ctsAttackBalancing": true,
-  "ctsKB": true,
-  "ctsMomentumPassedToProjectiles": true,
-  "dispensableTridents": true,
-  "fistDamage": false,
-  "hasMissTime": false,
-  "iFramesBasedOnWeapon": true,
-  "missedAttackRecovery": true,
-  "percentageDamageEffects": true,
-  "projectilesHaveIFrames": false,
-  "resetOnItemChange": false,
-  "fastHealing": false,
-  "snowballKB": true,
-  "strengthAppliesToEnchants": true,
-  "sweepWithSweeping": true,
-  "swingThroughGrass": true,
-  "tridentVoidReturn": true,
-  "weaponTypesEnabled": true,
-
-  "shieldDelay": 0,
-  "instantHealthBonus": 6,
-
-  "baseHandAttackSpeed": 2.5,
-  "projectileUncertainty": {
-    "bowUncertainty": 0.25,
-    "crossbowUncertainty": 0.25
+  "cts_doubles": {
+    "baseHandAttackSpeed": 2.5,
+    "projectileUncertainty": {},
+    "starvingTime": 2.0,
+    "healingTime": 2.0,
+    "fastHealingTime": 0.5,
+    "instantTippedArrowEffectMultiplier": 0.125,
+    "shieldDisableTime": 1.6,
+    "shieldProtectionArc": 130.0,
+    "minHitboxSize": 0.9
   },
-  "healingTime": 2,
-  "fastHealingTime": 0.5,
-  "instantTippedArrowEffectMultiplier": 0.125,
-  "shieldDisableTime": 1.6,
-  "shieldProtectionArc": 130,
-  "minHitboxSize": 0.9,
-
-  "eatingInterruptionMode": "full_reset",
-  "healingMode": "cts",
-
-  "armorPiercingDisablesShields": false,
-  "attackSpeed": true,
-  "canInteractWhenCrouchShield": true,
-  "configOnlyWeapons": false,
-  "tieredShields": false,
-  "disableDuringShieldDelay": false,
-  "fishingHookKB": false,
-  "improvedMiscEntityAttacks": false,
-  "instaAttack": false,
-  "letVanillaConnect": true,
-  "magicHasIFrames": true,
-  "midairKB": false,
-  "mobsCanGuard": false,
-  "mobsCanSprint": false,
-  "oldSprintFoodRequirement": false,
-  "shieldOnlyWhenCharged": false,
-  "sweepingNegatedForTamed": false,
-  "swordBlocking": false,
-
-  "shieldChargePercentage": 195,
-
-  "projectileDamage": {
-    "eggDamage": 0.0,
-    "snowballDamage": 0.0,
-    "windChargeDamage": 1.0,
-    "thrownTridentDamage": 8.0
+  "cts_enums": {
+    "eatingInterruptionMode": "full_reset",
+    "healingMode": "cts"
   },
-
-  "arrowDisableMode": "none",
-  "armourPiercingMode": "vanilla"
+  "extra_booleans": {
+    "armorPiercingDisablesShields": false,
+    "attackSpeed": true,
+    "canInteractWhenCrouchShield": true,
+    "configOnlyWeapons": false,
+    "tieredShields": false,
+    "disableDuringShieldDelay": false,
+    "fishingHookKB": false,
+    "improvedMiscEntityAttacks": false,
+    "instaAttack": false,
+    "letVanillaConnect": true,
+    "magicHasIFrames": true,
+    "midairKB": false,
+    "mobsCanGuard": false,
+    "mobsCanSprint": false,
+    "oldSprintFoodRequirement": false,
+    "shieldOnlyWhenCharged": false,
+    "sweepingNegatedForTamed": false,
+    "swordBlocking": false
+  },
+  "extra_integers": {
+    "shieldChargePercentage": 195
+  },
+  "extra_doubles": {
+    "projectileDamage": {}
+  },
+  "extra_enums": {
+    "arrowDisableMode": "none",
+    "armourPiercingMode": "vanilla"
+  },
+  "debug_options": {
+    "enableDebugLogging": false
+  }
 }

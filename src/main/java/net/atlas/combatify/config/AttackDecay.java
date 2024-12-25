@@ -1,10 +1,10 @@
 package net.atlas.combatify.config;
 
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
@@ -16,19 +16,15 @@ import net.minecraft.Util;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static net.atlas.atlascore.config.AtlasConfig.getBoolean;
-import static net.atlas.atlascore.config.AtlasConfig.getInt;
 
 public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public static final AttackDecay DEFAULT = new AttackDecay(null, false, 0, 100, 20, 100, 0, 100);
@@ -49,10 +45,10 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 		@SuppressWarnings("unchecked")
         public AttackDecay decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
             AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readResourceLocation());
-            return new AttackDecay((AtlasConfig.ConfigHolder<AttackDecay, RegistryFriendlyByteBuf>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt());
+            return new AttackDecay((AtlasConfig.ConfigHolder<AttackDecay>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt());
         }
     };
-	public AtlasConfig.ConfigHolder<AttackDecay, RegistryFriendlyByteBuf> owner;
+	public AtlasConfig.ConfigHolder<AttackDecay> owner;
 	public Boolean enabled;
 	public Integer minCharge;
 	public Integer maxCharge;
@@ -60,6 +56,27 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public Integer maxPercentageBase;
 	public Integer minPercentageEnchants;
 	public Integer maxPercentageEnchants;
+	public Boolean enabled() {
+		return enabled;
+	}
+	public Integer minCharge() {
+		return minCharge;
+	}
+	public Integer maxCharge() {
+		return maxCharge;
+	}
+	public Integer minPercentageBase() {
+		return minPercentageBase;
+	}
+	public Integer maxPercentageBase() {
+		return maxPercentageBase;
+	}
+	public Integer minPercentageEnchants() {
+		return minPercentageEnchants;
+	}
+	public Integer maxPercentageEnchants() {
+		return maxPercentageEnchants;
+	}
 	public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 		try {
 			hashMap.put("enabled", AttackDecay.class.getDeclaredField("enabled"));
@@ -88,55 +105,9 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 			return Component.translatable(projectileDamage.owner.getTranslationKey() + "." + string);
 		}
 	};
-	public static final BiFunction<AtlasConfig.ConfigHolder<AttackDecay, RegistryFriendlyByteBuf>, JsonObject, AttackDecay> decoder = (objectHolder, jsonObject) -> {
-		Boolean enabled = false;
-		Integer minCharge = 0;
-		Integer maxCharge = 100;
-		Integer minPercentageBase = 20;
-		Integer maxPercentageBase = 100;
-		Integer minPercentageEnchants = 0;
-		Integer maxPercentageEnchants = 100;
-		if (jsonObject.has("enabled")) {
-			enabled = getBoolean(jsonObject, "enabled");
-		}
-		if (jsonObject.has("minCharge")) {
-			minCharge = getInt(jsonObject, "minCharge");
-		}
-		if (jsonObject.has("maxCharge")) {
-			maxCharge = getInt(jsonObject, "maxCharge");
-		}
-		if (jsonObject.has("minPercentageBase")) {
-			minPercentageBase = getInt(jsonObject, "minPercentageBase");
-		}
-		if (jsonObject.has("maxPercentageBase")) {
-			maxPercentageBase = getInt(jsonObject, "maxPercentageBase");
-		}
-		if (jsonObject.has("minPercentageEnchants")) {
-			minPercentageEnchants = getInt(jsonObject, "minPercentageEnchants");
-		}
-		if (jsonObject.has("maxPercentageEnchants")) {
-			maxPercentageEnchants = getInt(jsonObject, "maxPercentageEnchants");
-		}
-
-		return new AttackDecay(objectHolder, enabled, minCharge, maxCharge, minPercentageBase, maxPercentageBase, minPercentageEnchants, maxPercentageEnchants);
-	};
-	public static final BiConsumer<JsonWriter, AttackDecay> encoder = (jsonWriter, testClass) -> fields.forEach((string, field) -> {
-        try {
-            jsonWriter.name(string);
-            Object value = field.get(testClass);
-            switch (value) {
-				case Boolean b -> jsonWriter.value(b);
-                case Integer d -> jsonWriter.value(d);
-                case null, default -> throw new IllegalStateException("Unexpected value: " + value);
-            }
-
-        } catch (IllegalAccessException | IOException var11) {
-            throw new RuntimeException(var11);
-        }
-    });
 	public Supplier<Component> resetTranslation = null;
 
-	public AttackDecay(AtlasConfig.ConfigHolder<AttackDecay, RegistryFriendlyByteBuf> owner, Boolean enabled, Integer minCharge, Integer maxCharge, Integer minPercentageBase, Integer maxPercentageBase, Integer minPercentageEnchants, Integer maxPercentageEnchants) {
+	public AttackDecay(AtlasConfig.ConfigHolder<AttackDecay> owner, Boolean enabled, Integer minCharge, Integer maxCharge, Integer minPercentageBase, Integer maxPercentageBase, Integer minPercentageEnchants, Integer maxPercentageEnchants) {
 		this.owner = owner;
 		this.enabled = enabled;
 		this.minCharge = Mth.clamp(minCharge, 0, 200);
@@ -146,8 +117,22 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 		this.minPercentageEnchants = Mth.clamp(minPercentageEnchants, 0, 200);
 		this.maxPercentageEnchants = Mth.clamp(maxPercentageEnchants, 0, 200);
 	}
+
 	@Override
-	public void setOwnerHolder(AtlasConfig.ConfigHolder<AttackDecay, RegistryFriendlyByteBuf> owner) {
+	public Codec<AttackDecay> getCodec(AtlasConfig.ConfigHolder<AttackDecay> configHolder) {
+		return RecordCodecBuilder.create(instance ->
+			instance.group(Codec.BOOL.optionalFieldOf("enabled", false).forGetter(AttackDecay::enabled),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("minCharge", 0).forGetter(AttackDecay::minCharge),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("maxCharge", 100).forGetter(AttackDecay::maxCharge),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("minPercentageBase", 20).forGetter(AttackDecay::minPercentageBase),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("maxPercentageBase", 100).forGetter(AttackDecay::maxPercentageBase),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("minPercentageEnchants", 0).forGetter(AttackDecay::minPercentageEnchants),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("maxPercentageEnchants", 100).forGetter(AttackDecay::maxPercentageEnchants))
+				.apply(instance, (enabled, minCharge, maxCharge, minPercentageBase, maxPercentageBase, minPercentageEnchants, maxPercentageEnchants) -> new AttackDecay(configHolder, enabled, minCharge, maxCharge, minPercentageBase, maxPercentageBase, minPercentageEnchants, maxPercentageEnchants)));
+	}
+
+	@Override
+	public void setOwnerHolder(AtlasConfig.ConfigHolder<AttackDecay> owner) {
 		this.owner = owner;
 	}
 

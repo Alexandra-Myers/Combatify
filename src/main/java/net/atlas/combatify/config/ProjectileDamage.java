@@ -1,12 +1,13 @@
 package net.atlas.combatify.config;
 
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import net.atlas.atlascore.config.AtlasConfig;
+import net.atlas.atlascore.util.Codecs;
 import net.atlas.atlascore.util.ConfigRepresentable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -17,15 +18,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static net.atlas.atlascore.config.AtlasConfig.getDouble;
 
 public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 	public static final ProjectileDamage DEFAULT = new ProjectileDamage(null, 0.0, 0.0, 1.0, 8.0);
@@ -43,14 +40,26 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 		@SuppressWarnings("unchecked")
         public ProjectileDamage decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
             AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readResourceLocation());
-            return new ProjectileDamage((AtlasConfig.ConfigHolder<ProjectileDamage, RegistryFriendlyByteBuf>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
+            return new ProjectileDamage((AtlasConfig.ConfigHolder<ProjectileDamage>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
         }
     };
-	public AtlasConfig.ConfigHolder<ProjectileDamage, RegistryFriendlyByteBuf> owner;
+	public AtlasConfig.ConfigHolder<ProjectileDamage> owner;
 	public Double eggDamage;
 	public Double snowballDamage;
 	public Double windChargeDamage;
 	public Double thrownTridentDamage;
+	public Double eggDamage() {
+		return eggDamage;
+	}
+	public Double snowballDamage() {
+		return snowballDamage;
+	}
+	public Double windChargeDamage() {
+		return windChargeDamage;
+	}
+	public Double thrownTridentDamage() {
+		return thrownTridentDamage;
+	}
 	public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 		try {
 			hashMap.put("eggDamage", ProjectileDamage.class.getDeclaredField("eggDamage"));
@@ -76,50 +85,28 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 			return Component.translatable(projectileDamage.owner.getTranslationKey() + "." + string);
 		}
 	};
-	public static final BiFunction<AtlasConfig.ConfigHolder<ProjectileDamage, RegistryFriendlyByteBuf>, JsonObject, ProjectileDamage> decoder = (objectHolder, jsonObject) -> {
-		Double eggDamage = 0.0;
-		Double snowballDamage = 0.0;
-		Double windChargeDamage = 1.0;
-		Double thrownTridentDamage = 8.0;
-		if (jsonObject.has("eggDamage")) {
-			eggDamage = getDouble(jsonObject, "eggDamage");
-		}
-		if (jsonObject.has("snowballDamage")) {
-			snowballDamage = getDouble(jsonObject, "snowballDamage");
-		}
-		if (jsonObject.has("windChargeDamage")) {
-			windChargeDamage = getDouble(jsonObject, "windChargeDamage");
-		}
-		if (jsonObject.has("thrownTridentDamage")) {
-			thrownTridentDamage = getDouble(jsonObject, "thrownTridentDamage");
-		}
-
-		return new ProjectileDamage(objectHolder, eggDamage, snowballDamage, windChargeDamage, thrownTridentDamage);
-	};
-	public static final BiConsumer<JsonWriter, ProjectileDamage> encoder = (jsonWriter, testClass) -> fields.forEach((string, field) -> {
-        try {
-            jsonWriter.name(string);
-            Object value = field.get(testClass);
-            switch (value) {
-                case Double d -> jsonWriter.value(d);
-                case null, default -> throw new IllegalStateException("Unexpected value: " + value);
-            }
-
-        } catch (IllegalAccessException | IOException var11) {
-            throw new RuntimeException(var11);
-        }
-    });
 	public Supplier<Component> resetTranslation = null;
 
-	public ProjectileDamage(AtlasConfig.ConfigHolder<ProjectileDamage, RegistryFriendlyByteBuf> owner, Double eggDamage, Double snowballDamage, Double windChargeDamage, Double thrownTridentDamage) {
+	public ProjectileDamage(AtlasConfig.ConfigHolder<ProjectileDamage> owner, Double eggDamage, Double snowballDamage, Double windChargeDamage, Double thrownTridentDamage) {
 		this.owner = owner;
 		this.eggDamage = Mth.clamp(eggDamage, 0, 40D);
 		this.snowballDamage = Mth.clamp(snowballDamage, 0, 40D);
 		this.windChargeDamage = Mth.clamp(windChargeDamage, 0, 40D);
 		this.thrownTridentDamage = Mth.clamp(thrownTridentDamage, 0, 40D);
 	}
+
 	@Override
-	public void setOwnerHolder(AtlasConfig.ConfigHolder<ProjectileDamage, RegistryFriendlyByteBuf> owner) {
+	public Codec<ProjectileDamage> getCodec(AtlasConfig.ConfigHolder<ProjectileDamage> configHolder) {
+		return RecordCodecBuilder.create(instance ->
+			instance.group(Codecs.doubleRange(0, 40).optionalFieldOf("eggDamage", 0.0).forGetter(ProjectileDamage::eggDamage),
+					Codecs.doubleRange(0, 40).optionalFieldOf("snowballDamage", 0.0).forGetter(ProjectileDamage::snowballDamage),
+					Codecs.doubleRange(0, 40).optionalFieldOf("windChargeDamage", 1.0).forGetter(ProjectileDamage::windChargeDamage),
+					Codecs.doubleRange(0, 40).optionalFieldOf("thrownTridentDamage", 8.0).forGetter(ProjectileDamage::thrownTridentDamage))
+				.apply(instance, (eggDamage, snowballDamage, windChargeDamage, thrownTridentDamage) -> new ProjectileDamage(configHolder, eggDamage, snowballDamage, windChargeDamage, thrownTridentDamage)));
+	}
+
+	@Override
+	public void setOwnerHolder(AtlasConfig.ConfigHolder<ProjectileDamage> owner) {
 		this.owner = owner;
 	}
 
