@@ -30,7 +30,7 @@ public record HurtAttacker(Holder<DamageType> damageType, float amount) implemen
 
 	@Override
 	public void doEffect(ServerLevel serverLevel, ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
-		attacker.hurtServer(serverLevel, new DamageSource(damageType, target), amount);
+		if (!attacker.isBlocking()) attacker.hurtServer(serverLevel, new DamageSource(damageType, target), amount);
 	}
 
 	@Override
