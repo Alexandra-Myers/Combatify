@@ -61,7 +61,7 @@ public record ApplyEffectOnBlocked(HolderSet<MobEffect> toApply, float minDurati
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration, this.maxDuration) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier, this.maxAmplifier)));
 			if (optional.get().value().isInstantenous()) {
-				optional.get().value().applyInstantenousEffect(serverLevel, attacker, attacker, target, amp, 1);
+				optional.get().value().applyInstantenousEffect(serverLevel, target, target, attacker, amp, 1);
 				return;
 			}
 			attacker.addEffect(new MobEffectInstance(optional.get(), duration, amp));

@@ -17,11 +17,13 @@ public class PostBlockEffects {
 	public static void bootstrap() {
 		ID_MAPPER.put(DoNothing.ID, DoNothing.MAP_CODEC);
 		ID_MAPPER.put(KnockbackAttacker.ID, KnockbackAttacker.MAP_CODEC);
+		ID_MAPPER.put(HurtAttacker.ID, HurtAttacker.MAP_CODEC);
 		ID_MAPPER.put(ApplyEffectOnBlocked.ID, ApplyEffectOnBlocked.MAP_CODEC);
 		ID_MAPPER.put(RunFunction.ID, RunFunction.MAP_CODEC);
 		ID_MAPPER.put(AllOf.ID, AllOf.MAP_CODEC);
 		DoNothing.mapStreamCodec(STREAM_CODEC_MAP);
 		KnockbackAttacker.mapStreamCodec(STREAM_CODEC_MAP);
+		HurtAttacker.mapStreamCodec(STREAM_CODEC_MAP);
 		ApplyEffectOnBlocked.mapStreamCodec(STREAM_CODEC_MAP);
 		RunFunction.mapStreamCodec(STREAM_CODEC_MAP);
 		AllOf.mapStreamCodec(STREAM_CODEC_MAP);
