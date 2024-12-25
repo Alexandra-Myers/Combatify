@@ -49,7 +49,7 @@ public class CustomEnchantmentHelper {
 	public static void applyPostBlockedEffects(ServerLevel serverLevel, ItemStack itemStack, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
 		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)
 			.forEach(postBlockEffectConditionalEffect -> {
-				if (postBlockEffectConditionalEffect.matches(Enchantment.damageContext(serverLevel, i, target, damageSource))) postBlockEffectConditionalEffect.effect().doEffect(itemStack, target, attacker, damageSource);
+				if (postBlockEffectConditionalEffect.matches(Enchantment.damageContext(serverLevel, i, target, damageSource))) postBlockEffectConditionalEffect.effect().doEffect(serverLevel, itemStack, target, attacker, damageSource);
 			}));
 	}
 	public static float modifyDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float baseDamage, Operation<Float> original) {

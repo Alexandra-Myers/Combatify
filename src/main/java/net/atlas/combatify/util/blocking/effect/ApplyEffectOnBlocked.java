@@ -1,5 +1,6 @@
 package net.atlas.combatify.util.blocking.effect;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,6 +12,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -24,13 +26,26 @@ import java.util.Optional;
 
 public record ApplyEffectOnBlocked(HolderSet<MobEffect> toApply, float minDuration, float maxDuration, float minAmplifier, float maxAmplifier) implements PostBlockEffect {
 	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("apply_effect");
-	public static final MapCodec<ApplyEffectOnBlocked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
+	public ApplyEffectOnBlocked(HolderSet<MobEffect> toApply, float duration, float amplifier) {
+		this(toApply, duration, duration, amplifier, amplifier);
+	}
+	public static final MapCodec<ApplyEffectOnBlocked> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
+		instance.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyEffectOnBlocked::toApply),
+				Codec.FLOAT.fieldOf("duration").forGetter(ApplyEffectOnBlocked::maxDuration),
+				Codec.FLOAT.fieldOf("amplifier").forGetter(ApplyEffectOnBlocked::minAmplifier))
+			.apply(instance, ApplyEffectOnBlocked::new)
+	);
+	public static final MapCodec<ApplyEffectOnBlocked> FULL_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyEffectOnBlocked::toApply),
 				Codec.FLOAT.fieldOf("min_duration").forGetter(ApplyEffectOnBlocked::minDuration),
 				Codec.FLOAT.fieldOf("max_duration").forGetter(ApplyEffectOnBlocked::maxDuration),
 				Codec.FLOAT.fieldOf("min_amplifier").forGetter(ApplyEffectOnBlocked::minAmplifier),
 				Codec.FLOAT.fieldOf("max_amplifier").forGetter(ApplyEffectOnBlocked::maxAmplifier))
 			.apply(instance, ApplyEffectOnBlocked::new)
+	);
+	public static final MapCodec<ApplyEffectOnBlocked> MAP_CODEC = Codec.mapEither(FULL_CODEC, PARTIAL_CODEC).xmap(
+		Either::unwrap,
+		Either::left
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, ApplyEffectOnBlocked> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderSet(Registries.MOB_EFFECT), ApplyEffectOnBlocked::toApply,
 		ByteBufCodecs.FLOAT, ApplyEffectOnBlocked::minDuration,
@@ -39,13 +54,17 @@ public record ApplyEffectOnBlocked(HolderSet<MobEffect> toApply, float minDurati
 		ByteBufCodecs.FLOAT, ApplyEffectOnBlocked::maxAmplifier, ApplyEffectOnBlocked::new);
 
 	@Override
-	public void doEffect(ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+	public void doEffect(ServerLevel serverLevel, ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
 		RandomSource randomSource = target.getRandom();
 		Optional<Holder<MobEffect>> optional = this.toApply.getRandomElement(randomSource);
 		if (optional.isPresent()) {
-			int j = Math.round(Mth.randomBetween(randomSource, this.minDuration, this.maxDuration) * 20.0F);
-			int k = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier, this.maxAmplifier)));
-			attacker.addEffect(new MobEffectInstance(optional.get(), j, k));
+			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration, this.maxDuration) * 20.0F);
+			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier, this.maxAmplifier)));
+			if (optional.get().value().isInstantenous()) {
+				optional.get().value().applyInstantenousEffect(serverLevel, attacker, attacker, target, amp, 1);
+				return;
+			}
+			attacker.addEffect(new MobEffectInstance(optional.get(), duration, amp));
 		}
 	}
 
@@ -60,6 +79,6 @@ public record ApplyEffectOnBlocked(HolderSet<MobEffect> toApply, float minDurati
 	}
 
 	public static void mapStreamCodec(Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, PostBlockEffect>> map) {
-		map.put(ID, STREAM_CODEC.map(applyEffectOnBlocked -> applyEffectOnBlocked, blockingCondition -> (ApplyEffectOnBlocked) blockingCondition));
+		map.put(ID, STREAM_CODEC.map(applyEffectOnBlocked -> applyEffectOnBlocked, postBlockEffect -> (ApplyEffectOnBlocked) postBlockEffect));
 	}
 }

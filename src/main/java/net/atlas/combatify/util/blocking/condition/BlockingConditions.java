@@ -15,14 +15,16 @@ public class BlockingConditions {
 		.dispatchMap("condition", BlockingCondition::type, mapCodec -> mapCodec);
 
 	public static void bootstrap() {
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("unconditional"), Unconditional.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("requires_sword_blocking"), RequiresSwordBlocking.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("requires_empty_hand"), RequiresEmptyHand.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("all_of"), AllOf.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("any_of"), AnyOf.MAP_CODEC);
+		ID_MAPPER.put(Unconditional.ID, Unconditional.MAP_CODEC);
+		ID_MAPPER.put(RequiresSwordBlocking.ID, RequiresSwordBlocking.MAP_CODEC);
+		ID_MAPPER.put(RequiresEmptyHand.ID, RequiresEmptyHand.MAP_CODEC);
+		ID_MAPPER.put(ItemMatches.ID, ItemMatches.MAP_CODEC);
+		ID_MAPPER.put(AllOf.ID, AllOf.MAP_CODEC);
+		ID_MAPPER.put(AnyOf.ID, AnyOf.MAP_CODEC);
 		Unconditional.mapStreamCodec(STREAM_CODEC_MAP);
 		RequiresSwordBlocking.mapStreamCodec(STREAM_CODEC_MAP);
 		RequiresEmptyHand.mapStreamCodec(STREAM_CODEC_MAP);
+		ItemMatches.mapStreamCodec(STREAM_CODEC_MAP);
 		AllOf.mapStreamCodec(STREAM_CODEC_MAP);
 		AnyOf.mapStreamCodec(STREAM_CODEC_MAP);
 	}

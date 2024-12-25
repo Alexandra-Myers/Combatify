@@ -15,13 +15,15 @@ public class PostBlockEffects {
 		.dispatchMap("effect", PostBlockEffect::type, mapCodec -> mapCodec);
 
 	public static void bootstrap() {
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("nothing"), DoNothing.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("knockback_attacker"), KnockbackAttacker.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("apply_effect_on_blocked"), ApplyEffectOnBlocked.MAP_CODEC);
-		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("all_of"), AllOf.MAP_CODEC);
+		ID_MAPPER.put(DoNothing.ID, DoNothing.MAP_CODEC);
+		ID_MAPPER.put(KnockbackAttacker.ID, KnockbackAttacker.MAP_CODEC);
+		ID_MAPPER.put(ApplyEffectOnBlocked.ID, ApplyEffectOnBlocked.MAP_CODEC);
+		ID_MAPPER.put(RunFunction.ID, RunFunction.MAP_CODEC);
+		ID_MAPPER.put(AllOf.ID, AllOf.MAP_CODEC);
 		DoNothing.mapStreamCodec(STREAM_CODEC_MAP);
 		KnockbackAttacker.mapStreamCodec(STREAM_CODEC_MAP);
 		ApplyEffectOnBlocked.mapStreamCodec(STREAM_CODEC_MAP);
+		RunFunction.mapStreamCodec(STREAM_CODEC_MAP);
 		AllOf.mapStreamCodec(STREAM_CODEC_MAP);
 	}
 }

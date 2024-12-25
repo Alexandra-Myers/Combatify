@@ -58,7 +58,7 @@ public record Blocker(BlockingType blockingType, float useSeconds, PostBlockEffe
 	);
 
 	public void doEffect(ServerLevel serverLevel, ItemStack blockingItem, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
-		postBlockEffect.doEffect(blockingItem, target, attacker, damageSource);
+		postBlockEffect.doEffect(serverLevel, blockingItem, target, attacker, damageSource);
 		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, blockingItem, target, attacker, damageSource);
 		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 	}
