@@ -38,7 +38,7 @@ public record ItemMatches(ItemPredicate predicate) implements BlockingCondition 
 	public static final MapCodec<ItemMatches> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(ITEM_PREDICATE_CODEC_NO_ITEMS.fieldOf("predicate").forGetter(ItemMatches::predicate))
 			.apply(instance, ItemMatches::new));
-	public static final StreamCodec<RegistryFriendlyByteBuf, ItemMatches> STREAM_CODEC = ByteBufCodecs.fromCodec(ITEM_PREDICATE_CODEC_NO_ITEMS).map(ItemMatches::new, ItemMatches::predicate).mapStream(buf -> buf);
+	public static final StreamCodec<RegistryFriendlyByteBuf, ItemMatches> STREAM_CODEC = ByteBufCodecs.fromCodecTrusted(ITEM_PREDICATE_CODEC_NO_ITEMS).map(ItemMatches::new, ItemMatches::predicate).mapStream(buf -> buf);
 
 	@Override
 	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
