@@ -9,8 +9,6 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.condition.*;
-import net.atlas.combatify.util.blocking.effect.KnockbackEntity;
-import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffectWrapper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -27,35 +25,27 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentTarget;
 import net.minecraft.world.level.Level;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
-	public Blocker(BlockingType blockingType, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
-		this(blockingType.getName(), useSeconds, new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, postBlockEffect, Optional.empty()), blockingCondition);
-	}
-	public Blocker(ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
-		this(blockingTypeLocation, useSeconds, new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, postBlockEffect, Optional.empty()), blockingCondition);
-	}
 	public Blocker(ResourceLocation blockingTypeLocation, float useSeconds, BlockingCondition blockingCondition) {
 		this(blockingTypeLocation, useSeconds, PostBlockEffectWrapper.DEFAULT, blockingCondition);
 	}
 	public static final Blocker EMPTY = new Blocker(ResourceLocation.withDefaultNamespace("empty"), 0, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
-	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD, 3600, new KnockbackEntity(), new Unconditional());
-	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD, 3600, new KnockbackEntity(), new Unconditional());
+	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD.getName(), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD.getName(), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
 	public static final Blocker SWORD = new Blocker(Combatify.SWORD.getName(), 3600, PostBlockEffectWrapper.DEFAULT, new AllOf(List.of(new RequiresSwordBlocking(), new RequiresEmptyHand(InteractionHand.OFF_HAND))));
-	public static final Codec<Blocker> SIMPLE_CODEC = BlockingType.ID_CODEC.xmap(blockingType1 -> new Blocker(blockingType1, 3600, new KnockbackEntity(), new Unconditional()), Blocker::blockingTypeLocation);
+	public static final Codec<Blocker> SIMPLE_CODEC = BlockingType.ID_CODEC.xmap(blockingType1 -> new Blocker(blockingType1, 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE), Blocker::blockingTypeLocation);
 	public static final Codec<Blocker> FULL_CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
 				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
-				PostBlockEffectWrapper.MAP_CODEC.forGetter(Blocker::postBlockEffect),
-				BlockingConditions.MAP_CODEC.forGetter(Blocker::blockingCondition))
+				PostBlockEffectWrapper.MAP_CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(Blocker::postBlockEffect),
+				BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(Blocker::blockingCondition))
 			.apply(instance, Blocker::new));
 	public static final Codec<Blocker> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
 

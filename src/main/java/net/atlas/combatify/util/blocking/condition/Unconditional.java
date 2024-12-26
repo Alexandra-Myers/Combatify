@@ -20,8 +20,9 @@ import java.util.Map;
 
 public record Unconditional() implements BlockingCondition {
 	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("unconditional");
-	public static final MapCodec<Unconditional> MAP_CODEC = MapCodec.unit(new Unconditional());
-	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingCondition> STREAM_CODEC = StreamCodec.unit(new Unconditional());
+	public static final Unconditional INSTANCE = new Unconditional();
+	public static final MapCodec<Unconditional> MAP_CODEC = MapCodec.unit(INSTANCE);
+	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingCondition> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
 	@Override
 	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {

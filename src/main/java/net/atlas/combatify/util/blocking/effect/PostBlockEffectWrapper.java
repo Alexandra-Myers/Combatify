@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public record PostBlockEffectWrapper(EnchantmentTarget affected, PostBlockEffect effect, Optional<LootItemCondition> requirements) {
 	public static final PostBlockEffectWrapper DEFAULT = new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, new DoNothing(), Optional.empty());
+	public static final PostBlockEffectWrapper KNOCKBACK = new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, new KnockbackEntity(), Optional.empty());
 	public static final MapCodec<PostBlockEffectWrapper> MAP_CODEC = RecordCodecBuilder.mapCodec(
 		instance -> instance.group(
 				EnchantmentTarget.CODEC.optionalFieldOf("affected", EnchantmentTarget.ATTACKER).forGetter(PostBlockEffectWrapper::affected),
