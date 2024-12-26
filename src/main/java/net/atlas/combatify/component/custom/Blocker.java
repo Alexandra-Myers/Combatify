@@ -82,7 +82,7 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 			};
 			postBlockEffect.effect().doEffect(serverLevel, new EnchantedItemInUse(blockingItem, equipmentSlot, target), attacker, damageSource, 1, applicable, applicable.position());
 		}
-		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, equipmentSlot, blockingItem, target, attacker, damageSource);
+		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, target, attacker, damageSource);
 		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
 	}
 
