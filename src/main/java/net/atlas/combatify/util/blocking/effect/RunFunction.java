@@ -5,8 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
@@ -17,7 +15,6 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-import java.util.Map;
 import java.util.Optional;
 
 public record RunFunction(ResourceLocation function) implements PostBlockEffect {
@@ -26,7 +23,6 @@ public record RunFunction(ResourceLocation function) implements PostBlockEffect 
 	public static final MapCodec<RunFunction> MAP_CODEC = RecordCodecBuilder.mapCodec(
 		instance -> instance.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
 	);
-	public static final StreamCodec<RegistryFriendlyByteBuf, RunFunction> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(RunFunction::new, RunFunction::id).mapStream(buf -> buf);
 
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
@@ -55,9 +51,5 @@ public record RunFunction(ResourceLocation function) implements PostBlockEffect 
 	@Override
 	public ResourceLocation id() {
 		return ID;
-	}
-
-	public static void mapStreamCodec(Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, PostBlockEffect>> map) {
-		map.put(ID, STREAM_CODEC.map(runFunction -> runFunction, postBlockEffect -> (RunFunction) postBlockEffect));
 	}
 }

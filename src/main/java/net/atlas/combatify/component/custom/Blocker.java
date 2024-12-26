@@ -9,7 +9,6 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.condition.*;
-import net.atlas.combatify.util.blocking.effect.DoNothing;
 import net.atlas.combatify.util.blocking.effect.KnockbackEntity;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffectWrapper;
@@ -44,10 +43,10 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 	public Blocker(ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
 		this(blockingTypeLocation, useSeconds, new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, postBlockEffect, Optional.empty()), blockingCondition);
 	}
-	public static final Blocker EMPTY = new Blocker(Combatify.EMPTY, 0, new DoNothing(), new AnyOf(Collections.emptyList()));
+	public static final Blocker EMPTY = new Blocker(ResourceLocation.withDefaultNamespace("empty"), 0, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
 	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD, 3600, new KnockbackEntity(), new Unconditional());
 	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD, 3600, new KnockbackEntity(), new Unconditional());
-	public static final Blocker SWORD = new Blocker(Combatify.SWORD, 3600, new DoNothing(), new AllOf(List.of(new RequiresSwordBlocking(), new RequiresEmptyHand(InteractionHand.OFF_HAND))));
+	public static final Blocker SWORD = new Blocker(Combatify.SWORD.getName(), 3600, PostBlockEffectWrapper.DEFAULT, new AllOf(List.of(new RequiresSwordBlocking(), new RequiresEmptyHand(InteractionHand.OFF_HAND))));
 	public static final Codec<Blocker> SIMPLE_CODEC = BlockingType.ID_CODEC.xmap(blockingType1 -> new Blocker(blockingType1, 3600, new KnockbackEntity(), new Unconditional()), Blocker::blockingTypeLocation);
 	public static final Codec<Blocker> FULL_CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
@@ -62,7 +61,7 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 		Blocker::blockingTypeLocation,
 		ByteBufCodecs.FLOAT,
 		Blocker::useSeconds,
-		ByteBufCodecs.fromCodecTrusted(PostBlockEffectWrapper.MAP_CODEC.codec()),
+		StreamCodec.unit(PostBlockEffectWrapper.DEFAULT),
 		Blocker::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		Blocker::blockingCondition,

@@ -8,9 +8,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -24,7 +21,6 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.Optional;
 
 public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
@@ -50,11 +46,6 @@ public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDurat
 		Either::unwrap,
 		Either::left
 	);
-	public static final StreamCodec<RegistryFriendlyByteBuf, ApplyEffect> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderSet(Registries.MOB_EFFECT), ApplyEffect::toApply,
-		ByteBufCodecs.fromCodecTrusted(PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC), ApplyEffect::minDuration,
-		ByteBufCodecs.fromCodecTrusted(PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC), ApplyEffect::maxDuration,
-		ByteBufCodecs.fromCodecTrusted(PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC), ApplyEffect::minAmplifier,
-		ByteBufCodecs.fromCodecTrusted(PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC), ApplyEffect::maxAmplifier, ApplyEffect::new);
 
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
@@ -81,9 +72,5 @@ public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDurat
 	@Override
 	public ResourceLocation id() {
 		return ID;
-	}
-
-	public static void mapStreamCodec(Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, PostBlockEffect>> map) {
-		map.put(ID, STREAM_CODEC.map(applyEffectOnBlocked -> applyEffectOnBlocked, postBlockEffect -> (ApplyEffect) postBlockEffect));
 	}
 }
