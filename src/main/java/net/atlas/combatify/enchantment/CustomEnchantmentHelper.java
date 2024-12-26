@@ -44,9 +44,19 @@ public class CustomEnchantmentHelper {
 		return mutableFloat.floatValue();
 	}
 	public static void applyPostBlockedEffects(ServerLevel serverLevel, EquipmentSlot equipmentSlot, ItemStack itemStack, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
+		EnchantmentHelper.runIterationOnItem(attacker.getMainHandItem(), EquipmentSlot.MAINHAND, attacker, (holder, enchantmentLevel, enchantedItemInUse) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)
+			.forEach(targetedConditionalEffect -> {
+				if (targetedConditionalEffect.matches(Enchantment.damageContext(serverLevel, enchantmentLevel, target, damageSource)) && targetedConditionalEffect.enchanted() == EnchantmentTarget.ATTACKER) {
+					LivingEntity applicable = switch (targetedConditionalEffect.affected()) {
+						case ATTACKER, DAMAGING_ENTITY -> attacker;
+						case VICTIM -> target;
+					};
+					targetedConditionalEffect.effect().doEffect(serverLevel, enchantedItemInUse, target, damageSource, enchantmentLevel, applicable, applicable.position());
+				}
+			}));
 		EnchantmentHelper.runIterationOnItem(itemStack, equipmentSlot, target, (holder, enchantmentLevel, enchantedItemInUse) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)
 			.forEach(targetedConditionalEffect -> {
-				if (targetedConditionalEffect.matches(Enchantment.damageContext(serverLevel, enchantmentLevel, target, damageSource))) {
+				if (targetedConditionalEffect.matches(Enchantment.damageContext(serverLevel, enchantmentLevel, target, damageSource)) && targetedConditionalEffect.enchanted() == EnchantmentTarget.VICTIM) {
 					LivingEntity applicable = switch (targetedConditionalEffect.affected()) {
 						case ATTACKER, DAMAGING_ENTITY -> attacker;
 						case VICTIM -> target;
