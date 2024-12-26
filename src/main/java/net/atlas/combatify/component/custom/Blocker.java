@@ -43,6 +43,9 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 	public Blocker(ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffect postBlockEffect, BlockingCondition blockingCondition) {
 		this(blockingTypeLocation, useSeconds, new PostBlockEffectWrapper(EnchantmentTarget.ATTACKER, postBlockEffect, Optional.empty()), blockingCondition);
 	}
+	public Blocker(ResourceLocation blockingTypeLocation, float useSeconds, BlockingCondition blockingCondition) {
+		this(blockingTypeLocation, useSeconds, PostBlockEffectWrapper.DEFAULT, blockingCondition);
+	}
 	public static final Blocker EMPTY = new Blocker(ResourceLocation.withDefaultNamespace("empty"), 0, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
 	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD, 3600, new KnockbackEntity(), new Unconditional());
 	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD, 3600, new KnockbackEntity(), new Unconditional());
@@ -61,8 +64,6 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 		Blocker::blockingTypeLocation,
 		ByteBufCodecs.FLOAT,
 		Blocker::useSeconds,
-		StreamCodec.unit(PostBlockEffectWrapper.DEFAULT),
-		Blocker::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		Blocker::blockingCondition,
 		Blocker::new
