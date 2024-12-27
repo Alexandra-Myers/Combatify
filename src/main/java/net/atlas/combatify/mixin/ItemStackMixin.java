@@ -4,25 +4,32 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.extensions.ItemStackExtensions;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,6 +38,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,15 +49,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.util.MethodHandler.getBlocking;
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements DataComponentHolder {
+public abstract class ItemStackMixin implements DataComponentHolder, ItemStackExtensions {
+	@Unique
+	public Map<NetworkingHandler.ClientboundTooltipUpdatePacket.DataType, List<Component>> blockerTooltips;
+
 	@Unique
 	public ItemStack stack = ItemStack.class.cast(this);
 
@@ -65,9 +75,30 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Shadow
 	public abstract boolean hasNonDefault(DataComponentType<?> dataComponentType);
 
+	@Inject(method = "<init>(Lnet/minecraft/world/level/ItemLike;ILnet/minecraft/core/component/PatchedDataComponentMap;)V", at = @At("RETURN"))
+	public void appendInit(ItemLike itemLike, int i, PatchedDataComponentMap patchedDataComponentMap, CallbackInfo ci) {
+		if (blockerTooltips == null) blockerTooltips = Util.make(new Object2ObjectOpenHashMap<>(), dataTypeListObject2ObjectOpenHashMap -> dataTypeListObject2ObjectOpenHashMap.defaultReturnValue(Collections.emptyList()));
+	}
+
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;)V"))
 	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) Consumer<Component> consumer) {
 		addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, consumer, tooltipFlag);
+	}
+
+	@Inject(method = "inventoryTick", at = @At("TAIL"))
+	public void updateTooltip(Level level, Entity entity, int i, boolean bl, CallbackInfo ci) {
+		if (entity instanceof Player player && entity.tickCount % 20 == 0 && getBlocking(this.stack).canShowInTooltip(this.stack, player)) getBlockingType(this.stack).handler().updateServerTooltipInfo(player, this.stack, findSlotMatchingItem(this.stack, player.getInventory()));
+	}
+
+	@Unique
+	private static int findSlotMatchingItem(ItemStack itemStack, Inventory inventory) {
+		for (int i = 0; i < inventory.getContainerSize(); i++) {
+			if (!inventory.getItem(i).isEmpty() && ItemStack.isSameItemSameComponents(itemStack, inventory.getItem(i))) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
@@ -99,8 +130,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
 							Component.translatable("attribute.name.armor_piercing"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
-			if (getBlocking(this.stack).canShowInTooltip(this.stack, player))
-				getBlockingType(this.stack).appendTooltipInfo(consumer, player, this.stack);
+			if (getBlocking(this.stack).canShowInTooltip(this.stack, player)) updateClientTooltip(consumer, blockerTooltips.get(NetworkingHandler.ClientboundTooltipUpdatePacket.DataType.PROTECTION), blockerTooltips.get(NetworkingHandler.ClientboundTooltipUpdatePacket.DataType.KNOCKBACK));
 		}
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
@@ -136,6 +166,20 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		if (getBlocking(this.stack).canOverrideUseDurationAndAnimation(this.stack))
 			return ItemUseAnimation.BLOCK;
 		return original;
+	}
+
+	@Override
+	public void combatify$setBlockerInformation(List<Component> components, NetworkingHandler.ClientboundTooltipUpdatePacket.DataType type) {
+		blockerTooltips.put(type, components);
+	}
+
+	@Unique
+	public void updateClientTooltip(Consumer<Component> writer, List<Component> protection, List<Component> knockback) {
+		if (protection.isEmpty() && knockback.isEmpty()) return;
+		writer.accept(CommonComponents.EMPTY);
+		writer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
+		protection.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
+		knockback.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
 	}
 }
 

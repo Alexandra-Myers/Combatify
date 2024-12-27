@@ -1,11 +1,16 @@
 package net.atlas.combatify.networking;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ItemConfig;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -13,8 +18,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ConfigurationTask;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.*;
@@ -27,6 +35,7 @@ public class NetworkingHandler {
 		PayloadTypeRegistry.configurationC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateBridgingStatusPacket.TYPE, UpdateBridgingStatusPacket.CODEC);
+		PayloadTypeRegistry.playS2C().register(ClientboundTooltipUpdatePacket.TYPE, ClientboundTooltipUpdatePacket.CODEC);
 		PayloadTypeRegistry.configurationS2C().register(ClientboundClientInformationRetrievalPacket.TYPE, ClientboundClientInformationRetrievalPacket.CODEC);
 		ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
 			if (ServerConfigurationNetworking.canSend(handler, ClientboundClientInformationRetrievalPacket.TYPE))
@@ -85,6 +94,40 @@ public class NetworkingHandler {
 		@Override
 		public @NotNull Type<?> type() {
 			return TYPE;
+		}
+	}
+	public record ClientboundTooltipUpdatePacket(List<Component> components, DataType dataType, int slot) implements CustomPacketPayload {
+		public static final Type<ClientboundTooltipUpdatePacket> TYPE = new Type<>(Combatify.id("client_tooltip"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTooltipUpdatePacket> CODEC = StreamCodec.composite(
+			ByteBufCodecs.collection(ArrayList::new, ComponentSerialization.STREAM_CODEC), ClientboundTooltipUpdatePacket::components,
+			DataType.STREAM_CODEC, ClientboundTooltipUpdatePacket::dataType,
+			ByteBufCodecs.VAR_INT, ClientboundTooltipUpdatePacket::slot,
+			ClientboundTooltipUpdatePacket::new);
+		@Override
+		public @NotNull Type<?> type() {
+			return TYPE;
+		}
+		public enum DataType implements StringRepresentable {
+			PROTECTION("protection"),
+			KNOCKBACK("knockback");
+			public String name;
+			public static final Codec<DataType> CODEC = StringRepresentable.fromEnum(DataType::values);
+			public static final StreamCodec<ByteBuf, DataType> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(DataType::fromName, DataType::getSerializedName);
+			DataType(String name) {
+				this.name = name;
+			}
+
+			@Override
+			public String getSerializedName() {
+				return name;
+			}
+			public static DataType fromName(String name) {
+				return switch (name) {
+					case "protection" -> PROTECTION;
+					case "knockback" -> KNOCKBACK;
+					case null, default -> null;
+				};
+			}
 		}
 	}
 	public record ServerboundMissPacket() implements CustomPacketPayload {

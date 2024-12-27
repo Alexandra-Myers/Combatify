@@ -1,6 +1,5 @@
 package net.atlas.combatify.component;
 
-import com.mojang.serialization.Codec;
 import eu.pb4.polymer.core.api.other.PolymerComponent;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.component.custom.CanSweep;
@@ -24,16 +23,16 @@ public class CustomDataComponents {
 	public static DataComponentType<CanSweep> CAN_SWEEP = register(
 		"combatify:can_sweep", builder -> builder.persistent(CanSweep.CODEC).networkSynchronized(CanSweep.STREAM_CODEC)
 	);
-	public static DataComponentType<Float> BLOCKING_LEVEL = register(
-		"combatify:blocking_level", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT)
+	public static DataComponentType<Integer> BLOCKING_LEVEL = register(
+		"combatify:blocking_level", builder -> builder.persistent(ExtraCodecs.POSITIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT)
 	);
 	public static DataComponentType<Float> PIERCING_LEVEL = register(
 		"combatify:piercing_level", builder -> builder.persistent(ExtraCodecs.POSITIVE_FLOAT).networkSynchronized(ByteBufCodecs.FLOAT)
 	);
 	private static <T> DataComponentType<T> register(String string, UnaryOperator<DataComponentType.Builder<T>> unaryOperator) {
 		combatifyComponents.add(ResourceLocation.parse(string));
-		return Registry.<DataComponentType<T>>register(
-			BuiltInRegistries.DATA_COMPONENT_TYPE, string, ((DataComponentType.Builder)unaryOperator.apply(DataComponentType.builder())).build()
+		return Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE, string, unaryOperator.apply(DataComponentType.builder()).build()
 		);
 	}
 	public static void registerDataComponents() {

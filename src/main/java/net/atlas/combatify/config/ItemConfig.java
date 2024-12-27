@@ -82,7 +82,7 @@ public class ItemConfig extends AtlasConfig {
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
 	public static final StreamCodec<RegistryFriendlyByteBuf, ResourceLocation> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Tier> TIERS_STREAM_CODEC = StreamCodec.of((buf, tier) -> {
-		buf.writeFloat(tier.combatify$blockingLevel());
+		buf.writeVarInt(tier.combatify$blockingLevel());
 		buf.writeVarInt(tier.combatify$weaponLevel());
 		buf.writeVarInt(tier.enchantmentValue());
 		buf.writeVarInt(tier.durability());
@@ -91,7 +91,7 @@ public class ItemConfig extends AtlasConfig {
 		buf.writeResourceLocation(tier.repairItems().location());
 		buf.writeResourceLocation(tier.incorrectBlocksForDrops().location());
 	}, (buf) -> {
-		float blockingLevel = buf.readFloat();
+		int blockingLevel = buf.readVarInt();
 		int weaponLevel = buf.readVarInt();
 		int enchantLevel = buf.readVarInt();
 		int uses = buf.readVarInt();
@@ -408,7 +408,7 @@ public class ItemConfig extends AtlasConfig {
 				Integer durability = configurableItemData.armourStats().durability().getValue(item);
 				Integer maxStackSize = configurableItemData.stackSize();
 				Double piercingLevel = configurableItemData.weaponStats().piercingLevel();
-				Float blockingLevel = configurableItemData.blocker().blockingLevel();
+				Integer blockingLevel = configurableItemData.blocker().blockingLevel();
 				CanSweep canSweep = configurableItemData.weaponStats().canSweep();
 				Blocker blocking = configurableItemData.blocker().blocking();
 				Tier tier = configurableItemData.tier();
@@ -626,14 +626,14 @@ public class ItemConfig extends AtlasConfig {
 	}
 	public record RegistryConfigDataWrapper<T, U>(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) implements ConfigDataWrapper<Holder<T>, U> {
 		public static final RegistryConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new RegistryConfigDataWrapper<>(HolderSet.direct(), Collections.emptyList(), ConfigurableItemData.EMPTY);
-		public RegistryConfigDataWrapper(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) {
-			this.holders = holders;
-			this.tagKeys = tagKeys;
-			this.configurableData = configurableData;
-			if (holders.size() == 0 && tagKeys.isEmpty()) noNamePresent(this, "Configuring Registry");
-		}
-		public boolean matches(Holder<T> test) {
+
+        public boolean matches(Holder<T> test) {
 			return holders.contains(test) || tagKeys.stream().anyMatch(test::is);
+		}
+		public static <T, U> RegistryConfigDataWrapper<T, U> build(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) {
+			RegistryConfigDataWrapper<T, U> result = new RegistryConfigDataWrapper<>(holders, tagKeys, configurableData);
+			if (holders.size() == 0 && tagKeys.isEmpty()) noNamePresent(result, "Configuring Registry");
+			return result;
 		}
 		public static <T, U> MapCodec<RegistryConfigDataWrapper<T, U>> mapCodec(Registry<T> registry, Function<Holder<T>, DataResult<Holder<T>>> validator, MapCodec<U> mapCodec) {
 			Codec<Holder<T>> holderCodec = registry.holderByNameCodec().validate(validator);
@@ -645,13 +645,13 @@ public class ItemConfig extends AtlasConfig {
 						Codec.withAlternative(tagKeyCodec.listOf(), tagKeyCodec, Collections::singletonList)
 							.optionalFieldOf("tag", Collections.emptyList()).forGetter(RegistryConfigDataWrapper::tagKeys),
 						mapCodec.forGetter(RegistryConfigDataWrapper::configurableData))
-					.apply(instance, RegistryConfigDataWrapper::new));
+					.apply(instance, RegistryConfigDataWrapper::build));
 		}
 		public static <T, U> StreamCodec<RegistryFriendlyByteBuf, RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<? extends Registry<T>> registry, StreamCodec<RegistryFriendlyByteBuf, U> streamCodec) {
 			return StreamCodec.composite(ByteBufCodecs.holderSet(registry).map(holders -> (HolderSet.Direct<T>) holders, holders -> holders), RegistryConfigDataWrapper::holders,
 			ByteBufCodecs.collection(ArrayList::new, TagKey.streamCodec(registry)), RegistryConfigDataWrapper::tagKeys,
 				streamCodec, RegistryConfigDataWrapper::configurableData,
-				RegistryConfigDataWrapper::new);
+				RegistryConfigDataWrapper::build);
 		}
 		@Override
 		public boolean equals(Object o) {

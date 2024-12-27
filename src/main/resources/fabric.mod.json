@@ -52,7 +52,8 @@
       "net/minecraft/class_1308": ["net/atlas/combatify/extensions/MobExtensions"],
       "net/minecraft/class_2781": ["net/atlas/combatify/extensions/IUpdateAttributesPacket"],
       "net/minecraft/class_636": ["net/atlas/combatify/extensions/IPlayerGameMode"],
-      "net/minecraft/class_1282": ["net/atlas/combatify/extensions/DamageSourceExtension"]
+      "net/minecraft/class_1282": ["net/atlas/combatify/extensions/DamageSourceExtension"],
+      "net/minecraft/class_1799": ["net/atlas/combatify/extensions/ItemStackExtensions"]
     }
   }
 }

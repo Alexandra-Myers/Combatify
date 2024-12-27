@@ -5,19 +5,20 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.component.custom.Blocker;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.Objects;
 import java.util.Optional;
 
 import static net.atlas.combatify.config.ConfigurableItemData.clamp;
 
-public record BlockingInformation(Optional<Blocker> optionalBlocking, Optional<Double> optionalBlockStrength, Optional<Double> optionalBlockKbRes, Optional<Float> optionalBlockingLevel) {
+public record BlockingInformation(Optional<Blocker> optionalBlocking, Optional<Double> optionalBlockStrength, Optional<Double> optionalBlockKbRes, Optional<Integer> optionalBlockingLevel) {
 	public static final BlockingInformation EMPTY = new BlockingInformation((Blocker) null, null, null, null);
 	public static final Codec<BlockingInformation> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(Blocker.SIMPLE_CODEC.optionalFieldOf("blocking_type").forGetter(BlockingInformation::optionalBlocking),
 				Codec.DOUBLE.optionalFieldOf("damage_protection").forGetter(BlockingInformation::optionalBlockStrength),
 				Codec.DOUBLE.optionalFieldOf("block_knockback_resistance").forGetter(BlockingInformation::optionalBlockKbRes),
-				Codec.FLOAT.optionalFieldOf("blocking_level").forGetter(BlockingInformation::optionalBlockingLevel))
+				ExtraCodecs.POSITIVE_INT.optionalFieldOf("blocking_level").forGetter(BlockingInformation::optionalBlockingLevel))
 			.apply(instance, BlockingInformation::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingInformation> STREAM_CODEC = StreamCodec.of((buf, blocker) -> {
 		buf.writeBoolean(blocker.optionalBlocking.isPresent());
@@ -25,25 +26,25 @@ public record BlockingInformation(Optional<Blocker> optionalBlocking, Optional<D
 		buf.writeDouble(blocker.optionalBlockStrength.orElse(-10D));
 		buf.writeDouble(blocker.optionalBlockKbRes.orElse(-10D));
 		buf.writeBoolean(blocker.optionalBlockingLevel.isPresent());
-		blocker.optionalBlockingLevel.ifPresent(buf::writeFloat);
+		blocker.optionalBlockingLevel.ifPresent(buf::writeVarInt);
 	}, buf -> {
 		Boolean blockingPresent = buf.readBoolean();
 		Blocker blocking = blockingPresent ? Blocker.STREAM_CODEC.decode(buf) : null;
 		Double blockStrength = buf.readDouble();
 		Double blockKbRes = buf.readDouble();
-		Float blockingLevel = null;
+		Integer blockingLevel = null;
 		if (buf.readBoolean())
-			blockingLevel = buf.readFloat();
+			blockingLevel = buf.readVarInt();
 		if (blockStrength == -10)
 			blockStrength = null;
 		if (blockKbRes == -10)
 			blockKbRes = null;
 		return new BlockingInformation(blocking, blockStrength, blockKbRes, blockingLevel);
 	});
-	public BlockingInformation(Blocker optionalBlocking, Double optionalBlockStrength, Double optionalBlockKbRes, Float optionalBlockingLevel) {
+	public BlockingInformation(Blocker optionalBlocking, Double optionalBlockStrength, Double optionalBlockKbRes, Integer optionalBlockingLevel) {
 		this(Optional.ofNullable(optionalBlocking), Optional.ofNullable(optionalBlockStrength), Optional.ofNullable(optionalBlockKbRes), Optional.ofNullable(optionalBlockingLevel));
 	}
-	public BlockingInformation(Optional<Blocker> optionalBlocking, Optional<Double> optionalBlockStrength, Optional<Double> optionalBlockKbRes, Optional<Float> optionalBlockingLevel) {
+	public BlockingInformation(Optional<Blocker> optionalBlocking, Optional<Double> optionalBlockStrength, Optional<Double> optionalBlockKbRes, Optional<Integer> optionalBlockingLevel) {
 		this.optionalBlocking = optionalBlocking;
 		this.optionalBlockStrength = clamp(optionalBlockStrength, 0, 1000);
 		this.optionalBlockKbRes = clamp(optionalBlockKbRes, 0, 1);
@@ -62,7 +63,7 @@ public record BlockingInformation(Optional<Blocker> optionalBlocking, Optional<D
 		return optionalBlockKbRes.orElse(null);
 	}
 
-	public Float blockingLevel() {
+	public Integer blockingLevel() {
 		return optionalBlockingLevel.orElse(null);
 	}
 

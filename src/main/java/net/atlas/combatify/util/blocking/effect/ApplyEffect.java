@@ -30,16 +30,16 @@ public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDurat
 	}
 	public static final MapCodec<ApplyEffect> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyEffect::toApply),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("duration").forGetter(ApplyEffect::maxDuration),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("amplifier").forGetter(ApplyEffect::minAmplifier))
+				LevelBasedValue.CODEC.fieldOf("duration").forGetter(ApplyEffect::maxDuration),
+				LevelBasedValue.CODEC.fieldOf("amplifier").forGetter(ApplyEffect::minAmplifier))
 			.apply(instance, ApplyEffect::new)
 	);
 	public static final MapCodec<ApplyEffect> FULL_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyEffect::toApply),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("min_duration").forGetter(ApplyEffect::minDuration),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("max_duration").forGetter(ApplyEffect::maxDuration),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("min_amplifier").forGetter(ApplyEffect::minAmplifier),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("max_amplifier").forGetter(ApplyEffect::maxAmplifier))
+				LevelBasedValue.CODEC.fieldOf("min_duration").forGetter(ApplyEffect::minDuration),
+				LevelBasedValue.CODEC.fieldOf("max_duration").forGetter(ApplyEffect::maxDuration),
+				LevelBasedValue.CODEC.fieldOf("min_amplifier").forGetter(ApplyEffect::minAmplifier),
+				LevelBasedValue.CODEC.fieldOf("max_amplifier").forGetter(ApplyEffect::maxAmplifier))
 			.apply(instance, ApplyEffect::new)
 	);
 	public static final MapCodec<ApplyEffect> MAP_CODEC = Codec.mapEither(FULL_CODEC, PARTIAL_CODEC).xmap(

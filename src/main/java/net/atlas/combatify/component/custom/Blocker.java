@@ -8,6 +8,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
+import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.*;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffectWrapper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -37,9 +38,9 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 		this(blockingTypeLocation, useSeconds, PostBlockEffectWrapper.DEFAULT, blockingCondition);
 	}
 	public static final Blocker EMPTY = new Blocker(ResourceLocation.withDefaultNamespace("empty"), 0, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
-	public static final Blocker SHIELD = new Blocker(Combatify.SHIELD.getName(), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
-	public static final Blocker NEW_SHIELD = new Blocker(Combatify.NEW_SHIELD.getName(), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
-	public static final Blocker SWORD = new Blocker(Combatify.SWORD.getName(), 3600, PostBlockEffectWrapper.DEFAULT, new AllOf(List.of(new RequiresSwordBlocking(), new RequiresEmptyHand(InteractionHand.OFF_HAND))));
+	public static final Blocker SHIELD = new Blocker(ResourceLocation.withDefaultNamespace("shield"), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final Blocker NEW_SHIELD = new Blocker(ResourceLocation.withDefaultNamespace("new_shield"), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final Blocker SWORD = new Blocker(ResourceLocation.withDefaultNamespace("sword"), 3600, PostBlockEffectWrapper.DEFAULT, new AllOf(List.of(new RequiresSwordBlocking(), new RequiresEmptyHand(InteractionHand.OFF_HAND))));
 	public static final Codec<Blocker> SIMPLE_CODEC = BlockingType.ID_CODEC.xmap(blockingType1 -> new Blocker(blockingType1, 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE), Blocker::blockingTypeLocation);
 	public static final Codec<Blocker> FULL_CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
@@ -60,7 +61,7 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 	);
 
 	public BlockingType blockingType() {
-		if (blockingTypeLocation.equals(ResourceLocation.withDefaultNamespace("empty"))) return Combatify.EMPTY;
+		if (blockingTypeLocation.equals(ResourceLocation.withDefaultNamespace("empty"))) return BlockingTypeInit.EMPTY;
 		return Combatify.registeredTypes.get(blockingTypeLocation);
 	}
 
@@ -80,22 +81,24 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 		return (int) (useSeconds * 20.0F);
 	}
 
-	public void block(ServerLevel serverLevel, LivingEntity instance, DamageSource source, ItemStack itemStack, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if (blockingCondition.canBlock(serverLevel, instance, null, itemStack, source, amount, f, g, bl)) {
+	public void block(ServerLevel serverLevel, LivingEntity instance, DamageSource source, ItemStack itemStack, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
+		if (blockingCondition.canBlock(serverLevel, instance, itemStack, source, amount.get())) {
 			if (getBlockingType(itemStack).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(instance) - instance.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay()) {
 				if (Combatify.CONFIG.disableDuringShieldDelay())
 					if (source.getDirectEntity() instanceof LivingEntity attacker)
 						MethodHandler.disableShield(attacker, instance, source, itemStack);
 				return;
 			}
-			getBlockingType(itemStack).block(serverLevel, instance, null, itemStack, source, amount, f, g, bl);
+			getBlockingType(itemStack).block(serverLevel, instance, itemStack, source, amount, protectedDamage, blocked);
 		}
 	}
 
 	public InteractionResult use(ItemStack itemStack, Level level, Player user, InteractionHand hand, InteractionResult original) {
+		if (blockingTypeLocation.equals(ResourceLocation.withDefaultNamespace("empty"))) return null;
 		if (original != InteractionResult.PASS) return null;
 		if (!canUse(itemStack, level, user, hand)) return null;
-		return blockingType().use(itemStack, level, user, hand);
+		user.startUsingItem(hand);
+		return InteractionResult.CONSUME;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
