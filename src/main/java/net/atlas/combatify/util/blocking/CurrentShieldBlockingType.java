@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
@@ -22,7 +21,6 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -40,9 +38,9 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 	}
 
 	@Override
-	public void block(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+	public void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
 		MethodHandler.hurtCurrentlyUsedShield(instance, amount.get());
-		g.set(amount.get());
+		protectedDamage.set(amount.get());
 		amount.set(0.0f);
 		if (!source.is(DamageTypeTags.IS_PROJECTILE) && source.getDirectEntity() instanceof LivingEntity livingEntity) {
 			MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
@@ -58,7 +56,7 @@ public class CurrentShieldBlockingType extends ShieldBlockingType {
 			}
 		}
 
-		bl.set(true);
+		blocked.set(true);
 	}
 
 	@Override

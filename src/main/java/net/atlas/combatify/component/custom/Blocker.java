@@ -80,15 +80,15 @@ public record Blocker(ResourceLocation blockingTypeLocation, float useSeconds, P
 		return (int) (useSeconds * 20.0F);
 	}
 
-	public void block(ServerLevel serverLevel, LivingEntity instance, DamageSource source, ItemStack itemStack, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
-		if (blockingCondition.canBlock(serverLevel, instance, null, itemStack, source, amount, f, g, bl)) {
+	public void block(ServerLevel serverLevel, LivingEntity instance, DamageSource source, ItemStack itemStack, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
+		if (blockingCondition.canBlock(serverLevel, instance, itemStack, source, amount.get())) {
 			if (getBlockingType(itemStack).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(instance) - instance.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay()) {
 				if (Combatify.CONFIG.disableDuringShieldDelay())
 					if (source.getDirectEntity() instanceof LivingEntity attacker)
 						MethodHandler.disableShield(attacker, instance, source, itemStack);
 				return;
 			}
-			getBlockingType(itemStack).block(serverLevel, instance, null, itemStack, source, amount, f, g, bl);
+			getBlockingType(itemStack).block(serverLevel, instance, itemStack, source, amount, protectedDamage, blocked);
 		}
 	}
 

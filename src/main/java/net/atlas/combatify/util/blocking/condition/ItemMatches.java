@@ -1,7 +1,5 @@
 package net.atlas.combatify.util.blocking.condition;
 
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -16,12 +14,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +37,7 @@ public record ItemMatches(ItemPredicate predicate) implements BlockingCondition 
 	public static final StreamCodec<RegistryFriendlyByteBuf, ItemMatches> STREAM_CODEC = ByteBufCodecs.fromCodecTrusted(ITEM_PREDICATE_CODEC_NO_ITEMS).map(ItemMatches::new, ItemMatches::predicate).mapStream(buf -> buf);
 
 	@Override
-	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, float amount) {
 		return predicate.test(blockingItem);
 	}
 

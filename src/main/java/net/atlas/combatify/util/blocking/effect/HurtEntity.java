@@ -22,13 +22,13 @@ public record HurtEntity(Holder<DamageType> damageType, LevelBasedValue minDamag
 	}
 	public static final MapCodec<HurtEntity> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(DamageType.CODEC.fieldOf("damage_type").forGetter(HurtEntity::damageType),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("duration").forGetter(HurtEntity::maxDamage))
+				LevelBasedValue.CODEC.fieldOf("duration").forGetter(HurtEntity::maxDamage))
 			.apply(instance, HurtEntity::new)
 	);
 	public static final MapCodec<HurtEntity> FULL_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(DamageType.CODEC.fieldOf("damage_type").forGetter(HurtEntity::damageType),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("min_damage").forGetter(HurtEntity::minDamage),
-				PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.fieldOf("max_damage").forGetter(HurtEntity::maxDamage))
+				LevelBasedValue.CODEC.fieldOf("min_damage").forGetter(HurtEntity::minDamage),
+				LevelBasedValue.CODEC.fieldOf("max_damage").forGetter(HurtEntity::maxDamage))
 			.apply(instance, HurtEntity::new)
 	);
 	public static final MapCodec<HurtEntity> MAP_CODEC = Codec.mapEither(FULL_CODEC, PARTIAL_CODEC).xmap(

@@ -284,7 +284,7 @@ public class MethodHandler {
 		modifyTime: {
 			if (attacker.level() instanceof ServerLevel serverLevel) {
 				if (canDisable) {
-					damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);
+					damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, damage);
 					break modifyTime;
 				}
 				float newDamage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);

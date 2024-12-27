@@ -13,14 +13,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
-import org.jetbrains.annotations.Nullable;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
@@ -36,19 +34,18 @@ public class ShieldBlockingType extends BlockingType {
 	}
 
 	@Override
-	public void block(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+	public void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
 		float blockStrength = this.getShieldBlockDamageValue(blockingItem, instance.getRandom());
 		boolean hurt = false;
-		g.set(Math.min(blockStrength, amount.get()));
+		protectedDamage.set(Math.min(blockStrength, amount.get()));
 		if (!source.is(DamageTypeTags.IS_PROJECTILE) && !source.is(DamageTypeTags.IS_EXPLOSION)) {
-			entity = source.getDirectEntity();
-			if (entity instanceof LivingEntity livingEntity) {
-				MethodHandler.hurtCurrentlyUsedShield(instance, g.get());
+			if (source.getDirectEntity() instanceof LivingEntity livingEntity) {
+				MethodHandler.hurtCurrentlyUsedShield(instance, protectedDamage.get());
 				hurt = true;
 				MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
 			}
 		} else {
-			g.set(amount.get());
+			protectedDamage.set(amount.get());
 			switch (source.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
 					arrowDisable(instance, source, arrow, blockingItem);
@@ -61,9 +58,9 @@ public class ShieldBlockingType extends BlockingType {
 		}
 
 		if (!hurt)
-			MethodHandler.hurtCurrentlyUsedShield(instance, g.get());
-		amount.set(amount.get() - g.get());
-		bl.set(true);
+			MethodHandler.hurtCurrentlyUsedShield(instance, protectedDamage.get());
+		amount.set(amount.get() - protectedDamage.get());
+		blocked.set(true);
 	}
 
 	@Override

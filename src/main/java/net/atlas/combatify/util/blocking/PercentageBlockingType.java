@@ -8,13 +8,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -24,15 +22,15 @@ public abstract class PercentageBlockingType extends BlockingType {
 	}
 
 	@Override
-	public void block(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+	public void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
 		float actualStrength = this.getShieldBlockDamageValue(blockingItem, instance.getRandom());
-		g.set(amount.get() * actualStrength);
-		if (!fulfilBlock(serverLevel, instance, entity, blockingItem, source, amount, f, g, bl, actualStrength)) return;
+		protectedDamage.set(amount.get() * actualStrength);
+		if (!fulfilBlock(serverLevel, instance, blockingItem, source, amount, protectedDamage, blocked, actualStrength)) return;
 
-		amount.set(amount.get() - g.get());
+		amount.set(amount.get() - protectedDamage.get());
 	}
 
-	public abstract boolean fulfilBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl, float actualStrength);
+	public abstract boolean fulfilBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked, float actualStrength);
 
 	@Override
 	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {

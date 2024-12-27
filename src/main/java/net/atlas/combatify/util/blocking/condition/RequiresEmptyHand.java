@@ -1,7 +1,5 @@
 package net.atlas.combatify.util.blocking.condition;
 
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -13,12 +11,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -33,7 +29,7 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 	public static final StreamCodec<RegistryFriendlyByteBuf, RequiresEmptyHand> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8.map(s -> s.equals("off_hand") ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, interactionHand1 -> interactionHand1 == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand"), RequiresEmptyHand::interactionHand, RequiresEmptyHand::new);
 
 	@Override
-	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
+	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, float amount) {
 		return instance.getItemInHand(interactionHand).isEmpty();
 	}
 

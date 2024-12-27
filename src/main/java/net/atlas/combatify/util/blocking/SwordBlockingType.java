@@ -19,7 +19,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
@@ -35,10 +34,10 @@ public class SwordBlockingType extends PercentageBlockingType {
 	}
 
 	@Override
-	public boolean fulfilBlock(ServerLevel serverLevel, LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl, float actualStrength) {
-		boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
-		entity = source.getDirectEntity();
-		if (blocked && entity instanceof LivingEntity livingEntity)
+	public boolean fulfilBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked, float actualStrength) {
+		boolean isBlocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
+		Entity entity = source.getDirectEntity();
+		if (isBlocked && entity instanceof LivingEntity livingEntity)
 			MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
 		else if (source.is(DamageTypeTags.IS_PROJECTILE) || source.is(DamageTypeTags.IS_EXPLOSION)) {
 			switch (source.getDirectEntity()) {

@@ -18,7 +18,7 @@ public record KnockbackEntity(LevelBasedValue strength, boolean force) implement
 		this(LevelBasedValue.constant(0.5F), false);
 	}
 	public static final MapCodec<KnockbackEntity> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-		instance.group(PostBlockEffects.LEVEL_BASED_VALUE_OR_CONSTANT_CODEC.optionalFieldOf("strength", LevelBasedValue.constant(0.5F)).forGetter(KnockbackEntity::strength),
+		instance.group(LevelBasedValue.CODEC.optionalFieldOf("strength", LevelBasedValue.constant(0.5F)).forGetter(KnockbackEntity::strength),
 				Codec.BOOL.optionalFieldOf("force", false).forGetter(KnockbackEntity::force))
 			.apply(instance, KnockbackEntity::new));
 	@Override
