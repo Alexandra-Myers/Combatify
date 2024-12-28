@@ -114,12 +114,12 @@ public class MethodHandler {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
-		if (!blockingItem.isEmpty() && !delay && entity.level() instanceof ServerLevel serverLevel) {
+		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = getBlockingType(blockingItem);
 			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.handler().getShieldKnockbackResistanceValue(serverLevel, blockingItem, entity.getRandom()));
+				knockbackRes = Math.max(knockbackRes, blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.handler().getShieldKnockbackResistanceValue(serverLevel, blockingItem, entity.getRandom()));
+				knockbackRes = Math.min(1.0, knockbackRes + blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
 
 		strength *= 1.0 - knockbackRes;
@@ -134,12 +134,12 @@ public class MethodHandler {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
-		if (!blockingItem.isEmpty() && !delay && entity.level() instanceof ServerLevel serverLevel) {
+		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = getBlockingType(blockingItem);
 			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.handler().getShieldKnockbackResistanceValue(serverLevel, blockingItem, entity.getRandom()));
+				knockbackRes = Math.max(knockbackRes, blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.handler().getShieldKnockbackResistanceValue(serverLevel, blockingItem, entity.getRandom()));
+				knockbackRes = Math.min(1.0, knockbackRes + blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
 
 		strength *= 1.0 - knockbackRes;

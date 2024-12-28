@@ -2,16 +2,17 @@ package net.atlas.combatify.util.blocking;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.util.blocking.condition.BlockingCondition;
+import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.ConditionalEffect;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.ArrayList;
@@ -19,18 +20,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, Optional<LootItemCondition> showInTooltip) {
+public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, Optional<BlockingCondition> showInTooltip) {
 	public static final Codec<ComponentModifier> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(ComponentSerialization.CODEC.fieldOf("tooltip").forGetter(ComponentModifier::tooltipComponent),
 				EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
-				ConditionalEffect.conditionCodec(LootContextParamSets.ENCHANTED_ITEM).optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip))
+				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip))
 			.apply(instance, ComponentModifier::new));
 
 	public float modifyValue(float value, int blockingLevel, RandomSource randomSource) {
 		return modifier.process(blockingLevel, randomSource, value);
 	}
-	public boolean matches(LootContext lootContext) {
-		return showInTooltip.isEmpty() || showInTooltip.get().test(lootContext);
+	public boolean matches(ItemStack itemStack) {
+		return showInTooltip.isEmpty() || showInTooltip.get().appliesComponentModifier(itemStack);
 	}
 	public static Component buildComponent(Component base, float val) {
 		if (base.copy().getContents() instanceof TranslatableContents translatableContents) {
@@ -61,7 +62,11 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 		return res;
 	}
 
-	public static ConditionalEffect<ComponentModifier> matchingConditions(Component tooltipComponent, EnchantmentValueEffect modifier, LootItemCondition showInTooltip) {
-		return new ConditionalEffect<>(new ComponentModifier(tooltipComponent, modifier, Optional.ofNullable(showInTooltip)), Optional.ofNullable(showInTooltip));
+	public static ConditionalEffect<ComponentModifier> matchingConditions(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip, LootItemCondition applyCondition) {
+		return new ConditionalEffect<>(new ComponentModifier(tooltipComponent, modifier, Optional.ofNullable(showInTooltip)), Optional.ofNullable(applyCondition));
+	}
+
+	public static ConditionalEffect<ComponentModifier> noConditions(Component tooltipComponent, EnchantmentValueEffect modifier) {
+		return new ConditionalEffect<>(new ComponentModifier(tooltipComponent, modifier, Optional.empty()), Optional.empty());
 	}
 }

@@ -19,10 +19,10 @@ import static net.atlas.combatify.item.ItemRegistry.registerItem;
 public class TieredShieldItem extends ShieldItem {
 	public final ToolMaterial tier;
 	public static final Item WOODEN_SHIELD = registerItem(id("wooden_shield"), properties -> new TieredShieldItem(ToolMaterial.WOOD, properties, 1), new Item.Properties());
-	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), properties -> new TieredShieldItem(ToolMaterial.IRON, properties, 2), new Item.Properties());
+	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), properties -> new TieredShieldItem(ToolMaterial.IRON, properties, 3), new Item.Properties());
 	public static final Item GOLD_SHIELD = registerItem(id("golden_shield"), properties -> new TieredShieldItem(ToolMaterial.GOLD, properties, 1), new Item.Properties());
-	public static final Item DIAMOND_SHIELD = registerItem(id("diamond_shield"), properties -> new TieredShieldItem(ToolMaterial.DIAMOND, properties, 3),new Item.Properties());
-	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(ToolMaterial.NETHERITE, properties, 4), new Item.Properties().fireResistant());
+	public static final Item DIAMOND_SHIELD = registerItem(id("diamond_shield"), properties -> new TieredShieldItem(ToolMaterial.DIAMOND, properties, 4),new Item.Properties());
+	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(ToolMaterial.NETHERITE, properties, 5), new Item.Properties().fireResistant());
 
 	public TieredShieldItem(ToolMaterial tier, Properties properties, int lvl) {
 		super(properties.durability(tier.durability() * 2)

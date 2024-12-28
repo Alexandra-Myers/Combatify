@@ -22,7 +22,7 @@ import net.minecraft.world.level.Level;
 import java.util.Map;
 import java.util.Optional;
 
-public record ItemMatches(ItemPredicate predicate) implements BlockingCondition {
+public record ItemMatches(ItemPredicate predicate, boolean invert) implements BlockingCondition {
 	public static final Codec<ItemPredicate> ITEM_PREDICATE_CODEC_NO_ITEMS = RecordCodecBuilder.create(
 		instance -> instance.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count),
 				DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components),
@@ -32,28 +32,36 @@ public record ItemMatches(ItemPredicate predicate) implements BlockingCondition 
 	);
 	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("item_matches");
 	public static final MapCodec<ItemMatches> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-		instance.group(ITEM_PREDICATE_CODEC_NO_ITEMS.fieldOf("predicate").forGetter(ItemMatches::predicate))
+		instance.group(ITEM_PREDICATE_CODEC_NO_ITEMS.fieldOf("predicate").forGetter(ItemMatches::predicate),
+				Codec.BOOL.optionalFieldOf("invert", false).forGetter(ItemMatches::invert))
 			.apply(instance, ItemMatches::new));
-	public static final StreamCodec<RegistryFriendlyByteBuf, ItemMatches> STREAM_CODEC = ByteBufCodecs.fromCodecTrusted(ITEM_PREDICATE_CODEC_NO_ITEMS).map(ItemMatches::new, ItemMatches::predicate).mapStream(buf -> buf);
+	public static final StreamCodec<RegistryFriendlyByteBuf, ItemMatches> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.fromCodecTrusted(ITEM_PREDICATE_CODEC_NO_ITEMS), ItemMatches::predicate,
+		ByteBufCodecs.BOOL, ItemMatches::invert,
+		ItemMatches::new);
 
 	@Override
 	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, float amount) {
-		return predicate.test(blockingItem);
+		return predicate.test(blockingItem) != invert;
 	}
 
 	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {
-		return predicate.test(itemStack);
+		return predicate.test(itemStack) != invert;
 	}
 
 	@Override
 	public boolean canShowInToolTip(ItemStack itemStack, Player player) {
-		return predicate.test(itemStack);
+		return predicate.test(itemStack) != invert;
 	}
 
 	@Override
 	public boolean overridesUseDurationAndAnimation(ItemStack itemStack) {
-		return predicate.test(itemStack);
+		return predicate.test(itemStack) != invert;
+	}
+
+	@Override
+	public boolean appliesComponentModifier(ItemStack itemStack) {
+		return predicate.test(itemStack) != invert;
 	}
 
 	@Override

@@ -28,6 +28,7 @@
     "ItemStackMixin",
     "LivingEntityAccessor",
     "LivingEntityMixin",
+    "LootContextParamSetsMixin",
     "MaceItemMixin",
     "MeleeAttackGoalMixin",
     "MobEffectMixin",

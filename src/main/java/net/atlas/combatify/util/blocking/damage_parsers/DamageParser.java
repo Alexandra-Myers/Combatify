@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.minecraft.core.Registry;
+import net.minecraft.world.level.storage.loot.LootContext;
 
 public interface DamageParser {
 	Codec<DamageParser> CODEC = BlockingTypeInit.DAMAGE_PARSER_TYPE_REG
@@ -15,7 +16,7 @@ public interface DamageParser {
 		Registry.register(registry, "percentage", Percentage.CODEC);
 		Registry.register(registry, "percentage_limit", PercentageLimit.CODEC);
 	}
-	float parse(float originalValue, float protection);
+	float parse(float originalValue, float protection, LootContext context);
 
 	MapCodec<? extends DamageParser> codec();
 }

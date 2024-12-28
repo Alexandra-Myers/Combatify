@@ -10,11 +10,10 @@ import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.critereon.CustomLootContextParamSets;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.damage_parsers.DamageParser;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -24,7 +23,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -35,16 +33,15 @@ import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.ConditionalEffect;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
@@ -210,17 +207,26 @@ public record BlockingType(ResourceLocation name, ResourceLocation factoryId, Bl
 			return Objects.hash(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay);
 		}
 	}
-	public record BlockingTypeHandler(List<ConditionalEffect<DamageParser>> damageParsers, Optional<LootItemCondition> triggerPostBlockEffects, List<ConditionalEffect<ComponentModifier>> protectionModifiers, List<ComponentModifier> knockbackModifiers, boolean markBlocked) {
+	public record BlockingTypeHandler(List<DamageParser> damageParsers, Optional<LootItemCondition> triggerPostBlockEffects, List<ConditionalEffect<ComponentModifier>> protectionModifiers, List<ComponentModifier> knockbackModifiers, boolean markBlocked) {
 		public static final MapCodec<BlockingTypeHandler> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-			instance.group(ConditionalEffect.codec(DamageParser.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf().fieldOf("damage_parsers").forGetter(BlockingTypeHandler::damageParsers),
-					ConditionalEffect.conditionCodec(LootContextParamSets.ENCHANTED_DAMAGE).optionalFieldOf("trigger_post_block_effects").forGetter(BlockingTypeHandler::triggerPostBlockEffects),
-					ConditionalEffect.codec(ComponentModifier.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf().fieldOf("protection_modifiers").forGetter(BlockingTypeHandler::protectionModifiers),
+			instance.group(DamageParser.CODEC.listOf().fieldOf("damage_parsers").forGetter(BlockingTypeHandler::damageParsers),
+					ConditionalEffect.conditionCodec(CustomLootContextParamSets.BLOCKED_DAMAGE).optionalFieldOf("trigger_post_block_effects").forGetter(BlockingTypeHandler::triggerPostBlockEffects),
+					ConditionalEffect.codec(ComponentModifier.CODEC, CustomLootContextParamSets.BLOCKED_DAMAGE).listOf().fieldOf("protection_modifiers").forGetter(BlockingTypeHandler::protectionModifiers),
 					ComponentModifier.CODEC.listOf().optionalFieldOf("knockback_modifiers", Collections.emptyList()).forGetter(BlockingTypeHandler::knockbackModifiers),
 					Codec.BOOL.optionalFieldOf("mark_blocked", true).forGetter(BlockingTypeHandler::markBlocked))
 				.apply(instance, BlockingTypeHandler::new));
 		public void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef wasBlocked) {
 			int blockingLevel = blockingItem.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
-			LootContext context = Enchantment.damageContext(serverLevel, blockingLevel, instance, source);
+			LootParams lootParams = new LootParams.Builder(serverLevel)
+				.withParameter(LootContextParams.THIS_ENTITY, instance)
+				.withParameter(LootContextParams.ENCHANTMENT_LEVEL, blockingLevel)
+				.withParameter(LootContextParams.TOOL, blockingItem)
+				.withParameter(LootContextParams.ORIGIN, instance.position())
+				.withParameter(LootContextParams.DAMAGE_SOURCE, source)
+				.withOptionalParameter(LootContextParams.ATTACKING_ENTITY, source.getEntity())
+				.withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, source.getDirectEntity())
+				.create(CustomLootContextParamSets.BLOCKED_DAMAGE);
+			LootContext context = new LootContext.Builder(lootParams).create(Optional.empty());
 			MutableFloat protection = new MutableFloat(0);
 			matchingConditionalEffects(protectionModifiers, context).forEach(componentModifier -> protection.setValue(componentModifier.modifyValue(protection.getValue(), blockingLevel, instance.getRandom())));
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(blockingItem.getItem());
@@ -228,12 +234,10 @@ public record BlockingType(ResourceLocation name, ResourceLocation factoryId, Bl
 				if (configurableItemData.blocker().blockStrength() != null) protection.setValue(configurableItemData.blocker().blockStrength().floatValue());
 			}
 			protection.setValue(CustomEnchantmentHelper.modifyShieldEffectiveness(blockingItem, instance.getRandom(), protection.getValue()));
-			List<DamageParser> damageParserList = matchingConditionalEffects(damageParsers, context);
-			if (!damageParserList.isEmpty()) {
-				protectedDamage.set(amount.get());
-				damageParserList.forEach(damageParserConditionalEffect -> protectedDamage.set(damageParserConditionalEffect.parse(protectedDamage.get(), protection.getValue())));
-			} else protectedDamage.set(0);
-			amount.set(Math.max(amount.get() - protectedDamage.get(), 0));
+			damageParsers.forEach(damageParserConditionalEffect -> {
+				protectedDamage.set(damageParserConditionalEffect.parse(amount.get(), protection.getValue(), context));
+				amount.set(Math.max(amount.get() - protectedDamage.get(), 0));
+			});
 			MethodHandler.hurtCurrentlyUsedShield(instance, protectedDamage.get());
 			AtomicBoolean canTriggerPostBlockEffects = new AtomicBoolean(true);
 			triggerPostBlockEffects.ifPresent(lootItemCondition -> canTriggerPostBlockEffects.set(lootItemCondition.test(context)));
@@ -253,50 +257,39 @@ public record BlockingType(ResourceLocation name, ResourceLocation factoryId, Bl
 		public static <T> List<T> matchingConditionalEffects(List<ConditionalEffect<T>> effects, LootContext lootContext) {
 			return effects.stream().filter(componentModifierConditionalEffect -> componentModifierConditionalEffect.matches(lootContext)).map(ConditionalEffect::effect).toList();
 		}
-		public void updateServerTooltipInfo(Player player, ItemStack stack, int slot) {
+		public void appendTooltipInfo(Consumer<Component> writer, Player player, ItemStack stack) {
 			List<Component> protection = Collections.emptyList();
 			List<Component> knockback = Collections.emptyList();
 			int blockingLevel = stack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
-			if (player instanceof ServerPlayer serverPlayer) {
-				LootParams lootParams = new LootParams.Builder(serverPlayer.serverLevel())
-					.withParameter(LootContextParams.TOOL, stack)
-					.withParameter(LootContextParams.ENCHANTMENT_LEVEL, blockingLevel)
-					.create(LootContextParamSets.ENCHANTED_ITEM);
-				LootContext lootContext = new LootContext.Builder(lootParams).create(Optional.empty());
-				List<ComponentModifier> intermediaryProtection = protectionModifiers.stream().map(ConditionalEffect::effect).filter(componentModifier -> componentModifier.matches(lootContext)).toList();
-				if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombine(new ArrayList<>(intermediaryProtection), blockingLevel, player.getRandom());
-				List<ComponentModifier> intermediaryKnockback = knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(lootContext)).toList();
-				if (!intermediaryKnockback.isEmpty()) knockback = intermediaryKnockback.getFirst().tryCombine(new ArrayList<>(intermediaryKnockback), blockingLevel, player.getRandom());
-				ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
-				if (configurableItemData != null) {
-					if (configurableItemData.blocker().blockStrength() != null)
-						protection = List.of(ComponentModifier.buildComponent(protectionModifiers.stream().map(ConditionalEffect::effect).toList().getFirst().tooltipComponent(), configurableItemData.blocker().blockStrength().floatValue()));
-					if (configurableItemData.blocker().blockKbRes() != null)
-						knockback = List.of(CommonComponents.space().append(
-							Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
-								ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(configurableItemData.blocker().blockKbRes() * 10.0),
-								Component.translatable("attribute.name.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-				}
-				if (ServerPlayNetworking.canSend(serverPlayer, NetworkingHandler.ClientboundTooltipUpdatePacket.TYPE)) {
-					ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.ClientboundTooltipUpdatePacket(protection, NetworkingHandler.ClientboundTooltipUpdatePacket.DataType.PROTECTION, slot));
-					ServerPlayNetworking.send(serverPlayer, new NetworkingHandler.ClientboundTooltipUpdatePacket(knockback, NetworkingHandler.ClientboundTooltipUpdatePacket.DataType.KNOCKBACK, slot));
-                }
+			List<ComponentModifier> intermediaryProtection = protectionModifiers.stream().map(ConditionalEffect::effect).filter(componentModifier -> componentModifier.matches(stack)).toList();
+			if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombine(new ArrayList<>(intermediaryProtection), blockingLevel, player.getRandom());
+			List<ComponentModifier> intermediaryKnockback = knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(stack)).toList();
+			if (!intermediaryKnockback.isEmpty()) knockback = intermediaryKnockback.getFirst().tryCombine(new ArrayList<>(intermediaryKnockback), blockingLevel, player.getRandom());
+			ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+			if (configurableItemData != null) {
+				if (configurableItemData.blocker().blockStrength() != null)
+					protection = List.of(ComponentModifier.buildComponent(protectionModifiers.stream().map(ConditionalEffect::effect).toList().getFirst().tooltipComponent(), configurableItemData.blocker().blockStrength().floatValue()));
+				if (configurableItemData.blocker().blockKbRes() != null)
+					knockback = List.of(CommonComponents.space().append(
+						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
+							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(configurableItemData.blocker().blockKbRes() * 10.0),
+							Component.translatable("attribute.name.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
+			if (protection.isEmpty() && knockback.isEmpty()) return;
+			writer.accept(CommonComponents.EMPTY);
+			writer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
+			protection.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
+			knockback.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
 		}
-		public float getShieldKnockbackResistanceValue(ServerLevel serverLevel, ItemStack itemStack, RandomSource randomSource) {
+		public float getShieldKnockbackResistanceValue(ItemStack itemStack, RandomSource randomSource) {
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(itemStack.getItem());
 			if (configurableItemData != null) {
 				if (configurableItemData.blocker().blockKbRes() != null)
 					return configurableItemData.blocker().blockKbRes().floatValue();
 			}
 			int blockingLevel = itemStack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
-			LootParams lootParams = new LootParams.Builder(serverLevel)
-				.withParameter(LootContextParams.TOOL, itemStack)
-				.withParameter(LootContextParams.ENCHANTMENT_LEVEL, blockingLevel)
-				.create(LootContextParamSets.ENCHANTED_ITEM);
-			LootContext lootContext = new LootContext.Builder(lootParams).create(Optional.empty());
 			MutableFloat knockbackResistance = new MutableFloat(0);
-			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(lootContext)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.getValue(), blockingLevel, randomSource)));
+			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.getValue(), blockingLevel, randomSource)));
 			return knockbackResistance.getValue();
 		}
 

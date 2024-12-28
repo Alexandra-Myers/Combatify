@@ -13,7 +13,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.*;
-import net.minecraft.world.item.enchantment.effects.AddValue;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
@@ -33,14 +32,6 @@ public class CustomEnchantmentHelper {
 	public static float modifyShieldEffectiveness(ItemStack itemStack, RandomSource randomSource, float value) {
 		MutableFloat mutableFloat = new MutableFloat(value);
 		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS).forEach(enchantmentValueEffect -> mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()))));
-		return mutableFloat.floatValue();
-	}
-	public static float modifyShieldEffectiveness(ItemStack itemStack, RandomSource randomSource, float value, boolean add) {
-		MutableFloat mutableFloat = new MutableFloat(value);
-		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS).forEach(enchantmentValueEffect -> {
-			if (enchantmentValueEffect instanceof AddValue && add) mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()));
-			else if (!(enchantmentValueEffect instanceof AddValue || add)) mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()));
-		}));
 		return mutableFloat.floatValue();
 	}
 	public static void applyPostBlockedEffects(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {

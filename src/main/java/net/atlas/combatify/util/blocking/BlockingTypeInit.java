@@ -5,6 +5,8 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.critereon.ItemBlockingLevelPredicate;
 import net.atlas.combatify.critereon.ItemHasComponentPredicate;
 import net.atlas.combatify.critereon.ItemSubPredicateInit;
+import net.atlas.combatify.util.blocking.condition.AnyOf;
+import net.atlas.combatify.util.blocking.condition.ItemMatches;
 import net.atlas.combatify.util.blocking.damage_parsers.*;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
@@ -39,20 +41,24 @@ public class BlockingTypeInit {
 	public static final Registry<MapCodec<? extends DamageParser>> DAMAGE_PARSER_TYPE_REG = FabricRegistryBuilder.createSimple(
 		DAMAGE_PARSER_TYPE
 	).attribute(RegistryAttribute.OPTIONAL).buildAndRegister();
-	public static final ComponentModifier SHIELD_PROTECTION_WITHOUT_BANNER = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.shield_strength")), new AddValue(LevelBasedValue.constant(5)), Optional.empty());
+	public static final ComponentModifier SHIELD_PROTECTION_WITHOUT_BANNER = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.shield_strength")), new AddValue(LevelBasedValue.perLevel(5, 1)), Optional.empty());
 	public static final List<ConditionalEffect<ComponentModifier>> SHIELD_PROTECTION = List.of(new ConditionalEffect<>(SHIELD_PROTECTION_WITHOUT_BANNER, Optional.empty()),
 		ComponentModifier.matchingConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.shield_strength")),
 			new AddValue(LevelBasedValue.constant(5)),
-			AnyOfCondition.anyOf(MatchTool.toolMatches((ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)))), InvertedLootItemCondition.invert(MatchTool.toolMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build())))).build()));
-	public static final ConditionalEffect<ComponentModifier> OLD_SWORD_PROTECTION = ComponentModifier.matchingConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatable("attribute.name.damage_reduction")), new AddValue(LevelBasedValue.constant(50)), null);
-	public static final ConditionalEffect<ComponentModifier> SWORD_PROTECTION = ComponentModifier.matchingConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatable("attribute.name.damage_reduction")), new AddValue(LevelBasedValue.perLevel(10, 5)), null);
-	public static final ConditionalEffect<ComponentModifier> NEW_SHIELD_PROTECTION = ComponentModifier.matchingConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatable("attribute.name.shield_reduction")), new AddValue(LevelBasedValue.perLevel(20, 10)), null);
+			new AnyOf(new ItemMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)).build(), false),
+				new ItemMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build()).build(), true)),
+			AnyOfCondition.anyOf(MatchTool.toolMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true))),
+				InvertedLootItemCondition.invert(MatchTool.toolMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build())))).build()));
+	public static final ConditionalEffect<ComponentModifier> OLD_SWORD_PROTECTION = ComponentModifier.noConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatable("attribute.name.damage_reduction")), new AddValue(LevelBasedValue.constant(50)));
+	public static final ConditionalEffect<ComponentModifier> SWORD_PROTECTION = ComponentModifier.noConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatable("attribute.name.damage_reduction")), new AddValue(LevelBasedValue.perLevel(10, 5)));
+	public static final ConditionalEffect<ComponentModifier> NEW_SHIELD_PROTECTION = ComponentModifier.noConditions(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatable("attribute.name.shield_reduction")), new AddValue(LevelBasedValue.perLevel(30, 5)));
 	public static final ComponentModifier SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(5)), Optional.empty());
 	public static final ComponentModifier BANNER_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")),
 		new AddValue(LevelBasedValue.constant(3)),
-		Optional.of(AnyOfCondition.anyOf(MatchTool.toolMatches((ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)))), InvertedLootItemCondition.invert(MatchTool.toolMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build())))).build()));
+		Optional.of(new AnyOf(new ItemMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)).build(), false),
+			new ItemMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build()).build(), true))));
 	public static final Function<Integer, List<ComponentModifier>> NEW_SHIELD_KNOCKBACK = i -> List.of(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(2.5F)), Optional.empty()),
-		new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(2.5F)), Optional.of(MatchTool.toolMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.BLOCKING_LEVEL, new ItemBlockingLevelPredicate(MinMaxBounds.Ints.atLeast(i)))).build())));
+		new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(2.5F)), Optional.of(new ItemMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.BLOCKING_LEVEL, new ItemBlockingLevelPredicate(MinMaxBounds.Ints.atLeast(i))).build(), false))));
 	public static BlockingType.Factory SWORD_BLOCKING_TYPE_FACTORY;
 	public static BlockingType.Factory OLD_SWORD_BLOCKING_TYPE_FACTORY;
 	public static BlockingType.Factory SHIELD_BLOCKING_TYPE_FACTORY;
@@ -97,7 +103,7 @@ public class BlockingTypeInit {
 			List.of(Nullify.NULLIFY_EXPLOSIONS_AND_PROJECTILES, Percentage.IGNORE_EXPLOSIONS_AND_PROJECTILES),
 			Optional.empty(),
 			Collections.singletonList(NEW_SHIELD_PROTECTION),
-			NEW_SHIELD_KNOCKBACK.apply(3),
+			NEW_SHIELD_KNOCKBACK.apply(5),
 			true), Combatify.id("new_shield")));
 		defineBlockingTypeFactory(Combatify.id("test"), BlockingType.Factory.forHandler(new BlockingType.BlockingTypeHandler(
 			List.of(Nullify.NULLIFY_EXPLOSIONS_AND_PROJECTILES, Percentage.IGNORE_EXPLOSIONS_AND_PROJECTILES),
