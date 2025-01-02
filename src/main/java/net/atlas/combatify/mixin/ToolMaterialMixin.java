@@ -69,12 +69,8 @@ public abstract class ToolMaterialMixin implements Tier {
 	}
 
 	@Override
-	public float combatify$blockingLevel() {
-		if (thisMaterial.equals(NETHERITE)) return 0;
-		if (thisMaterial.equals(DIAMOND)) return -0.5F;
-		if (thisMaterial.equals(IRON)) return -1;
-		if (thisMaterial.equals(STONE)) return -1.5F;
-		return -2;
+	public int combatify$blockingLevel() {
+		return combatify$weaponLevel() + 1;
 	}
 
 	@ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ToolMaterial;<init>(Lnet/minecraft/tags/TagKey;IFFILnet/minecraft/tags/TagKey;)V"), index = 3)

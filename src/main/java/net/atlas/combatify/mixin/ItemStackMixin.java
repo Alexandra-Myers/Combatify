@@ -50,6 +50,7 @@ import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements DataComponentHolder {
+
 	@Unique
 	public ItemStack stack = ItemStack.class.cast(this);
 
@@ -99,8 +100,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
 							Component.translatable("attribute.name.armor_piercing"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
-			if (getBlocking(this.stack).canShowInTooltip(this.stack, player))
-				getBlockingType(this.stack).appendTooltipInfo(consumer, player, this.stack);
+			if (getBlocking(this.stack).canShowInTooltip(this.stack, player)) getBlockingType(this.stack).handler().appendTooltipInfo(consumer, player, this.stack);
 		}
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))

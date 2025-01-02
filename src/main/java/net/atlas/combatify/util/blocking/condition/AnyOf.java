@@ -14,11 +14,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public record AnyOf(List<BlockingCondition> blockingConditions) implements BlockingCondition {
+	public AnyOf(BlockingCondition... conditions) {
+		this(Arrays.asList(conditions));
+	}
 	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("any_of");
 	public static final MapCodec<AnyOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(BlockingConditions.MAP_CODEC.codec().listOf().fieldOf("conditions").forGetter(AnyOf::blockingConditions)).apply(instance, AnyOf::new));
@@ -49,6 +53,13 @@ public record AnyOf(List<BlockingCondition> blockingConditions) implements Block
 	public boolean overridesUseDurationAndAnimation(ItemStack itemStack) {
 		AtomicBoolean ret = new AtomicBoolean(false);
 		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() | blockingCondition.overridesUseDurationAndAnimation(itemStack)));
+		return ret.get();
+	}
+
+	@Override
+	public boolean appliesComponentModifier(ItemStack itemStack) {
+		AtomicBoolean ret = new AtomicBoolean(false);
+		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() | blockingCondition.appliesComponentModifier(itemStack)));
 		return ret.get();
 	}
 

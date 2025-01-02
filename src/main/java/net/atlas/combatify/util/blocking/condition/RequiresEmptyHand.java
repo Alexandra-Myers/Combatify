@@ -50,6 +50,11 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 	}
 
 	@Override
+	public boolean appliesComponentModifier(ItemStack itemStack) {
+		return true;
+	}
+
+	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
 	}

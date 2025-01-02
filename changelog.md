@@ -16,6 +16,10 @@
 - The `minecraft:use_cooldown` component will apply in the few cases mobs use items.
 
 - For Beta 3 onwards, the items config will now be named `combatify-items-v2` to limit the amount of changes to existing configurations that need to be made, and to ensure v1 configurations will remain functional.
+
+- Other new enchantment effect component: `combatify:post_block_effects`, not much to say other than it is the effects to be triggered after an attack is blocked.
+
+- Other new data components: `combatify:blocker` and `combatify:can_sweep`, relatively straight-forward to understand what they do.
 ***
 #### Config Changes:
 ***
@@ -43,9 +47,13 @@
    * `weapon_level` controls the level as used for weapon type calculations, whereas `blocking_level` directly modifies the default `combatify:blocking_level` component.
 
 - Added the optional field `blocking_level` to the `blocking_information` codec. This takes precedence over the tier's `blocking_level` when used.
+
+- `blocking_type` in both weapon type and item configurations now encodes the default `combatify:blocker` for the items, rather than encoding a direct blocking type.
 ***
 #### Fixes:
 ***
 - Shield durability is now taken in most cases where it was not before
 
 - Fixed third-person shield blocking animation
+
+- Probably fixed bugs related to blocking; at the very least, I do not experience them, but I do not know if they were there before either.

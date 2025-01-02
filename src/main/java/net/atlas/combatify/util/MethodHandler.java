@@ -117,9 +117,9 @@ public class MethodHandler {
 		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = getBlockingType(blockingItem);
 			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
+				knockbackRes = Math.max(knockbackRes, blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
+				knockbackRes = Math.min(1.0, knockbackRes + blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
 
 		strength *= 1.0 - knockbackRes;
@@ -133,12 +133,13 @@ public class MethodHandler {
 	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
-		if (!blockingItem.isEmpty()) {
+		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		if (!blockingItem.isEmpty() && !delay) {
 			BlockingType blockingType = getBlockingType(blockingItem);
 			if (!blockingType.defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blockingType.getShieldKnockbackResistanceValue(blockingItem));
+				knockbackRes = Math.max(knockbackRes, blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 			else
-				knockbackRes = Math.min(1.0, knockbackRes + blockingType.getShieldKnockbackResistanceValue(blockingItem));
+				knockbackRes = Math.min(1.0, knockbackRes + blockingType.handler().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
 
 		strength *= 1.0 - knockbackRes;
@@ -456,7 +457,7 @@ public class MethodHandler {
 			Blocker blocking = null;
 			Double blockStrength = null;
 			Double blockKbRes = null;
-			Float blockingLevel = null;
+			Integer blockingLevel = null;
 			Enchantable enchantable = null;
 			Integer useDuration = null;
 			Double piercingLevel = null;

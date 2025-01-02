@@ -8,6 +8,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.component.CustomDataComponents;
+import net.atlas.combatify.config.ConfigurableItemData;
+import net.atlas.combatify.critereon.CustomLootContextParamSets;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.util.MethodHandler;
+import net.atlas.combatify.util.blocking.damage_parsers.DamageParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -18,27 +24,31 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.item.enchantment.ConditionalEffect;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.apache.commons.lang3.mutable.MutableFloat;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import static net.atlas.combatify.Combatify.EMPTY;
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 
-public abstract class BlockingType {
-	public static final Codec<BlockingType.Factory<?>> FACTORY_CODEC = ResourceLocation.CODEC.validate(factory -> !Combatify.registeredTypeFactories.containsKey(factory) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type Factory that does not exist: " + factory) : DataResult.success(factory)).xmap(factory -> Combatify.registeredTypeFactories.get(factory), factory -> Combatify.registeredTypeFactories.inverse().get(factory));
+public record BlockingType(ResourceLocation name, ResourceLocation factoryId, BlockingTypeHandler handler, BlockingTypeData data) {
+	public static final Codec<BlockingType.Factory> FACTORY_CODEC = ResourceLocation.CODEC.validate(factory -> !Combatify.registeredTypeFactories.containsKey(factory) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type Factory that does not exist: " + factory) : DataResult.success(factory)).xmap(factory -> Combatify.registeredTypeFactories.get(factory), factory -> Combatify.registeredTypeFactories.inverse().get(factory));
 	public static final Codec<ResourceLocation> ID_CODEC = ResourceLocation.CODEC.validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
-	public static final Codec<BlockingType> SIMPLE_CODEC = ID_CODEC.xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::getName);
+	public static final Codec<BlockingType> SIMPLE_CODEC = ID_CODEC.xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::name);
 	public static final Codec<BlockingType> MODIFY = RecordCodecBuilder.create(instance ->
 		instance.group(SIMPLE_CODEC.fieldOf("name").forGetter(blockingType -> blockingType),
 				Codec.BOOL.optionalFieldOf("can_be_disabled").forGetter(blockingType -> Optional.of(blockingType.canBeDisabled())),
@@ -50,16 +60,14 @@ public abstract class BlockingType {
 			.apply(instance, (blockingType, canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay) -> blockingType.copy(canBeDisabled.orElse(null), canCrouchBlock.orElse(null), canBlockHit.orElse(null), requireFullCharge.orElse(null), defaultKbMechanics.orElse(null), hasDelay.orElse(null))));
 	public static final Codec<BlockingType> CREATE = RecordCodecBuilder.create(instance ->
 		instance.group(FACTORY_CODEC.fieldOf("factory").forGetter(BlockingType::factory),
-				ResourceLocation.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::getName),
+				ResourceLocation.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::name),
 				BlockingTypeData.CREATE.forGetter(BlockingType::data))
 			.apply(instance, Factory::create));
 	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Factory.STREAM_CODEC, BlockingType::factory,
-		ResourceLocation.STREAM_CODEC, BlockingType::getName,
+		ResourceLocation.STREAM_CODEC, BlockingType::name,
 		BlockingTypeData.STREAM_CODEC, BlockingType::data,
 		Factory::create);
-	private final ResourceLocation name;
-	private BlockingTypeData data;
 	public BlockingTypeData data() {
 		return data;
 	}
@@ -83,22 +91,18 @@ public abstract class BlockingType {
 		return data.hasDelay;
 	}
 
-	public BlockingType(ResourceLocation name, BlockingTypeData data) {
-		this.name = name;
-		this.data = data;
-	}
 	public BlockingType copy(Boolean canBeDisabled, Boolean canCrouchBlock, Boolean canBlockHit, Boolean requireFullCharge, Boolean defaultKbMechanics, Boolean hasDelay) {
 		BlockingTypeData newData = this.data.copy(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay);
-		if (Combatify.defaultTypes.containsKey(this.name)) return factory().create(this.name, newData);
-		this.data = newData;
-		return this;
+		return factory().create(this.name, newData);
 	}
-	public abstract Factory<? extends BlockingType> factory();
-	public static <B extends BlockingType> Builder<B> builder(Factory<B> initialiser) {
+	public Factory factory() {
+		return Combatify.registeredTypeFactories.get(factoryId);
+	}
+	public static <B extends BlockingType> Builder<B> builder(Factory initialiser) {
 		return new Builder<>(initialiser);
 	}
 	public boolean isEmpty() {
-		return this == EMPTY;
+		return this.name.equals(ResourceLocation.withDefaultNamespace("empty"));
 	}
 
 	public ResourceLocation getName() {
@@ -109,43 +113,21 @@ public abstract class BlockingType {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof BlockingType that)) return false;
-        return Objects.equals(getName(), that.getName()) && Objects.equals(data, that.data);
+        return Objects.equals(name, that.name) && Objects.equals(handler, that.handler) && Objects.equals(data, that.data);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getName(), data);
+		return Objects.hash(name, handler, data);
 	}
 
-	public abstract void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked);
-	public abstract float getShieldBlockDamageValue(ItemStack stack, RandomSource random);
-	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
-	public @NotNull InteractionResult use(ItemStack itemStack, Level world, Player player, InteractionHand interactionHand) {
-		player.startUsingItem(interactionHand);
-		return InteractionResult.CONSUME;
+	public void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
+		handler.block(serverLevel, instance, blockingItem, source, amount, protectedDamage, blocked);
 	}
 
-	public void appendTooltipInfo(Consumer<Component> consumer, Player player, ItemStack stack) {
-		consumer.accept(CommonComponents.EMPTY);
-		consumer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
-		float f = getShieldBlockDamageValue(stack, player.getRandom());
-		double g = getShieldKnockbackResistanceValue(stack);
-		consumer.accept(CommonComponents.space().append(
-			Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
-				ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(f),
-				getStrengthTranslationKey())).withStyle(ChatFormatting.DARK_GREEN));
-		if (g > 0.0)
-			consumer.accept(CommonComponents.space().append(
-				Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
-					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0),
-					Component.translatable("attribute.name.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-	}
-	public Component getStrengthTranslationKey() {
-		return Component.translatable("attribute.name.shield_strength");
-	}
 	public static class Builder<B extends BlockingType> {
-		public final Factory<B> initialiser;
-		public Builder(Factory<B> initialiser) {
+		public final Factory initialiser;
+		public Builder(Factory initialiser) {
 			this.initialiser = initialiser;
 		}
 		private boolean canBeDisabled = true;
@@ -186,9 +168,12 @@ public abstract class BlockingType {
 		}
 	}
 	@FunctionalInterface
-	public interface Factory<B extends BlockingType> {
-		StreamCodec<ByteBuf, Factory<? extends BlockingType>> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(Combatify.registeredTypeFactories::get, Combatify.registeredTypeFactories.inverse()::get);
-		B create(ResourceLocation name, BlockingTypeData blockingTypeData);
+	public interface Factory {
+		StreamCodec<ByteBuf, Factory> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(Combatify.registeredTypeFactories::get, Combatify.registeredTypeFactories.inverse()::get);
+		BlockingType create(ResourceLocation name, BlockingTypeData blockingTypeData);
+		static Factory forHandler(BlockingTypeHandler handler, ResourceLocation id) {
+			return (name, data) -> new BlockingType(name, id, handler, data);
+		}
 	}
 	public record BlockingTypeData(boolean canBeDisabled, boolean canCrouchBlock, boolean canBlockHit,
 								   boolean requireFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
@@ -220,6 +205,104 @@ public abstract class BlockingType {
 		@Override
 		public int hashCode() {
 			return Objects.hash(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay);
+		}
+	}
+	public record BlockingTypeHandler(List<DamageParser> damageParsers, Optional<LootItemCondition> triggerPostBlockEffects, List<ConditionalEffect<ComponentModifier>> protectionModifiers, List<ComponentModifier> knockbackModifiers, boolean markBlocked) {
+		public static final MapCodec<BlockingTypeHandler> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
+			instance.group(DamageParser.CODEC.listOf().fieldOf("damage_parsers").forGetter(BlockingTypeHandler::damageParsers),
+					ConditionalEffect.conditionCodec(CustomLootContextParamSets.BLOCKED_DAMAGE).optionalFieldOf("trigger_post_block_effects").forGetter(BlockingTypeHandler::triggerPostBlockEffects),
+					ConditionalEffect.codec(ComponentModifier.CODEC, CustomLootContextParamSets.BLOCKED_DAMAGE).listOf().fieldOf("protection_modifiers").forGetter(BlockingTypeHandler::protectionModifiers),
+					ComponentModifier.CODEC.listOf().optionalFieldOf("knockback_modifiers", Collections.emptyList()).forGetter(BlockingTypeHandler::knockbackModifiers),
+					Codec.BOOL.optionalFieldOf("mark_blocked", true).forGetter(BlockingTypeHandler::markBlocked))
+				.apply(instance, BlockingTypeHandler::new));
+		public void block(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef wasBlocked) {
+			int blockingLevel = blockingItem.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
+			LootParams lootParams = new LootParams.Builder(serverLevel)
+				.withParameter(LootContextParams.THIS_ENTITY, instance)
+				.withParameter(LootContextParams.ENCHANTMENT_LEVEL, blockingLevel)
+				.withParameter(LootContextParams.TOOL, blockingItem)
+				.withParameter(LootContextParams.ORIGIN, instance.position())
+				.withParameter(LootContextParams.DAMAGE_SOURCE, source)
+				.withOptionalParameter(LootContextParams.ATTACKING_ENTITY, source.getEntity())
+				.withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, source.getDirectEntity())
+				.create(CustomLootContextParamSets.BLOCKED_DAMAGE);
+			LootContext context = new LootContext.Builder(lootParams).create(Optional.empty());
+			MutableFloat protection = new MutableFloat(0);
+			matchingConditionalEffects(protectionModifiers, context).forEach(componentModifier -> protection.setValue(componentModifier.modifyValue(protection.getValue(), blockingLevel, instance.getRandom())));
+			ConfigurableItemData configurableItemData = MethodHandler.forItem(blockingItem.getItem());
+			if (configurableItemData != null) {
+				if (configurableItemData.blocker().blockStrength() != null) protection.setValue(configurableItemData.blocker().blockStrength().floatValue());
+			}
+			protection.setValue(CustomEnchantmentHelper.modifyShieldEffectiveness(blockingItem, instance.getRandom(), protection.getValue()));
+			damageParsers.forEach(damageParserConditionalEffect -> {
+				protectedDamage.set(damageParserConditionalEffect.parse(amount.get(), protection.getValue(), context));
+				amount.set(Math.max(amount.get() - protectedDamage.get(), 0));
+			});
+			MethodHandler.hurtCurrentlyUsedShield(instance, protectedDamage.get());
+			AtomicBoolean canTriggerPostBlockEffects = new AtomicBoolean(true);
+			triggerPostBlockEffects.ifPresent(lootItemCondition -> canTriggerPostBlockEffects.set(lootItemCondition.test(context)));
+			if (source.getDirectEntity() instanceof LivingEntity livingEntity && canTriggerPostBlockEffects.get())
+				MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
+			switch (source.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(instance, source, arrow, blockingItem);
+				case null, default -> {
+					// Do nothing
+				}
+			}
+			wasBlocked.set(markBlocked);
+		}
+		public static <T> List<T> matchingConditionalEffects(List<ConditionalEffect<T>> effects, LootContext lootContext) {
+			return effects.stream().filter(componentModifierConditionalEffect -> componentModifierConditionalEffect.matches(lootContext)).map(ConditionalEffect::effect).toList();
+		}
+		public void appendTooltipInfo(Consumer<Component> writer, Player player, ItemStack stack) {
+			List<Component> protection = Collections.emptyList();
+			List<Component> knockback = Collections.emptyList();
+			int blockingLevel = stack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
+			List<ComponentModifier> intermediaryProtection = protectionModifiers.stream().map(ConditionalEffect::effect).filter(componentModifier -> componentModifier.matches(stack)).toList();
+			if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombine(new ArrayList<>(intermediaryProtection), blockingLevel, player.getRandom());
+			List<ComponentModifier> intermediaryKnockback = knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(stack)).toList();
+			if (!intermediaryKnockback.isEmpty()) knockback = intermediaryKnockback.getFirst().tryCombine(new ArrayList<>(intermediaryKnockback), blockingLevel, player.getRandom());
+			ConfigurableItemData configurableItemData = MethodHandler.forItem(stack.getItem());
+			if (configurableItemData != null) {
+				if (configurableItemData.blocker().blockStrength() != null)
+					protection = List.of(ComponentModifier.buildComponent(protectionModifiers.stream().map(ConditionalEffect::effect).toList().getFirst().tooltipComponent(), configurableItemData.blocker().blockStrength().floatValue()));
+				if (configurableItemData.blocker().blockKbRes() != null)
+					knockback = List.of(CommonComponents.space().append(
+						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(),
+							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(configurableItemData.blocker().blockKbRes() * 10.0),
+							Component.translatable("attribute.name.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+			}
+			if (protection.isEmpty() && knockback.isEmpty()) return;
+			writer.accept(CommonComponents.EMPTY);
+			writer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
+			protection.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
+			knockback.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
+		}
+		public float getShieldKnockbackResistanceValue(ItemStack itemStack, RandomSource randomSource) {
+			ConfigurableItemData configurableItemData = MethodHandler.forItem(itemStack.getItem());
+			if (configurableItemData != null) {
+				if (configurableItemData.blocker().blockKbRes() != null)
+					return configurableItemData.blocker().blockKbRes().floatValue();
+			}
+			int blockingLevel = itemStack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
+			MutableFloat knockbackResistance = new MutableFloat(0);
+			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.getValue(), blockingLevel, randomSource)));
+			return knockbackResistance.getValue();
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof BlockingTypeHandler that)) return false;
+            return markBlocked == that.markBlocked && Objects.equals(damageParsers, that.damageParsers) && Objects.equals(triggerPostBlockEffects, that.triggerPostBlockEffects) && Objects.equals(protectionModifiers, that.protectionModifiers) && Objects.equals(knockbackModifiers, that.knockbackModifiers);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(damageParsers, triggerPostBlockEffects, protectionModifiers, knockbackModifiers, markBlocked);
 		}
 	}
 }

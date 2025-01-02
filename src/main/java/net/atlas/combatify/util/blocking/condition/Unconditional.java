@@ -41,6 +41,11 @@ public record Unconditional() implements BlockingCondition {
 	}
 
 	@Override
+	public boolean appliesComponentModifier(ItemStack itemStack) {
+		return true;
+	}
+
+	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
 	}

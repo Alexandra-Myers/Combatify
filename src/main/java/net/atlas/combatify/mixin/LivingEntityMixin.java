@@ -99,7 +99,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (amount.get() > 0.0F && original.call(instance, source)) {
 			getBlocking(itemStack).block(serverLevel, instance, source, itemStack, amount, protectedDamage, wasBlocked);
 		}
-		blocked.set(blocked.get());
+		blocked.set(wasBlocked.get());
 		return false;
 	}
 	@ModifyExpressionValue(method = "hurtServer", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))

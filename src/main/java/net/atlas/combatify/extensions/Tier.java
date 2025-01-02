@@ -22,7 +22,7 @@ public interface Tier {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 
-	default float combatify$blockingLevel() {
+	default int combatify$blockingLevel() {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 }

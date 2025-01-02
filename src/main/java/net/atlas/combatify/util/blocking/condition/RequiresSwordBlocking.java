@@ -41,6 +41,11 @@ public record RequiresSwordBlocking() implements BlockingCondition {
 	}
 
 	@Override
+	public boolean appliesComponentModifier(ItemStack itemStack) {
+		return Combatify.CONFIG.swordBlocking();
+	}
+
+	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
 	}

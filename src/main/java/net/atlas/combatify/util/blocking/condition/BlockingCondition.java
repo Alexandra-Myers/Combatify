@@ -25,6 +25,8 @@ public interface BlockingCondition {
 
 	boolean overridesUseDurationAndAnimation(ItemStack itemStack);
 
+	boolean appliesComponentModifier(ItemStack itemStack);
+
 	MapCodec<? extends BlockingCondition> type();
 
 	ResourceLocation id();

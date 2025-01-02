@@ -53,6 +53,13 @@ public record AllOf(List<BlockingCondition> blockingConditions) implements Block
 	}
 
 	@Override
+	public boolean appliesComponentModifier(ItemStack itemStack) {
+		AtomicBoolean ret = new AtomicBoolean(true);
+		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() & blockingCondition.appliesComponentModifier(itemStack)));
+		return ret.get();
+	}
+
+	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
 	}

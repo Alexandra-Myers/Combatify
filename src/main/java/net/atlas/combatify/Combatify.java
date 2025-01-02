@@ -10,14 +10,16 @@ import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.critereon.ItemSubPredicateInit;
 import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
-import net.atlas.combatify.util.*;
-import net.atlas.combatify.util.blocking.*;
+import net.atlas.combatify.util.MethodHandler;
+import net.atlas.combatify.util.blocking.BlockingType;
+import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.fabricmc.api.ModInitializer;
@@ -79,23 +81,9 @@ public class Combatify implements ModInitializer {
 	public static Map<String, WeaponType> registeredWeaponTypes = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 	public static BiMap<String, Tier> tiers = HashBiMap.create();
-	public static BiMap<ResourceLocation, BlockingType.Factory<?>> registeredTypeFactories = HashBiMap.create();
+	public static BiMap<ResourceLocation, BlockingType.Factory> registeredTypeFactories = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
-	public static final BlockingType.Factory<SwordBlockingType> SWORD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("sword"), SwordBlockingType::new);
-	public static final BlockingType.Factory<OldSwordBlockingType> OLD_SWORD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("original_sword"), OldSwordBlockingType::new);
-	public static final BlockingType.Factory<ShieldBlockingType> SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("shield"), ShieldBlockingType::new);
-	public static final BlockingType.Factory<NonBannerShieldBlockingType> NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("shield_no_banner"), NonBannerShieldBlockingType::new);
-	public static final BlockingType.Factory<CurrentShieldBlockingType> CURRENT_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("current_shield"), CurrentShieldBlockingType::new);
-	public static final BlockingType.Factory<NewShieldBlockingType> NEW_SHIELD_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("new_shield"), NewShieldBlockingType::new);
-	public static final BlockingType.Factory<TestBlockingType> TEST_BLOCKING_TYPE_FACTORY = defineBlockingTypeFactory(Combatify.id("test"), TestBlockingType::new);
-	public static final BlockingType SWORD = defineDefaultBlockingType(BlockingType.builder(SWORD_BLOCKING_TYPE_FACTORY).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("sword"));
-	public static final BlockingType ORIGINAL_SWORD = defineDefaultBlockingType(BlockingType.builder(OLD_SWORD_BLOCKING_TYPE_FACTORY).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("original_sword"));
-	public static final BlockingType SHIELD = defineDefaultBlockingType(BlockingType.builder(SHIELD_BLOCKING_TYPE_FACTORY).build("shield"));
-	public static final BlockingType SHIELD_NO_BANNER = defineDefaultBlockingType(BlockingType.builder(NON_BANNER_SHIELD_BLOCKING_TYPE_FACTORY).build("shield_no_banner"));
-	public static final BlockingType CURRENT_SHIELD = defineDefaultBlockingType(BlockingType.builder(CURRENT_SHIELD_BLOCKING_TYPE_FACTORY).build("current_shield"));
-	public static final BlockingType NEW_SHIELD = defineDefaultBlockingType(BlockingType.builder(NEW_SHIELD_BLOCKING_TYPE_FACTORY).setKbMechanics(false).build("new_shield"));
-	public static final BlockingType EMPTY = BlockingType.builder((name, blockingTypeData) -> new EmptyBlockingType(name)).build("empty");
 
 	public static void markCTS(boolean isCTS) {
 		Combatify.isCTS = isCTS;
@@ -143,18 +131,21 @@ public class Combatify implements ModInitializer {
 		});
 
 		LOGGER.info("Init started.");
+		CustomDataComponents.registerDataComponents();
+		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
+		ItemSubPredicateInit.init();
+		BlockingTypeInit.init();
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
  			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
-		CustomDataComponents.registerDataComponents();
 		DefaultItemComponentEvents.MODIFY.register(modDetectionNetworkChannel, (modifyContext) -> {
 			modifyContext.modify(item -> item instanceof SwordItem, (builder, item) -> builder.set(CustomDataComponents.BLOCKER, Blocker.SWORD));
-			modifyContext.modify(Items.WOODEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -2F));
-			modifyContext.modify(Items.GOLDEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -2F));
-			modifyContext.modify(Items.STONE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -1.5F));
-			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -1F));
-			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, -0.5F));
-			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 0F));
+			modifyContext.modify(Items.WOODEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 1));
+			modifyContext.modify(Items.GOLDEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 1));
+			modifyContext.modify(Items.STONE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 2));
+			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 3));
+			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 4));
+			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 5));
 			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.SHIELD));
 		});
 		bindItemsToDefaultTier(ToolMaterial.WOOD, Items.WOODEN_SWORD, Items.WOODEN_SHOVEL, Items.WOODEN_AXE, Items.WOODEN_HOE, Items.WOODEN_PICKAXE);
@@ -179,7 +170,6 @@ public class Combatify implements ModInitializer {
 			originalTiers.put(TieredShieldItem.NETHERITE_SHIELD.builtInRegistryHolder(), ToolMaterial.NETHERITE);
 		}
 
-		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {
@@ -197,7 +187,7 @@ public class Combatify implements ModInitializer {
 		Combatify.registeredWeaponTypes.put(weaponType.name(), weaponType);
     }
 	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
-		Combatify.registeredTypes.put(blockingType.getName(), blockingType);
+		Combatify.registeredTypes.put(blockingType.name(), blockingType);
 		return blockingType;
 	}
 	public static ResourceLocation id(String path) {
@@ -206,12 +196,12 @@ public class Combatify implements ModInitializer {
 	public static void defineDefaultWeaponType(WeaponType type) {
 		defaultWeaponTypes.put(type.name(), type);
 	}
-	public static <T extends BlockingType> BlockingType.Factory<T> defineBlockingTypeFactory(ResourceLocation name, BlockingType.Factory<T> factory) {
+	public static BlockingType.Factory defineBlockingTypeFactory(ResourceLocation name, BlockingType.Factory factory) {
 		registeredTypeFactories.put(name, factory);
 		return factory;
 	}
-	public static <T extends BlockingType> T defineDefaultBlockingType(T blockingType) {
-		defaultTypes.put(blockingType.getName(), blockingType);
+	public static BlockingType defineDefaultBlockingType(BlockingType blockingType) {
+		defaultTypes.put(blockingType.name(), blockingType);
 		return registerBlockingType(blockingType);
 	}
 	public static void defineDefaultTier(String name, Tier tier) {

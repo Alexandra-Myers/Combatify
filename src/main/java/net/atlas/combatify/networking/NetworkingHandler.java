@@ -87,6 +87,7 @@ public class NetworkingHandler {
 			return TYPE;
 		}
 	}
+
 	public record ServerboundMissPacket() implements CustomPacketPayload {
 		public static final Type<ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));
 		public static final StreamCodec<FriendlyByteBuf, ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
