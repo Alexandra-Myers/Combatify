@@ -230,7 +230,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void reset(CallbackInfo ci) {
 		ci.cancel();
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;onGround()Z", ordinal = 1))
+	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;"))
 	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 1) float enchantDamage, @Local(ordinal = 2) float strengthScale, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
 		if (Combatify.CONFIG.attackDecay()) {
 			enchantDamage /= strengthScale;
@@ -391,7 +391,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach)) {
 				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
-				livingEntity.hurt(damageSources().playerAttack(player), sweepingDamageRatio);
+				livingEntity.hurtOrSimulate(damageSources().playerAttack(player), sweepingDamageRatio);
 			}
 		}
 		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
