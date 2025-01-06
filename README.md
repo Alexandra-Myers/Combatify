@@ -34,35 +34,35 @@
 
 1. Attack speed, reach, damage are different for different weapons
 2. Attack damage of the fist increased to 2
-2. Now possible to attack through non-solid blocks without breaking them
-2. Attack speed alterations
+3. Now possible to attack through non-solid blocks without breaking them
+4. Attack speed alterations
     - Charged hits (200%) give 1 extra block of reach
         - You won't get the reach bonus while sneaking
     - Missing only puts a 4 tick delay until the next attack regardless of weapon.
     - Invulnerability time is 10 ticks unless the attacker's weapon's attack speed is faster
     - The attack timer only resets by performing an attack, no longer affected by switching items
 
-3. Added "Auto-Attack" performed by holding left click
+5. Added "Auto-Attack" performed by holding left click
     - Auto attacks are 1 tick slower from optimal fast-hit timing
-4. Added "Grace Period", grants leeway in attack timing by providing a window (80% - 100%) where the attack is queued
+6. Added "Grace Period", grants leeway in attack timing by providing a window (80% - 100%) where the attack is queued
     - Attacks can no longer be triggered before 100% intentionally
     - Grace Period hits will be delayed until a tick slower than optimal fast-hit timing
 
-4. Reintroduced upwards knockback when hitting players in the air
+7. Reintroduced upwards knockback when hitting players in the air
 
-5. Removed attack reach increase in Creative Mode
+8. Removed attack reach increase in Creative Mode
 
-5. Changed the swing animation to emphasize the rhythm of the attacks
-6. Critical Hit alterations
+9. Changed the swing animation to emphasize the rhythm of the attacks
+10. Critical Hit alterations
     - Players can now crit and sprint hit at the same time
     - Weapon enchantments are now included in the base damage when calculating crits and potion effects
-7. If an entity's largest dimension for their hitbox (width or height) is less than the minimum hitbox size, it gets expanded by enough to turn the largest dimension into that size
+11. If an entity's largest dimension for their hitbox (width or height) is less than the minimum hitbox size, it gets expanded by enough to turn the largest dimension into that size
 
-7. Sweeping-Edge alterations
+12. Sweeping-Edge alterations
     - Sweep-attacks exist with sweeping enchantment only
     - Nerfed Sweeping-Edge enchantment to 25/33/37.5% percent (was 50/66/75%)
 
-8. Shield alterations
+13. Shield alterations
     - Shields protect up to 5 damage for melee attacks, 100% against projectiles
     - Bannered shields protect up to 10 damage for melee attacks
     - Axes disable shields for 1.6 seconds by default
@@ -72,14 +72,14 @@
     - Shields now add a 50% knockback resistance when active, 80% for bannered
     - Shields protect against 100% explosion damage
     - Shields are now instant
-9. New axe-exclusive enchantment: Cleaving
+14. New axe-exclusive enchantment: Cleaving
     - Cleaving enchantment disables shields for 0.5 more seconds per level, maximum level 3
     - Cleaving enchantment gives axes (+2/+3/+4) extra damage
     - Axes now get Cleaving instead of Sharpness from enchantment table
-10. Axes and Hoes now take 1 durability for attacking
-11. Strength I/II now adds +20%/+40% (was +3/+6 damage) (Matched for Weakness)
+15. Axes and Hoes now take 1 durability for attacking
+16. Strength I/II now adds +20%/+40% (was +3/+6 damage) (Matched for Weakness)
 
-12. Tridents with impaling now deal enchantment damage to all mobs that are in water or rain
+17. Tridents with impaling now deal enchantment damage to all mobs that are in water or rain
 
 
 <div align="center">
