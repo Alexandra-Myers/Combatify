@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;

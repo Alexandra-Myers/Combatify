@@ -1,7 +1,8 @@
 {
   "anvil_cost": 3,
   "description": {
-    "translate": "enchantment.combatify.recovery"
+    "translate": "enchantment.combatify.recovery",
+    "fallback": "Recovery"
   },
   "effects": {
     "combatify:shield_disable_time": [

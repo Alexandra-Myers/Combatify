@@ -2,6 +2,7 @@ package net.atlas.combatify;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
@@ -12,6 +13,7 @@ import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.critereon.ItemSubPredicateInit;
 import net.atlas.combatify.extensions.Tier;
+import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -34,15 +36,18 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -52,10 +57,7 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
@@ -129,6 +131,17 @@ public class Combatify implements ModInitializer {
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResult.PASS;
 		});
+		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> MethodHandler.forItem(itemStack.getItem()) != null || itemStack.getItem() instanceof WeaponWithType || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
+				if (itemStack.has(CustomDataComponents.BLOCKER)) {
+					Blocker blocker = itemStack.get(CustomDataComponents.BLOCKER);
+					assert blocker != null;
+					itemStack1.set(DataComponents.CONSUMABLE, new Consumable(blocker.useSeconds(), ItemUseAnimation.BLOCK, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHIELD_BREAK), false, Collections.emptyList()));
+				}
+				return itemStack1;
+			});
+		}
 
 		LOGGER.info("Init started.");
 		CustomDataComponents.registerDataComponents();

@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;

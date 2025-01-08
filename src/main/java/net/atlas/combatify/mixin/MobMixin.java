@@ -9,6 +9,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.MobExtensions;
 import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.mixin.accessor.CombatTrackerAccessor;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;

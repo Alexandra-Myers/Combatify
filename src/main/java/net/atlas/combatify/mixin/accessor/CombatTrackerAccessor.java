@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.accessor;
 
 import net.minecraft.world.damagesource.CombatTracker;
 import org.spongepowered.asm.mixin.Mixin;

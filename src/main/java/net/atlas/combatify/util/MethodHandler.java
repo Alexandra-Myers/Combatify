@@ -17,7 +17,7 @@ import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.mixin.LivingEntityAccessor;
+import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;

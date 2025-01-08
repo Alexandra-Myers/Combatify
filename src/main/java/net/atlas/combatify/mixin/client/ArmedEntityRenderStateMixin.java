@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
 import net.atlas.combatify.extensions.ArmedEntityRenderStateExtensions;
 import net.atlas.combatify.util.MethodHandler;

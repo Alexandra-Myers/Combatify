@@ -1,7 +1,8 @@
 {
   "anvil_cost": 3,
   "description": {
-    "translate": "enchantment.minecraft.cleaving"
+    "translate": "enchantment.minecraft.cleaving",
+    "fallback": "Cleaving"
   },
   "effects": {
     "combatify:shield_disable_time": [

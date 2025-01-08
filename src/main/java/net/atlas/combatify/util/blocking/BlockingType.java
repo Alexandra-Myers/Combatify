@@ -277,7 +277,7 @@ public record BlockingType(ResourceLocation name, ResourceLocation factoryId, Bl
 			}
 			if (protection.isEmpty() && knockback.isEmpty()) return;
 			writer.accept(CommonComponents.EMPTY);
-			writer.accept(Component.translatable("item.modifiers.use").withStyle(ChatFormatting.GRAY));
+			writer.accept(Component.translatableWithFallback("item.modifiers.use", "When used:").withStyle(ChatFormatting.GRAY));
 			protection.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
 			knockback.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
 		}

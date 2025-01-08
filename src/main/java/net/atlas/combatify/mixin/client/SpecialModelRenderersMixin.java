@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
 import com.mojang.serialization.MapCodec;
 import net.atlas.combatify.client.renderer.TieredShieldSpecialRenderer;
