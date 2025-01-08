@@ -131,6 +131,12 @@ public class Combatify implements ModInitializer {
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResult.PASS;
 		});
+
+		LOGGER.info("Init started.");
+		CustomDataComponents.registerDataComponents();
+		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
+		ItemSubPredicateInit.init();
+		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
 			PolymerItemUtils.ITEM_CHECK.register(itemStack -> MethodHandler.forItem(itemStack.getItem()) != null || itemStack.getItem() instanceof WeaponWithType || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
@@ -142,12 +148,6 @@ public class Combatify implements ModInitializer {
 				return itemStack1;
 			});
 		}
-
-		LOGGER.info("Init started.");
-		CustomDataComponents.registerDataComponents();
-		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
-		ItemSubPredicateInit.init();
-		BlockingTypeInit.init();
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
  			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
