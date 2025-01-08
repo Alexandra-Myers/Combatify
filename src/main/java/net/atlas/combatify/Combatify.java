@@ -140,7 +140,7 @@ public class Combatify implements ModInitializer {
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
 			PolymerItemUtils.ITEM_CHECK.register(itemStack -> MethodHandler.forItem(itemStack.getItem()) != null || itemStack.getItem() instanceof WeaponWithType || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
-				if (itemStack.has(CustomDataComponents.BLOCKER)) {
+				if (itemStack.hasNonDefault(CustomDataComponents.BLOCKER)) {
 					Blocker blocker = itemStack.get(CustomDataComponents.BLOCKER);
 					assert blocker != null;
 					itemStack1.set(DataComponents.CONSUMABLE, new Consumable(blocker.useSeconds(), ItemUseAnimation.BLOCK, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHIELD_BREAK), false, Collections.emptyList()));
