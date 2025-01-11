@@ -12,6 +12,7 @@ import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.component.ConfigDataComponentMap;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.component.custom.CanSweep;
@@ -33,6 +34,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -400,7 +402,9 @@ public class ItemConfig extends AtlasConfig {
 	@SuppressWarnings("all")
 	public void modify() {
 		for (Item item : BuiltInRegistries.ITEM) {
-			DataComponentMap.Builder builder = DataComponentMap.builder().addAll(item.components());
+			DataComponentPatch.Builder builder = DataComponentPatch.builder();
+			DataComponentMap prototype = item.components();
+			if (prototype instanceof ConfigDataComponentMap configDataComponentMap) prototype = configDataComponentMap.getPrototype();
 			boolean damageOverridden = false;
 			ConfigurableItemData configurableItemData = MethodHandler.forItem(item);
 			boolean isConfiguredItem = configurableItemData != null;
@@ -450,13 +454,14 @@ public class ItemConfig extends AtlasConfig {
 					value *= 2;
 				setDurability(builder, item, value);
 			}
-			updateModifiers(builder, item, isConfiguredItem, configurableItemData);
-			((ItemAccessor) item).setComponents(builder.build());
+			updateModifiers(builder, prototype, item, isConfiguredItem, configurableItemData);
+			DataComponentPatch patch = builder.build();
+			((ItemAccessor) item).setComponents(new ConfigDataComponentMap(prototype, patch));
 		}
 	}
 	@SuppressWarnings("ALL")
-	public void updateModifiers(DataComponentMap.Builder builder, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
-		ItemAttributeModifiers modifier = item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+	public void updateModifiers(DataComponentPatch.Builder builder, DataComponentMap prototype, Item item, boolean isConfiguredItem, @Nullable ConfigurableItemData configurableItemData) {
+		ItemAttributeModifiers modifier = prototype.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
 		ItemAttributeModifiers original = originalModifiers.get(item.builtInRegistryHolder());
 		if (!original.equals(ItemAttributeModifiers.EMPTY))
 			modifier = original;

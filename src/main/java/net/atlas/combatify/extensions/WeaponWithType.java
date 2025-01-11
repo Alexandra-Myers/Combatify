@@ -10,8 +10,6 @@ public interface WeaponWithType extends ItemExtensions {
 	@Override
 	@SuppressWarnings("deprecation")
 	default ItemAttributeModifiers modifyAttributeModifiers(ItemAttributeModifiers original) {
-		if (Combatify.originalModifiers.get(combatify$self().builtInRegistryHolder()).equals(ItemAttributeModifiers.EMPTY) && !original.equals(ItemAttributeModifiers.EMPTY))
-			Combatify.originalModifiers.put(combatify$self().builtInRegistryHolder(), original);
 		if (combatify$getWeaponType().isEmpty() || !Combatify.CONFIG.weaponTypesEnabled())
 			return original;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();

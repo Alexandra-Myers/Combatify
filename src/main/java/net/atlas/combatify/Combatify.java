@@ -35,6 +35,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -140,6 +141,8 @@ public class Combatify implements ModInitializer {
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
 			PolymerItemUtils.ITEM_CHECK.register(itemStack -> MethodHandler.forItem(itemStack.getItem()) != null || itemStack.getItem() instanceof WeaponWithType || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
+				ServerPlayer player = packetContext.getPlayer();
+				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
 				if (itemStack.hasNonDefault(CustomDataComponents.BLOCKER)) {
 					Blocker blocker = itemStack.get(CustomDataComponents.BLOCKER);
 					assert blocker != null;
@@ -191,7 +194,7 @@ public class Combatify implements ModInitializer {
 		}
 	}
 
-	public static void setDurability(DataComponentMap.Builder builder, @NotNull Item item, int value) {
+	public static void setDurability(DataComponentPatch.Builder builder, @NotNull Item item, int value) {
 		builder.set(DataComponents.DAMAGE, 0);
 		builder.set(DataComponents.MAX_DAMAGE, value);
 		builder.set(DataComponents.MAX_STACK_SIZE, 1);
