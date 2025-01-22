@@ -2,24 +2,23 @@
 ***
 - Non-player cooldowns.
 
-- Beginning of the items config refactor
+- Items Config refactor.
+  * The items config will now be named `combatify-items-v2` to limit the amount of changes to existing configurations that need to be made, and to ensure v1 configurations will remain functional.
 
 - AppleSkin support
 
+- The `minecraft:use_cooldown` component will apply in the few cases mobs use items.
+
 - New enchantment effect component: `combatify:shield_effectiveness`, modifies the effectiveness of the blocking type.
+
+- Other new enchantment effect component: `combatify:post_block_effects`, not much to say other than it is the effects to be triggered after an attack is blocked.
+
+- Other new data components: `combatify:blocker` and `combatify:can_sweep`, relatively straight-forward to understand what they do.
 
 - Added data components `combatify:blocking_level` and `combatify:piercing_level`. The former controls modifiers to the base blocking protection for the type, effective for all non-vanilla types.
    * `combatify:blocking_level` is only used for unmodified blocking protection on the item. If the item's `damage_protection` is set, that exact value will be used, ignoring the component.
 
 - Removed integrated CookeyMod, now an optional dependency
-
-- The `minecraft:use_cooldown` component will apply in the few cases mobs use items.
-
-- For Beta 3 onwards, the items config will now be named `combatify-items-v2` to limit the amount of changes to existing configurations that need to be made, and to ensure v1 configurations will remain functional.
-
-- Other new enchantment effect component: `combatify:post_block_effects`, not much to say other than it is the effects to be triggered after an attack is blocked.
-
-- Other new data components: `combatify:blocker` and `combatify:can_sweep`, relatively straight-forward to understand what they do.
 ***
 #### Config Changes:
 ***
@@ -31,9 +30,7 @@
 
 - Added the `entities` block to the items config. Controls aspects of certain entities, currently `attack_interval`, `shield_disable_time`, and `is_misc_entity`.
 
-- Items config refactor, internally now maintains all individual changes, and tags can now be used as a discriminator for items and entities (and multiple tags, if you fancy).
-
-- New blocking type factory: `combatify:original_sword`, uses sword mechanics from 1.7 (and 1.8, to my knowledge).
+- The Items config was refactored; tags can now be used as a discriminator for items and entities (and multiple tags, if you fancy).
 
 - Replaced `is_enchantable` and `enchantment_level` in the items block in the items config with `enchantable` which uses the `minecraft:enchantable` component.
 
@@ -57,3 +54,5 @@
 - Fixed third-person shield blocking animation
 
 - Probably fixed bugs related to blocking; at the very least, I do not experience them, but I do not know if they were there before either.
+
+- Bumped ViaFabricPlus supported versions
