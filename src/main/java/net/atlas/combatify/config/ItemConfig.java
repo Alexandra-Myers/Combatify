@@ -79,6 +79,7 @@ import static net.atlas.combatify.config.ConfigurableWeaponData.WEAPON_DATA_STRE
 public class ItemConfig extends AtlasConfig {
 	public boolean isModifying = false;
 	public List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> configuredEntities;
+	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;
 	public List<RegistryConfigDataWrapper<Item, ConfigurableItemData>> configuredItems;
 	public List<RawConfigDataWrapper<WeaponType, ConfigurableWeaponData>> configuredWeapons;
 	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
@@ -211,6 +212,7 @@ public class ItemConfig extends AtlasConfig {
 		configuredEntities = new ArrayList<>();
 		configuredItems = new ArrayList<>();
 		configuredWeapons = new ArrayList<>();
+		entities = createCodecBacked("entities", Collections.emptyList(), ENTITIES_CODEC.codec().listOf());
 	}
 
 	@Override
@@ -356,42 +358,7 @@ public class ItemConfig extends AtlasConfig {
 	@Override
 	@Environment(EnvType.CLIENT)
 	public Screen createScreen(Screen prevScreen) {
-		ConfigBuilder builder = ConfigBuilder.create()
-			.setTitle(Component.translatable("text.config.combatify-items.title"))
-			.transparentBackground()
-			.setSavingRunnable(() -> {
-				try {
-					saveConfig();
-				} catch (IOException e) {
-					Combatify.LOGGER.error("Failed to save combatify:combatify-items config file!");
-					e.printStackTrace();
-				}
-			});
-		if (prevScreen != null) builder.setParentScreen(prevScreen);
-		ConfigCategory configCategory = builder.getOrCreateCategory(Component.translatable("text.config.combatify-items.title"));
-		IntFieldBuilder size = new IntFieldBuilder(Component.translatable("text.config.combatify-general.reset"),
-			Component.translatable("text.config.combatify-items.size"),
-			configuredItems.size());
-		size.setMin(0).setSaveConsumer((newSize) -> {
-			int oldSize = configuredItems.size();
-			if (oldSize < newSize) {
-				for (int i = oldSize; i < newSize; i++) {
-					configuredItems.add(i, RegistryConfigDataWrapper.EMPTY_ITEM);
-				}
-			} else if (oldSize > newSize) {
-                configuredItems.subList(newSize, oldSize).clear();
-			}
-		});
-		configCategory.addEntry(size.build());
-		builder.setFallbackCategory(configCategory);
-
-		return builder.build();
-	}
-
-	@Override
-	@Environment(EnvType.CLIENT)
-	public boolean hasScreen() {
-		return false;
+		return null;
 	}
 	public static void noNamePresent(RegistryConfigDataWrapper<?, ?> invalid, String stage) {
 		LOGGER.error("No name is present: " + invalid + ", no changes will occur. This may be due to an incorrectly written config file. " + errorStage(stage));
