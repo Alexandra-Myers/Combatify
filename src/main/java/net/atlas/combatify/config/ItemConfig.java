@@ -150,12 +150,6 @@ public class ItemConfig extends AtlasConfig {
 	}
 
 	@Override
-	public void reload() {
-		super.reload();
-		modify();
-	}
-
-	@Override
 	public void reloadFromDefault() {
 		super.reloadFromDefault();
 		modify();
