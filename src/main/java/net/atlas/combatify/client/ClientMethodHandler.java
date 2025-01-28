@@ -45,8 +45,8 @@ public class ClientMethodHandler {
 				if (dist > reach)
 					return null;
 				double enemyDistance = player.distanceTo(entity);
-				List<BlockPos> blockPosList = pickFromPos(player, enemyDistance);
-				if (!blockPosList.isEmpty())
+				HitResult newResult = pickFromPos(player, enemyDistance);
+				if (newResult.getType() != HitResult.Type.MISS)
 					return null;
 				return rayTraceResult;
 			}
