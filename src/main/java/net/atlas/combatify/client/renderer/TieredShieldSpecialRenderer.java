@@ -7,8 +7,7 @@ import java.util.Objects;
 
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.extensions.Tier;
-import net.atlas.combatify.extensions.ToolMaterialWrapper;
+import net.atlas.defaulted.component.ToolMaterialWrapper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.ShieldModel;
@@ -30,9 +29,9 @@ import org.jetbrains.annotations.Nullable;
 @Environment(EnvType.CLIENT)
 public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
 	private final ShieldModel model;
-	private final Tier tier;
+	private final ToolMaterial tier;
 
-	public TieredShieldSpecialRenderer(ShieldModel shieldModel, Tier tier) {
+	public TieredShieldSpecialRenderer(ShieldModel shieldModel, ToolMaterial tier) {
 		this.model = shieldModel;
 		this.tier = tier;
 	}
@@ -84,7 +83,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 	}
 
 	@Environment(EnvType.CLIENT)
-	public record Unbaked(Tier tier) implements SpecialModelRenderer.Unbaked {
+	public record Unbaked(ToolMaterial tier) implements SpecialModelRenderer.Unbaked {
 		public static final MapCodec<TieredShieldSpecialRenderer.Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(unbakedInstance ->
 			unbakedInstance.group(ToolMaterialWrapper.TOOL_MATERIAL_CODEC.optionalFieldOf("tier", ToolMaterial.WOOD).forGetter(Unbaked::tier)).apply(unbakedInstance, Unbaked::new));
 

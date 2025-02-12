@@ -1,0 +1,15 @@
+{
+  "tags": [
+    "combatify:weapon_type/trident"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:combat_test_weapon_stats",
+      "attack_damage": 3,
+      "attack_speed": -0.5,
+      "attack_reach": 1,
+      "persist_previous": false
+    }
+  ],
+  "patch": {}
+}

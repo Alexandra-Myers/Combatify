@@ -1,0 +1,102 @@
+{
+  "items": [
+    "minecraft:shield"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:tool_material",
+      "weapon_level": 0,
+      "base_tier": "wood"
+    },
+    {
+      "generator": "defaulted:modify_from_tool_material",
+      "components": [
+        "durability",
+        "enchantable",
+        "repairable"
+      ],
+      "max_damage_factor": 2
+    }
+  ],
+  "patch": {
+    "combatify:blocking_level": 1,
+    "combatify:blocker": {
+      "type": "new_shield",
+      "damage_parsers": [
+        {
+          "type": "percentage_base",
+          "damage_types": [
+            {
+              "id": "minecraft:is_projectile",
+              "expected": false
+            },
+            {
+              "id": "minecraft:is_explosion",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "type": "nullify",
+          "damage_types": [
+            {
+              "id": "minecraft:is_projectile",
+              "expected": true
+            },
+            {
+              "id": "minecraft:is_explosion",
+              "expected": true
+            }
+          ],
+          "enforce_all": false
+        }
+      ],
+      "protection_modifiers": [
+        {
+          "base": {
+            "modifier": {
+              "type": "add",
+              "value": 0
+            }
+          },
+          "factor": {
+            "tooltip": {
+              "translate": "attribute.modifier.equals.0",
+              "with": [
+                {
+                  "translate": "attribute.name.shield_reduction",
+                  "fallback": "Shield Damage Reduction"
+                }
+              ]
+            },
+            "modifier": {
+              "type": "add",
+              "value": {
+                "type": "linear",
+                "base": 30,
+                "per_level_above_first": 5
+              }
+            }
+          }
+        }
+      ],
+      "knockback_modifiers": [
+        {
+          "tooltip": {
+            "translate": "attribute.modifier.equals.0",
+            "with": [
+              {
+                "translate": "attribute.name.knockback_resistance"
+              }
+            ]
+          },
+          "modifier": {
+            "type": "add",
+            "value": 2.5
+          }
+        }
+      ],
+      "mark_blocked": true
+    }
+  }
+}

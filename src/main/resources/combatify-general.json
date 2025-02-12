@@ -18,7 +18,6 @@
     "ctsMomentumPassedToProjectiles": true,
     "ctsSaturationCap": true,
     "dispensableTridents": true,
-    "fistDamage": false,
     "hasMissTime": false,
     "hasteFix": false,
     "iFramesBasedOnWeapon": true,
@@ -40,6 +39,7 @@
   },
   "cts_doubles": {
     "baseHandAttackSpeed": 2.5,
+    "fistDamage": 2.0,
     "projectileUncertainty": {},
     "starvingTime": 2.0,
     "healingTime": 2.0,
@@ -70,8 +70,7 @@
     "mobsCanSprint": false,
     "oldSprintFoodRequirement": false,
     "shieldOnlyWhenCharged": false,
-    "sweepingNegatedForTamed": false,
-    "swordBlocking": false
+    "sweepingNegatedForTamed": false
   },
   "extra_integers": {
     "shieldChargePercentage": 195

@@ -11,12 +11,13 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.ConditionalEffect;
+import net.minecraft.world.item.enchantment.LevelBasedValue.Constant;
+import net.minecraft.world.item.enchantment.effects.AddValue;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,18 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 				EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
 				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip))
 			.apply(instance, ComponentModifier::new));
+	public static final Codec<ComponentModifier> NO_CONDITION_CODEC = RecordCodecBuilder.create(instance ->
+			instance.group(ComponentSerialization.CODEC.optionalFieldOf("tooltip", Component.empty()).forGetter(ComponentModifier::tooltipComponent),
+					EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier))
+				.apply(instance, ComponentModifier::new));
+
+	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip) {
+		this(tooltipComponent, modifier, Optional.of(showInTooltip));
+	}
+
+	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier) {
+		this(tooltipComponent, modifier, Optional.empty());
+	}
 
 	public float modifyValue(float value, int blockingLevel, RandomSource randomSource) {
 		return modifier.process(blockingLevel, randomSource, value);
@@ -57,16 +70,52 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 				others.remove(i);
 			}
 		}
-		res.add(buildComponent(tooltipComponent, val));
+		if (val > 0) res.add(buildComponent(tooltipComponent, val));
 		if (!others.isEmpty()) others.getFirst().tryCombine(others, blockingLevel, randomSource);
 		return res;
 	}
-
-	public static ConditionalEffect<ComponentModifier> matchingConditions(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip, LootItemCondition applyCondition) {
-		return new ConditionalEffect<>(new ComponentModifier(tooltipComponent, modifier, Optional.ofNullable(showInTooltip)), Optional.ofNullable(applyCondition));
+	public float tryCombineVal(List<ComponentModifier> others, int blockingLevel, RandomSource randomSource) {
+		float val = 0;
+		for (ComponentModifier other : others) {
+			val = other.modifyValue(val, blockingLevel, randomSource);
+		}
+		return val;
 	}
+	public record CombinedModifier(ComponentModifier base, ComponentModifier factor, Optional<BlockingCondition> showInTooltip) {
+		public static Codec<CombinedModifier> CODEC = RecordCodecBuilder.create(instance ->
+			instance.group(ComponentModifier.NO_CONDITION_CODEC.fieldOf("base").forGetter(CombinedModifier::base),
+				ComponentModifier.NO_CONDITION_CODEC.fieldOf("factor").forGetter(CombinedModifier::factor),
+				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(CombinedModifier::showInTooltip))
+			.apply(instance, CombinedModifier::new));
 
-	public static ConditionalEffect<ComponentModifier> noConditions(Component tooltipComponent, EnchantmentValueEffect modifier) {
-		return new ConditionalEffect<>(new ComponentModifier(tooltipComponent, modifier, Optional.empty()), Optional.empty());
+		public DataSet modifyValues(DataSet val, int blockingLevel, RandomSource randomSource) {
+			return new DataSet(base.modifyValue(val.addValue, blockingLevel, randomSource), factor.modifyValue(val.multiplyValue, blockingLevel, randomSource));
+		}
+		public List<Component> tryCombine(List<CombinedModifier> others, int blockingLevel, RandomSource randomSource) {
+			List<ComponentModifier> res = new ArrayList<>();
+			for (CombinedModifier other : others) {
+				if (!other.base.tooltipComponent.equals(Component.empty())) res.add(other.base);
+				if (!other.factor.tooltipComponent.equals(Component.empty())) res.add(other.factor);
+			}
+			if (!res.isEmpty()) return res.getFirst().tryCombine(res, blockingLevel, randomSource);
+			return Collections.emptyList();
+		}
+		public DataSet tryCombineVal(List<CombinedModifier> others, int blockingLevel, RandomSource randomSource) {
+			DataSet val = new DataSet(0, 0);
+			for (CombinedModifier other : others) {
+				val = other.modifyValues(val, blockingLevel, randomSource);
+			}
+			return val;
+		}
+		public boolean matches(ItemStack itemStack) {
+			return showInTooltip.isEmpty() || showInTooltip.get().appliesComponentModifier(itemStack);
+		}
+		public static CombinedModifier createFactorOnly(ComponentModifier factor, Optional<BlockingCondition> showInTooltip) {
+			return new CombinedModifier(new ComponentModifier(Component.empty(), new AddValue(new Constant(0)), Optional.empty()), factor, showInTooltip);
+		}
+		public static CombinedModifier createBaseOnly(ComponentModifier base, Optional<BlockingCondition> showInTooltip) {
+			return new CombinedModifier(base, new ComponentModifier(Component.empty(), new AddValue(new Constant(0)), Optional.empty()), showInTooltip);
+		}
 	}
+	public record DataSet(float addValue, float multiplyValue) {}
 }

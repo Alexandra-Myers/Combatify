@@ -44,7 +44,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.util.MethodHandler.getBlocking;
-import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements DataComponentHolder {
@@ -120,7 +119,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
 							Component.translatable("attribute.name.armor_piercing"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
-			if (getBlocking(this.stack).canShowInTooltip(this.stack, player)) getBlockingType(this.stack).handler().appendTooltipInfo(consumer, player, this.stack);
+			if (getBlocking(this.stack).canShowInTooltip(this.stack, player)) getBlocking(this.stack).tooltip().appendTooltipInfo(consumer, player, this.stack);
 		}
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
@@ -130,7 +129,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
 		if (configurableItemData != null) {
 			if (configurableItemData.useDuration() != null)
-				return configurableItemData.useDuration();
+				return (int) (configurableItemData.useDuration() * 20);
 		}
 		return original;
 	}

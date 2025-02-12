@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "combatify:netherite_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:netherite_knife",
+      "required": false
+    }
+  ]
+}

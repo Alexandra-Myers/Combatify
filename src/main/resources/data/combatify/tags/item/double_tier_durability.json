@@ -1,9 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    {
-      "id": "#combatify:tiered_shields",
-      "required": false
-    }
-  ]
-}

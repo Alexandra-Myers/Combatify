@@ -1,0 +1,14 @@
+{
+  "tags": [
+    "combatify:weapon_type/pickaxe"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:combat_test_weapon_stats",
+      "attack_damage": 1,
+      "attack_speed": 0,
+      "persist_previous": false
+    }
+  ],
+  "patch": {}
+}

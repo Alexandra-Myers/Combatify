@@ -171,7 +171,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	private static Item enableShields(Item original, @Local(ordinal = 0, argsOnly = true) EquipmentSlot equipmentSlot, @Local(ordinal = 0, argsOnly = true) int level) {
 		if (Combatify.CONFIG.mobsCanGuard() && equipmentSlot == EquipmentSlot.OFFHAND) {
 			if (Combatify.CONFIG.tieredShields()) return switch (level) {
-				case 0 -> TieredShieldItem.WOODEN_SHIELD;
+				case 0 -> Items.SHIELD;
 				case 3 -> TieredShieldItem.IRON_SHIELD;
 				case 4 -> TieredShieldItem.DIAMOND_SHIELD;
                 default -> TieredShieldItem.GOLD_SHIELD;

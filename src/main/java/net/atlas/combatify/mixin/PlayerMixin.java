@@ -129,14 +129,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(!Combatify.CONFIG.fistDamage() ? 2 : 1);
+		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(Combatify.CONFIG.fistDamage());
 		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 		Objects.requireNonNull(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)).setBaseValue(Combatify.CONFIG.attackReach() ? 2.5 : 3);
 	}
 
 	@ModifyExpressionValue(method = "createAttributes", at = @At(value = "CONSTANT", args = "doubleValue=1.0"))
 	private static double changeAttack(double constant) {
-		return !Combatify.CONFIG.fistDamage() ? 1 + constant : constant;
+		return Combatify.CONFIG.fistDamage();
 	}
 	@ModifyReturnValue(method = "createAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {

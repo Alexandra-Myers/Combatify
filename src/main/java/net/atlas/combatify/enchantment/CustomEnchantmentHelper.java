@@ -3,6 +3,7 @@ package net.atlas.combatify.enchantment;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
+import net.atlas.combatify.util.blocking.ComponentModifier.DataSet;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -29,10 +30,14 @@ public class CustomEnchantmentHelper {
 		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().modifyArmorEffectivness(serverLevel, i, itemStack, entity, damageSource, mutableFloat));
 		return -(mutableFloat.floatValue() - 1);
 	}
-	public static float modifyShieldEffectiveness(ItemStack itemStack, RandomSource randomSource, float value) {
-		MutableFloat mutableFloat = new MutableFloat(value);
-		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS).forEach(enchantmentValueEffect -> mutableFloat.setValue(enchantmentValueEffect.process(i, randomSource, mutableFloat.floatValue()))));
-		return mutableFloat.floatValue();
+	public static DataSet modifyShieldEffectiveness(ItemStack itemStack, RandomSource randomSource, DataSet value) {
+		MutableFloat base = new MutableFloat(value.addValue());
+		MutableFloat factor = new MutableFloat(value.multiplyValue());
+		EnchantmentHelper.runIterationOnItem(itemStack, (holder, i) -> holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS).forEach(protectionBaseFactor -> {
+			base.setValue(protectionBaseFactor.base().process(i, randomSource, base.floatValue()));
+			factor.setValue(protectionBaseFactor.factor().process(i, randomSource, factor.floatValue()));
+		}));
+		return new DataSet(base.floatValue(), factor.floatValue());
 	}
 	public static void applyPostBlockedEffects(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker, DamageSource damageSource) {
 		EnchantmentHelper.runIterationOnEquipment(attacker, (holder, enchantmentLevel, enchantedItemInUse) -> holder.value().getEffects(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS)

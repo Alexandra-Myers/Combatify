@@ -1,0 +1,13 @@
+{
+  "tags": [
+    "combatify:weapon_type/shovel"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:combat_test_weapon_stats",
+      "attack_speed": -0.5,
+      "persist_previous": true
+    }
+  ],
+  "patch": {}
+}

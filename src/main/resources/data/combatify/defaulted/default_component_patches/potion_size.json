@@ -1,0 +1,8 @@
+{
+  "items": [
+    "minecraft:potion"
+  ],
+  "patch": {
+    "minecraft:max_stack_size": 16
+  }
+}

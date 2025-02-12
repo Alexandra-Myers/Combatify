@@ -1,0 +1,14 @@
+{
+  "tags": [
+    "combatify:weapon_type/sword"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:combat_test_weapon_stats",
+      "attack_speed": 0.5,
+      "attack_reach": 0.5,
+      "persist_previous": true
+    }
+  ],
+  "patch": {}
+}

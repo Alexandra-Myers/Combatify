@@ -68,7 +68,6 @@ public class NetworkingHandler {
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> {
 			ITEMS = new ItemConfig();
-			ITEMS.modify();
 		});
 	}
 	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {

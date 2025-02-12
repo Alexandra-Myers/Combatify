@@ -1,28 +1,23 @@
 package net.atlas.combatify.util.blocking.damage_parsers;
 
 import com.mojang.serialization.MapCodec;
-import net.atlas.combatify.critereon.CustomLootContextParamSets;
-import net.minecraft.advancements.critereon.DamageSourcePredicate;
+
+import net.atlas.combatify.util.blocking.ComponentModifier.DataSet;
 import net.minecraft.advancements.critereon.TagPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.item.enchantment.ConditionalEffect;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
-import net.minecraft.world.level.storage.loot.predicates.DamageSourceCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.damagesource.DamageType;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 
-public record Nullify(Optional<LootItemCondition> requirements) implements DamageParser {
-	public static final DamageParser NULLIFY_ALL = new Nullify(Optional.empty());
-	public static final DamageParser NULLIFY_EXPLOSIONS_AND_PROJECTILES = new Nullify(Optional.of(AnyOfCondition.anyOf(
-			DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_EXPLOSION))),
-			DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE))))
-		.build()));
-	public static final MapCodec<Nullify> CODEC = ConditionalEffect.conditionCodec(CustomLootContextParamSets.BLOCKED_DAMAGE).optionalFieldOf("requirements").xmap(Nullify::new, Nullify::requirements);
+public record Nullify(List<TagPredicate<DamageType>> requirements, boolean enforceAll) implements DamageParser {
+	public static final DamageParser NULLIFY_ALL = new Nullify(Collections.emptyList(), true);
+	public static final DamageParser NULLIFY_EXPLOSIONS_AND_PROJECTILES = new Nullify(List.of(TagPredicate.is(DamageTypeTags.IS_EXPLOSION), TagPredicate.is(DamageTypeTags.IS_PROJECTILE)), false);
+	public static final MapCodec<Nullify> CODEC = DamageParser.mapCodec(Nullify::new);
 	@Override
-	public float parse(float originalValue, float protection, LootContext context) {
-		if (requirements.isEmpty() || requirements.get().test(context)) return originalValue;
+	public float parse(float originalValue, DataSet protection, Holder<DamageType> damageType) {
+		if (allAre(damageType)) return originalValue;
 		return 0;
 	}
 

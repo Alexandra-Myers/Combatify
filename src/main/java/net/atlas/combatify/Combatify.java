@@ -9,11 +9,10 @@ import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.critereon.ItemSubPredicateInit;
-import net.atlas.combatify.extensions.Tier;
-import net.atlas.combatify.extensions.WeaponWithType;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -24,6 +23,7 @@ import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
+import net.atlas.defaulted.fabric.component.DefaultedRegistries;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.*;
@@ -72,19 +72,14 @@ public class Combatify implements ModInitializer {
 	public static boolean isCTS = false;
 	public static boolean isLoaded = false;
 	public static boolean mobConfigIsDirty = true;
-	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
+	public static final List<Item> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
 	public static final Map<Holder<Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
-	public static final Object2ObjectOpenHashMap<Holder<Item>, Tier> originalTiers = new Object2ObjectOpenHashMap<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
-	public static final BiMap<String, Tier> defaultTiers = HashBiMap.create();
-	public static Map<String, WeaponType> registeredWeaponTypes = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
-	public static BiMap<String, Tier> tiers = HashBiMap.create();
-	public static BiMap<ResourceLocation, BlockingType.Factory> registeredTypeFactories = HashBiMap.create();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 
@@ -95,7 +90,6 @@ public class Combatify implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		isLoaded = true;
-		originalTiers.defaultReturnValue(ToolMaterial.DIAMOND);
 		BlockingConditions.bootstrap();
 		PostBlockEffects.bootstrap();
 		WeaponType.init();
@@ -139,7 +133,7 @@ public class Combatify implements ModInitializer {
 		ItemSubPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> MethodHandler.forItem(itemStack.getItem()) != null || itemStack.getItem() instanceof WeaponWithType || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> MethodHandler.forItem(itemStack.getItem()) != null || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
 				ServerPlayer player = packetContext.getPlayer();
 				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
@@ -155,7 +149,6 @@ public class Combatify implements ModInitializer {
 		if (CONFIG.dispensableTridents())
  			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
 		DefaultItemComponentEvents.MODIFY.register(modDetectionNetworkChannel, (modifyContext) -> {
-			modifyContext.modify(item -> item instanceof SwordItem, (builder, item) -> builder.set(CustomDataComponents.BLOCKER, Blocker.SWORD));
 			modifyContext.modify(Items.WOODEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 1));
 			modifyContext.modify(Items.GOLDEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 1));
 			modifyContext.modify(Items.STONE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 2));
@@ -164,12 +157,6 @@ public class Combatify implements ModInitializer {
 			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 5));
 			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.SHIELD));
 		});
-		bindItemsToDefaultTier(ToolMaterial.WOOD, Items.WOODEN_SWORD, Items.WOODEN_SHOVEL, Items.WOODEN_AXE, Items.WOODEN_HOE, Items.WOODEN_PICKAXE);
-		bindItemsToDefaultTier(ToolMaterial.GOLD, Items.GOLDEN_SWORD, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.GOLDEN_PICKAXE);
-		bindItemsToDefaultTier(ToolMaterial.STONE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_AXE, Items.STONE_HOE, Items.STONE_PICKAXE);
-		bindItemsToDefaultTier(ToolMaterial.IRON, Items.IRON_SWORD, Items.IRON_SHOVEL, Items.IRON_AXE, Items.IRON_HOE, Items.IRON_PICKAXE);
-		bindItemsToDefaultTier(ToolMaterial.DIAMOND, Items.DIAMOND_SWORD, Items.DIAMOND_SHOVEL, Items.DIAMOND_AXE, Items.DIAMOND_HOE, Items.DIAMOND_PICKAXE);
-		bindItemsToDefaultTier(ToolMaterial.NETHERITE, Items.NETHERITE_SWORD, Items.NETHERITE_SHOVEL, Items.NETHERITE_AXE, Items.NETHERITE_HOE, Items.NETHERITE_PICKAXE);
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
@@ -177,16 +164,16 @@ public class Combatify implements ModInitializer {
 		}
 		if (CONFIG.tieredShields()) {
 			TieredShieldItem.init();
+			shields.add(Items.SHIELD);
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
-			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
-			originalTiers.put(TieredShieldItem.WOODEN_SHIELD.builtInRegistryHolder(), ToolMaterial.WOOD);
-			originalTiers.put(TieredShieldItem.GOLD_SHIELD.builtInRegistryHolder(), ToolMaterial.GOLD);
-			originalTiers.put(TieredShieldItem.IRON_SHIELD.builtInRegistryHolder(), ToolMaterial.IRON);
-			originalTiers.put(TieredShieldItem.DIAMOND_SHIELD.builtInRegistryHolder(), ToolMaterial.DIAMOND);
-			originalTiers.put(TieredShieldItem.NETHERITE_SHIELD.builtInRegistryHolder(), ToolMaterial.NETHERITE);
+			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
 
+		DefaultedRegistries.registerPatchGenerator("combat_test_weapon_stats", WeaponStatsGenerator.CODEC);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("sword_blocking"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.sword_blocking"), ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("vanilla_attack_balancing"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.vanilla_attack_balancing"), ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("weapon_types"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.weapon_types"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), FabricLoader.getInstance().getModContainer("combatify").get(), Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {
 			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
@@ -199,10 +186,7 @@ public class Combatify implements ModInitializer {
 		builder.set(DataComponents.MAX_DAMAGE, value);
 		builder.set(DataComponents.MAX_STACK_SIZE, 1);
 	}
-	public static void registerWeaponType(WeaponType weaponType) {
-		Combatify.registeredWeaponTypes.put(weaponType.name(), weaponType);
-    }
-	public static <T extends BlockingType> T registerBlockingType(T blockingType) {
+	public static BlockingType registerBlockingType(BlockingType blockingType) {
 		Combatify.registeredTypes.put(blockingType.name(), blockingType);
 		return blockingType;
 	}
@@ -212,21 +196,8 @@ public class Combatify implements ModInitializer {
 	public static void defineDefaultWeaponType(WeaponType type) {
 		defaultWeaponTypes.put(type.name(), type);
 	}
-	public static BlockingType.Factory defineBlockingTypeFactory(ResourceLocation name, BlockingType.Factory factory) {
-		registeredTypeFactories.put(name, factory);
-		return factory;
-	}
 	public static BlockingType defineDefaultBlockingType(BlockingType blockingType) {
 		defaultTypes.put(blockingType.name(), blockingType);
 		return registerBlockingType(blockingType);
-	}
-	public static void defineDefaultTier(String name, Tier tier) {
-		defaultTiers.put(name, tier);
-		tiers.put(name, tier);
-	}
-	public static void bindItemsToDefaultTier(Tier tier, Item... items) {
-		for (Item item : items) {
-			originalTiers.put(item.builtInRegistryHolder(), tier);
-		}
 	}
 }

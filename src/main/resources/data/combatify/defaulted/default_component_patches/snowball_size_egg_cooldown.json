@@ -1,0 +1,23 @@
+{
+  "items": [
+    "minecraft:snowball",
+    "minecraft:egg"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:conditional",
+      "condition": "is_item",
+      "items": [
+        "minecraft:snowball"
+      ],
+      "patch": {
+        "minecraft:max_stack_size": 64
+      }
+    }
+  ],
+  "patch": {
+    "minecraft:use_cooldown": {
+      "seconds": 0.2
+    }
+  }
+}

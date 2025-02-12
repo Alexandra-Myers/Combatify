@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.combatify.client.ShieldMaterial;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
-import net.atlas.combatify.extensions.Tier;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
@@ -27,8 +26,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final ModelLayerLocation GOLDEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("golden_shield"),"main");
 	public static final ModelLayerLocation DIAMOND_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("diamond_shield"),"main");
 	public static final ModelLayerLocation NETHERITE_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("netherite_shield"),"main");
-	public static final Object2ObjectOpenHashMap<Tier, ModelLayerLocation> tieredShieldModelLayers = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(WOODEN_SHIELD_MODEL_LAYER));
-	public static final Object2ObjectOpenHashMap<Tier, ShieldMaterial> tieredShieldMaterials = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(ShieldMaterial.WOODEN_SHIELD));
+	public static final Object2ObjectOpenHashMap<ToolMaterial, ModelLayerLocation> tieredShieldModelLayers = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(WOODEN_SHIELD_MODEL_LAYER));
+	public static final Object2ObjectOpenHashMap<ToolMaterial, ShieldMaterial> tieredShieldMaterials = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(ShieldMaterial.WOODEN_SHIELD));
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
 	public static final OptionInstance<Boolean> rhythmicAttacks = OptionInstance.createBoolean("options.rhythmicAttack",true);

@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "combatify:golden_longsword",
+      "required": false
+    },
+    {
+      "id": "combatify:golden_knife",
+      "required": false
+    }
+  ]
+}

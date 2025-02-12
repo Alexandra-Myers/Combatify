@@ -1,0 +1,49 @@
+{
+  "tags": [
+    "minecraft:swords"
+  ],
+  "patch": {
+    "combatify:blocker": {
+      "type": "sword",
+      "damage_parsers": [
+        {
+          "type": "percentage_base"
+        }
+      ],
+      "protection_modifiers": [
+        {
+          "base": {
+            "modifier": {
+              "type": "add",
+              "value": 0
+            }
+          },
+          "factor": {
+            "tooltip": {
+              "translate": "attribute.modifier.equals.0",
+              "with": [
+                {
+                  "translate": "attribute.name.damage_reduction",
+                  "fallback": "Damage Reduction"
+                }
+              ]
+            },
+            "modifier": {
+              "type": "add",
+              "value": {
+                "type": "linear",
+                "base": 10,
+                "per_level_above_first": 5
+              }
+            }
+          }
+        }
+      ],
+      "knockback_modifiers": [],
+      "effect": "nothing",
+      "condition": "requires_empty_hand",
+      "hand": "off_hand",
+      "mark_blocked": true
+    }
+  }
+}

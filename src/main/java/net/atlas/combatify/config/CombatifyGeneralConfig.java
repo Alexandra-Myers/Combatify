@@ -44,7 +44,6 @@ import java.util.function.Supplier;
 import static net.atlas.combatify.Combatify.*;
 
 public class CombatifyGeneralConfig extends AtlasConfig {
-	private BooleanHolder weaponTypesEnabled;
 	private BooleanHolder iFramesBasedOnWeapon;
 	private BooleanHolder bowFatigue;
 	private BooleanHolder bedrockBridging;
@@ -68,11 +67,10 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder strengthAppliesToEnchants;
 	private BooleanHolder percentageDamageEffects;
 	private BooleanHolder ctsKB;
+	private BooleanHolder tierDamageNerf;
 	private BooleanHolder tridentVoidReturn;
 	private BooleanHolder midairKB;
 	private BooleanHolder fishingHookKB;
-	private BooleanHolder fistDamage;
-	private BooleanHolder swordBlocking;
 	private BooleanHolder shieldOnlyWhenCharged;
 	private BooleanHolder ctsSaturationCap;
 	private BooleanHolder fastHealing;
@@ -88,7 +86,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder armorPiercingDisablesShields;
 	private BooleanHolder attackSpeed;
 	private BooleanHolder instaAttack;
-	private BooleanHolder ctsAttackBalancing;
 	private BooleanHolder improvedMiscEntityAttacks;
 	private BooleanHolder hasteFix;
 	private BooleanHolder enableDebugLogging;
@@ -97,6 +94,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
+	private DoubleHolder fistDamage;
 	private DoubleHolder starvingTime;
 	private DoubleHolder healingTime;
 	private DoubleHolder fastHealingTime;
@@ -192,9 +190,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		critControls = createObject("critControls", CritControls.DEFAULT, CritControls.class, CritControls.STREAM_CODEC, false);
 		critControls.tieToCategory(ctsB);
 		critControls.setupTooltip(1);
-		ctsAttackBalancing = createBoolean("ctsAttackBalancing", true);
-		ctsAttackBalancing.tieToCategory(ctsB);
-		ctsAttackBalancing.setupTooltip(1);
 		ctsKB = createBoolean("ctsKB", true);
 		ctsKB.tieToCategory(ctsB);
 		ctsKB.setupTooltip(1);
@@ -207,9 +202,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		dispensableTridents = createBoolean("dispensableTridents", true);
 		dispensableTridents.tieToCategory(ctsB);
 		dispensableTridents.setupTooltip(1);
-		fistDamage = createBoolean("fistDamage", false);
-		fistDamage.tieToCategory(ctsB);
-		fistDamage.setupTooltip(1);
 		hasMissTime = createBoolean("hasMissTime", false);
 		hasMissTime.tieToCategory(ctsB);
 		hasMissTime.setupTooltip(1);
@@ -246,12 +238,12 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		swingThroughGrass = createBoolean("swingThroughGrass", true);
 		swingThroughGrass.tieToCategory(ctsB);
 		swingThroughGrass.setupTooltip(1);
+		tierDamageNerf = createBoolean("tierDamageNerf", true);
+		tierDamageNerf.tieToCategory(ctsB);
+		tierDamageNerf.setupTooltip(1);
 		tridentVoidReturn = createBoolean("tridentVoidReturn", true);
 		tridentVoidReturn.tieToCategory(ctsB);
 		tridentVoidReturn.setupTooltip(1);
-		weaponTypesEnabled = createBoolean("weaponTypesEnabled", true);
-		weaponTypesEnabled.tieToCategory(ctsB);
-		weaponTypesEnabled.setupTooltip(3);
 
 		shieldDelay = createInRange("shieldDelay", 0, 0, 2000, false);
 		shieldDelay.tieToCategory(ctsI);
@@ -261,6 +253,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 		baseHandAttackSpeed = createInRange("baseHandAttackSpeed", 2.5, 2.5, 20);
 		baseHandAttackSpeed.tieToCategory(ctsD);
+		fistDamage = createInRange("fistDamage", 2.0, 1, 1024);
+		fistDamage.tieToCategory(ctsD);
+		fistDamage.setupTooltip(1);
 		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, ProjectileUncertainty.STREAM_CODEC, false);
 		projectileUncertainty.tieToCategory(ctsD);
 		starvingTime = createInRange("starvingTime", 2, 0, 100D);
@@ -344,9 +339,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		sweepingNegatedForTamed = createBoolean("sweepingNegatedForTamed", false);
 		sweepingNegatedForTamed.tieToCategory(extraB);
 		sweepingNegatedForTamed.setupTooltip(1);
-		swordBlocking = createBoolean("swordBlocking", false);
-		swordBlocking.tieToCategory(extraB);
-		swordBlocking.setupTooltip(1);
 
 		shieldChargePercentage = createInRange("shieldChargePercentage", 195, 1, 200, true);
 		shieldChargePercentage.tieToCategory(extraI);
@@ -415,9 +407,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 					else DispenserBlock.registerBehavior(Items.TRIDENT, ((Object2ObjectOpenHashMap<Item, DispenseItemBehavior>) DispenserBlock.DISPENSER_REGISTRY).defaultReturnValue());
 				}
 			}
-			case Boolean ignored when tConfigValue.name().equals("weaponTypesEnabled") || tConfigValue.name().equals("ctsAttackBalancing") -> {
-				if (ITEMS != null) ITEMS.modify();
-			}
 			case Boolean ignored when tConfigValue.name().equals("mobsCanGuard") -> {
 				if (isLoaded) {
 					mobConfigIsDirty = true;
@@ -445,13 +434,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		return null;
 	}
 
-	public Boolean weaponTypesEnabled() {
-		return weaponTypesEnabled.get();
-	}
 	public Boolean iFramesBasedOnWeapon() {
 		return iFramesBasedOnWeapon.get();
 	}
-
 	public boolean vanillaCrits() {
 		return !sprintCritsEnabled() && !chargedCrits() && critChargePercentage() == 0.9 && chargedCritDamage() == 1.5;
 	}
@@ -527,6 +512,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean ctsKB() {
 		return ctsKB.get();
 	}
+	public Boolean tierDamageNerf() {
+		return tierDamageNerf.get();
+	}
 	public Boolean tridentVoidReturn() {
 		return tridentVoidReturn.get();
 	}
@@ -538,12 +526,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean fishingHookKB() {
 		return fishingHookKB.get();
-	}
-	public Boolean fistDamage() {
-		return fistDamage.get();
-	}
-	public Boolean swordBlocking() {
-		return swordBlocking.get();
 	}
 	public Boolean shieldOnlyWhenCharged() {
 		return shieldOnlyWhenCharged.get();
@@ -589,9 +571,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean instaAttack() {
 		return instaAttack.get();
-	}
-	public Boolean ctsAttackBalancing() {
-		return ctsAttackBalancing.get();
 	}
 	public Boolean improvedMiscEntityAttacks() {
 		return improvedMiscEntityAttacks.get();
@@ -652,6 +631,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();
+	}
+	public Double fistDamage() {
+		return fistDamage.get();
 	}
 	public Double starvingTime() {
 		return starvingTime.get();

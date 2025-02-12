@@ -1,6 +1,7 @@
 package net.atlas.combatify.component;
 
 import eu.pb4.polymer.core.api.other.PolymerComponent;
+import net.atlas.combatify.component.custom.ProtectionBaseFactor;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.fabricmc.loader.api.FabricLoader;
@@ -18,8 +19,8 @@ public class CustomEnchantmentEffectComponents {
 	public static DataComponentType<List<TargetedConditionalEffect<PostBlockEffect>>> POST_BLOCK_EFFECTS = register(
 		"combatify:post_block_effects", builder -> builder.persistent(TargetedConditionalEffect.codec(PostBlockEffects.MAP_CODEC.codec(), LootContextParamSets.ENCHANTED_DAMAGE).listOf())
 	);
-	public static DataComponentType<List<EnchantmentValueEffect>> SHIELD_EFFECTIVENESS = register(
-		"combatify:shield_effectiveness", builder -> builder.persistent(EnchantmentValueEffect.CODEC.listOf())
+	public static DataComponentType<List<ProtectionBaseFactor>> SHIELD_EFFECTIVENESS = register(
+		"combatify:shield_effectiveness", builder -> builder.persistent(ProtectionBaseFactor.CODEC.listOf())
 	);
 	public static DataComponentType<List<TargetedConditionalEffect<EnchantmentValueEffect>>> SHIELD_DISABLE = register(
 		"combatify:shield_disable_time", builder -> builder.persistent(TargetedConditionalEffect.equipmentDropsCodec(EnchantmentValueEffect.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
