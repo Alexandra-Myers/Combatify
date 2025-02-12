@@ -42,6 +42,7 @@
     "ShieldItemMixin",
     "SnowballMixin",
     "ThrownTridentMixin",
+	"ToolMaterialMixin",
     "TridentItemMixin",
     "UseCooldownMixin",
     "accessor.CombatTrackerAccessor",

@@ -94,13 +94,13 @@ public record WeaponStatsGenerator(List<WeaponLevelBasedValue> damage, List<Weap
             for (WeaponLevelBasedValue value : list) {
                 if (value instanceof WeaponLevelBasedValue.Unconditional unconditional) return unconditional.value() + (tieredDamage ? tier.attackDamageBonus() : 0);
                 else {
-                    float res = value.getResult(tier.weaponLevel(), tieredDamage);
-                    if (res != 0) return res;
+                    Float res = value.getResult(tier.weaponLevel(), tieredDamage);
+                    if (res != null) return res;
                 }
             }
         else for (WeaponLevelBasedValue value : list) {
-            float res = value.getResult(tier.weaponLevel(), true);
-            if (res != 0) return res;
+            Float res = value.getResult(tier.weaponLevel(), true);
+            if (res != null) return res;
         }
         return 0;
     }

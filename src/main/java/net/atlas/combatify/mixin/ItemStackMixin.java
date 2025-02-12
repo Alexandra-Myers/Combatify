@@ -117,7 +117,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 					CommonComponents.space().append(
 						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),
 							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
-							Component.translatable("attribute.name.armor_piercing"))).withStyle(ChatFormatting.DARK_GREEN));
+							Component.translatableWithFallback("attribute.name.armor_piercing", "Armor Piercing"))).withStyle(ChatFormatting.DARK_GREEN));
 			}
 			if (getBlocking(this.stack).canShowInTooltip(this.stack, player)) getBlocking(this.stack).tooltip().appendTooltipInfo(consumer, player, this.stack);
 		}
