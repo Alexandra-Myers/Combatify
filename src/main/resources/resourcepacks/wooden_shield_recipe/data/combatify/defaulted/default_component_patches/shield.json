@@ -61,7 +61,7 @@
           },
           "factor": {
             "tooltip": {
-              "translate": "attribute.modifier.equals.0",
+              "translate": "attribute.modifier.equals.2",
               "with": [
                 {
                   "translate": "attribute.name.shield_reduction",
