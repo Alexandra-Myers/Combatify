@@ -24,8 +24,8 @@ public record WeaponStats(Optional<Double> optionalChargedReach) {
 			chargedReach = null;
 		return new WeaponStats(chargedReach);
 	});
-	public WeaponStats(Double optionalChargedReach) {
-		this(Optional.ofNullable(optionalChargedReach));
+	public WeaponStats(Double chargedReach) {
+		this(Optional.ofNullable(chargedReach));
 	}
 	public WeaponStats(Optional<Double> optionalChargedReach) {
 		this.optionalChargedReach = clamp(optionalChargedReach, 0, 10);
