@@ -23,6 +23,7 @@ import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
+import net.atlas.defaulted.DefaultedDataReloadListener;
 import net.atlas.defaulted.fabric.component.DefaultedRegistries;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
@@ -133,7 +134,7 @@ public class Combatify implements ModInitializer {
 		ItemSubPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
 				ServerPlayer player = packetContext.getPlayer();
 				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
@@ -199,5 +200,9 @@ public class Combatify implements ModInitializer {
 	public static BlockingType defineDefaultBlockingType(BlockingType blockingType) {
 		defaultTypes.put(blockingType.name(), blockingType);
 		return registerBlockingType(blockingType);
+	}
+
+	public static boolean isPatched(Item item) {
+		return DefaultedDataReloadListener.cached.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
 }
