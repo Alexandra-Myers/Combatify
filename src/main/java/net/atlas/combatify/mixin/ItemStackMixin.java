@@ -9,7 +9,6 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.mixin.accessor.PatchedDataComponentMapAccessor;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -19,7 +18,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -77,17 +75,9 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Shadow
 	public abstract DataComponentPatch getComponentsPatch();
 
-	@Inject(method = "inventoryTick", at = @At("HEAD"))
-	public void updatePrototypeTick(Level level, Entity entity, int i, boolean bl, CallbackInfo ci) {
-		if (entity.tickCount % 100 == 0) {
-			updatePrototype();
-		}
-	}
-
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;)V"))
 	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) Consumer<Component> consumer) {
 		addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, consumer, tooltipFlag);
-		updatePrototype();
 	}
 
 	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
@@ -155,17 +145,6 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		if (getBlocking(this.stack).canOverrideUseDurationAndAnimation(this.stack))
 			return ItemUseAnimation.BLOCK;
 		return original;
-	}
-
-	@Unique
-	public void updatePrototype() {
-		if (!isEmpty()) {
-			DataComponentMap prototype = PatchedDataComponentMapAccessor.class.cast(components).getPrototype();
-			if (prototype.equals(getPrototype())) return;
-			PatchedDataComponentMap newMap = new PatchedDataComponentMap(getPrototype());
-			newMap.applyPatch(getComponentsPatch());
-			components = newMap;
-		}
 	}
 }
 
