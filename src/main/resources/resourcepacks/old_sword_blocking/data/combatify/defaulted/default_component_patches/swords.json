@@ -3,7 +3,7 @@
     "minecraft:swords"
   ],
   "patch": {
-    "!combatify:blocking_level": 1,
+    "!combatify:blocking_level": {},
     "combatify:blocker": {
       "type": "sword",
       "damage_parsers": [
