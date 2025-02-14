@@ -115,10 +115,10 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 			return showInTooltip.isEmpty() || showInTooltip.get().appliesComponentModifier(itemStack);
 		}
 		public static CombinedModifier createFactorOnly(ComponentModifier factor, Optional<BlockingCondition> showInTooltip) {
-			return new CombinedModifier(new ComponentModifier(Component.empty(), new AddValue(new Constant(0)), Optional.empty()), factor, showInTooltip);
+			return new CombinedModifier(new ComponentModifier(Component.empty(), new AddValue(new Constant(0)), Optional.empty(), 1), factor, showInTooltip);
 		}
 		public static CombinedModifier createBaseOnly(ComponentModifier base, Optional<BlockingCondition> showInTooltip) {
-			return new CombinedModifier(base, new ComponentModifier(Component.empty(), new AddValue(new Constant(0)), Optional.empty()), showInTooltip);
+			return new CombinedModifier(base, new ComponentModifier(Component.empty(), new AddValue(new Constant(0)), Optional.empty(), 1), showInTooltip);
 		}
 	}
 	public record DataSet(float addValue, float multiplyValue) {}
