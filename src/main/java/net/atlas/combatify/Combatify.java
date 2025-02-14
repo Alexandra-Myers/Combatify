@@ -23,7 +23,7 @@ import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
-import net.atlas.defaulted.DefaultComponentPatchesListener;
+import net.atlas.defaulted.DefaultComponentPatchesManager;
 import net.atlas.defaulted.fabric.component.DefaultedRegistries;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
