@@ -44,7 +44,7 @@
       "effect": "nothing",
       "condition": "requires_empty_hand",
       "hand": "off_hand",
-      "mark_blocked": true
+      "mark_blocked": false
     }
   }
 }
