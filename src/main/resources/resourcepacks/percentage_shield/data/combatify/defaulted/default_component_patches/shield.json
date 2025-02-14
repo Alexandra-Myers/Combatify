@@ -54,7 +54,11 @@
             },
             "modifier": {
               "type": "add",
-              "value": 0.5
+              "value": {
+                "type": "linear",
+                "base": 0.5,
+                "per_level_above_first": 0.05
+              }
             },
             "tooltip_value_factor": 100
           }

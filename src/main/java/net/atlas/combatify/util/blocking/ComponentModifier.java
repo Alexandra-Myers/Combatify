@@ -27,12 +27,12 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 		instance.group(ComponentSerialization.CODEC.fieldOf("tooltip").forGetter(ComponentModifier::tooltipComponent),
 				EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
 				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1).forGetter(ComponentModifier::componentValueFactor))
+				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1F).forGetter(ComponentModifier::componentValueFactor))
 			.apply(instance, ComponentModifier::new));
 	public static final Codec<ComponentModifier> NO_CONDITION_CODEC = RecordCodecBuilder.create(instance ->
 			instance.group(ComponentSerialization.CODEC.optionalFieldOf("tooltip", Component.empty()).forGetter(ComponentModifier::tooltipComponent),
 					EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
-					ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1).forGetter(ComponentModifier::componentValueFactor))
+					ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1F).forGetter(ComponentModifier::componentValueFactor))
 				.apply(instance, ComponentModifier::new));
 
 	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip, float componentValueFactor) {

@@ -48,7 +48,11 @@
             },
             "modifier": {
               "type": "add",
-              "value": 5
+              "value": {
+                "type": "linear",
+                "base": 5,
+                "per_level_above_first": 1
+              }
             }
           },
           "factor": {
