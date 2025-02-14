@@ -7,7 +7,7 @@
       "type": "sword",
       "damage_parsers": [
         {
-          "type": "percentage_base"
+          "type": "percentage_limit"
         }
       ],
       "protection_modifiers": [
@@ -30,11 +30,7 @@
             },
             "modifier": {
               "type": "add",
-              "value": {
-                "type": "linear",
-                "base": 0.1,
-                "per_level_above_first": 0.05
-              }
+              "value": 0.5
             },
             "tooltip_value_factor": 100
           }

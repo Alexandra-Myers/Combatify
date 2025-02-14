@@ -1,0 +1,18 @@
+{
+  "items": [
+    "minecraft:shield"
+  ],
+  "patch": {
+    "combatify:blocker": {
+      "type": "shield",
+      "damage_parsers": [
+        {
+          "type": "nullify"
+        }
+      ],
+      "protection_modifiers": [],
+      "knockback_modifiers": [],
+      "mark_blocked": true
+    }
+  }
+}

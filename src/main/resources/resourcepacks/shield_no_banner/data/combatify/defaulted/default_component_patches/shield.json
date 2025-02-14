@@ -2,26 +2,9 @@
   "items": [
     "minecraft:shield"
   ],
-  "patch_generators": [
-    {
-      "generator": "defaulted:tool_material",
-      "weapon_level": 0,
-      "base_tier": "wood"
-    },
-    {
-      "generator": "defaulted:modify_from_tool_material",
-      "components": [
-        "durability",
-        "enchantable",
-        "repairable"
-      ],
-      "max_damage_factor": 2
-    }
-  ],
   "patch": {
-    "combatify:blocking_level": 1,
     "combatify:blocker": {
-      "type": "new_shield",
+      "type": "shield",
       "damage_parsers": [
         {
           "type": "percentage_base",
@@ -54,30 +37,25 @@
       "protection_modifiers": [
         {
           "base": {
-            "modifier": {
-              "type": "add",
-              "value": 0
-            }
-          },
-          "factor": {
             "tooltip": {
-              "translate": "attribute.modifier.equals.2",
+              "translate": "attribute.modifier.equals.0",
               "with": [
                 {
-                  "translate": "attribute.name.shield_reduction",
-                  "fallback": "Shield Damage Reduction"
+                  "translate": "attribute.name.shield_strength",
+                  "fallback": "Shield Strength"
                 }
               ]
             },
             "modifier": {
               "type": "add",
-              "value": {
-                "type": "linear",
-                "base": 0.3,
-                "per_level_above_first": 0.05
-              }
-            },
-            "tooltip_value_factor": 100
+              "value": 5
+            }
+          },
+          "factor": {
+            "modifier": {
+              "type": "add",
+              "value": 0
+            }
           }
         }
       ],
@@ -93,13 +71,12 @@
           },
           "modifier": {
             "type": "add",
-            "value": 0.25
+            "value": 0.5
           },
           "tooltip_value_factor": 10
         }
       ],
       "mark_blocked": true
     }
-  },
-  "priority": 1200
+  }
 }

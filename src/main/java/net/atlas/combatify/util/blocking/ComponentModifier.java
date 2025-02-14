@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -21,23 +22,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, Optional<BlockingCondition> showInTooltip) {
+public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, Optional<BlockingCondition> showInTooltip, float componentValueFactor) {
 	public static final Codec<ComponentModifier> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(ComponentSerialization.CODEC.fieldOf("tooltip").forGetter(ComponentModifier::tooltipComponent),
 				EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
-				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip))
+				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip),
+				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1).forGetter(ComponentModifier::componentValueFactor))
 			.apply(instance, ComponentModifier::new));
 	public static final Codec<ComponentModifier> NO_CONDITION_CODEC = RecordCodecBuilder.create(instance ->
 			instance.group(ComponentSerialization.CODEC.optionalFieldOf("tooltip", Component.empty()).forGetter(ComponentModifier::tooltipComponent),
-					EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier))
+					EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
+					ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1).forGetter(ComponentModifier::componentValueFactor))
 				.apply(instance, ComponentModifier::new));
 
-	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip) {
-		this(tooltipComponent, modifier, Optional.of(showInTooltip));
+	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip, float componentValueFactor) {
+		this(tooltipComponent, modifier, Optional.of(showInTooltip), componentValueFactor);
 	}
 
-	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier) {
-		this(tooltipComponent, modifier, Optional.empty());
+	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, float componentValueFactor) {
+		this(tooltipComponent, modifier, Optional.empty(), componentValueFactor);
 	}
 
 	public float modifyValue(float value, int blockingLevel, RandomSource randomSource) {
@@ -65,11 +68,12 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 		float val = 0;
 		for (int i = others.size() - 1; i >= 0; i--) {
 			ComponentModifier other = others.get(i);
-			if (tooltipComponent.equals(other.tooltipComponent)) {
+			if (tooltipComponent.equals(other.tooltipComponent) && componentValueFactor == other.componentValueFactor) {
 				val = other.modifyValue(val, blockingLevel, randomSource);
 				others.remove(i);
 			}
 		}
+		val *= componentValueFactor;
 		if (val > 0) res.add(buildComponent(tooltipComponent, val));
 		if (!others.isEmpty()) others.getFirst().tryCombine(others, blockingLevel, randomSource);
 		return res;

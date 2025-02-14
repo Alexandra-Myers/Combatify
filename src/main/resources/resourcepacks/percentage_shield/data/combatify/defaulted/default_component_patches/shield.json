@@ -2,24 +2,7 @@
   "items": [
     "minecraft:shield"
   ],
-  "patch_generators": [
-    {
-      "generator": "defaulted:tool_material",
-      "weapon_level": 0,
-      "base_tier": "wood"
-    },
-    {
-      "generator": "defaulted:modify_from_tool_material",
-      "components": [
-        "durability",
-        "enchantable",
-        "repairable"
-      ],
-      "max_damage_factor": 2
-    }
-  ],
   "patch": {
-    "combatify:blocking_level": 1,
     "combatify:blocker": {
       "type": "new_shield",
       "damage_parsers": [
@@ -71,11 +54,7 @@
             },
             "modifier": {
               "type": "add",
-              "value": {
-                "type": "linear",
-                "base": 0.3,
-                "per_level_above_first": 0.05
-              }
+              "value": 0.5
             },
             "tooltip_value_factor": 100
           }
@@ -93,13 +72,12 @@
           },
           "modifier": {
             "type": "add",
-            "value": 0.25
+            "value": 0.5
           },
           "tooltip_value_factor": 10
         }
       ],
       "mark_blocked": true
     }
-  },
-  "priority": 1200
+  }
 }
