@@ -121,7 +121,8 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 	public void completeBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef wasBlocked) {
 		int blockingLevel = blockingItem.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
 		DataSet protection = new DataSet(0, 0);
-		if (!tooltip.protectionModifiers().isEmpty()) protection = tooltip.protectionModifiers().getFirst().tryCombineVal(tooltip.protectionModifiers(), blockingLevel, instance.getRandom());
+		List<CombinedModifier> intermediaryProtection = tooltip.protectionModifiers().stream().filter(combinedModifier -> combinedModifier.matches(blockingItem)).toList();
+		if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombineVal(intermediaryProtection, blockingLevel, instance.getRandom());
 		final DataSet endProtection = CustomEnchantmentHelper.modifyShieldEffectiveness(blockingItem, instance.getRandom(), protection);
 		damageParsers.forEach(damageParserConditionalEffect -> {
 			protectedDamage.set(damageParserConditionalEffect.parse(amount.get(), endProtection, source.typeHolder()));
