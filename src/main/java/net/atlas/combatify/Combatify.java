@@ -209,6 +209,6 @@ public class Combatify implements ModInitializer {
 	}
 
 	public static boolean isPatched(Item item) {
-		return DefaultComponentPatchesManager.cached.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
+		return DefaultComponentPatchesManager.getCached().stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
 }
