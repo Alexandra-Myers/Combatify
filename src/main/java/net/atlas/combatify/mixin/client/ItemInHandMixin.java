@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -40,12 +41,12 @@ public abstract class ItemInHandMixin {
 			return interactionHand;
 		return original;
 	}
-	@WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 5))
-	private void modifyBowCode(PoseStack instance, float f, float g, float h, Operation<Void> original) {
-		instance.translate(f, 0.18344387412071228, 0.15731531381607056);
-	}
 	@WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
 	private void modifyBowCode1(PoseStack instance, float x, float y, float z, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) float f, @Local(ordinal = 0, argsOnly = true) ItemStack itemStack) {
+		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+			original.call(instance, x, y, z);
+			return;
+		}
 		assert minecraft.player != null;
 		float r = (float)itemStack.getUseDuration(minecraft.player) - ((float)this.minecraft.player.getUseItemRemainingTicks() - f + 1.0F);
 		float m = Mth.sin((r - 0.1F) * 1.3F);

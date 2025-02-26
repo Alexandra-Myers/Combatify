@@ -2,11 +2,13 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.compat.ViaFabricPlusHooks;
 import net.atlas.combatify.config.ItemConfig;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,13 +29,14 @@ public class ClientNetworkingHandler {
 			sender.responseSender().sendPacket(ClientPlayNetworking.createC2SPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));
 			connectionState = ConnectionState.CONFIGURATION;
 		});
-		ClientPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, client) -> Combatify.markCTS(false));
-		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, client) -> {
+		ClientPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, client) -> Combatify.markState(CombatifyState.COMBATIFY));
+		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel, (handler, sender, client) -> {
 			connectionState = ConnectionState.PLAY;
 			if (!ClientPlayNetworking.canSend(NetworkingHandler.ServerboundMissPacket.TYPE)) {
 				CONFIG.reloadFromDefault();
 				ITEMS.reloadFromDefault();
-				Combatify.markCTS(true);
+				if (FabricLoader.getInstance().isModLoaded("viafabricplus") && ViaFabricPlusHooks.is8cTarget()) Combatify.markState(CombatifyState.CTS_8C);
+				else Combatify.markState(CombatifyState.VANILLA);
 			}
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(modDetectionNetworkChannel, client -> {

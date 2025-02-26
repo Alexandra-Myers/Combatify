@@ -48,7 +48,7 @@ public class MethodHandler {
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
 		if (entity instanceof Player player)
 			return player.getAttackStrengthScale(baseTime);
-		return 2.0f;
+		return Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
 	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -261,7 +261,7 @@ public class MethodHandler {
 			if (entity.getUseItem().getUseAnimation() == ItemUseAnimation.BLOCK) {
 				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
 			}
-		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && entity.combatify$hasEnabledShieldOnCrouch()) {
+		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
 			for (InteractionHand hand : InteractionHand.values()) {
 				ItemStack stack = entity.getItemInHand(hand);
 				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
@@ -279,6 +279,7 @@ public class MethodHandler {
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
 		double chargedBonus = 0;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);

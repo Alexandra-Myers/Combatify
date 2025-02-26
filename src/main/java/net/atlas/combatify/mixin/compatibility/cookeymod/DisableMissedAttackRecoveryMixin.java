@@ -20,8 +20,8 @@ public abstract class DisableMissedAttackRecoveryMixin extends AbstractClientPla
 
 	@Override
 	public boolean combatify$isAttackAvailable(float baseTime) {
-		if (getAttackStrengthScale(baseTime) < 1.0F && !Combatify.CONFIG.canAttackEarly()) {
-			if (((MiscCategoryExtensions)CookeyMod.getInstance().getConfig().misc()).force100PercentRecharge().get())
+		if (getAttackStrengthScale(baseTime) < 1.0F && !(Combatify.CONFIG.canAttackEarly() || Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
+			if (((MiscCategoryExtensions)CookeyMod.getInstance().getConfig().misc()).combatify$force100PercentRecharge().get())
 				return false;
 			return (combatify$getMissedAttackRecovery() && this.attackStrengthTicker + baseTime > 4.0F);
 		}

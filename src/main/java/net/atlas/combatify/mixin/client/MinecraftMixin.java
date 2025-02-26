@@ -77,7 +77,7 @@ public abstract class MinecraftMixin {
 			),
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 0))
 	public boolean allowBlockHitting(boolean original) {
-		if (!original) return false;
+		if (!original || !Combatify.state.equals(Combatify.CombatifyState.COMBATIFY)) return false;
 		if (player != null) {
 			ItemStack stack = player.getUseItem();
 			boolean bl = getBlockingType(stack).canBlockHit() && !getBlockingType(stack).isEmpty();
@@ -101,7 +101,7 @@ public abstract class MinecraftMixin {
 	}
 	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
-		if (player == null || hitResult == null)
+		if (player == null || hitResult == null || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
 			return original.call(instance);
 		if (!player.combatify$isAttackAvailable(0.0F)) {
 			if (hitResult.getType() != HitResult.Type.BLOCK) {
@@ -124,7 +124,7 @@ public abstract class MinecraftMixin {
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))
 	public boolean removeMissTime(boolean original) {
-		if (Combatify.CONFIG.hasMissTime())
+		if (Combatify.CONFIG.hasMissTime() || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
 			return original;
 		return false;
 	}
@@ -137,13 +137,13 @@ public abstract class MinecraftMixin {
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void redirectReset(LocalPlayer instance, Operation<Void> original) {
 		if (gameMode != null)
-			gameMode.swingInAir(instance);
+			gameMode.combatify$swingInAir(instance);
 	}
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
 		boolean bl1 = this.screen == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
-		boolean bl2 = (CombatifyClient.autoAttack.get() && Combatify.CONFIG.autoAttackAllowed()) || this.retainAttack;
+		boolean bl2 = (CombatifyClient.autoAttack.get() && Combatify.CONFIG.autoAttackAllowed() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) || this.retainAttack;
 		if (player != null && missTime <= 0) {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
 			if (!cannotPerform) {

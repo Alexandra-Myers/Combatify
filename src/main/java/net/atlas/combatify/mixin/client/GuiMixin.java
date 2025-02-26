@@ -80,7 +80,7 @@ public abstract class GuiMixin {
 					int j = guiGraphics.guiHeight() / 2 - 7 + 16;
 					int k = guiGraphics.guiWidth() / 2 - 8;
 					boolean isShieldCooldown = isShieldOnCooldown();
-					boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
+					boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && shieldNonDelayed();
 					if (shieldIndicatorEnabled && isShieldCooldown)
 						guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, k, j, 16, 16);
 					else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
@@ -92,7 +92,7 @@ public abstract class GuiMixin {
 	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true)
 	public void renderCrosshair1(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
 		boolean isShieldCooldown = isShieldOnCooldown();
-		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && !isShieldDelayed();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && shieldNonDelayed();
 		assert minecraft.player != null;
 		if (shieldIndicatorEnabled && isShieldCooldown) {
 			ci.cancel();
@@ -101,8 +101,9 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-        float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+        float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		if (minIndicator == maxIndicator) minIndicator = 0;
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
 		boolean bl = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
@@ -123,7 +124,7 @@ public abstract class GuiMixin {
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void renderHotbar(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci, Player player, ItemStack itemStack, HumanoidArm humanoidArm, int i) {
 		boolean isShieldCooldown = isShieldOnCooldown();
-		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && shieldNonDelayed();
 		assert minecraft.player != null;
 		if(shieldIndicatorEnabled && isShieldCooldown) {
 			ci.cancel();
@@ -136,8 +137,9 @@ public abstract class GuiMixin {
 		int o = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT)
 			o = i - 91 - 22;
-		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
-		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), Combatify.CONFIG.chargedAttacks() ? 2 : 1);
+		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		if (minIndicator == maxIndicator) minIndicator = 0;
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
 		boolean bl = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
@@ -161,7 +163,7 @@ public abstract class GuiMixin {
 		assert minecraft.player != null;
 		if (humanoidArm == HumanoidArm.RIGHT)
 			o = i - 91 - 22;
-		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && !isShieldDelayed();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && shieldNonDelayed();
 		boolean isShieldCooldown = isShieldOnCooldown();
 		if (shieldIndicatorEnabled && isShieldCooldown)
 			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE, o, n, 18, 18);
@@ -178,10 +180,10 @@ public abstract class GuiMixin {
 		return offHandShieldCooldown || mainHandShieldCooldown;
 	}
 	@Unique
-	public boolean isShieldDelayed() {
+	public boolean shieldNonDelayed() {
 		if (this.minecraft.player == null)
-			return false;
+			return true;
 		ItemStack itemStack = MethodHandler.getBlockingItem(this.minecraft.player).stack();
-		return getBlockingType(itemStack).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(this.minecraft.player) - this.minecraft.player.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
+		return !getBlockingType(itemStack).hasDelay() || Combatify.CONFIG.shieldDelay() <= 0 || itemStack.getUseDuration(this.minecraft.player) - this.minecraft.player.getUseItemRemainingTicks() >= Combatify.CONFIG.shieldDelay();
 	}
 }

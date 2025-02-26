@@ -18,7 +18,7 @@ public class GameRendererMixin {
 	@ModifyExpressionValue(method = "pick(F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
 	public HitResult injectBedrockBridging(HitResult original, @Local(ordinal = 0) Entity entity, @Local(ordinal = 0, argsOnly = true) float f) {
 		HitResult redirectedResult = ClientMethodHandler.redirectResult(original);
-		if ((original == null || original.getType() == HitResult.Type.MISS) && redirectedResult == null && Combatify.CONFIG.bedrockBridging()) {
+		if ((original == null || original.getType() == HitResult.Type.MISS) && redirectedResult == null && Combatify.CONFIG.bedrockBridging() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
 			Vec3 viewVector = entity.getViewVector(1.0F);
 			if (entity.onGround() && viewVector.y < -0.7) {
 				Vec3 adjustedPos = entity.getPosition(f).add(0.0, -0.1, 0.0);

@@ -11,11 +11,13 @@ public class MobEffectMixin {
 
 	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))
 	public int changeInstantHealthTick(int constant) {
+		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return constant;
 		return Combatify.CONFIG.instantHealthBonus();
 	}
 
 	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
 	public int changeInstantHealth(int constant) {
+		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return constant;
 		return Combatify.CONFIG.instantHealthBonus();
 	}
 }

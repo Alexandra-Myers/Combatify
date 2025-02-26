@@ -27,14 +27,14 @@ public abstract class FishingHookMixin extends Entity {
 
 	@Inject(method = "<init>(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;II)V", at = @At(value = "TAIL"))
 	public void injectChanges(Player player, Level level, int i, int j, CallbackInfo ci) {
-		if(Combatify.CONFIG.fishingHookKB())
+		if (Combatify.CONFIG.fishingHookKB())
 			setDeltaMovement(getDeltaMovement().multiply(1.5, 1, 1.5));
 
 	}
 
 	@Inject(method = "onHitEntity", at = @At(value = "TAIL"))
 	protected void onHitEntity(EntityHitResult entityHitResult, CallbackInfo ci) {
-		if(Combatify.CONFIG.fishingHookKB() && entityHitResult.getEntity() instanceof LivingEntity livingEntity)
+		if (Combatify.CONFIG.fishingHookKB() && entityHitResult.getEntity() instanceof LivingEntity livingEntity)
 			livingEntity.hurt(damageSources().thrown(FishingHook.class.cast(this), getPlayerOwner()), 0);
 	}
 }

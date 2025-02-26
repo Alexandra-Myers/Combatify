@@ -26,7 +26,7 @@ public class ClientMethodHandler {
 		if (instance == null)
 			return null;
 		Minecraft minecraft = Minecraft.getInstance();
-		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
+		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
 			BlockHitResult blockHitResult = (BlockHitResult)instance;
 			BlockPos blockPos = blockHitResult.getBlockPos();
 			Level level = Objects.requireNonNull(minecraft.level);

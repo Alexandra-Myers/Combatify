@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public record Nullify(List<TagPredicate<DamageType>> requirements, boolean enforceAll) implements DamageParser {
+	public static final DamageParser NULLIFY_ALL = new Nullify(Collections.emptyList(), true);
 	public static final DamageParser NULLIFY_EXPLOSIONS_AND_PROJECTILES = new Nullify(List.of(TagPredicate.is(DamageTypeTags.IS_EXPLOSION), TagPredicate.is(DamageTypeTags.IS_PROJECTILE)), false);
 	public static final MapCodec<Nullify> CODEC = DamageParser.mapCodec(Nullify::new);
 	@Override

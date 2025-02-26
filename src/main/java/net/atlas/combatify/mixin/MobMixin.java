@@ -60,7 +60,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;tick()V"))
 	public void updateSprinting(CallbackInfo ci) {
 		if (isBlocking()) {
-			setDeltaMovement(getDeltaMovement().multiply(0.6, 1.0, 0.6));
+			setDeltaMovement(getDeltaMovement().multiply(0.4, 1.0, 0.4));
 			setSprinting(false);
 		}
 		if (!this.level().isClientSide) {

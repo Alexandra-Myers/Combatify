@@ -47,7 +47,11 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	}
 
 	@Override
-	public void swingInAir(Player player) {
+	public void combatify$swingInAir(Player player) {
+		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+			player.combatify$resetAttackStrengthTicker(false);
+			return;
+		}
 		ensureHasSentCarriedItem();
 		ClientPlayNetworking.send(new NetworkingHandler.ServerboundMissPacket());
 		if (localPlayerMode != GameType.SPECTATOR) {

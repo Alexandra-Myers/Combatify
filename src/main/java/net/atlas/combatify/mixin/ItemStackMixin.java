@@ -61,19 +61,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Shadow
 	public abstract boolean hasNonDefault(DataComponentType<?> dataComponentType);
 
-	@Mutable
-	@Shadow
-	@Final
-	PatchedDataComponentMap components;
-
 	@Shadow
 	public abstract boolean isEmpty();
-
-	@Shadow
-	public abstract DataComponentMap getPrototype();
-
-	@Shadow
-	public abstract DataComponentPatch getComponentsPatch();
 
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;)V"))
 	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) Consumer<Component> consumer) {

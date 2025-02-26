@@ -28,7 +28,7 @@ public abstract class AddForce100PercentRechargeMixin extends Category implement
 	}
 
 	@Override
-	public BooleanOption force100PercentRecharge() {
+	public BooleanOption combatify$force100PercentRecharge() {
 		return force100PercentRecharge;
 	}
 }

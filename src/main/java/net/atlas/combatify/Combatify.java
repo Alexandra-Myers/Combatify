@@ -1,7 +1,5 @@
 package net.atlas.combatify;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
@@ -24,6 +22,7 @@ import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.atlas.defaulted.DefaultComponentPatchesManager;
+import net.atlas.defaulted.component.ItemPatches;
 import net.atlas.defaulted.fabric.component.DefaultedRegistries;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
@@ -36,7 +35,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -71,7 +69,7 @@ public class Combatify implements ModInitializer {
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
-	public static boolean isCTS = false;
+	public static CombatifyState state = CombatifyState.COMBATIFY;
 	public static boolean isLoaded = false;
 	public static boolean mobConfigIsDirty = true;
 	public static final List<Item> shields = new ArrayListExtensions<>();
@@ -85,8 +83,8 @@ public class Combatify implements ModInitializer {
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 
-	public static void markCTS(boolean isCTS) {
-		Combatify.isCTS = isCTS;
+	public static void markState(CombatifyState state) {
+		Combatify.state = state;
 	}
 
 	@Override
@@ -157,7 +155,7 @@ public class Combatify implements ModInitializer {
 			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 3));
 			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 4));
 			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 5));
-			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.SHIELD));
+			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.VANILLA_SHIELD));
 		});
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
@@ -173,13 +171,12 @@ public class Combatify implements ModInitializer {
 
 		DefaultedRegistries.registerPatchGenerator("combat_test_weapon_stats", WeaponStatsGenerator.CODEC);
 		ModContainer modContainer = FabricLoader.getInstance().getModContainer("combatify").get();
-		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), modContainer, Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), modContainer, Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);ResourceManagerHelper.registerBuiltinResourcePack(id("default_shield"), modContainer, Component.translatable("pack.combatify.default_shield"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("old_sword_blocking"), modContainer, Component.translatable("pack.combatify.old_sword_blocking"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("percentage_shield"), modContainer, Component.translatable("pack.combatify.percentage_shield"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("shield_no_banner"), modContainer, Component.translatable("pack.combatify.shield_no_banner"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("sword_blocking"), modContainer, Component.translatable("pack.combatify.sword_blocking"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("vanilla_attack_balancing"), modContainer, Component.translatable("pack.combatify.vanilla_attack_balancing"), ResourcePackActivationType.NORMAL);
-		ResourceManagerHelper.registerBuiltinResourcePack(id("vanilla_shield"), modContainer, Component.translatable("pack.combatify.vanilla_shield"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("weapon_types"), modContainer, Component.translatable("pack.combatify.weapon_types"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), modContainer, Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {
@@ -209,6 +206,13 @@ public class Combatify implements ModInitializer {
 	}
 
 	public static boolean isPatched(Item item) {
-		return DefaultComponentPatchesManager.getCached().stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
+		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached();
+		if (patches == null) return false;
+		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
+	}
+	public enum CombatifyState {
+		VANILLA,
+		COMBATIFY,
+		CTS_8C
 	}
 }

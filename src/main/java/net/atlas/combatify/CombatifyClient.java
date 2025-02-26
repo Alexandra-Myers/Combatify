@@ -11,7 +11,10 @@ import net.minecraft.Util;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.util.TriState;
 import net.minecraft.world.item.ToolMaterial;
 
 import java.util.Arrays;
@@ -30,8 +33,42 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final Object2ObjectOpenHashMap<ToolMaterial, ShieldMaterial> tieredShieldMaterials = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(ShieldMaterial.WOODEN_SHIELD));
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
-	public static final OptionInstance<Boolean> rhythmicAttacks = OptionInstance.createBoolean("options.rhythmicAttack",true);
-	public static final OptionInstance<Boolean> augmentedArmHeight = OptionInstance.createBoolean("options.augmentedArmHeight",true);
+	public static final OptionInstance<TriState> rhythmicAttacks = new OptionInstance<>(
+		"options.rhythmicAttack",
+		OptionInstance.noTooltip(),
+		(component, object) -> switch (object) {
+			case TRUE -> CommonComponents.OPTION_ON;
+			case FALSE -> CommonComponents.OPTION_OFF;
+			case DEFAULT -> Component.translatable("options.context_decided");
+		},
+		new OptionInstance.Enum<>(Arrays.asList(TriState.values()), Codec.INT.xmap(ordinal -> switch (Mth.positiveModulo(ordinal, 3)) {
+			case 0 -> TriState.FALSE;
+			case 1 -> TriState.TRUE;
+			default -> TriState.DEFAULT;
+		}, TriState::ordinal)),
+		TriState.DEFAULT,
+		value -> {
+
+		}
+	);
+	public static final OptionInstance<TriState> augmentedArmHeight = new OptionInstance<>(
+		"options.augmentedArmHeight",
+		OptionInstance.noTooltip(),
+		(component, object) -> switch (object) {
+			case TRUE -> CommonComponents.OPTION_ON;
+			case FALSE -> CommonComponents.OPTION_OFF;
+			case DEFAULT -> Component.translatable("options.context_decided");
+		},
+		new OptionInstance.Enum<>(Arrays.asList(TriState.values()), Codec.INT.xmap(ordinal -> switch (Mth.positiveModulo(ordinal, 3)) {
+			case 0 -> TriState.FALSE;
+			case 1 -> TriState.TRUE;
+			default -> TriState.DEFAULT;
+		}, TriState::ordinal)),
+		TriState.DEFAULT,
+		value -> {
+
+		}
+	);
 	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),
