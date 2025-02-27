@@ -91,7 +91,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "predicates": {
-                    "minecraft:has_component": {
+                    "combatify:has_component": {
                       "components": [
                         "minecraft:base_color"
                       ]
@@ -103,7 +103,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "components": {
-                    "minecraft:banner_pattens": []
+                    "minecraft:banner_patterns": []
                   }
                 },
                 "invert": true
@@ -149,7 +149,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "predicates": {
-                    "minecraft:has_component": {
+                    "combatify:has_component": {
                       "components": [
                         "minecraft:base_color"
                       ]
@@ -161,7 +161,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "components": {
-                    "minecraft:banner_pattens": []
+                    "minecraft:banner_patterns": []
                   }
                 },
                 "invert": true
