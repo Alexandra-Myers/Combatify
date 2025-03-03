@@ -1,58 +1,28 @@
 ### Changes:
 ***
-- Non-player cooldowns.
-
-- Items Config refactor.
-  * The items config will now be named `combatify-items-v2` to limit the amount of changes to existing configurations that need to be made, and to ensure v1 configurations will remain functional.
-
-- AppleSkin support
-
-- The `minecraft:use_cooldown` component will apply in the few cases mobs use items.
-
-- New enchantment effect component: `combatify:shield_effectiveness`, modifies the effectiveness of the blocking type.
-
-- Other new enchantment effect component: `combatify:post_block_effects`, not much to say other than it is the effects to be triggered after an attack is blocked.
-
-- Other new data components: `combatify:blocker` and `combatify:can_sweep`, relatively straight-forward to understand what they do.
-
-- Added data components `combatify:blocking_level` and `combatify:piercing_level`. The former controls modifiers to the base blocking protection for the type, effective for all non-vanilla types.
-   * `combatify:blocking_level` is only used for unmodified blocking protection on the item. If the item's `damage_protection` is set, that exact value will be used, ignoring the component.
-
-- Removed integrated CookeyMod, now an optional dependency
+- Items Config Alterations.
+  * The items config will now be named `combatify-items-v3` to limit the amount of changes to existing configurations that need to be made, and to ensure v2 configurations will remain functional.
+  * Now has a config GUI
+- Now depending on Defaulted for default item components.
+- Added a set of datapacks to replace otherwise lost config options.
+- Added vanilla server support.
+- Updated Swing Through Grass implementation.
+- Blocking implementations now delegated to `combatify:blocker`.
+- Added `defaulted:combat_test_stats_generator` Patch Generator to Defaulted.
+- Weapon Types are now entirely an internal utility.
+- Removed `combatify:wooden_shield`, now uses Defaulted to modify the vanilla Shield.
+- Removed `requires_sword_blocking` Blocking Condition, as the config option no longer exists.
+- Added tags `combatify:weapon_type/<weapon_type>` for all vanilla weapon types, containing all correctly tiered vanilla items. 
+  * For modded items, give them a tier using Defaulted and then add them to the correct weapon type tag (or manually create a weapon type for them), they are not adapted by default.
+- Added default component patches `combatify:drinkables`, `combatify:potion_size`, and `combatify:snowball_size_egg_cooldown` to the mod data (outside of built-in datapacks)
 ***
 #### Config Changes:
 ***
-- Removed the config option `breachArmorPiercing`, now replaced with calculating based on the `minecraft:armor_effectiveness` component.
-
-- Added the config option `mobsCanGuard`, enables mobs to use shields under certain conditions.
-
-- Added the config option `mobsCanSprint`, adds sprinting to certain mobs, under certain conditions, + sprint hits.
-
-- Added the `entities` block to the items config. Controls aspects of certain entities, currently `attack_interval`, `shield_disable_time`, and `is_misc_entity`.
-
-- The Items config was refactored; tags can now be used as a discriminator for items and entities (and multiple tags, if you fancy).
-
-- Replaced `is_enchantable` and `enchantment_level` in the items block in the items config with `enchantable` which uses the `minecraft:enchantable` component.
-
-- Modified `cooldown` to be encoded the same as vanilla's `minecraft:use_cooldown` component.
-
-- Removed `cooldown_after`, completely pointless in every way.
-
-- Prior `repair_ingredient` entries in the tiers and items block are now `repair_items` and are now tags instead of ingredients.
-
-- Split `mining_level` in the tier codec into `weapon_level` and `blocking_level` respectively.
-   * `weapon_level` controls the level as used for weapon type calculations, whereas `blocking_level` directly modifies the default `combatify:blocking_level` component.
-
-- Added the optional field `blocking_level` to the `blocking_information` codec. This takes precedence over the tier's `blocking_level` when used.
-
-- `blocking_type` in both weapon type and item configurations now encodes the default `combatify:blocker` for the items, rather than encoding a direct blocking type.
+- Removed most of the Items Config's Items block, and completely removed `tiers` and `weapon_types`.
+- Removed `weaponTypesEnabled`, `swordBlocking`, and `ctsAttackBalancing`, replaced with built-in datapacks.
+- `fistDamage` changed from boolean to double, now directly controlled by the user.
+- Added `tierDamageNerf`, controls whether or not the nerf of tier attack damage bonus from the Combat Tests should apply.
 ***
 #### Fixes:
 ***
-- Shield durability is now taken in most cases where it was not before
-
-- Fixed third-person shield blocking animation
-
-- Probably fixed bugs related to blocking; at the very least, I do not experience them, but I do not know if they were there before either.
-
-- Bumped ViaFabricPlus supported versions
+- No longer incompatible with OwO Lib.
