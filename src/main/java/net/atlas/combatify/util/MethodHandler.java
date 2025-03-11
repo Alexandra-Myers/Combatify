@@ -300,7 +300,7 @@ public class MethodHandler {
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
-		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() <= -65 && j > 0) {
+		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < trident.level().getMinY() && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
 			} else {
