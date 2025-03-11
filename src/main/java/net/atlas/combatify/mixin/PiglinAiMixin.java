@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @SuppressWarnings("unused")
 @Mixin(PiglinAi.class)
 public class PiglinAiMixin {
-	@ModifyReturnValue(method = "isWearingSafeArmor", at = @At(value = "RETURN"))
+	@ModifyReturnValue(method = "isWearingGold", at = @At(value = "RETURN"))
 	private static boolean includeHoldingShield(boolean original, @Local(ordinal = 0, argsOnly = true) LivingEntity livingEntity) {
 		boolean bl = false;
 		Iterable<ItemStack> iterable = livingEntity.getHandSlots();

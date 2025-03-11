@@ -16,7 +16,7 @@ public class ArmHeightFixMixin {
 	public float modifyArmHeight(float strengthScale) {
 		if (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))
 			strengthScale *= 0.5f;
-		if (CombatifyClient.augmentedArmHeight.get().toBoolean(!Combatify.state.equals(Combatify.CombatifyState.VANILLA)))
+		if (CombatifyClient.augmentedArmHeight.get().orElse(!Combatify.state.equals(Combatify.CombatifyState.VANILLA)))
 			strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
 		double offset = CookeyMod.getInstance().getConfig().hudRendering().attackCooldownHandOffset().get();
 		return (float) (strengthScale * (1 - offset) + offset);

@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
@@ -59,12 +60,12 @@ public class ClientMethodHandler {
 		arm.xRot = arm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
 		arm.xRot += h * 1.2F - i * 0.4F;
 	}
-	public static void swingWeaponDown(ModelPart modelPart, ModelPart modelPart2, HumanoidArm humanoidArm, float f, float g, float headXRot) {
+	public static <T extends Mob> void swingWeaponDown(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headXRot) {
 		float h = Mth.sin(f * 3.1415927F);
 		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
 		modelPart.zRot = 0.0F;
 		modelPart2.zRot = 0.0F;
-		if (humanoidArm == HumanoidArm.RIGHT) {
+		if (mob.getMainArm() == HumanoidArm.RIGHT) {
 			modelPart.yRot = 0.15707964F;
 			modelPart2.yRot = 30.0F * 0.017453292F - 0.15707964F;
 			modelPart.xRot = -1.8849558F + Mth.cos(g * 0.09F) * 0.15F;
@@ -82,12 +83,12 @@ public class ClientMethodHandler {
 
 		bobArms(modelPart, modelPart2, g);
 	}
-	public static void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, HumanoidArm humanoidArm, float f, float g, float headXRot) {
+	public static <T extends Mob> void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headXRot) {
 		float h = Mth.sin(f * 3.1415927F);
 		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
 		modelPart2.zRot = 0.0F;
 		modelPart.zRot = 0.0F;
-		boolean isRightHanded = humanoidArm == HumanoidArm.RIGHT;
+		boolean isRightHanded = mob.getMainArm() == HumanoidArm.RIGHT;
 		ModelPart modelPart3 = isRightHanded ? modelPart2 : modelPart;
 		ModelPart modelPart4 = isRightHanded ? modelPart : modelPart2;
 		modelPart3.yRot = -(0.1F - h * 0.6F);

@@ -93,16 +93,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return 10;
 	}
 
-	@WrapOperation(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 2) LocalFloatRef protectedDamage, @Local(ordinal = 0) LocalBooleanRef wasBlocked, @Share("blocked") LocalBooleanRef blocked) {
+	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 2) LocalFloatRef protectedDamage, @Local(ordinal = 0) LocalBooleanRef wasBlocked, @Share("blocked") LocalBooleanRef blocked) {
 		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
-		if (amount.get() > 0.0F && original.call(instance, source)) {
+		if (level() instanceof ServerLevel serverLevel && amount.get() > 0.0F && original.call(instance, source)) {
 			getBlocking(itemStack).block(serverLevel, instance, source, itemStack, amount, protectedDamage, wasBlocked);
 		}
 		blocked.set(wasBlocked.get());
 		return false;
 	}
-	@ModifyExpressionValue(method = "hurtServer", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
+	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
 	public int changeIFrames(int original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
 		Entity entity2 = source.getEntity();
 		int invulnerableTime = original - 10;
@@ -117,11 +117,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			invulnerableTime = 0;
 		return invulnerableTime;
 	}
-	@Inject(method = "hurtServer", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
-	public void injectEatingInterruption(ServerLevel serverLevel, DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
+	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
+	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		Entity entity = source.getEntity();
-		boolean canInterrupt = thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == ItemUseAnimation.EAT || getUseItem().getUseAnimation() == ItemUseAnimation.DRINK);
-		if (entity instanceof LivingEntity && canInterrupt) {
+		boolean canInterrupt = thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == UseAnim.EAT || getUseItem().getUseAnimation() == UseAnim.DRINK);
+		if (entity instanceof LivingEntity && level() instanceof ServerLevel serverLevel && canInterrupt) {
 			useItemRemaining = switch (Combatify.CONFIG.eatingInterruptionMode()) {
                 case FULL_RESET -> thisEntity.getUseItem().getUseDuration(thisEntity);
 				case DELAY -> useItemRemaining + invulnerableTime;
@@ -134,11 +134,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			}
 		}
 	}
-	@ModifyExpressionValue(method = "hurtServer", at = @At(value = "CONSTANT", args = "floatValue=10.0F", ordinal = 0))
+	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "floatValue=10.0F", ordinal = 0))
 	public float changeIFrames(float constant) {
 		return constant - 10;
 	}
-	@WrapOperation(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
 		if (bl.get() && amount > 0)
 			indicateDamage(e, f);
@@ -152,7 +152,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@ModifyExpressionValue(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isUsingItem()Z"))
 	public boolean addCooldownCheck(boolean original, @Local(ordinal = 0) ItemStack itemStack) {
-		return original || MethodHandler.getCooldowns(thisEntity).isOnCooldown(itemStack);
+		return original || MethodHandler.getCooldowns(thisEntity).isOnCooldown(itemStack.getItem());
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))
@@ -176,11 +176,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public double modifyCompareValue(double original) {
 		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc() - 180D);
-	}
-
-	@ModifyReturnValue(method = "getItemBlockingWith", at = @At("RETURN"))
-	public ItemStack removeMojangStupidity(ItemStack original) {
-		return (original == null || !(original.getItem() instanceof ShieldItem)) && !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty() ? Items.SHIELD.getDefaultInstance() : original;
 	}
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {

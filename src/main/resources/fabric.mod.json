@@ -28,11 +28,11 @@
 	],
   "accessWidener": "combatify.accesswidener",
 	"depends": {
-    "fabric-api": ">=0.112.2+1.21.4",
+    "fabric-api": ">=0.102.1+1.21.1",
     "atlas-core": ">=1.1.1-1.21",
     "defaulted": ">=1.1.0",
-		"fabricloader": ">=0.16.9",
-		"minecraft": ">=1.21.4 <1.22",
+		"fabricloader": ">=0.16.10",
+		"minecraft": ">=1.21.1 <1.21.2",
 		"java": ">=21"
 	},
   "suggests": {
@@ -42,7 +42,6 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_10426": ["net/atlas/combatify/extensions/ArmedEntityRenderStateExtensions"],
       "net/minecraft/class_3965": ["net/atlas/combatify/extensions/BlockHitResultExtensions"],
       "net/minecraft/class_8610": ["net/atlas/combatify/extensions/ClientInformationHolder"],
       "net/minecraft/class_1792": ["net/atlas/combatify/extensions/ItemExtensions"],

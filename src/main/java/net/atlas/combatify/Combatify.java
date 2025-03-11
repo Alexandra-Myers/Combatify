@@ -37,18 +37,16 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -124,7 +122,7 @@ public class Combatify implements ModInitializer {
 		UseItemCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand) -> {
 			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
-			return InteractionResult.PASS;
+			return InteractionResultHolder.pass(player.getItemInHand(hand));
 		});
 
 		LOGGER.info("Init started.");
@@ -134,16 +132,6 @@ public class Combatify implements ModInitializer {
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
 			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
-			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
-				ServerPlayer player = packetContext.getPlayer();
-				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
-				if (itemStack.has(CustomDataComponents.BLOCKER)) {
-					Blocker blocker = itemStack.get(CustomDataComponents.BLOCKER);
-					assert blocker != null;
-					itemStack1.set(DataComponents.CONSUMABLE, new Consumable(blocker.useSeconds(), ItemUseAnimation.BLOCK, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHIELD_BREAK), false, Collections.emptyList()));
-				}
-				return itemStack1;
-			});
 		}
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())

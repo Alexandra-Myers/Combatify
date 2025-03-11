@@ -2,5 +2,13 @@
   "parent": "minecraft:item/shield",
   "textures": {
     "particle": "block/diamond_block"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "blocking": 1
+      },
+      "model": "combatify:item/diamond_shield_blocking"
+    }
+  ]
 }

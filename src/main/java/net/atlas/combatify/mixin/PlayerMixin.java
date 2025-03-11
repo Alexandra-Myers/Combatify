@@ -117,15 +117,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
 		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
 	}
-	@Inject(method = "hurtServer", at = @At("HEAD"))
-	public void injectSnowballKb(ServerLevel serverLevel, DamageSource damageSource, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
+	@Inject(method = "hurt", at = @At("HEAD"))
+	public void injectSnowballKb(DamageSource damageSource, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
 		originalDamage.set(amount);
 	}
-	@Inject(method = "hurtServer", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
-	public void changeReturn(ServerLevel serverLevel, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
+	@Inject(method = "hurt", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
+	public void changeReturn(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
 		boolean bl = amount == 0.0F && originalDamage.get() <= 0.0F;
  		if(bl && Combatify.CONFIG.snowballKB())
-			cir.setReturnValue(super.hurtServer(serverLevel, source, amount));
+			cir.setReturnValue(super.hurt(source, amount));
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
@@ -271,7 +271,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
 		else original.call(instance, d, e, f);
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage) {
 		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return;
 		bl4.set(false);
@@ -398,7 +398,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach)) {
 				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
-				livingEntity.hurtOrSimulate(damageSources().playerAttack(player), sweepingDamageRatio);
+				livingEntity.hurt(damageSources().playerAttack(player), sweepingDamageRatio);
 			}
 		}
 		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);

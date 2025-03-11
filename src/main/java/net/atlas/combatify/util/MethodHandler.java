@@ -247,18 +247,18 @@ public class MethodHandler {
 		disableShield(target, Math.max(damage, 0), blockingItem);
 	}
 	public static void disableShield(LivingEntity target, float damage, ItemStack item) {
-		getCooldowns(target).addCooldown(item, (int)(damage * 20.0F));
+		getCooldowns(target).addCooldown(item.getItem(), (int)(damage * 20.0F));
 		if (Combatify.shields.contains(item.getItem()))
 			for (Item shield : Combatify.shields)
 				if (item.getItem() != shield)
-					getCooldowns(target).addCooldown(new ItemStack(shield), (int)(damage * 20.0F));
+					getCooldowns(target).addCooldown(shield, (int)(damage * 20.0F));
 		target.stopUsingItem();
 		target.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + target.level().random.nextFloat() * 0.4F);
 		target.level().broadcastEntityEvent(target, (byte)30);
 	}
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
-			if (entity.getUseItem().getUseAnimation() == ItemUseAnimation.BLOCK) {
+			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK) {
 				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
 			}
 		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
@@ -266,7 +266,7 @@ public class MethodHandler {
 				ItemStack stack = entity.getItemInHand(hand);
 				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
 				boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
-				if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
+				if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
 					return new FakeUseItem(stack, hand, false);
 				}
 			}
@@ -274,8 +274,8 @@ public class MethodHandler {
 
 		return new FakeUseItem(ItemStack.EMPTY, null, true);
 	}
-	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
-		return getCooldowns(entity).isOnCooldown(var1);
+	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack itemStack) {
+		return getCooldowns(entity).isOnCooldown(itemStack.getItem());
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
@@ -300,7 +300,7 @@ public class MethodHandler {
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
-		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < trident.level().getMinY() && j > 0) {
+		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < trident.level().getMinBuildHeight() && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
 			} else {

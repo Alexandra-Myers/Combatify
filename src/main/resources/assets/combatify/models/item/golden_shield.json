@@ -2,6 +2,14 @@
   "parent": "minecraft:item/shield",
   "textures": {
     "particle": "block/gold_block"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "blocking": 1
+      },
+      "model": "combatify:item/golden_shield_blocking"
+    }
+  ]
 }
 

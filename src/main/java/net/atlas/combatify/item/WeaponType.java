@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID;
@@ -36,11 +36,11 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 		return createUnsynced(name, damageOffset, speed, reach, true, true);
 	}
 
-	public void addCombatAttributes(int weaponLevel, ToolMaterial toolMaterial, ItemAttributeModifiers.Builder attributeModifiers) {
+	public void addCombatAttributes(int weaponLevel, Tier tier, ItemAttributeModifiers.Builder attributeModifiers) {
 		if (isEmpty())
 			return;
 		double speed = this.speedFormula();
-		double damage = this.getDamage(weaponLevel, toolMaterial.attackDamageBonus());
+		double damage = this.getDamage(weaponLevel, tier.getAttackDamageBonus());
 		double reach = this.reach();
 		attributeModifiers.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, damage, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 		if (!Combatify.CONFIG.instaAttack())
@@ -58,14 +58,6 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 	@Override
 	public double reach() {
 		return reach;
-	}
-
-	public double getChargedReach() {
-		return 1.0;
-	}
-
-	public CanSweep canSweep() {
-		return null;
 	}
 
 	public Blocker blocking() {
