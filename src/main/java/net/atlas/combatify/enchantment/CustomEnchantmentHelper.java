@@ -64,13 +64,13 @@ public class CustomEnchantmentHelper {
 	public static float modifyDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float baseDamage, Operation<Float> original) {
 		label1: {
 			if (Combatify.CONFIG.bedrockImpaling() && entity.isInWaterOrRain()) {
-				Optional<HolderSet.Named<EntityType<?>>> sensitiveToImpaling = BuiltInRegistries.ENTITY_TYPE.get(EntityTypeTags.SENSITIVE_TO_IMPALING);
+				Optional<HolderSet.Named<EntityType<?>>> sensitiveToImpaling = BuiltInRegistries.ENTITY_TYPE.getTag(EntityTypeTags.SENSITIVE_TO_IMPALING);
 				if (sensitiveToImpaling.isEmpty() || sensitiveToImpaling.get().size() <= 0)
 					break label1;
 				int i = 0;
 				Entity applicable;
 				do {
-					applicable = sensitiveToImpaling.get().get(i).value().create(serverLevel, EntitySpawnReason.COMMAND);
+					applicable = sensitiveToImpaling.get().get(i).value().create(serverLevel);
 					i++;
 				} while (applicable == null && sensitiveToImpaling.get().size() > i);
 				float result = Math.max(original.call(serverLevel, itemStack, entity, damageSource, baseDamage), original.call(serverLevel, itemStack, applicable, damageSource, baseDamage));

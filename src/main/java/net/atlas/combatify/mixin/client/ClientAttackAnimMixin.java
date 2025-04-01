@@ -14,7 +14,7 @@ import static net.atlas.combatify.util.MethodHandler.getAttackStrengthScale;
 public class ClientAttackAnimMixin {
 	@ModifyReturnValue(method = "getAttackAnim", at = @At("RETURN"))
 	public float modAnim(float original, @Local(ordinal = 0, argsOnly = true) float tickDelta) {
-		if (CombatifyClient.rhythmicAttacks.get().toBoolean(!Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
+		if (CombatifyClient.rhythmicAttacks.get().orElse(!Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
 			float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 1.95F : 0.9F;
 			return original > 0.4F && getAttackStrengthScale(LivingEntity.class.cast(this), tickDelta) < charge ? 0.4F + 0.6F * (float)Math.pow((original - 0.4F) / 0.6F, 4.0) : original;
 		}

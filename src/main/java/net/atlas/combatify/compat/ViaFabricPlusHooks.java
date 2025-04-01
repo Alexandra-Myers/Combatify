@@ -1,10 +1,10 @@
 package net.atlas.combatify.compat;
 
-import com.viaversion.viaaprilfools.api.AprilFoolsProtocolVersion;
-import com.viaversion.viafabricplus.ViaFabricPlus;
+import de.florianmichael.viafabricplus.protocoltranslator.ProtocolTranslator;
+import net.raphimc.viaaprilfools.api.AprilFoolsProtocolVersion;
 
 public class ViaFabricPlusHooks {
 	public static boolean is8cTarget() {
-		return ViaFabricPlus.getImpl().getTargetVersion().equalTo(AprilFoolsProtocolVersion.sCombatTest8c);
+		return ProtocolTranslator.getTargetVersion().equalTo(AprilFoolsProtocolVersion.sCombatTest8c);
 	}
 }

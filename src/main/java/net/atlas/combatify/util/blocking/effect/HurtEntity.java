@@ -42,7 +42,7 @@ public record HurtEntity(Holder<DamageType> damageType, LevelBasedValue minDamag
 		float minDamage = this.minDamage.calculate(enchantmentLevel);
 		float maxDamage = this.maxDamage.calculate(enchantmentLevel);
         float damage = minDamage == maxDamage ? minDamage : Mth.randomBetween(enchantedItemInUse.owner().getRandom(), minDamage, maxDamage);
-		if (!damageSource.combatify$originatedFromBlockedAttack()) toApply.hurtServer(serverLevel, new DamageSource(damageType, enchantedItemInUse.owner()).combatify$originatesFromBlockedAttack(true), damage);
+		if (!damageSource.combatify$originatedFromBlockedAttack()) toApply.hurt(new DamageSource(damageType, enchantedItemInUse.owner()).combatify$originatesFromBlockedAttack(true), damage);
 	}
 
 	@Override

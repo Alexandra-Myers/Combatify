@@ -2,7 +2,7 @@ package net.atlas.combatify.mixin.compatibility.viafabricplus;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.viaversion.viaaprilfools.api.AprilFoolsProtocolVersion;
+import net.raphimc.viaaprilfools.api.AprilFoolsProtocolVersion;
 import com.viaversion.viaversion.api.connection.UserConnection;
 import com.viaversion.viaversion.api.protocol.packet.PacketWrapper;
 import com.viaversion.viaversion.protocols.v1_20_3to1_20_5.rewriter.EntityPacketRewriter1_20_5;

@@ -69,7 +69,7 @@
             "translate": "attribute.modifier.equals.0",
             "with": [
               {
-                "translate": "attribute.name.knockback_resistance"
+                "translate": "attribute.name.generic.knockback_resistance"
               }
             ]
           },

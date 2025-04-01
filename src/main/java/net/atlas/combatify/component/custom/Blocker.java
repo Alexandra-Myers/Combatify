@@ -63,7 +63,7 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 	instance.group(DamageParser.CODEC.listOf().fieldOf("damage_parsers").forGetter(Blocker::damageParsers),
 			Tooltip.CODEC.forGetter(Blocker::tooltip),
 			BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
-			ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
+			Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
 			PostBlockEffectWrapper.MAP_CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(Blocker::postBlockEffect),
 			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(Blocker::blockingCondition))
 		.apply(instance, Blocker::new));

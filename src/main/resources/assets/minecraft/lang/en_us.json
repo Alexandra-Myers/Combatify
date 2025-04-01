@@ -1,7 +1,7 @@
 {
   "tag.item.minecraft.enchantable.axe": "Axe Enchantables",
   "tag.item.minecraft.enchantable.breach": "Breach Enchantables",
-  "attribute.name.entity_interaction_range": "Attack Reach",
+  "attribute.name.player.entity_interaction_range": "Attack Reach",
   "attribute.name.shield_strength": "Shield Strength",
   "attribute.name.damage_protection": "Damage Protection",
   "attribute.name.shield_reduction": "Shield Damage Reduction",

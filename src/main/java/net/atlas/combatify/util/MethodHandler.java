@@ -382,12 +382,14 @@ public class MethodHandler {
 			});
 			Double chargedReach = null;
 			Double useSeconds = null;
+			Double cooldownSeconds = null;
 			for (ConfigurableItemData configurableItemData : results) {
 				chargedReach = conditionalChange(configurableItemData.weaponStats().chargedReach(), chargedReach);
 				useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
+				cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
 			}
 			WeaponStats weaponStats = new WeaponStats(chargedReach);
-			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, useSeconds);
+			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, useSeconds, cooldownSeconds);
 			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
 			return configurableItemData;
 		}

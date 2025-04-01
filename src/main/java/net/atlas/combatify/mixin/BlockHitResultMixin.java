@@ -16,8 +16,8 @@ public class BlockHitResultMixin implements BlockHitResultExtensions {
 	@Unique
 	public boolean isLedgeEdge;
 
-	@Inject(method = "<init>(ZLnet/minecraft/world/phys/Vec3;Lnet/minecraft/core/Direction;Lnet/minecraft/core/BlockPos;ZZ)V", at = @At("TAIL"))
-	public void injectLedgeEdgeInit(boolean bl, Vec3 vec3, Direction direction, BlockPos blockPos, boolean bl2, boolean bl3, CallbackInfo ci) {
+	@Inject(method = "<init>(ZLnet/minecraft/world/phys/Vec3;Lnet/minecraft/core/Direction;Lnet/minecraft/core/BlockPos;Z)V", at = @At("TAIL"))
+	public void injectLedgeEdgeInit(boolean bl, Vec3 vec3, Direction direction, BlockPos blockPos, boolean bl2, CallbackInfo ci) {
 		isLedgeEdge = false;
 	}
 

@@ -31,7 +31,7 @@ public class BlockingTypeInit {
 	public static final ResourceKey<Registry<MapCodec<? extends DamageParser>>> DAMAGE_PARSER_TYPE = createRegistryKey(Combatify.id("damage_parser"));
 	public static final Registry<MapCodec<? extends DamageParser>> DAMAGE_PARSER_TYPE_REG = FabricRegistryBuilder.createSimple(
 		DAMAGE_PARSER_TYPE
-	).attribute(RegistryAttribute.OPTIONAL).buildAndRegister();
+	).buildAndRegister();
 	public static final CombinedModifier SHIELD_PROTECTION_WITHOUT_BANNER = CombinedModifier.createBaseOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")), new AddValue(LevelBasedValue.perLevel(5, 1)), 1), Optional.empty());
 	public static final List<CombinedModifier> SHIELD_PROTECTION = List.of(SHIELD_PROTECTION_WITHOUT_BANNER,
 		CombinedModifier.createBaseOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")),
@@ -40,12 +40,12 @@ public class BlockingTypeInit {
 			Optional.of(new AnyOf(new ItemMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)).build(), false),
 				new ItemMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build()).build(), true)))));
 	public static final CombinedModifier NEW_SHIELD_PROTECTION = CombinedModifier.createFactorOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatableWithFallback("attribute.name.shield_reduction", "Shield Damage Reduction")), new AddValue(LevelBasedValue.perLevel(0.3F, 0.05F)), 100), Optional.empty());
-	public static final ComponentModifier SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.5F)), 10);
-	public static final ComponentModifier BANNER_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")),
+	public static final ComponentModifier SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.generic.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.5F)), 10);
+	public static final ComponentModifier BANNER_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.generic.knockback_resistance")),
 		new AddValue(LevelBasedValue.constant(0.3F)),
 		Optional.of(new AnyOf(new ItemMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)).build(), false),
 			new ItemMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build()).build(), true))), 10);
-	public static final ComponentModifier NEW_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.25F)), Optional.empty(), 10);
+	public static final ComponentModifier NEW_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.generic.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.25F)), Optional.empty(), 10);
 
 	public static final BlockingType EMPTY = BlockingType.builder().build("empty");
 	public static void init() {

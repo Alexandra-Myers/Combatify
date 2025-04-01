@@ -12,23 +12,29 @@ import net.minecraft.network.codec.StreamCodec;
 import java.util.Objects;
 import java.util.Optional;
 
-public record ConfigurableItemData(WeaponStats weaponStats, Optional<Double> optionalUseDuration) {
+public record ConfigurableItemData(WeaponStats weaponStats, Optional<Double> optionalUseDuration, Optional<Double> optionalCooldownSeconds) {
 
-	public static final ConfigurableItemData EMPTY = new ConfigurableItemData(WeaponStats.EMPTY, (Double) null);
+	public static final ConfigurableItemData EMPTY = new ConfigurableItemData(WeaponStats.EMPTY, (Double) null, null);
 	public static final MapCodec<ConfigurableItemData> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(WeaponStats.CODEC.orElse(WeaponStats.EMPTY).forGetter(ConfigurableItemData::weaponStats),
-				Codec.doubleRange(1.0 / 20.0, 50).optionalFieldOf("use_seconds").forGetter(ConfigurableItemData::optionalUseDuration))
+				Codec.doubleRange(1.0 / 20.0, 50).optionalFieldOf("use_seconds").forGetter(ConfigurableItemData::optionalUseDuration),
+				Codec.doubleRange(1.0 / 20.0, 50).optionalFieldOf("cooldown_seconds").forGetter(ConfigurableItemData::optionalCooldownSeconds))
 			.apply(instance, ConfigurableItemData::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableItemData> ITEM_DATA_STREAM_CODEC = StreamCodec.composite(WeaponStats.STREAM_CODEC, ConfigurableItemData::weaponStats,
 		ByteBufCodecs.optional(ByteBufCodecs.DOUBLE), ConfigurableItemData::optionalUseDuration,
+		ByteBufCodecs.optional(ByteBufCodecs.DOUBLE), ConfigurableItemData::optionalCooldownSeconds,
 		ConfigurableItemData::new);
 
-	public ConfigurableItemData(WeaponStats weaponStats, Double useDuration) {
-		this(weaponStats, Optional.ofNullable(useDuration));
+	public ConfigurableItemData(WeaponStats weaponStats, Double useDuration, Double cooldownSeconds) {
+		this(weaponStats, Optional.ofNullable(useDuration), Optional.ofNullable(cooldownSeconds));
 	}
 
 	public Double useDuration() {
 		return optionalUseDuration.orElse(null);
+	}
+
+	public Double cooldownSeconds() {
+		return optionalCooldownSeconds.orElse(null);
 	}
 
 	public static Optional<Integer> max(Optional<Integer> value, int min) {
@@ -51,11 +57,11 @@ public record ConfigurableItemData(WeaponStats weaponStats, Optional<Double> opt
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ConfigurableItemData that)) return false;
-        return Objects.equals(weaponStats, that.weaponStats) && Objects.equals(optionalUseDuration, that.optionalUseDuration);
+        return Objects.equals(weaponStats, that.weaponStats) && Objects.equals(optionalUseDuration, that.optionalUseDuration) && Objects.equals(optionalCooldownSeconds, that.optionalCooldownSeconds);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(weaponStats, optionalUseDuration);
+		return Objects.hash(weaponStats, optionalUseDuration, optionalCooldownSeconds);
 	}
 }

@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
@@ -82,9 +83,9 @@ public abstract class GuiMixin {
 					boolean isShieldCooldown = isShieldOnCooldown();
 					boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && shieldNonDelayed();
 					if (shieldIndicatorEnabled && isShieldCooldown)
-						guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, k, j, 16, 16);
+						guiGraphics.blitSprite(CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, k, j, 16, 16);
 					else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
-						guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, k, j, 16, 16);
+						guiGraphics.blitSprite(CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, k, j, 16, 16);
 				}
 			}
 		}
@@ -95,9 +96,13 @@ public abstract class GuiMixin {
 		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && shieldNonDelayed();
 		assert minecraft.player != null;
 		if (shieldIndicatorEnabled && isShieldCooldown) {
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		} else if(shieldIndicatorEnabled && this.minecraft.player.isBlocking()) {
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		}
@@ -113,12 +118,14 @@ public abstract class GuiMixin {
 		int j = guiGraphics.guiHeight() / 2 - 7 + 16;
 		int k = guiGraphics.guiWidth() / 2 - 8;
 		if (bl)
-			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, k, j, 16, 16);
+			guiGraphics.blitSprite(CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, k, j, 16, 16);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) {
 			int height = (int)((attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F) * 17.0F);
-			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, k, j, 16, 4);
-			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, k, j, height, 4);
+			guiGraphics.blitSprite(CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, k, j, 16, 4);
+			guiGraphics.blitSprite(CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, k, j, height, 4);
 		}
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.disableBlend();
 		ci.cancel();
 	}
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
@@ -127,9 +134,11 @@ public abstract class GuiMixin {
 		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && shieldNonDelayed();
 		assert minecraft.player != null;
 		if(shieldIndicatorEnabled && isShieldCooldown) {
+			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		} else if(shieldIndicatorEnabled && this.minecraft.player.isBlocking()) {
+			RenderSystem.disableBlend();
 			ci.cancel();
 			return;
 		}
@@ -147,13 +156,14 @@ public abstract class GuiMixin {
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator)
 			bl = this.minecraft.crosshairPickEntity.isAlive();
 		if (bl)
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, o, n, 18, 18);
+			guiGraphics.blitSprite(HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, o, n, 18, 18);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) {
 			int height = (int)((attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F) * 19.0F);
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, o, n, 18, 18);
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - height, o, n + 18 - height, 18, height);
+			guiGraphics.blitSprite(HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, o, n, 18, 18);
+			guiGraphics.blitSprite(HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - height, o, n + 18 - height, 18, height);
 		}
 
+		RenderSystem.disableBlend();
 		ci.cancel();
 	}
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;"), locals = LocalCapture.CAPTURE_FAILSOFT)
@@ -166,17 +176,17 @@ public abstract class GuiMixin {
 		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.HOTBAR && shieldNonDelayed();
 		boolean isShieldCooldown = isShieldOnCooldown();
 		if (shieldIndicatorEnabled && isShieldCooldown)
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE, o, n, 18, 18);
+			guiGraphics.blitSprite(HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE, o, n, 18, 18);
 		else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_SHIELD_INDICATOR_FULL_SPRITE, o, n, 18, 18);
+			guiGraphics.blitSprite(HOTBAR_SHIELD_INDICATOR_FULL_SPRITE, o, n, 18, 18);
 	}
 	@Unique
 	public boolean isShieldOnCooldown() {
 		assert minecraft.player != null;
 		ItemStack offHandStack = this.minecraft.player.getItemInHand(InteractionHand.OFF_HAND);
 		ItemStack mainHandStack = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND);
-		boolean offHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(offHandStack) && !getBlockingType(offHandStack).isEmpty();
-		boolean mainHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack) && !getBlockingType(mainHandStack).isEmpty();
+		boolean offHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(offHandStack.getItem()) && !getBlockingType(offHandStack).isEmpty();
+		boolean mainHandShieldCooldown = this.minecraft.player.getCooldowns().isOnCooldown(mainHandStack.getItem()) && !getBlockingType(mainHandStack).isEmpty();
 		return offHandShieldCooldown || mainHandShieldCooldown;
 	}
 	@Unique

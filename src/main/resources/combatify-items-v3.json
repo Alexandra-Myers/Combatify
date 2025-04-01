@@ -1,6 +1,12 @@
 {
   "items": [
-    
+    {
+      "name": [
+        "minecraft:snowball",
+        "minecraft:egg"
+      ],
+      "cooldown_seconds": 0.2
+    }
   ],
   "entities": [
     {

@@ -18,14 +18,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.context.UseOnContext;
@@ -59,10 +61,13 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	protected abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<T> dataComponentType, Item.TooltipContext tooltipContext, Consumer<Component> consumer, TooltipFlag tooltipFlag);
 
 	@Shadow
-	public abstract boolean hasNonDefault(DataComponentType<?> dataComponentType);
+	public abstract boolean isEmpty();
 
 	@Shadow
-	public abstract boolean isEmpty();
+	public abstract DataComponentPatch getComponentsPatch();
+
+	@Shadow
+	public abstract int getUseDuration(LivingEntity livingEntity);
 
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;)V"))
 	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) Consumer<Component> consumer) {
@@ -104,7 +109,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
 	public int getUseDuration(int original) {
 		if (getBlocking(this.stack).canOverrideUseDurationAndAnimation(this.stack)) return getBlocking(this.stack).useTicks();
-		if (hasNonDefault(DataComponents.CONSUMABLE)) return original;
+		//noinspection OptionalAssignedToNull
+		if (getComponentsPatch().get(DataComponents.FOOD) != null) return original;
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
 		if (configurableItemData != null) {
 			if (configurableItemData.useDuration() != null)
@@ -114,25 +120,44 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	}
 	@ModifyReturnValue(method = "useOn", at = @At(value = "RETURN"))
 	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0, argsOnly = true) UseOnContext useOnContext) {
-		InteractionResult holder;
+		InteractionResult result;
 		ItemStack stack = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand());
-		holder = getBlocking(stack).use(stack, useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand(), original);
-		if (holder != null)
-			return holder;
+		result = getBlocking(stack).use(stack, useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand(), original);
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
+		if (configurableItemData != null && getUseDuration(useOnContext.getPlayer()) == 0 && (original.consumesAction() || (result != null && result.consumesAction()))) {
+			if (configurableItemData.cooldownSeconds() != null)
+				MethodHandler.getCooldowns(useOnContext.getPlayer()).addCooldown(getItem(), (int) (configurableItemData.cooldownSeconds() * 20.0F));
+		}
+		if (result != null)
+			return result;
 		return original;
 	}
 
 	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
-	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0, argsOnly = true) Level world, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0, argsOnly = true) InteractionHand hand) {
-		InteractionResult holder = getBlocking(stack).use(stack, world, player, hand, original);
-		if (holder != null)
-			return holder;
+	public InteractionResultHolder<ItemStack> addBlockAbility(InteractionResultHolder<ItemStack> original, @Local(ordinal = 0, argsOnly = true) Level world, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0, argsOnly = true) InteractionHand hand) {
+		InteractionResult result = getBlocking(stack).use(stack, world, player, hand, original.getResult());
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
+		if (configurableItemData != null && getUseDuration(player) == 0 && (original.getResult().consumesAction() || (result != null && result.consumesAction()))) {
+			if (configurableItemData.cooldownSeconds() != null)
+				MethodHandler.getCooldowns(player).addCooldown(getItem(), (int) (configurableItemData.cooldownSeconds() * 20.0F));
+		}
+		if (result != null)
+			return new InteractionResultHolder<>(result, stack);
 		return original;
 	}
+
+	@Inject(method = "releaseUsing", at = @At("RETURN"))
+	public void addCooldown(Level level, LivingEntity livingEntity, int i, CallbackInfo ci) {
+		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
+		if (configurableItemData != null) {
+			if (configurableItemData.cooldownSeconds() != null)
+				MethodHandler.getCooldowns(livingEntity).addCooldown(getItem(), (int) (configurableItemData.cooldownSeconds() * 20.0F));
+		}
+	}
 	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))
-	public ItemUseAnimation addBlockAnim(ItemUseAnimation original) {
+	public UseAnim addBlockAnim(UseAnim original) {
 		if (getBlocking(this.stack).canOverrideUseDurationAndAnimation(this.stack))
-			return ItemUseAnimation.BLOCK;
+			return UseAnim.BLOCK;
 		return original;
 	}
 }

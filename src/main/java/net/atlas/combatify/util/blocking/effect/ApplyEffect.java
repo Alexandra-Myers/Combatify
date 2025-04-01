@@ -57,7 +57,7 @@ public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDurat
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration.calculate(enchantmentLevel), this.maxDuration.calculate(enchantmentLevel)) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier.calculate(enchantmentLevel), this.maxAmplifier.calculate(enchantmentLevel))));
 			if (optional.get().value().isInstantenous()) {
-				optional.get().value().applyInstantenousEffect(serverLevel, target, target, toApply, amp, 1);
+				optional.get().value().applyInstantenousEffect(target, target, toApply, amp, 1);
 				return;
 			}
 			toApply.addEffect(new MobEffectInstance(optional.get(), duration, amp));
