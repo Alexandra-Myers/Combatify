@@ -47,7 +47,7 @@ public class ItemConfig extends AtlasConfig {
 	public boolean isModifying = false;
 	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;
 	public TagHolder<List<RegistryConfigDataWrapper<Item, ConfigurableItemData>>> items;
-	public static final StreamCodec<RegistryFriendlyByteBuf, String> NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeUtf, RegistryFriendlyByteBuf::readUtf);
+	public TagHolder<JSImpl> armourCalcs;
 	public static final StreamCodec<RegistryFriendlyByteBuf, ResourceLocation> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation);
 	public static final MapCodec<RegistryConfigDataWrapper<Item, ConfigurableItemData>> ITEMS_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ITEM,
 		holder -> holder.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air", holder) : DataResult.success(holder),
@@ -55,14 +55,9 @@ public class ItemConfig extends AtlasConfig {
 	public static final MapCodec<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>> ENTITIES_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ENTITY_TYPE,
 		DataResult::success,
 		ConfigurableEntityData.CODEC);
-	public static Formula armourCalcs = null;
 
 	public ItemConfig() {
 		super(id("combatify-items-v3"));
-	}
-
-	public static Formula getArmourCalcs() {
-		return armourCalcs;
 	}
 
 	@Override
@@ -90,7 +85,6 @@ public class ItemConfig extends AtlasConfig {
 		registeredTypes = new HashMap<>(defaultTypes);
 		List<BlockingType> altered = BlockingType.CODEC.listOf().orElse(Collections.emptyList()).parse(JsonOps.INSTANCE, defenders).getOrThrow();
 		altered.forEach(Combatify::registerBlockingType);
-		armourCalcs = Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec().parse(JsonOps.INSTANCE, object).getOrThrow().orElse(null);
 		isModifying = false;
 	}
 	@Override
@@ -102,6 +96,7 @@ public class ItemConfig extends AtlasConfig {
 	public void defineConfigHolders() {
 		items = createCodecBacked("items", new ArrayList<>(), ITEMS_CODEC.codec().listOf());
 		entities = createCodecBacked("entities", new ArrayList<>(), ENTITIES_CODEC.codec().listOf());
+		armourCalcs = createCodecBacked("armor_calculation", new JSImpl("armor_calculations"), JSImpl.CODEC);
 	}
 
 	@Override
@@ -123,25 +118,18 @@ public class ItemConfig extends AtlasConfig {
 	public AtlasConfig readClientConfigInformation(RegistryFriendlyByteBuf buf) {
 		super.readClientConfigInformation(buf);
 		readMap(buf, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
-		String formula = buf.readUtf();
-		if (!formula.equals("empty"))
-			armourCalcs = new Formula(formula);
 		return this;
 	}
 
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
 		registeredTypes = readMap(buf, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
-		String formula = buf.readUtf();
-		if (!formula.equals("empty"))
-			armourCalcs = new Formula(formula);
 		return this;
 	}
 
 	public void saveToNetwork(RegistryFriendlyByteBuf buf) {
 		super.saveToNetwork(buf);
 		writeMap(buf, Combatify.registeredTypes, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
-		buf.writeUtf(armourCalcs == null ? "empty" : armourCalcs.written());
 	}
 
 	@Override
@@ -152,7 +140,7 @@ public class ItemConfig extends AtlasConfig {
 		defenders = BlockingType.CODEC.listOf().encode(blockingTypes, JsonOps.INSTANCE, defenders).getOrThrow();
 		JsonObject result = jsonElement.getAsJsonObject();
 		result.add("blocking_types", defenders);
-		return Formula.CODEC.lenientOptionalFieldOf("armor_calculation").codec().encode(Optional.ofNullable(armourCalcs), JsonOps.INSTANCE, result).getOrThrow();
+		return result;
 	}
 
 	public static <B extends FriendlyByteBuf, K, V> Map<K, V> readMap(B buf, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {

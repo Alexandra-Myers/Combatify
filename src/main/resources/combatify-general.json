@@ -16,7 +16,6 @@
     "ctsAttackBalancing": true,
     "ctsKB": true,
     "ctsMomentumPassedToProjectiles": true,
-    "ctsSaturationCap": true,
     "dispensableTridents": true,
     "hasMissTime": false,
     "hasteFix": false,
@@ -25,7 +24,6 @@
     "percentageDamageEffects": true,
     "projectilesHaveIFrames": false,
     "resetOnItemChange": false,
-    "fastHealing": false,
     "snowballKB": true,
     "strengthAppliesToEnchants": true,
     "sweepWithSweeping": true,
@@ -41,9 +39,6 @@
     "baseHandAttackSpeed": 2.5,
     "fistDamage": 2.0,
     "projectileUncertainty": {},
-    "starvingTime": 2.0,
-    "healingTime": 2.0,
-    "fastHealingTime": 0.5,
     "instantTippedArrowEffectMultiplier": 0.125,
     "shieldDisableTime": 1.6,
     "shieldProtectionArc": 130.0,
@@ -51,7 +46,7 @@
   },
   "cts_enums": {
     "eatingInterruptionMode": "full_reset",
-    "healingMode": "cts"
+    "foodImpl": "cts_food_impl"
   },
   "extra_booleans": {
     "armorPiercingDisablesShields": false,

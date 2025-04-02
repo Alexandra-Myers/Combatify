@@ -72,8 +72,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder midairKB;
 	private BooleanHolder fishingHookKB;
 	private BooleanHolder shieldOnlyWhenCharged;
-	private BooleanHolder ctsSaturationCap;
-	private BooleanHolder fastHealing;
 	private BooleanHolder letVanillaConnect;
 	private BooleanHolder oldSprintFoodRequirement;
 	private BooleanHolder projectilesHaveIFrames;
@@ -95,22 +93,19 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder fistDamage;
-	private DoubleHolder starvingTime;
-	private DoubleHolder healingTime;
-	private DoubleHolder fastHealingTime;
 	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder shieldDisableTime;
 	private DoubleHolder shieldProtectionArc;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
-	private EnumHolder<HealingMode> healingMode;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
 	private ObjectHolder<AttackDecay> attackDecay;
 	private ObjectHolder<CritControls> critControls;
 	private ObjectHolder<ProjectileUncertainty> projectileUncertainty;
 	private ObjectHolder<ProjectileDamage> projectileDamage;
+	private TagHolder<JSImpl> foodImpl;
 	private Category ctsB;
 	private Category ctsI;
 	private Category ctsD;
@@ -196,9 +191,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ctsB);
 		ctsMomentumPassedToProjectiles.setupTooltip(1);
-		ctsSaturationCap = createBoolean("ctsSaturationCap", true);
-		ctsSaturationCap.tieToCategory(ctsB);
-		ctsSaturationCap.setupTooltip(5);
 		dispensableTridents = createBoolean("dispensableTridents", true);
 		dispensableTridents.tieToCategory(ctsB);
 		dispensableTridents.setupTooltip(1);
@@ -223,9 +215,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		resetOnItemChange = createBoolean("resetOnItemChange", false);
 		resetOnItemChange.tieToCategory(ctsB);
 		resetOnItemChange.setupTooltip(1);
-		fastHealing = createBoolean("fastHealing", false);
-		fastHealing.tieToCategory(ctsB);
-		fastHealing.setupTooltip(1);
 		snowballKB = createBoolean("snowballKB", true);
 		snowballKB.tieToCategory(ctsB);
 		snowballKB.setupTooltip(1);
@@ -258,15 +247,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		fistDamage.setupTooltip(1);
 		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, ProjectileUncertainty.STREAM_CODEC, false);
 		projectileUncertainty.tieToCategory(ctsD);
-		starvingTime = createInRange("starvingTime", 2, 0, 100D);
-		starvingTime.tieToCategory(ctsD);
-		starvingTime.setupTooltip(1);
-		healingTime = createInRange("healingTime", 2, 0, 100D);
-		healingTime.tieToCategory(ctsD);
-		healingTime.setupTooltip(1);
-		fastHealingTime = createInRange("fastHealingTime", 0.5, 0, 100D);
-		fastHealingTime.tieToCategory(ctsD);
-		fastHealingTime.setupTooltip(1);
 		instantTippedArrowEffectMultiplier = createInRange("instantTippedArrowEffectMultiplier", 0.125, 0, 4);
 		instantTippedArrowEffectMultiplier.tieToCategory(ctsD);
 		instantTippedArrowEffectMultiplier.setupTooltip(1);
@@ -283,9 +263,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		eatingInterruptionMode = createEnum("eatingInterruptionMode", EatingInterruptionMode.FULL_RESET, EatingInterruptionMode.class, EatingInterruptionMode.values(), e -> Component.translatable("text.config.combatify-general.option.eatingInterruptionMode." + e.name().toLowerCase(Locale.ROOT)));
 		eatingInterruptionMode.tieToCategory(ctsE);
 		eatingInterruptionMode.setupTooltip(4);
-		healingMode = createEnum("healingMode", HealingMode.CTS, HealingMode.class, HealingMode.values(), e -> Component.translatable("text.config.combatify-general.option.healingMode." + e.name().toLowerCase(Locale.ROOT)));
-		healingMode.tieToCategory(ctsE);
-		healingMode.setupTooltip(4);
+		foodImpl = createCodecBacked("foodImpl", new JSImpl("cts_food_impl"), JSImpl.CODEC);
+		foodImpl.tieToCategory(ctsE);
+		foodImpl.setupTooltip(1);
 
 		armorPiercingDisablesShields = createBoolean("armorPiercingDisablesShields", false);
 		armorPiercingDisablesShields.tieToCategory(extraB);
@@ -533,12 +513,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean sprintCritsEnabled() {
 		return critControls.get().sprintCritsEnabled;
 	}
-	public Boolean ctsSaturationCap() {
-		return ctsSaturationCap.get();
-	}
-	public Boolean fastHealing() {
-		return fastHealing.get();
-	}
 	public Boolean letVanillaConnect() {
 		return letVanillaConnect.get();
 	}
@@ -635,15 +609,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Double fistDamage() {
 		return fistDamage.get();
 	}
-	public Double starvingTime() {
-		return starvingTime.get();
-	}
-	public Double healingTime() {
-		return healingTime.get();
-	}
-	public Double fastHealingTime() {
-		return fastHealingTime.get();
-	}
 	public Double instantTippedArrowEffectMultiplier() {
 		return instantTippedArrowEffectMultiplier.get();
 	}
@@ -680,8 +645,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public EatingInterruptionMode eatingInterruptionMode() {
 		return eatingInterruptionMode.get();
 	}
-	public HealingMode healingMode() {
-		return healingMode.get();
+	public JSImpl getFoodImpl() {
+		return foodImpl.get();
 	}
 	public ArrowDisableMode arrowDisableMode() {
 		return arrowDisableMode.get();
