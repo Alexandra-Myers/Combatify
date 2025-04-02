@@ -23,7 +23,7 @@ function addFood(foodData, food, saturation) {
     return false;
 }
 function canFastHealRaw(foodLevel, saturationLevel, exhaustionLevel) {
-    return false;
+    return true;
 }
 function canFastHeal(foodData, player) {
     return true;
