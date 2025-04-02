@@ -27,6 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -102,21 +103,22 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		blocked.set(wasBlocked.get());
 		return false;
 	}
-//	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
-//	public int changeIFrames(int original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
-//		Entity entity2 = source.getEntity();
-//		int invulnerableTime = original - 10;
-//		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
-//			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-//			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
-//		}
-//
-//		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
-//			invulnerableTime = 0;
-//		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames())
-//			invulnerableTime = 0;
-//		return invulnerableTime;
-//	}
+	@Dynamic
+	@ModifyExpressionValue(method = "hurt", at = {@At(value = "CONSTANT", args = "intValue=20", ordinal = 0), @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/damagesource/DamageContainer;getPostAttackInvulnerabilityTicks()I")})
+	public int changeIFrames(int original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
+		Entity entity2 = source.getEntity();
+		int invulnerableTime = original - 10;
+		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
+			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
+			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
+		}
+
+		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
+			invulnerableTime = 0;
+		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames())
+			invulnerableTime = 0;
+		return invulnerableTime;
+	}
 	@Inject(method = "hurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
 	public void injectEatingInterruption(DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		Entity entity = source.getEntity();
