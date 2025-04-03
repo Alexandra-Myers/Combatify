@@ -38,10 +38,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -148,8 +145,9 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			Combatify.isPlayerAttacking.put(player.getUUID(), false);
 	}
 
-	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"))
-	public boolean hurtCurrentlyUsedShield(boolean original) {
+	@Dynamic
+	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = {@At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"), @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/extensions/IItemStackExtension;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z")})
+	public boolean changeUsedShield(boolean original) {
 		return !MethodHandler.getBlockingItem(player).stack().isEmpty() || original;
 	}
 
