@@ -9,6 +9,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.atlas.combatify.config.JSImpl;
+import net.atlas.combatify.config.wrapper.FoodPropertiesWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
@@ -37,7 +38,7 @@ public abstract class HUDOverlayHandlerMixin {
 			original.call(instance, event, mc, hunger, alpha, useRottenTextures, guiTicks);
 			return;
 		}
-		original.call(instance, event, mc, (int) Combatify.CONFIG.getFoodImpl().execFoodGetterFunc(hunger, player.getFoodData(), player, "estimateGainedFoodLevel(foodData, player, foodProperties)", new JSImpl.Reference("foodProperties", foodResult.modifiedFoodComponent)), alpha, useRottenTextures, guiTicks);
+		original.call(instance, event, mc, (int) Combatify.CONFIG.getFoodImpl().execFoodGetterFunc(hunger, player.getFoodData(), player, "estimateGainedFoodLevel(foodData, player, foodProperties)", new JSImpl.Reference<>("foodProperties", foodResult.modifiedFoodComponent, FoodPropertiesWrapper::new)), alpha, useRottenTextures, guiTicks);
 	}
 	@WrapOperation(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lsqueek/appleskin/client/HUDOverlayHandler;drawSaturationOverlay(Lsqueek/appleskin/api/event/HUDOverlayEvent$Saturation;Lnet/minecraft/client/Minecraft;FFI)V", ordinal = 1))
 	public void modifyNewSaturation(HUDOverlayHandler instance, HUDOverlayEvent.Saturation event, Minecraft mc, float saturationGained, float alpha, int guiTicks, Operation<Void> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0) FoodHelper.QueriedFoodResult foodResult) {
@@ -45,6 +46,6 @@ public abstract class HUDOverlayHandlerMixin {
 			original.call(instance, event, mc, saturationGained, alpha, guiTicks);
 			return;
 		}
-		original.call(instance, event, mc, (float) Combatify.CONFIG.getFoodImpl().execFoodGetterFunc(saturationGained, player.getFoodData(), player, "estimateGainedSaturationLevel(foodData, player, foodProperties)", new JSImpl.Reference("foodProperties", foodResult.modifiedFoodComponent)), alpha, guiTicks);
+		original.call(instance, event, mc, (float) Combatify.CONFIG.getFoodImpl().execFoodGetterFunc(saturationGained, player.getFoodData(), player, "estimateGainedSaturationLevel(foodData, player, foodProperties)", new JSImpl.Reference<>("foodProperties", foodResult.modifiedFoodComponent, FoodPropertiesWrapper::new)), alpha, guiTicks);
 	}
 }

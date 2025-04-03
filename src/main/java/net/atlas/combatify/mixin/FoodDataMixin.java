@@ -9,6 +9,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.JSImpl;
+import net.atlas.combatify.config.wrapper.SimpleAPIWrapper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +25,7 @@ public class FoodDataMixin {
 			original.call(i, f);
 			return;
 		}
-		boolean cancel = Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), null, "addFood(foodData, food, saturation)", new JSImpl.Reference("food", i), new JSImpl.Reference("saturation", f));
+		boolean cancel = Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), null, "addFood(foodData, food, saturation)", new JSImpl.Reference<>("food", new SimpleAPIWrapper<>(i)), new JSImpl.Reference<>("saturation", new SimpleAPIWrapper<>(f)));
 		if (!cancel) original.call(i, f);
 	}
 

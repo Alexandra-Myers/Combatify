@@ -12,6 +12,8 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.CanSweep;
+import net.atlas.combatify.config.JSImpl;
+import net.atlas.combatify.config.wrapper.*;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,11 +22,11 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -37,6 +39,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -96,6 +99,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Shadow
 	public abstract void resetAttackStrengthTicker();
+
+	@Shadow
+	public abstract void playSound(SoundEvent soundEvent, float f, float g);
+
+	@Shadow
+	protected abstract boolean wantsToStopRiding();
+
+	@Shadow
+	public abstract void travel(Vec3 vec3);
 
 	@Unique
 	protected int attackStrengthMaxValue;
@@ -245,24 +257,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		}
 		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))
 			combinedDamage.set(attackDamage);
-		if (Combatify.CONFIG.vanillaCrits() || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+		if (!Combatify.CONFIG.getCritImpl().execFunc("overrideCrit()") || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
 			return;
 		if (bl3.get())
 			combinedDamage.set(combinedDamage.get() / 1.5F);
-		boolean isCrit = player.fallDistance > 0.0F
-			&& !player.onGround()
-			&& !player.onClimbable()
-			&& !player.isInWater()
-			&& !player.hasEffect(MobEffects.BLINDNESS)
-			&& !player.isPassenger()
-			&& target instanceof LivingEntity;
-		if (!Combatify.CONFIG.sprintCritsEnabled())
-			isCrit &= !isSprinting();
-		if (Combatify.CONFIG.critChargePercentage() > 0)
-			isCrit &= player.getAttackStrengthScale(0.5F) > Combatify.CONFIG.critChargePercentage();
-		bl3.set(isCrit);
-		boolean isChargedCrit = !Combatify.CONFIG.chargedCrits() || player.getAttackStrengthScale(0.5F) > Combatify.CONFIG.chargedCritPercentage();
-		if (isCrit) combinedDamage.set(combinedDamage.get() * (float) (isChargedCrit ? Combatify.CONFIG.chargedCritDamage() : Combatify.CONFIG.unchargedCritDamage()));
+		GenericAPIWrapper<?> wrapper;
+		if (target instanceof Player p) wrapper = new PlayerWrapper<>(p);
+		else if (target instanceof LivingEntity l) wrapper = new LivingEntityWrapper<>(l);
+		else wrapper = new EntityWrapper<>(target);
+		bl3.set(Combatify.CONFIG.getCritImpl().execPlayerFunc(player, "runCrit(player, target, combinedDamage)", new JSImpl.Reference<>("target", wrapper), new JSImpl.Reference<>("combinedDamage", new SimpleAPIWrapper<>(combinedDamage))));
 	}
 	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {

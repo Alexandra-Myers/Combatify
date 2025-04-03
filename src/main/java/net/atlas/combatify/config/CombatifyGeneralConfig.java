@@ -102,9 +102,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
 	private ObjectHolder<AttackDecay> attackDecay;
-	private ObjectHolder<CritControls> critControls;
 	private ObjectHolder<ProjectileUncertainty> projectileUncertainty;
 	private ObjectHolder<ProjectileDamage> projectileDamage;
+	private TagHolder<JSImpl> critImpl;
 	private TagHolder<JSImpl> foodImpl;
 	private Category ctsB;
 	private Category ctsI;
@@ -182,9 +182,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach = createBoolean("creativeAttackReach", false);
 		creativeAttackReach.tieToCategory(ctsB);
 		creativeAttackReach.setupTooltip(1);
-		critControls = createObject("critControls", CritControls.DEFAULT, CritControls.class, CritControls.STREAM_CODEC, false);
-		critControls.tieToCategory(ctsB);
-		critControls.setupTooltip(1);
 		ctsKB = createBoolean("ctsKB", true);
 		ctsKB.tieToCategory(ctsB);
 		ctsKB.setupTooltip(1);
@@ -260,6 +257,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		minHitboxSize.tieToCategory(ctsD);
 		minHitboxSize.setupTooltip(1);
 
+		critImpl = createCodecBacked("critImpl", new JSImpl("cts_crit_impl"), JSImpl.CODEC);
+		critImpl.tieToCategory(ctsE);
+		critImpl.setupTooltip(1);
 		eatingInterruptionMode = createEnum("eatingInterruptionMode", EatingInterruptionMode.FULL_RESET, EatingInterruptionMode.class, EatingInterruptionMode.values(), e -> Component.translatable("text.config.combatify-general.option.eatingInterruptionMode." + e.name().toLowerCase(Locale.ROOT)));
 		eatingInterruptionMode.tieToCategory(ctsE);
 		eatingInterruptionMode.setupTooltip(4);
@@ -417,9 +417,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean iFramesBasedOnWeapon() {
 		return iFramesBasedOnWeapon.get();
 	}
-	public boolean vanillaCrits() {
-		return !sprintCritsEnabled() && !chargedCrits() && critChargePercentage() == 0.9 && chargedCritDamage() == 1.5;
-	}
 	public Boolean bowFatigue() {
 		return bowFatigue.get();
 	}
@@ -431,9 +428,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean chargedAttacks() {
 		return chargedAttacks.get();
-	}
-	public Boolean chargedCrits() {
-		return critControls.get().chargedOrUncharged;
 	}
 	public Boolean chargedReach() {
 		return chargedReach.get();
@@ -509,9 +503,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean shieldOnlyWhenCharged() {
 		return shieldOnlyWhenCharged.get();
-	}
-	public Boolean sprintCritsEnabled() {
-		return critControls.get().sprintCritsEnabled;
 	}
 	public Boolean letVanillaConnect() {
 		return letVanillaConnect.get();
@@ -591,18 +582,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public double attackDecayMaxPercentageEnchantsDiff() {
 		return (attackDecay.get().maxPercentageEnchants.doubleValue() / 100) - attackDecayMinPercentageEnchants();
 	}
-	public double critChargePercentage() {
-		return critControls.get().minCharge / 100.0;
-	}
-	public double chargedCritPercentage() {
-		return critControls.get().chargedCritCharge / 100.0;
-	}
-	public double unchargedCritDamage() {
-		return critControls.get().unchargedCritMultiplier;
-	}
-	public double chargedCritDamage() {
-		return critControls.get().fullCritMultiplier;
-	}
 	public Integer shieldChargePercentage() {
 		return shieldChargePercentage.get();
 	}
@@ -644,6 +623,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public EatingInterruptionMode eatingInterruptionMode() {
 		return eatingInterruptionMode.get();
+	}
+	public JSImpl getCritImpl() {
+		return critImpl.get();
 	}
 	public JSImpl getFoodImpl() {
 		return foodImpl.get();

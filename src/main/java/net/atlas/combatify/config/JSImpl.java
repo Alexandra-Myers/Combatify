@@ -2,11 +2,12 @@ package net.atlas.combatify.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import dev.latvian.mods.rhino.Context;
-import dev.latvian.mods.rhino.ContextFactory;
-import dev.latvian.mods.rhino.Scriptable;
-import dev.latvian.mods.rhino.ScriptableObject;
+import dev.latvian.mods.rhino.*;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.wrapper.FoodDataWrapper;
+import net.atlas.combatify.config.wrapper.GenericAPIWrapper;
+import net.atlas.combatify.config.wrapper.PlayerWrapper;
+import net.atlas.combatify.config.wrapper.SimpleAPIWrapper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
@@ -18,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.function.Function;
 
 public class JSImpl {
 	public final String fileName;
@@ -38,6 +40,9 @@ public class JSImpl {
 		initIncluded("vanilla_food_impl");
 		initIncluded("cts_food_impl");
 		initIncluded("combatify_food_impl");
+		initIncluded("vanilla_crit_impl");
+		initIncluded("cts_crit_impl");
+		initIncluded("combatify_crit_impl");
 		initIncluded("armor_calculations");
 	}
 	public static void initIncluded(String fileName) {
@@ -54,10 +59,9 @@ public class JSImpl {
 			}
 		}
 	}
-	public boolean execFunc(String name, Reference... args) {
+	public boolean execFunc(String name, Reference<?, ?>... args) {
 		try {
 			Object ret = invokeFunc(name, args);
-			cleanUpBindings(args);
 			return !(ret instanceof Boolean bool) || bool;
 		} catch (Exception e) {
 			Combatify.LOGGER.info("Error executing " + name + " function: " + e.getMessage());
@@ -65,10 +69,9 @@ public class JSImpl {
 		return false;
 	}
 
-	public double execGetterFunc(double fallback, String name, Reference... args) {
+	public double execGetterFunc(double fallback, String name, Reference<?, ?>... args) {
 		try {
 			Object ret = invokeFunc(name, args);
-			cleanUpBindings(args);
 			return !(ret instanceof Number number) ? fallback : number.doubleValue();
 		} catch (Exception e) {
 			Combatify.LOGGER.info("Error executing " + name + " function: " + e.getMessage());
@@ -76,7 +79,27 @@ public class JSImpl {
 		return fallback;
 	}
 
-	public boolean execFoodFunc(FoodData foodData, Player player, String name, Reference... args) {
+	public boolean execPlayerFunc(Player player, String name, Reference<?, ?>... args) {
+		try {
+			Object ret = handlePlayerBindings(player, name, args);
+			return !(ret instanceof Boolean bool) || bool;
+		} catch (Exception e) {
+			Combatify.LOGGER.info("Error executing " + name + " function: " + e.getMessage());
+		}
+		return false;
+	}
+
+	public double execPlayerGetterFunc(double fallback, Player player, String name, Reference<?, ?>... args) {
+		try {
+			Object ret = handlePlayerBindings(player, name, args);
+			return !(ret instanceof Number number) ? fallback : number.doubleValue();
+		} catch (Exception e) {
+			Combatify.LOGGER.info("Error executing " + name + " function: " + e.getMessage());
+		}
+		return fallback;
+	}
+
+	public boolean execFoodFunc(FoodData foodData, Player player, String name, Reference<?, ?>... args) {
 		try {
 			Object ret = handleFoodBindings(foodData, player, name, args);
 			return !(ret instanceof Boolean bool) || bool;
@@ -86,7 +109,7 @@ public class JSImpl {
 		return false;
 	}
 
-	public double execFoodGetterFunc(double fallback, FoodData foodData, Player player, String name, Reference... args) {
+	public double execFoodGetterFunc(double fallback, FoodData foodData, Player player, String name, Reference<?, ?>... args) {
 		try {
 			Object ret = handleFoodBindings(foodData, player, name, args);
 			return !(ret instanceof Number number) ? fallback : number.doubleValue();
@@ -96,25 +119,34 @@ public class JSImpl {
 		return fallback;
 	}
 
-	public Object handleFoodBindings(FoodData foodData, Player player, String name, Reference[] args) throws IOException {
+	public Object handleFoodBindings(FoodData foodData, Player player, String name, Reference<?, ?>[] args) throws IOException {
 		if (ScriptableObject.hasProperty(scope, "foodData", rhinoContext)) {
 			ScriptableObject.deleteProperty(scope, "foodData", rhinoContext);
 		}
 		if (ScriptableObject.hasProperty(scope, "player", rhinoContext)) {
 			ScriptableObject.deleteProperty(scope, "player", rhinoContext);
 		}
-		ScriptableObject.putProperty(scope, "foodData", foodData, rhinoContext);
+		ScriptableObject.putProperty(scope, "foodData", new FoodDataWrapper(foodData), rhinoContext);
 		if (player != null) {
-			ScriptableObject.putProperty(scope, "player", player, rhinoContext);
+			ScriptableObject.putProperty(scope, "player", new PlayerWrapper<>(player), rhinoContext);
 		}
-		Object ret = invokeFunc(name, args);
-		cleanUpBindings(args);
-		return ret;
+		return invokeFunc(name, args);
 	}
 
-	private Object invokeFunc(String name, Reference[] args) throws IOException {
-		for (Reference ref : args) {
-			ScriptableObject.putProperty(scope, ref.name, ref.value, rhinoContext);
+	public Object handlePlayerBindings(Player player, String name, Reference<?, ?>[] args) throws IOException {
+		if (ScriptableObject.hasProperty(scope, "player", rhinoContext)) {
+			ScriptableObject.deleteProperty(scope, "player", rhinoContext);
+		}
+		ScriptableObject.putProperty(scope, "player", new PlayerWrapper<>(player), rhinoContext);
+		return invokeFunc(name, args);
+	}
+
+	private Object invokeFunc(String name, Reference<?, ?>[] args) throws IOException {
+		cleanUpBindings(args);
+		for (Reference<?, ?> ref : args) {
+			Object value = ref.value;
+			if (value instanceof SimpleAPIWrapper<?> simple) value = simple.unwrap();
+			ScriptableObject.putProperty(scope, ref.name, value, rhinoContext);
 		}
 
 		if (load) {
@@ -125,13 +157,15 @@ public class JSImpl {
 		return rhinoContext.evaluateString(scope, name + ";", fileName, 1, null);
 	}
 
-	private void cleanUpBindings(Reference... args) {
-		for (Reference ref : args) {
-			ScriptableObject.deleteProperty(scope, ref.name, rhinoContext);
+	private void cleanUpBindings(Reference<?, ?>... args) {
+		for (Reference<?, ?> ref : args) {
+			if (ScriptableObject.hasProperty(scope, ref.name, rhinoContext)) ScriptableObject.deleteProperty(scope, ref.name, rhinoContext);
 		}
 	}
 
-	public record Reference(String name, Object value) {
-
+	public record Reference<T extends GenericAPIWrapper<O>, O>(String name, T value) {
+		public Reference(String name, O value, Function<O, T> mapper) {
+			this(name, mapper.apply(value));
+		}
 	}
 }
