@@ -79,6 +79,7 @@ public class Combatify implements ModInitializer {
 	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
+	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 
 	public static void markState(CombatifyState state) {

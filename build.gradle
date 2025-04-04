@@ -65,7 +65,7 @@ dependencies {
 	modImplementation "net.rizecookey:cookeymod-vanilla:1.7.8+1.21.1"
 	modImplementation "eu.pb4:polymer-core:0.9.18+1.21.1"
 	modImplementation ("squeek.appleskin:appleskin-fabric:mc1.21-3.0.6")
-	modImplementation "maven.modrinth:rhino:${project.rhino_version}"
+	include implementation("org.mozilla:rhino-all:${project.rhino_version}")
 
 	implementation "com.moandjiezana.toml:toml4j:${project.toml4j_version}"
 	includeClasspath("com.moandjiezana.toml:toml4j:${project.toml4j_version}") {
