@@ -115,6 +115,7 @@
   "text.config.combatify-items-v3.reset": "",
   "text.config.combatify-items-v3.option.entities": "Entity Configurations",
   "text.config.combatify-items-v3.option.items": "Item Configurations",
+  "text.config.combatify-items-v3.option.armor_calculation": "Armor Calculations",
   "text.config.combatify-general.title": "Combatify",
   "text.config.combatify-general.reset": "Reset",
   "text.config.combatify-general.category.cts_booleans": "CTS Booleans",
