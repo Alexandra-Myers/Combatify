@@ -13,19 +13,17 @@ import net.minecraft.ReportedException;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Kit;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.function.Function;
 
 public class JSImpl {
 	public final String fileName;
-	public boolean load = true;
+	public String cachedFile = null;
 	public static final Codec<JSImpl> CODEC = Codec.STRING.validate(str -> str.contains(".") ? DataResult.error(() -> "File loc not expected to contain a file extension!") : DataResult.success(str)).xmap(JSImpl::new, JSImpl::fileName);
 	public JSImpl(String fileName) {
 		this.fileName = fileName;
@@ -169,7 +167,11 @@ public class JSImpl {
 			if (value instanceof SimpleAPIWrapper<?> simple) value = simple.unwrap();
 			ScriptableObject.putProperty(scope, ref.name, value);
 		}
-		rhinoContext.evaluateReader(scope, new FileReader(FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + "/" + fileName + ".js"), fileName, 1, null);
+		if (cachedFile == null) {
+			Reader reader = new BufferedReader(new FileReader(FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + "/" + fileName + ".js"));
+			cachedFile = Kit.readReader(reader);
+		}
+		rhinoContext.evaluateString(scope, cachedFile, fileName, 1, null);
 
 		return rhinoContext.evaluateString(scope, name + ";", fileName, 1, null);
 	}

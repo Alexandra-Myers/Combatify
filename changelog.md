@@ -12,9 +12,9 @@
 - Weapon Types are now entirely an internal utility.
 - Removed `combatify:wooden_shield`, now uses Defaulted to modify the vanilla Shield.
 - Removed `requires_sword_blocking` Blocking Condition, as the config option no longer exists.
-- Added tags `combatify:weapon_type/<weapon_type>` for all vanilla weapon types, containing all correctly tiered vanilla items. 
+- Added tags `combatify:weapon_type/<weapon_type>` for all vanilla weapon types, containing all correctly tiered vanilla items.
   * For modded items, give them a tier using Defaulted and then add them to the correct weapon type tag (or manually create a weapon type for them), they are not adapted by default.
-- Added default component patches `combatify:drinkables`, `combatify:potion_size`, and `combatify:snowball_size_egg_cooldown` to the mod data (outside of built-in datapacks)
+- Added default component patches `combatify:drinkables`, `combatify:potion_size`, and `combatify:snowball_size` to the mod data (outside of built-in datapacks)
 ***
 #### Config Changes:
 ***
@@ -22,6 +22,9 @@
 - Removed `weaponTypesEnabled`, `swordBlocking`, and `ctsAttackBalancing`, replaced with built-in datapacks.
 - `fistDamage` changed from boolean to double, now directly controlled by the user.
 - Added `tierDamageNerf`, controls whether or not the nerf of tier attack damage bonus from the Combat Tests should apply.
+- Removed all hunger system configs in replacement of a single `foodImpl` config option, defining a JS file to use for food implementations.
+- Removed `critControls` to instead use `critImpl`, similar to `foodImpl` in purpose.
+- Armor calculations are now controlled using a JS file.
 ***
 #### Fixes:
 ***

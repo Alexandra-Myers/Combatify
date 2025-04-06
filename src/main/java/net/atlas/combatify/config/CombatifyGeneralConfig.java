@@ -73,7 +73,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder fishingHookKB;
 	private BooleanHolder shieldOnlyWhenCharged;
 	private BooleanHolder letVanillaConnect;
-	private BooleanHolder oldSprintFoodRequirement;
 	private BooleanHolder projectilesHaveIFrames;
 	private BooleanHolder magicHasIFrames;
 	private BooleanHolder autoAttackAllowed;
@@ -310,9 +309,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		mobsCanSprint = createBoolean("mobsCanSprint", false);
 		mobsCanSprint.tieToCategory(extraB);
 		mobsCanSprint.setupTooltip(1);
-		oldSprintFoodRequirement = createBoolean("oldSprintFoodRequirement", false);
-		oldSprintFoodRequirement.tieToCategory(extraB);
-		oldSprintFoodRequirement.setupTooltip(1);
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
 		shieldOnlyWhenCharged.tieToCategory(extraB);
 		shieldOnlyWhenCharged.setupTooltip(2);
@@ -506,9 +502,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean letVanillaConnect() {
 		return letVanillaConnect.get();
-	}
-	public Boolean oldSprintFoodRequirement() {
-		return oldSprintFoodRequirement.get();
 	}
 	public Boolean projectilesHaveIFrames() {
 		return projectilesHaveIFrames.get();
