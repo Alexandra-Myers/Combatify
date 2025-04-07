@@ -19,6 +19,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class JSImpl {
@@ -180,6 +181,17 @@ public class JSImpl {
 		for (Reference<?, ?> ref : args) {
 			if (ScriptableObject.hasProperty(scope, ref.name)) ScriptableObject.deleteProperty(scope, ref.name);
 		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof JSImpl js)) return false;
+		return Objects.equals(fileName, js.fileName);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(fileName);
 	}
 
 	public record Reference<T extends GenericAPIWrapper<O>, O>(String name, T value) {
