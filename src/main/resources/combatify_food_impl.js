@@ -74,7 +74,7 @@ function getMinimumHealingLevel() {
     return 9;
 }
 function getMinimumSprintLevel(player) {
-    return 4;
+    return 6;
 }
 function fastHeal(foodData, player) {
     return false;
