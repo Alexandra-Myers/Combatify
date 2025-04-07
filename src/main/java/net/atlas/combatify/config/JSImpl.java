@@ -186,12 +186,12 @@ public class JSImpl {
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof JSImpl js)) return false;
-		return Objects.equals(fileName, js.fileName);
+		return Objects.equals(fileName(), js.fileName());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(fileName);
+		return Objects.hash(fileName());
 	}
 
 	public record Reference<T extends GenericAPIWrapper<O>, O>(String name, T value) {
