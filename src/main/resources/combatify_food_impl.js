@@ -19,7 +19,7 @@ function shouldOverrideAppleSkin() {
 function editAppleSkinHealthGained(foodLevel, saturationLevel, exhaustionLevel) {
     var health = 0;
     if (isFinite(exhaustionLevel) && isFinite(saturationLevel)) {
-        while(foodLevel >= 18) {
+        while(foodLevel >= getMinimumHealingLevel()) {
             while(exhaustionLevel > 4.0) {
                 exhaustionLevel -= 4.0;
                 if (saturationLevel > 0) {
@@ -29,15 +29,15 @@ function editAppleSkinHealthGained(foodLevel, saturationLevel, exhaustionLevel) 
                 }
             }
 
-            if (canFastHealRaw(foodLevel, saturationLevel, exhaustionLevel) && foodLevel >= 20) {
+            if (canFastHealRaw(foodLevel, saturationLevel, exhaustionLevel) && foodLevel >= getMinimumFastHealingLevel()) {
                 var limitedSaturationLevel = Math.min(saturationLevel, 6.0);
                 var exhaustionUntilAboveMax = 4.0 - exhaustionLevel + 0.00000001;
                 var numIterationsUntilAboveMax = Math.max(1, Math.ceil(exhaustionUntilAboveMax / limitedSaturationLevel));
                 health += limitedSaturationLevel / 6.0 * numIterationsUntilAboveMax;
                 exhaustionLevel += limitedSaturationLevel * numIterationsUntilAboveMax;
-            } else if (foodLevel >= 18) {
+            } else if (foodLevel >= getMinimumHealingLevel()) {
                 ++health;
-                if (saturationLevel > 5.0) exhaustionLevel += 6.0;
+                if (saturationLevel > 0.0) exhaustionLevel += 6.0;
                 else foodLevel--;
             }
         }
@@ -71,17 +71,17 @@ function getMinimumFastHealingLevel() {
     return 20;
 }
 function getMinimumHealingLevel() {
-    return 7;
+    return 9;
 }
 function getMinimumSprintLevel(player) {
-    return 6;
+    return 4;
 }
 function fastHeal(foodData, player) {
     return false;
 }
 function heal(foodData, player) {
     player.heal(1.0);
-    if (foodData.getSaturationLevel() >= 5.0) foodData.addExhaustion(6.0);
+    if (foodData.getSaturationLevel() >= 0.0) foodData.addExhaustion(6.0);
     else foodData.setFoodLevel(foodData.getFoodLevel() - 1);
     return true;
 }

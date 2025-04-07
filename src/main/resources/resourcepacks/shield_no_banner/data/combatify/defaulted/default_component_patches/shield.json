@@ -80,7 +80,9 @@
           "tooltip_value_factor": 10
         }
       ],
-      "effect": "knockback_entity",
+      "effect": {
+        "type": "knockback_entity"
+      },
       "mark_blocked": true
     }
   }

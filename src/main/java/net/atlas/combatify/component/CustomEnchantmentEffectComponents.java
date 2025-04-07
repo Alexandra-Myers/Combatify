@@ -17,7 +17,7 @@ import java.util.function.UnaryOperator;
 
 public class CustomEnchantmentEffectComponents {
 	public static DataComponentType<List<TargetedConditionalEffect<PostBlockEffect>>> POST_BLOCK_EFFECTS = register(
-		"combatify:post_block_effects", builder -> builder.persistent(TargetedConditionalEffect.codec(PostBlockEffects.MAP_CODEC.codec(), LootContextParamSets.ENCHANTED_DAMAGE).listOf())
+		"combatify:post_block_effects", builder -> builder.persistent(TargetedConditionalEffect.codec(PostBlockEffects.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
 	);
 	public static DataComponentType<List<ProtectionBaseFactor>> SHIELD_EFFECTIVENESS = register(
 		"combatify:shield_effectiveness", builder -> builder.persistent(ProtectionBaseFactor.CODEC.listOf())

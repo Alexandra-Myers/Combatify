@@ -27,7 +27,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -53,9 +52,6 @@ import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
-	public Blocker(List<DamageParser> damageParsers, Tooltip tooltip, ResourceLocation blockingTypeLocation, float useSeconds, BlockingCondition blockingCondition) {
-		this(damageParsers, tooltip, blockingTypeLocation, useSeconds, PostBlockEffectWrapper.DEFAULT, blockingCondition);
-	}
 	public static final Blocker EMPTY = new Blocker(Collections.emptyList(), new Tooltip(Collections.emptyList(), Collections.emptyList(), false), ResourceLocation.withDefaultNamespace("empty"), 0, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
 	public static final Blocker VANILLA_SHIELD = new Blocker(Collections.singletonList(Nullify.NULLIFY_ALL), new Tooltip(Collections.emptyList(), Collections.emptyList(), true), ResourceLocation.withDefaultNamespace("shield"), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
 	public static final Blocker NEW_SHIELD = new Blocker(List.of(PercentageBase.IGNORE_EXPLOSIONS_AND_PROJECTILES, Nullify.NULLIFY_EXPLOSIONS_AND_PROJECTILES), new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK), true), ResourceLocation.withDefaultNamespace("new_shield"), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
@@ -64,7 +60,7 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			Tooltip.CODEC.forGetter(Blocker::tooltip),
 			BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
 			Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
-			PostBlockEffectWrapper.MAP_CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(Blocker::postBlockEffect),
+			PostBlockEffectWrapper.CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(Blocker::postBlockEffect),
 			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(Blocker::blockingCondition))
 		.apply(instance, Blocker::new));
 
@@ -77,6 +73,8 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 		Blocker::blockingTypeLocation,
 		ByteBufCodecs.FLOAT,
 		Blocker::useSeconds,
+		ByteBufCodecs.fromCodecTrusted(PostBlockEffectWrapper.CODEC.codec()),
+		Blocker::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		Blocker::blockingCondition,
 		Blocker::new

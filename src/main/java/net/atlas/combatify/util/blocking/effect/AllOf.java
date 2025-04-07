@@ -14,7 +14,7 @@ import java.util.List;
 public record AllOf(List<PostBlockEffect> effects) implements PostBlockEffect {
 	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("all_of");
 	public static final MapCodec<AllOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-		instance.group(PostBlockEffects.MAP_CODEC.codec().listOf().fieldOf("effects").forGetter(AllOf::effects)).apply(instance, AllOf::new));
+		instance.group(PostBlockEffects.CODEC.listOf().fieldOf("effects").forGetter(AllOf::effects)).apply(instance, AllOf::new));
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
 		effects.forEach(effect -> effect.doEffect(serverLevel, enchantedItemInUse, attacker, damageSource, enchantmentLevel, toApply, position));

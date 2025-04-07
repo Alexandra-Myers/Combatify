@@ -41,7 +41,9 @@
         }
       ],
       "knockback_modifiers": [],
-      "effect": "nothing",
+      "effect": {
+        "type": "nothing"
+      },
       "condition": "requires_empty_hand",
       "hand": "off_hand",
       "mark_blocked": false
