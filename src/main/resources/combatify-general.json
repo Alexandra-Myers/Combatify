@@ -12,7 +12,6 @@
     "chargedAttacks": true,
     "chargedReach": true,
     "creativeAttackReach": false,
-    "critControls": {},
     "ctsAttackBalancing": true,
     "ctsKB": true,
     "ctsMomentumPassedToProjectiles": true,
@@ -45,6 +44,7 @@
     "minHitboxSize": 0.9
   },
   "cts_enums": {
+    "critImpl": "cts_crit_impl",
     "eatingInterruptionMode": "full_reset",
     "foodImpl": "cts_food_impl"
   },
@@ -63,7 +63,6 @@
     "midairKB": false,
     "mobsCanGuard": false,
     "mobsCanSprint": false,
-    "oldSprintFoodRequirement": false,
     "shieldOnlyWhenCharged": false,
     "sweepingNegatedForTamed": false
   },

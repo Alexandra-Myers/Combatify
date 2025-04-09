@@ -73,7 +73,7 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 		Blocker::blockingTypeLocation,
 		ByteBufCodecs.FLOAT,
 		Blocker::useSeconds,
-		ByteBufCodecs.fromCodecTrusted(PostBlockEffectWrapper.CODEC.codec()),
+		ByteBufCodecs.fromCodecWithRegistriesTrusted(PostBlockEffectWrapper.CODEC.codec()),
 		Blocker::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		Blocker::blockingCondition,
