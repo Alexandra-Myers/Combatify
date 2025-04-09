@@ -1,6 +1,6 @@
 {
   "items": [
-    
+
   ],
   "entities": [
     {
@@ -23,5 +23,6 @@
   ],
   "blocking_types": [
 
-  ]
+  ],
+  "armor_calculation": "armor_calculations.js"
 }
