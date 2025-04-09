@@ -16,10 +16,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -47,6 +45,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 
 	@Shadow
 	public abstract Entity getCamera();
+
+	@Shadow
+	public abstract void attack(Entity entity);
 
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
@@ -117,18 +118,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Inject(method = "updatePlayerAttributes", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getAttribute(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;", ordinal = 1), cancellable = true)
 	public void removeCreativeReach(CallbackInfo ci) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		double chargedBonus;
 		float strengthScale = player.getAttackStrengthScale(1.0F);
-		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-		if (attackRange != null) {
-			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = item.getChargedAttackBonus();
-			AttributeModifier modifier = new AttributeModifier(Combatify.CHARGED_REACH_ID, chargedBonus, AttributeModifier.Operation.ADD_VALUE);
-			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
-				attackRange.addOrUpdateTransientModifier(modifier);
-			else
-				attackRange.removeModifier(modifier);
-		}
+		MethodHandler.updatePlayerReach(player, attackRange, strengthScale);
 		if (!Combatify.CONFIG.creativeAttackReach())
 			ci.cancel();
 	}

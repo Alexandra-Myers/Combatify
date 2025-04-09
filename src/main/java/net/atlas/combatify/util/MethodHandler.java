@@ -16,11 +16,13 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -45,6 +47,20 @@ import java.util.Optional;
 import static net.minecraft.world.entity.LivingEntity.getSlotForHand;
 
 public class MethodHandler {
+	public static int changeIFrames(int original, DamageSource source) {
+		Entity entity2 = source.getEntity();
+		int invulnerableTime = original - 10;
+		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
+			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
+			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
+		}
+
+		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
+			invulnerableTime = 0;
+		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames())
+			invulnerableTime = 0;
+		return invulnerableTime;
+	}
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
 		if (entity instanceof Player player)
 			return player.getAttackStrengthScale(baseTime);
@@ -91,11 +107,8 @@ public class MethodHandler {
 		else
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
 	}
-	public static void knockback(LivingEntity entity, double strength, double x, double z) {
-		if (!Combatify.CONFIG.ctsKB()) {
-			entity.knockback(strength, x, z);
-			return;
-		}
+
+	public static double getKnockbackResistance(LivingEntity entity) {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
@@ -106,6 +119,15 @@ public class MethodHandler {
 			else
 				knockbackRes = Math.min(1.0, knockbackRes + blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
+		return knockbackRes;
+	}
+
+	public static void knockback(LivingEntity entity, double strength, double x, double z) {
+		if (!Combatify.CONFIG.ctsKB()) {
+			entity.knockback(strength, x, z);
+			return;
+		}
+		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
@@ -116,16 +138,7 @@ public class MethodHandler {
 		}
 	}
 	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
-		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-		ItemStack blockingItem = getBlockingItem(entity).stack();
-		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
-		if (!blockingItem.isEmpty() && !delay) {
-			Blocker blocker = getBlocking(blockingItem);
-			if (!blocker.blockingType().defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
-			else
-				knockbackRes = Math.min(1.0, knockbackRes + blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
-		}
+		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
@@ -277,12 +290,8 @@ public class MethodHandler {
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
 		return getCooldowns(entity).isOnCooldown(var1);
 	}
-	public static double getCurrentAttackReach(Player player, float baseTime) {
-		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+	public static double updatePlayerReach(Player player, AttributeInstance attackRange, float strengthScale) {
 		double chargedBonus = 0;
-		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
-		float strengthScale = player.getAttackStrengthScale(baseTime);
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		if (attackRange != null) {
 			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
@@ -293,7 +302,15 @@ public class MethodHandler {
 			else
 				attackRange.removeModifier(modifier);
 		}
-		if (strengthScale < charge || player.isCrouching() || !Combatify.CONFIG.chargedReach()) {
+		return chargedBonus;
+	}
+	public static double getCurrentAttackReach(Player player, float baseTime) {
+		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
+		float strengthScale = player.getAttackStrengthScale(baseTime);
+		double chargedBonus = updatePlayerReach(player, attackRange, strengthScale);
+		if (strengthScale < (Combatify.CONFIG.chargedAttacks() ? 1.95 : 0.9) || player.isCrouching() || !Combatify.CONFIG.chargedReach()) {
 			chargedBonus = 0;
 		}
 		return (attackRange != null) ? attackRange.getValue() : baseAttackRange + chargedBonus;

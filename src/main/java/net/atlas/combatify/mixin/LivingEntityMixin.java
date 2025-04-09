@@ -18,12 +18,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
@@ -101,21 +98,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 		blocked.set(wasBlocked.get());
 		return false;
-	}
-	@ModifyExpressionValue(method = "hurtServer", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
-	public int changeIFrames(int original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
-		Entity entity2 = source.getEntity();
-		int invulnerableTime = original - 10;
-		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
-			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
-		}
-
-		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
-			invulnerableTime = 0;
-		if (source.is(DamageTypes.MAGIC) && !Combatify.CONFIG.magicHasIFrames())
-			invulnerableTime = 0;
-		return invulnerableTime;
 	}
 	@Inject(method = "hurtServer", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
 	public void injectEatingInterruption(ServerLevel serverLevel, DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
