@@ -30,5 +30,5 @@
   "blocking_types": [
 
   ],
-  "armor_calculation": "armor_calculations.js"
+  "armor_calculation": "armor_calculations"
 }
