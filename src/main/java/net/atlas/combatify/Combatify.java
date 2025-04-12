@@ -43,6 +43,7 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -211,9 +212,27 @@ public class Combatify implements ModInitializer {
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
-	public enum CombatifyState {
-		VANILLA,
-		COMBATIFY,
-		CTS_8C
+	public enum CombatifyState implements StringRepresentable {
+		VANILLA("Vanilla"),
+		COMBATIFY("Combatify"),
+		CTS_8C("CTS 8C"),;
+
+		public final String name;
+
+		CombatifyState(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public @NotNull String getSerializedName() {
+			return name;
+		}
+
+		@Override
+		public String toString() {
+			return "CombatifyState{" +
+				"name='" + name + '\'' +
+				'}';
+		}
 	}
 }
