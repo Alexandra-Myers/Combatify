@@ -22,7 +22,7 @@ public abstract class ProjectileMixin extends Entity {
 	public void redirectShoot(Entity user, float pitch, float yaw, float roll, float modifierZ, float modifierXYZ, CallbackInfo ci) {
 		if (Combatify.CONFIG.ctsMomentumPassedToProjectiles()) {
 			Vec3 currentMomentum = getDeltaMovement();
-			Vec3 entityMomentum = user.onGround() ? user.getKnownMovement() : user.getKnownMovement().multiply(1.0, 0.0, 1.0);
+			Vec3 entityMomentum = user.onGround() ? user.getDeltaMovement() : user.getDeltaMovement().multiply(1.0, 0.0, 1.0);
 			Vec3 projected = MethodHandler.project(entityMomentum, currentMomentum);
 			setDeltaMovement(currentMomentum.add(projected));
 			ci.cancel();
