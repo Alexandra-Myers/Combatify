@@ -3,10 +3,9 @@ package net.atlas.combatify.util.blocking.condition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.advancements.critereon.DataComponentMatchers;
 import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.ItemSubPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -22,10 +21,9 @@ import java.util.Optional;
 public record ItemMatches(ItemPredicate predicate, boolean invert) implements BlockingCondition {
 	public static final Codec<ItemPredicate> ITEM_PREDICATE_CODEC_NO_ITEMS = RecordCodecBuilder.create(
 		instance -> instance.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count),
-				DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components),
-				ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)
+				DataComponentMatchers.CODEC.forGetter(ItemPredicate::components)
 			)
-			.apply(instance, (ints, dataComponentPredicate, typeItemSubPredicateMap) -> new ItemPredicate(Optional.empty(), ints, dataComponentPredicate, typeItemSubPredicateMap))
+			.apply(instance, (ints, dataComponentMatchers) -> new ItemPredicate(Optional.empty(), ints, dataComponentMatchers))
 	);
 	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("item_matches");
 	public static final MapCodec<ItemMatches> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->

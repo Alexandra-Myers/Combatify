@@ -6,7 +6,6 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.SingleComponentItemPredicate;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.world.item.ItemStack;
 
 public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements SingleComponentItemPredicate<Integer> {
 	public static final Codec<ItemBlockingLevelPredicate> CODEC = RecordCodecBuilder.create(
@@ -20,7 +19,7 @@ public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements Sin
 	}
 
 	@Override
-	public boolean matches(ItemStack itemStack, Integer object) {
+	public boolean matches(Integer object) {
 		return value.matches(object);
 	}
 }
