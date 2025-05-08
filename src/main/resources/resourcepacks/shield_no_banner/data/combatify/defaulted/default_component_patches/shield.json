@@ -3,37 +3,25 @@
     "minecraft:shield"
   ],
   "patch": {
-    "combatify:blocker": {
-      "type": "shield",
-      "damage_parsers": [
+    "minecraft:blocks_attacks": {
+      "damage_reductions": [
         {
-          "type": "percentage_base",
-          "damage_types": [
-            {
-              "id": "minecraft:is_projectile",
-              "expected": false
-            },
-            {
-              "id": "minecraft:is_explosion",
-              "expected": false
-            }
-          ]
+          "base": 5,
+          "factor": 0,
+          "horizontal_blocking_angle": 65
         },
         {
-          "type": "nullify",
-          "damage_types": [
-            {
-              "id": "minecraft:is_projectile",
-              "expected": true
-            },
-            {
-              "id": "minecraft:is_explosion",
-              "expected": true
-            }
-          ],
-          "enforce_all": false
+          "type": "#combatify:negated_by_shields",
+          "base": 0,
+          "factor": 1,
+          "horizontal_blocking_angle": 65
         }
       ],
+      "block_sound": "minecraft:item.shield.block",
+      "disabled_sound": "minecraft:item.shield.break"
+    },
+    "combatify:blocker": {
+      "type": "shield",
       "protection_modifiers": [
         {
           "base": {
@@ -82,8 +70,7 @@
       ],
       "effect": {
         "type": "knockback_entity"
-      },
-      "mark_blocked": true
+      }
     }
   }
 }

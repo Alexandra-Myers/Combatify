@@ -10,5 +10,10 @@
       "persist_previous": false
     }
   ],
-  "patch": {}
+  "patch": {
+    "minecraft:weapon": {
+      "item_damage_per_attack": 1,
+      "disable_blocking_for_seconds": 1.6
+    }
+  }
 }

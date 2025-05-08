@@ -53,7 +53,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder chargedReach;
 	private BooleanHolder creativeAttackReach;
 	private BooleanHolder missedAttackRecovery;
-	private BooleanHolder disableDuringShieldDelay;
 	private BooleanHolder hasMissTime;
 	private BooleanHolder canInteractWhenCrouchShield;
 	private BooleanHolder bedrockImpaling;
@@ -76,7 +75,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder projectilesHaveIFrames;
 	private BooleanHolder magicHasIFrames;
 	private BooleanHolder autoAttackAllowed;
-	private BooleanHolder axesAreWeapons;
 	private BooleanHolder configOnlyWeapons;
 	private BooleanHolder tieredShields;
 	private BooleanHolder attackReach;
@@ -93,8 +91,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder fistDamage;
 	private DoubleHolder instantTippedArrowEffectMultiplier;
-	private DoubleHolder shieldDisableTime;
-	private DoubleHolder shieldProtectionArc;
+	private DoubleHolder fallbackShieldDisableTime;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
@@ -154,9 +151,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		autoAttackAllowed = createBoolean("autoAttackAllowed", true);
 		autoAttackAllowed.tieToCategory(ctsB);
 		autoAttackAllowed.setupTooltip(1);
-		axesAreWeapons = createBoolean("axesAreWeapons", true);
-		axesAreWeapons.tieToCategory(ctsB);
-		axesAreWeapons.setupTooltip(1);
 		bedrockBridging = createBoolean("bedrockBridging", false);
 		bedrockBridging.tieToCategory(ctsB);
 		bedrockBridging.setupTooltip(1);
@@ -246,12 +240,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		instantTippedArrowEffectMultiplier = createInRange("instantTippedArrowEffectMultiplier", 0.125, 0, 4);
 		instantTippedArrowEffectMultiplier.tieToCategory(ctsD);
 		instantTippedArrowEffectMultiplier.setupTooltip(1);
-		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
-		shieldDisableTime.tieToCategory(ctsD);
-		shieldDisableTime.setupTooltip(1);
-		shieldProtectionArc = createInRange("shieldProtectionArc", 130, 0, 360);
-		shieldProtectionArc.tieToCategory(ctsD);
-		shieldProtectionArc.setupTooltip(1);
+		fallbackShieldDisableTime = createInRange("fallbackShieldDisableTime", 1.6, 0, 10);
+		fallbackShieldDisableTime.tieToCategory(ctsD);
+		fallbackShieldDisableTime.setupTooltip(1);
 		minHitboxSize = createInRange("minHitboxSize", 0.9, 0, 5);
 		minHitboxSize.tieToCategory(ctsD);
 		minHitboxSize.setupTooltip(1);
@@ -282,9 +273,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		tieredShields.tieToCategory(extraB);
 		tieredShields.setRestartRequired(RestartRequiredMode.RESTART_BOTH);
 		tieredShields.setupTooltip(1);
-		disableDuringShieldDelay = createBoolean("disableDuringShieldDelay", false);
-		disableDuringShieldDelay.tieToCategory(extraB);
-		disableDuringShieldDelay.setupTooltip(1);
 		fishingHookKB = createBoolean("fishingHookKB", false);
 		fishingHookKB.tieToCategory(extraB);
 		fishingHookKB.setupTooltip(1);
@@ -369,10 +357,10 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 			case Boolean bool when tConfigValue.name().equals("percentageDamageEffects") -> {
 				if (isLoaded) {
 					if (bool) {
-						MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 					} else {
-						MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE);
+						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE);
 						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE);
 					}
 				}
@@ -434,9 +422,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean attackDecay() {
 		return attackDecay.get().enabled;
 	}
-	public Boolean axesAreWeapons() {
-		return axesAreWeapons.get();
-	}
 	public Boolean missedAttackRecovery() {
 		return missedAttackRecovery.get();
 	}
@@ -448,9 +433,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean hasMissTime() {
 		return hasMissTime.get();
-	}
-	public Boolean disableDuringShieldDelay() {
-		return disableDuringShieldDelay.get();
 	}
 	public Boolean bedrockImpaling() {
 		return bedrockImpaling.get();
@@ -585,10 +567,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		return instantTippedArrowEffectMultiplier.get();
 	}
 	public Double shieldDisableTime() {
-		return shieldDisableTime.get();
-	}
-	public Double shieldProtectionArc() {
-		return shieldProtectionArc.get();
+		return fallbackShieldDisableTime.get();
 	}
 	public Double snowballDamage() {
 		return projectileDamage.get().snowballDamage;

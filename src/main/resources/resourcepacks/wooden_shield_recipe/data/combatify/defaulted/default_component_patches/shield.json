@@ -19,38 +19,28 @@
     }
   ],
   "patch": {
+    "minecraft:blocks_attacks": {
+      "minecraft:blocks_attacks": {
+        "damage_reductions": [
+          {
+            "base": 0,
+            "factor": 0.3,
+            "horizontal_blocking_angle": 65
+          },
+          {
+            "type": "#combatify:negated_by_shields",
+            "base": 0,
+            "factor": 1,
+            "horizontal_blocking_angle": 65
+          }
+        ],
+        "block_sound": "minecraft:item.shield.block",
+        "disabled_sound": "minecraft:item.shield.break"
+      }
+    },
     "combatify:blocking_level": 1,
     "combatify:blocker": {
       "type": "new_shield",
-      "damage_parsers": [
-        {
-          "type": "percentage_base",
-          "damage_types": [
-            {
-              "id": "minecraft:is_projectile",
-              "expected": false
-            },
-            {
-              "id": "minecraft:is_explosion",
-              "expected": false
-            }
-          ]
-        },
-        {
-          "type": "nullify",
-          "damage_types": [
-            {
-              "id": "minecraft:is_projectile",
-              "expected": true
-            },
-            {
-              "id": "minecraft:is_explosion",
-              "expected": true
-            }
-          ],
-          "enforce_all": false
-        }
-      ],
       "protection_modifiers": [
         {
           "base": {
@@ -100,8 +90,7 @@
       ],
       "effect": {
         "type": "knockback_entity"
-      },
-      "mark_blocked": true
+      }
     }
   },
   "priority": 1200

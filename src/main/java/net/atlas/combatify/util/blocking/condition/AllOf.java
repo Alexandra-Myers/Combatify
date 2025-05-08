@@ -6,10 +6,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -25,13 +22,6 @@ public record AllOf(List<BlockingCondition> blockingConditions) implements Block
 	public static final StreamCodec<RegistryFriendlyByteBuf, AllOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AllOf::blockingConditions, AllOf::new);
 
 	@Override
-	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, float amount) {
-		AtomicBoolean ret = new AtomicBoolean(true);
-		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() & blockingCondition.canBlock(serverLevel, instance, blockingItem, source, amount)));
-		return ret.get();
-	}
-
-	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {
 		AtomicBoolean ret = new AtomicBoolean(true);
 		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() & blockingCondition.canUse(itemStack, level, player, interactionHand)));
@@ -45,14 +35,7 @@ public record AllOf(List<BlockingCondition> blockingConditions) implements Block
 		return ret.get();
 	}
 
-	@Override
-	public boolean overridesUseDurationAndAnimation(ItemStack itemStack) {
-		AtomicBoolean ret = new AtomicBoolean(true);
-		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() & blockingCondition.overridesUseDurationAndAnimation(itemStack)));
-		return ret.get();
-	}
-
-	@Override
+    @Override
 	public boolean appliesComponentModifier(ItemStack itemStack) {
 		AtomicBoolean ret = new AtomicBoolean(true);
 		blockingConditions.forEach(blockingCondition -> ret.set(ret.get() & blockingCondition.appliesComponentModifier(itemStack)));

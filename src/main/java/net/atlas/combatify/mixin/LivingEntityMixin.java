@@ -7,23 +7,30 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.EatingInterruptionMode;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -31,12 +38,16 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
 import java.util.UUID;
 
-import static net.atlas.combatify.util.MethodHandler.getBlocking;
+import static net.atlas.combatify.util.MethodHandler.arrowDisable;
+import static net.atlas.combatify.util.MethodHandler.getBlockingItem;
 
 @Mixin(value = LivingEntity.class, priority = 1400)
 public abstract class LivingEntityMixin extends Entity implements LivingEntityExtensions {
+	@Unique
+	private int crouchBlockingTicks = 0;
 	@Unique
 	private double piercingNegation;
 	@Unique
@@ -58,6 +69,14 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract void indicateDamage(double d, double e);
 
+	@Shadow
+	public abstract boolean isBlocking();
+
+	@Override
+	public int combatify$getCrouchBlockingTicks() {
+		return crouchBlockingTicks;
+	}
+
 	@Override
 	public ItemCooldowns combatify$getFallbackCooldowns() {
 		return fallbackCooldowns;
@@ -65,6 +84,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "tick", at = @At(value = "RETURN"))
 	public void tickCooldowns(CallbackInfo ci) {
 		fallbackCooldowns.tick();
+		if (isBlocking() && getUseItem().isEmpty()) crouchBlockingTicks++;
+		else crouchBlockingTicks = 0;
 	}
 
 	@SuppressWarnings("unused")
@@ -73,7 +94,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty();
 	}
 
-	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
+	@Inject(method = "blockedByItem", at = @At(value="HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
 		ci.cancel();
 	}
@@ -89,14 +110,36 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	private int syncInvulnerability(int x) {
 		return 10;
 	}
-
-	@WrapOperation(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel, @Local(ordinal = 0, argsOnly = true) LocalFloatRef amount, @Local(ordinal = 2) LocalFloatRef protectedDamage, @Local(ordinal = 0) LocalBooleanRef wasBlocked, @Share("blocked") LocalBooleanRef blocked) {
-		ItemStack itemStack = MethodHandler.getBlockingItem(thisEntity).stack();
-		if (amount.get() > 0.0F && original.call(instance, source)) {
-			getBlocking(itemStack).block(serverLevel, instance, source, itemStack, amount, protectedDamage, wasBlocked);
+	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;blockUsingItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V"))
+	public void applyBlockEffects(LivingEntity instance, ServerLevel serverLevel, LivingEntity attacker, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) DamageSource source) {
+		original.call(instance, serverLevel, attacker);
+		MethodHandler.blockedByShield(serverLevel, instance, attacker, source);
+	}
+	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/component/BlocksAttacks;resolveBlockedDamage(Lnet/minecraft/world/damagesource/DamageSource;FD)F"))
+	public float applyBanner(BlocksAttacks instance, DamageSource damageSource, float amount, double angle, Operation<Float> original, @Local(ordinal = 0) ItemStack blockingItem) {
+		float result = original.call(instance, damageSource, amount, angle);
+		BannerPatternLayers bannerPatternLayers = blockingItem.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+		DyeColor dyeColor = blockingItem.get(DataComponents.BASE_COLOR);
+		if (MethodHandler.getBlocking(blockingItem).hasBanner() && (!bannerPatternLayers.layers().isEmpty() || dyeColor != null)) {
+			BlocksAttacks.DamageReduction bannerBoost = new BlocksAttacks.DamageReduction(instance.damageReductions().getFirst().horizontalBlockingAngle(), Optional.empty(), 5, 1);
+			result = Mth.clamp(result + bannerBoost.resolve(damageSource, amount, angle), 0, amount);
 		}
-		blocked.set(wasBlocked.get());
+		return result;
+	}
+	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z"))
+	public boolean applyArrowDisable(DamageSource instance, TagKey<DamageType> tagKey, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel) {
+		if (original.call(instance, tagKey)) {
+			switch (instance.getDirectEntity()) {
+				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(serverLevel, thisEntity, instance, arrow, getBlockingItem(thisEntity).stack());
+				case SpectralArrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->
+					arrowDisable(serverLevel, thisEntity, instance, arrow, getBlockingItem(thisEntity).stack());
+				case null, default -> {
+					// Do nothing
+				}
+			}
+			return true;
+		}
 		return false;
 	}
 	@Inject(method = "hurtServer", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
@@ -137,32 +180,14 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return original || MethodHandler.getCooldowns(thisEntity).isOnCooldown(itemStack);
 	}
 
-	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))
-	public byte isDamageSourceBlocked(byte original) {
+	@ModifyExpressionValue(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))
+	public byte ignorePiercing(byte original) {
 		return Combatify.CONFIG.arrowDisableMode().pierceArrowsBlocked() ? 0 : original;
-	}
-
-	@ModifyReturnValue(method = "isDamageSourceBlocked", at = @At(value = "RETURN", ordinal = 0))
-	public boolean isDamageSourceBlocked(boolean original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 360D || original;
-	}
-
-	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D"))
-	public double modifyDotResultToGetRadians(double original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-        return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : original * Math.PI;
-	}
-
-	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "CONSTANT", args = "doubleValue=0.0", ordinal = 1))
-	public double modifyCompareValue(double original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc() - 180D);
 	}
 
 	@ModifyReturnValue(method = "getItemBlockingWith", at = @At("RETURN"))
 	public ItemStack removeMojangStupidity(ItemStack original) {
-		return (original == null || !(original.getItem() instanceof ShieldItem)) && !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty() ? Items.SHIELD.getDefaultInstance() : original;
+		return original == null && !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty() ? MethodHandler.getBlockingItem(thisEntity).stack() : original;
 	}
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {

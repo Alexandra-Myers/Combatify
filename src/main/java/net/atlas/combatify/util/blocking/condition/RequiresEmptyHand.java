@@ -8,10 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -29,11 +26,6 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 	public static final StreamCodec<RegistryFriendlyByteBuf, RequiresEmptyHand> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8.map(s -> s.equals("off_hand") ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, interactionHand1 -> interactionHand1 == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand"), RequiresEmptyHand::interactionHand, RequiresEmptyHand::new);
 
 	@Override
-	public boolean canBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, float amount) {
-		return instance.getItemInHand(interactionHand).isEmpty();
-	}
-
-	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {
 		ItemStack oppositeStack = player.getItemInHand(interactionHand());
 		return interactionHand != interactionHand() && oppositeStack.isEmpty();
@@ -44,12 +36,7 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 		return true;
 	}
 
-	@Override
-	public boolean overridesUseDurationAndAnimation(ItemStack itemStack) {
-		return true;
-	}
-
-	@Override
+    @Override
 	public boolean appliesComponentModifier(ItemStack itemStack) {
 		return true;
 	}

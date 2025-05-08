@@ -3,13 +3,18 @@
     "minecraft:swords"
   ],
   "patch": {
-    "combatify:blocker": {
-      "type": "sword",
-      "damage_parsers": [
+    "minecraft:blocks_attacks": {
+      "damage_reductions": [
         {
-          "type": "percentage_base"
+          "base": 0,
+          "factor": 0.5,
+          "horizontal_blocking_angle": 65
         }
       ],
+      "block_sound": "minecraft:entity.player.hurt"
+    },
+    "combatify:blocker": {
+      "type": "sword",
       "protection_modifiers": [
         {
           "base": {
@@ -30,11 +35,7 @@
             },
             "modifier": {
               "type": "add",
-              "value": {
-                "type": "linear",
-                "base": 0.1,
-                "per_level_above_first": 0.05
-              }
+              "value": 0.5
             },
             "tooltip_value_factor": 100
           }
@@ -45,8 +46,7 @@
         "type": "nothing"
       },
       "condition": "requires_empty_hand",
-      "hand": "off_hand",
-      "mark_blocked": false
+      "hand": "off_hand"
     }
   }
 }

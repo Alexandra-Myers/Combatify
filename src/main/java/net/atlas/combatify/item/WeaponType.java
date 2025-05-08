@@ -1,7 +1,7 @@
 package net.atlas.combatify.item;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.custom.CanSweep;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -20,8 +20,7 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 	public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
 
 	public static WeaponType createUnsynced(String name, double damageOffset, double speed, double reach, boolean useHoeDamage, boolean tierable) {
-		WeaponType type = new WeaponType(name, damageOffset, speed, reach, useHoeDamage, tierable);
-		return type;
+		return new WeaponType(name, damageOffset, speed, reach, useHoeDamage, tierable);
 	}
 
 	public static WeaponType createBasic(String name, double damageOffset, double speed, double reach) {
@@ -68,7 +67,7 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 		return null;
 	}
 
-	public Blocker blocking() {
+	public ExtendedBlockingData blocking() {
 		return null;
 	}
 

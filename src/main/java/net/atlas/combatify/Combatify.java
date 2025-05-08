@@ -6,7 +6,7 @@ import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
@@ -135,14 +135,14 @@ public class Combatify implements ModInitializer {
 		ItemSubPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
 				ServerPlayer player = packetContext.getPlayer();
 				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
-				if (itemStack.has(CustomDataComponents.BLOCKER)) {
-					Blocker blocker = itemStack.get(CustomDataComponents.BLOCKER);
-					assert blocker != null;
-					itemStack1.set(DataComponents.CONSUMABLE, new Consumable(blocker.useSeconds(), ItemUseAnimation.BLOCK, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHIELD_BREAK), false, Collections.emptyList()));
+				if (itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA)) {
+					ExtendedBlockingData extendedBlockingData = itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA);
+					assert extendedBlockingData != null;
+					itemStack1.set(DataComponents.CONSUMABLE, new Consumable(extendedBlockingData.useSeconds(), ItemUseAnimation.BLOCK, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHIELD_BREAK), false, Collections.emptyList()));
 				}
 				return itemStack1;
 			});
@@ -157,7 +157,7 @@ public class Combatify implements ModInitializer {
 			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 3));
 			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 4));
 			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 5));
-			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.VANILLA_SHIELD));
+			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, ExtendedBlockingData.VANILLA_SHIELD));
 		});
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();

@@ -3,19 +3,18 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
-import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -35,6 +34,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
@@ -43,8 +43,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static net.minecraft.world.entity.LivingEntity.getSlotForHand;
 
 public class MethodHandler {
 	public static int changeIFrames(int original, DamageSource source) {
@@ -113,11 +111,11 @@ public class MethodHandler {
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 		if (!blockingItem.isEmpty() && !delay) {
-			Blocker blocker = getBlocking(blockingItem);
-			if (!blocker.blockingType().defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
+			ExtendedBlockingData extendedBlockingData = getBlocking(blockingItem);
+			if (!extendedBlockingData.blockingType().defaultKbMechanics())
+				knockbackRes = Math.max(knockbackRes, extendedBlockingData.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 			else
-				knockbackRes = Math.min(1.0, knockbackRes + blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
+				knockbackRes = Math.min(1.0, knockbackRes + extendedBlockingData.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
 		return knockbackRes;
 	}
@@ -189,64 +187,33 @@ public class MethodHandler {
 		}
 		return instance;
 	}
-	public static void hurtCurrentlyUsedShield(LivingEntity livingEntity, float f) {
-		if (!(livingEntity instanceof Player player)) return;
-		FakeUseItem fakeUseItem = getBlockingItem(player);
-		ItemStack blockingItem = fakeUseItem.stack();
-		if (!blockingItem.isEmpty()) {
-			if (!player.level().isClientSide) {
-				player.awardStat(Stats.ITEM_USED.get(blockingItem.getItem()));
-			}
-
-			if (f >= 3.0F) {
-				int i = 1 + Mth.floor(f);
-				InteractionHand interactionHand = fakeUseItem.useHand();
-				blockingItem.hurtAndBreak(i, player, getSlotForHand(interactionHand));
-				fakeUseItem = getBlockingItem(player);
-				if (fakeUseItem.stack().isEmpty()) {
-					if (interactionHand == InteractionHand.MAIN_HAND) player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-					else player.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-
-					if (fakeUseItem.isReal()) ((LivingEntityAccessor)player).setUseItem(ItemStack.EMPTY);
-					player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
-				}
-			}
-		}
-	}
-	public static void disableShield(LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
+	public static void tryDisable(ServerLevel serverLevel, LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
+		BlocksAttacks blocksAttacks = blockingItem.get(DataComponents.BLOCKS_ATTACKS);
+		float seconds = attacker.getSecondsToDisableBlocking();
 		ItemStack attackingItem = attacker.getMainHandItem();
 		double piercingLevel = getPiercingLevel(attackingItem);
-		if (!(target.level() instanceof ServerLevel serverLevel)) piercingLevel += CustomEnchantmentHelper.getBreach(attackingItem, attacker.getRandom());
-		else piercingLevel += CustomEnchantmentHelper.getArmorModifier(serverLevel, attackingItem, target, damageSource);
+		piercingLevel += CustomEnchantmentHelper.getBreach(attackingItem, attacker.getRandom());
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
-		boolean canDisable = attacker.canDisableShield() || piercingLevel > 0;
-		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
-		ConfigurableEntityData configurableEntityData;
-		if ((configurableEntityData = forEntity(target)) != null) {
-			if (configurableEntityData.shieldDisableTime() != null)
-				damage = configurableEntityData.shieldDisableTime().floatValue();
-		}
+		if (piercingLevel > 0 && seconds <= 0) seconds = Combatify.CONFIG.shieldDisableTime().floatValue();
 		modifyTime: {
-			if (attacker.level() instanceof ServerLevel serverLevel) {
-				if (canDisable) {
-					damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, damage);
-					break modifyTime;
-				}
-				float newDamage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);
-				if (newDamage > 0) {
-					damage = newDamage;
-					canDisable = true;
-				}
+			if (seconds > 0.0F) {
+				seconds = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, seconds);
+				break modifyTime;
+			}
+			float newDamage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);
+			if (newDamage > 0) {
+				seconds = newDamage;
 			}
 		}
-		if (canDisable && damage > 0 && getBlockingType(blockingItem).canBeDisabled()) {
+		if (seconds > 0.0F && getBlockingType(blockingItem).canBeDisabled() && blocksAttacks != null) {
 			if (piercingLevel > 0)
 				attacker.combatify$setPiercingNegation(piercingLevel);
-			disableShield(target, damage, blockingItem);
+			disable(serverLevel, target, blockingItem, blocksAttacks, seconds);
 		}
 	}
-	public static void arrowDisable(LivingEntity target, DamageSource damageSource, AbstractArrow abstractArrow, ItemStack blockingItem) {
+	public static void arrowDisable(ServerLevel serverLevel, LivingEntity target, DamageSource damageSource, AbstractArrow abstractArrow, ItemStack blockingItem) {
+		BlocksAttacks blocksAttacks = blockingItem.get(DataComponents.BLOCKS_ATTACKS);
 		if (!getBlockingType(blockingItem).canBeDisabled()) return;
 		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
 		ConfigurableEntityData configurableEntityData;
@@ -254,33 +221,44 @@ public class MethodHandler {
 			if (configurableEntityData.shieldDisableTime() != null)
 				damage = configurableEntityData.shieldDisableTime().floatValue();
 		}
-		if (target.level() instanceof ServerLevel serverLevel) {
-			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getPickupItemStackOrigin(), target, abstractArrow, damageSource, damage);
-		}
-		disableShield(target, Math.max(damage, 0), blockingItem);
+		damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getPickupItemStackOrigin(), target, abstractArrow, damageSource, damage);
+		if (blocksAttacks != null) disable(serverLevel, target, blockingItem, blocksAttacks, damage);
 	}
-	public static void disableShield(LivingEntity target, float damage, ItemStack item) {
-		getCooldowns(target).addCooldown(item, (int)(damage * 20.0F));
-		if (Combatify.shields.contains(item.getItem()))
-			for (Item shield : Combatify.shields)
-				if (item.getItem() != shield)
-					getCooldowns(target).addCooldown(new ItemStack(shield), (int)(damage * 20.0F));
-		target.stopUsingItem();
-		target.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + target.level().random.nextFloat() * 0.4F);
-		target.level().broadcastEntityEvent(target, (byte)30);
+	public static void disable(ServerLevel serverLevel, LivingEntity target, ItemStack item, BlocksAttacks blocksAttacks, float damage) {
+		int ticks = Math.round(Math.max(damage * blocksAttacks.disableCooldownScale(), 0));
+		if (ticks > 0) {
+			getCooldowns(target).addCooldown(item, ticks);
+			if (Combatify.shields.contains(item.getItem()))
+				for (Item shield : Combatify.shields)
+					if (item.getItem() != shield)
+						getCooldowns(target).addCooldown(new ItemStack(shield), ticks);
+
+			target.stopUsingItem();
+			blocksAttacks.disableSound().ifPresent((holder) -> serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(), holder, target.getSoundSource(), 0.8F, 0.8F + serverLevel.random.nextFloat() * 0.4F));
+		}
 	}
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
-			if (entity.getUseItem().getUseAnimation() == ItemUseAnimation.BLOCK) {
-				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
+			BlocksAttacks blocksAttacks = entity.getUseItem().get(DataComponents.BLOCKS_ATTACKS);
+			if (blocksAttacks != null) {
+				int elapsedTicks = entity.getUseItem().getItem().getUseDuration(entity.getUseItem(), entity) - entity.getUseItemRemainingTicks();
+				if (elapsedTicks >= blocksAttacks.blockDelayTicks()) {
+					return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
+				}
 			}
 		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
 			for (InteractionHand hand : InteractionHand.values()) {
 				ItemStack stack = entity.getItemInHand(hand);
-				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
-				boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
-				if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
-					return new FakeUseItem(stack, hand, false);
+				BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
+				if (blocksAttacks != null) {
+					int elapsedTicks = entity.combatify$getCrouchBlockingTicks();
+					if (elapsedTicks >= blocksAttacks.blockDelayTicks()) {
+						boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
+						boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
+						if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
+							return new FakeUseItem(stack, hand, false);
+						}
+					}
 				}
 			}
 		}
@@ -446,7 +424,7 @@ public class MethodHandler {
 		return getBlocking(itemStack).blockingType();
 	}
 
-	public static Blocker getBlocking(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.BLOCKER, Blocker.EMPTY);
+	public static ExtendedBlockingData getBlocking(ItemStack itemStack) {
+		return itemStack.getOrDefault(CustomDataComponents.EXTENDED_BLOCKING_DATA, ExtendedBlockingData.EMPTY);
 	}
 }

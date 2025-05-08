@@ -16,29 +16,21 @@ import net.minecraft.core.component.*;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import static net.atlas.combatify.util.MethodHandler.getBlocking;
@@ -56,17 +48,17 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	public abstract String toString();
 
 	@Shadow
-	protected abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<T> dataComponentType, Item.TooltipContext tooltipContext, Consumer<Component> consumer, TooltipFlag tooltipFlag);
-
-	@Shadow
 	public abstract boolean hasNonDefault(DataComponentType<?> dataComponentType);
 
 	@Shadow
 	public abstract boolean isEmpty();
 
-	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;)V"))
-	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) Consumer<Component> consumer) {
-		addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, consumer, tooltipFlag);
+	@Shadow
+	public abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<T> dataComponentType, Item.TooltipContext tooltipContext, TooltipDisplay tooltipDisplay, Consumer<Component> consumer, TooltipFlag tooltipFlag);
+
+	@Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V"))
+	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, TooltipDisplay tooltipDisplay, Player player, TooltipFlag tooltipFlag, Consumer<Component> consumer, CallbackInfo ci) {
+		this.addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, tooltipDisplay, consumer, tooltipFlag);
 	}
 
 	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
@@ -83,9 +75,8 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		}
 	}
 	@Inject(method = "addAttributeTooltips", at = @At("RETURN"))
-	public void addPiercing(Consumer<Component> consumer, Player player, CallbackInfo ci) {
-		ItemAttributeModifiers itemAttributeModifiers = getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		if (itemAttributeModifiers.showInTooltip() && player != null) {
+	public void addPiercing(Consumer<Component> consumer, TooltipDisplay tooltipDisplay, Player player, CallbackInfo ci) {
+		if (tooltipDisplay.shows(DataComponents.ATTRIBUTE_MODIFIERS) && player != null) {
 			double piercingLevel = MethodHandler.getPiercingLevel(this.stack);
 			piercingLevel += CustomEnchantmentHelper.getBreach(this.stack, player.getRandom());
 			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
@@ -103,36 +94,12 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
 	public int getUseDuration(int original) {
-		if (getBlocking(this.stack).canOverrideUseDurationAndAnimation(this.stack)) return getBlocking(this.stack).useTicks();
 		if (hasNonDefault(DataComponents.CONSUMABLE)) return original;
 		ConfigurableItemData configurableItemData = MethodHandler.forItem(getItem());
 		if (configurableItemData != null) {
 			if (configurableItemData.useDuration() != null)
 				return (int) (configurableItemData.useDuration() * 20);
 		}
-		return original;
-	}
-	@ModifyReturnValue(method = "useOn", at = @At(value = "RETURN"))
-	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0, argsOnly = true) UseOnContext useOnContext) {
-		InteractionResult holder;
-		ItemStack stack = Objects.requireNonNull(useOnContext.getPlayer()).getItemInHand(useOnContext.getHand());
-		holder = getBlocking(stack).use(stack, useOnContext.getLevel(), useOnContext.getPlayer(), useOnContext.getHand(), original);
-		if (holder != null)
-			return holder;
-		return original;
-	}
-
-	@ModifyReturnValue(method = "use", at = @At(value = "RETURN"))
-	public InteractionResult addBlockAbility(InteractionResult original, @Local(ordinal = 0, argsOnly = true) Level world, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0, argsOnly = true) InteractionHand hand) {
-		InteractionResult holder = getBlocking(stack).use(stack, world, player, hand, original);
-		if (holder != null)
-			return holder;
-		return original;
-	}
-	@ModifyReturnValue(method = "getUseAnimation", at = @At(value = "RETURN"))
-	public ItemUseAnimation addBlockAnim(ItemUseAnimation original) {
-		if (getBlocking(this.stack).canOverrideUseDurationAndAnimation(this.stack))
-			return ItemUseAnimation.BLOCK;
 		return original;
 	}
 }
