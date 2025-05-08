@@ -8,7 +8,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-public class ItemSubPredicateInit {
+public class DataComponentPredicateInit {
 	public static final DataComponentPredicate.Type<ItemBlockingLevelPredicate> BLOCKING_LEVEL = register("blocking_level", ItemBlockingLevelPredicate.CODEC);
 	public static final DataComponentPredicate.Type<ItemHasComponentPredicate> HAS_COMPONENT = register(
 		"has_component", ItemHasComponentPredicate.CODEC
