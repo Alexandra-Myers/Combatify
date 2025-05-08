@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
@@ -84,7 +85,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "tick", at = @At(value = "RETURN"))
 	public void tickCooldowns(CallbackInfo ci) {
 		fallbackCooldowns.tick();
-		if (isBlocking() && getUseItem().isEmpty()) crouchBlockingTicks++;
+		if (MethodHandler.canCrouchShield(thisEntity) != null) crouchBlockingTicks++;
 		else crouchBlockingTicks = 0;
 	}
 
@@ -141,6 +142,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			return true;
 		}
 		return false;
+	}
+	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getUsedItemHand()Lnet/minecraft/world/InteractionHand;"))
+	public InteractionHand spoofUsedHand(LivingEntity instance, Operation<InteractionHand> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel) {
+		InteractionHand interactionHand = original.call(instance);
+		if (MethodHandler.getBlockingItem(instance).useHand() != null) return MethodHandler.getBlockingItem(instance).useHand();
+		return interactionHand;
 	}
 	@Inject(method = "hurtServer", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
 	public void injectEatingInterruption(ServerLevel serverLevel, DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {

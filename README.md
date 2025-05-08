@@ -27,7 +27,7 @@
 ***
 
 <div align="center">
-  
+
 ### Attacks and Basic Combat Changes
 
 </div>
@@ -83,7 +83,7 @@
 
 
 <div align="center">
-  
+
 ### Projectiles
 
 </div>
@@ -95,20 +95,20 @@
     - This is shown via the item shaking more aggressively in the player's hand
 4. Changed how the user's momentum is passed onto projectiles
     - Now ignores the vertical momentum of the player entirely
-3. Instantaneous effects on tipped arrows are now scaled by 1/8, just like the duration of other effects
+5. Instantaneous effects on tipped arrows are now scaled by 1/8, just like the duration of other effects
 
-4. Trident alterations
+6. Trident alterations
     - Tridents can be shot from dispensers
     - Tridents with Loyalty which fall into the void will return to their owner
 
-5. Snowball alterations
+7. Snowball alterations
     - Snowballs now stack to 64
     - Snowballs and eggs have a 4-tick cooldown
     - Made it possible to hit players with snowballs
 
 
 <div align="center">
-  
+
 ### Hunger
 
 </div>

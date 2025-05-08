@@ -37,8 +37,6 @@ import static net.atlas.combatify.util.MethodHandler.*;
 @Mixin(Mob.class)
 public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Unique
-	private double targetDistO = Integer.MAX_VALUE;
-	@Unique
 	private double targetDist = Integer.MAX_VALUE;
 	@Shadow
 	@Final
@@ -65,8 +63,9 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		}
 		if (!this.level().isClientSide) {
 			Entity target = getTarget();
+			double targetDistO;
 			if (target != null && !isBaby()) {
-				this.targetDistO = this.targetDist;
+				targetDistO = this.targetDist;
 				this.targetDist = this.distanceToSqr(target);
 				if (this.tickCount % 10 == 0) {
 					Entity sprintingMob = this;
@@ -82,7 +81,6 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 					sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || targetDist > 25.0) && meetsSprintConditions);
 				}
 			} else {
-				targetDistO = Integer.MAX_VALUE;
 				targetDist = Integer.MAX_VALUE;
 				Entity sprintingMob = this;
 				Entity vehicle;

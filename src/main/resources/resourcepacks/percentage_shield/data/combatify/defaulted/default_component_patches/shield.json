@@ -22,7 +22,7 @@
         "disabled_sound": "minecraft:item.shield.break"
       }
     },
-    "combatify:blocker": {
+    "combatify:extended_blocking_data": {
       "type": "new_shield",
       "protection_modifiers": [
         {

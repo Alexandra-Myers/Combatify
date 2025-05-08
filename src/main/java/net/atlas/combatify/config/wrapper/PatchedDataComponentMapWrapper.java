@@ -20,7 +20,7 @@ public record PatchedDataComponentMapWrapper(RegistryOps<Tag> ops, ResourceKey<R
 		StringReader reader = new StringReader(value);
 		T val;
 		try {
-			Tag tag = new TagParser(reader).readValue();
+			Tag tag = TagParser.create(ops()).parseAsArgument(reader);
 			val = dataComponentType.codec().parse(ops(), tag).getOrThrow(s -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create());
 		} catch (CommandSyntaxException e) {
 			Combatify.LOGGER.error("Failed to decode input to set the value of " + type + "! Exception: " + e);
@@ -36,7 +36,7 @@ public record PatchedDataComponentMapWrapper(RegistryOps<Tag> ops, ResourceKey<R
 		StringReader reader = new StringReader(patch);
 		DataComponentPatch val;
 		try {
-			Tag tag = new TagParser(reader).readValue();
+			Tag tag = TagParser.create(ops()).parseAsArgument(reader);
 			val = DataComponentPatch.CODEC.parse(ops(), tag).getOrThrow(s -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create());
 		} catch (CommandSyntaxException e) {
 			Combatify.LOGGER.error("Failed to decode data component patch! Exception: " + e);

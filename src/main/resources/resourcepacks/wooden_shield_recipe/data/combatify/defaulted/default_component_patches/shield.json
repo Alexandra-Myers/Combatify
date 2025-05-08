@@ -39,7 +39,7 @@
       }
     },
     "combatify:blocking_level": 1,
-    "combatify:blocker": {
+    "combatify:extended_blocking_data": {
       "type": "new_shield",
       "protection_modifiers": [
         {

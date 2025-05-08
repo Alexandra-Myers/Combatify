@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -140,36 +139,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
 		return original.add(Attributes.ENTITY_INTERACTION_RANGE, Combatify.CONFIG.attackReach() ? 2.5 : 3).add(Attributes.ATTACK_SPEED, Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 	}
-	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At(value = "HEAD"))
-	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
+	@Inject(method = "drop", at = @At(value = "HEAD"))
+	public void addServerOnlyCheck(ItemStack itemStack, boolean bl, CallbackInfoReturnable<ItemEntity> cir) {
 		if(Combatify.unmoddedPlayers.contains(player.getUUID()))
 			Combatify.isPlayerAttacking.put(player.getUUID(), false);
-	}
-
-	@Dynamic
-	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = {@At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"), @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/extensions/IItemStackExtension;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z")})
-	public boolean changeUsedShield(boolean original) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() || original;
-	}
-
-	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getUsedItemHand()Lnet/minecraft/world/InteractionHand;"))
-	public InteractionHand useCurrentBlockingHand(InteractionHand original) {
-		return MethodHandler.getBlockingItem(player).useHand() != null ? MethodHandler.getBlockingItem(player).useHand() : original;
-	}
-
-	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
-	public ItemStack useCurrentBlockingItemStats(ItemStack instance) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
-	}
-
-	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
-	public ItemStack useCurrentBlockingItem(ItemStack instance, int i, LivingEntity livingEntity, EquipmentSlot equipmentSlot) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
-	}
-
-	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
-	public ItemStack useCurrentBlockingItem(ItemStack instance) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
 	}
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
@@ -181,8 +154,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		original.call(instance);
 	}
 
-	@Inject(method = "blockUsingShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;canDisableShield()Z"), cancellable = true)
-	public void blockUsingShield(@NotNull LivingEntity attacker, CallbackInfo ci) {
+	@Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getItemBlockingWith()Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
+	public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
 		ci.cancel();
 	}
 
@@ -379,9 +352,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		for (LivingEntity livingEntity : livingEntities) {
 			if (livingEntity == player || livingEntity == entity || this.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
 				continue;
+			EntityReference<?> ownerReference;
 			if (Combatify.CONFIG.sweepingNegatedForTamed()
 				&& (livingEntity instanceof OwnableEntity ownableEntity
-					&& player.getUUID().equals(ownableEntity.getOwnerUUID())
+					&& (ownerReference = ownableEntity.getOwnerReference()) != null
+					&& player.getUUID().equals(ownerReference.getUUID())
 					|| livingEntity.is(getVehicle())
 					|| livingEntity.isPassengerOfSameVehicle(player)))
 				continue;

@@ -25,7 +25,7 @@ public interface DataComponentMapWrapper<M extends DataComponentMap> extends Gen
 		StringReader reader = new StringReader(defaultValue);
 		T defaultVal;
 		try {
-			Tag tag = new TagParser(reader).readValue();
+			Tag tag = TagParser.create(ops()).parseAsArgument(reader);
 			defaultVal = dataComponentType.codec().parse(ops(), tag).getOrThrow(s -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create());
 		} catch (CommandSyntaxException e) {
 			Combatify.LOGGER.error("Failed to decode default value obtained from a DataComponentMap in JavaScript! Exception: " + e);

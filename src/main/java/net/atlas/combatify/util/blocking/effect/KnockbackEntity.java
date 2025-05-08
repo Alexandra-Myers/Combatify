@@ -28,7 +28,6 @@ public record KnockbackEntity(LevelBasedValue strength, boolean force) implement
 		Vec3 attackerPosition = toApply.equals(attacker) ? position : enchantedItemInUse.owner().position();
         double x = targetPosition.x() - attackerPosition.x();
 		double z = targetPosition.z() - attackerPosition.z();
-		enchantedItemInUse.owner().blockUsingShield(attacker);
 		if (force) toApply.hurtMarked = true;
 		MethodHandler.knockback(toApply, strength.calculate(enchantmentLevel), x, z);
 	}

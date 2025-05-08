@@ -238,6 +238,7 @@ public class MethodHandler {
 		}
 	}
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {
+		InteractionHand hand = canCrouchShield(entity);
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
 			BlocksAttacks blocksAttacks = entity.getUseItem().get(DataComponents.BLOCKS_ATTACKS);
 			if (blocksAttacks != null) {
@@ -246,24 +247,34 @@ public class MethodHandler {
 					return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
 				}
 			}
-		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
-			for (InteractionHand hand : InteractionHand.values()) {
-				ItemStack stack = entity.getItemInHand(hand);
-				BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
-				if (blocksAttacks != null) {
-					int elapsedTicks = entity.combatify$getCrouchBlockingTicks();
-					if (elapsedTicks >= blocksAttacks.blockDelayTicks()) {
-						boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
-						boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
-						if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
-							return new FakeUseItem(stack, hand, false);
-						}
-					}
+		} else if (hand != null) {
+			ItemStack stack = entity.getItemInHand(hand);
+			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
+			if (blocksAttacks != null) {
+				int elapsedTicks = entity.combatify$getCrouchBlockingTicks();
+				if (elapsedTicks >= blocksAttacks.blockDelayTicks()) {
+					return new FakeUseItem(stack, hand, false);
 				}
 			}
 		}
 
 		return new FakeUseItem(ItemStack.EMPTY, null, true);
+	}
+	public static InteractionHand canCrouchShield(LivingEntity entity) {
+		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) return null;
+		if (!(((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)))) return null;
+		for (InteractionHand hand : InteractionHand.values()) {
+			ItemStack stack = entity.getItemInHand(hand);
+			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
+			if (blocksAttacks != null) {
+				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
+				boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
+				if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
+					return hand;
+				}
+			}
+		}
+		return null;
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
 		return getCooldowns(entity).isOnCooldown(var1);

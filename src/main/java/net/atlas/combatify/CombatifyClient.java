@@ -11,6 +11,7 @@ import net.minecraft.Util;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -24,12 +25,11 @@ import static net.minecraft.client.Options.genericValueLabel;
 import static net.minecraft.client.Options.percentValueLabel;
 
 public class CombatifyClient implements ClientModInitializer {
-	public static final ModelLayerLocation WOODEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("wooden_shield"),"main");
 	public static final ModelLayerLocation IRON_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("iron_shield"),"main");
 	public static final ModelLayerLocation GOLDEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("golden_shield"),"main");
 	public static final ModelLayerLocation DIAMOND_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("diamond_shield"),"main");
 	public static final ModelLayerLocation NETHERITE_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("netherite_shield"),"main");
-	public static final Object2ObjectOpenHashMap<ToolMaterial, ModelLayerLocation> tieredShieldModelLayers = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(WOODEN_SHIELD_MODEL_LAYER));
+	public static final Object2ObjectOpenHashMap<ToolMaterial, ModelLayerLocation> tieredShieldModelLayers = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(ModelLayers.SHIELD));
 	public static final Object2ObjectOpenHashMap<ToolMaterial, ShieldMaterial> tieredShieldMaterials = Util.make(new Object2ObjectOpenHashMap<>(), map -> map.defaultReturnValue(ShieldMaterial.WOODEN_SHIELD));
 	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
@@ -106,7 +106,6 @@ public class CombatifyClient implements ClientModInitializer {
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
 		if (Combatify.CONFIG.tieredShields()) {
-			EntityModelLayerRegistry.registerModelLayer(WOODEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(GOLDEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);

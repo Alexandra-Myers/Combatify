@@ -46,10 +46,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Shadow
 	public abstract boolean isUsingItem();
 
-	@Unique
+	@Shadow
 	@Final
-	public Minecraft minecraft = Minecraft.getInstance();
-
+	protected Minecraft minecraft;
 	@Unique
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
 	@Environment(EnvType.CLIENT)
@@ -69,7 +68,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		connection.send(new ServerboundSwingPacket(interactionHand));
 	}
 
-	@ModifyExpressionValue(method = "hasEnoughFoodToStartSprinting", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
+	@ModifyExpressionValue(method = "hasEnoughFoodToSprint", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
 	public float modifyFoodRequirement(float original) {
 		return Combatify.state.equals(Combatify.CombatifyState.VANILLA) ? original : (float) Combatify.CONFIG.getFoodImpl().execPlayerGetterFunc(original, thisPlayer, "getMinimumSprintLevel(player)");
 	}

@@ -67,10 +67,8 @@ dependencies {
 	modImplementation ("squeek.appleskin:appleskin-fabric:mc1.21.5-3.0.6")
 	include implementation("org.mozilla:rhino-all:${project.rhino_version}")
 
-	implementation "com.moandjiezana.toml:toml4j:${project.toml4j_version}"
-	includeClasspath("com.moandjiezana.toml:toml4j:${project.toml4j_version}") {
-		exclude(group: "com.google.code.gson")
-	}
+	implementation "com.fasterxml.jackson.core:jackson-core:${project.jackson_version}"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:${project.jackson_version}"
 }
 
 configurations.configureEach {

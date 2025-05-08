@@ -16,9 +16,7 @@ public record WeaponStats(Optional<Double> optionalChargedReach) {
 	public static final MapCodec<WeaponStats> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.DOUBLE.optionalFieldOf("charged_reach").forGetter(WeaponStats::optionalChargedReach))
 			.apply(instance, WeaponStats::new));
-	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponStats> STREAM_CODEC = StreamCodec.of((buf, weaponStats) -> {
-		buf.writeDouble(weaponStats.optionalChargedReach.orElse(-10D));
-	}, buf -> {
+	public static final StreamCodec<RegistryFriendlyByteBuf, WeaponStats> STREAM_CODEC = StreamCodec.of((buf, weaponStats) -> buf.writeDouble(weaponStats.optionalChargedReach.orElse(-10D)), buf -> {
 		Double chargedReach = buf.readDouble();
 		if (chargedReach == -10)
 			chargedReach = null;

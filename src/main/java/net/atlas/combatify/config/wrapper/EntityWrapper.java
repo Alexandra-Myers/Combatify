@@ -92,7 +92,7 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 		value.playSound(Objects.requireNonNull(BuiltInRegistries.SOUND_EVENT.getValueOrThrow(ResourceKey.create(Registries.SOUND_EVENT, ResourceLocation.parse(soundEvent)))));
 	}
 
-	public final float getFallDistance() {
+	public final double getFallDistance() {
 		return value.fallDistance;
 	}
 

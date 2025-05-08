@@ -20,7 +20,7 @@
       "block_sound": "minecraft:item.shield.block",
       "disabled_sound": "minecraft:item.shield.break"
     },
-    "combatify:blocker": {
+    "combatify:extended_blocking_data": {
       "type": "shield",
       "protection_modifiers": [
         {
