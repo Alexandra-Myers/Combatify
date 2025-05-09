@@ -4,10 +4,8 @@
 ***
 #### Config Changes:
 ***
-- Removed all hunger system configs in replacement of a single `foodImpl` config option, defining a JS file to use for food implementations.
-- Removed `critControls` to instead use `critImpl`, similar to `foodImpl` in purpose.
-- Armor calculations are now controlled using a JS file.
+- I uh, I forgot, most of the changes were removing ones because Vanilla supported their functionality
 ***
 #### Fixes:
 ***
-- Fixed trident void return
+- Fixed projectiles inheriting owner momentum
