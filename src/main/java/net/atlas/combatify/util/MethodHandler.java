@@ -196,16 +196,7 @@ public class MethodHandler {
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
 		if (piercingLevel > 0 && seconds <= 0) seconds = Combatify.CONFIG.shieldDisableTime().floatValue();
-		modifyTime: {
-			if (seconds > 0.0F) {
-				seconds = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, seconds);
-				break modifyTime;
-			}
-			float newDamage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, 0);
-			if (newDamage > 0) {
-				seconds = newDamage;
-			}
-		}
+		seconds = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, seconds);
 		if (seconds > 0.0F && getBlockingType(blockingItem).canBeDisabled() && blocksAttacks != null) {
 			if (piercingLevel > 0)
 				attacker.combatify$setPiercingNegation(piercingLevel);
@@ -225,7 +216,7 @@ public class MethodHandler {
 		if (blocksAttacks != null) disable(serverLevel, target, blockingItem, blocksAttacks, damage);
 	}
 	public static void disable(ServerLevel serverLevel, LivingEntity target, ItemStack item, BlocksAttacks blocksAttacks, float damage) {
-		int ticks = Math.round(Math.max(damage * blocksAttacks.disableCooldownScale(), 0));
+		int ticks = Math.round(Math.max((damage * 20.0F) * blocksAttacks.disableCooldownScale(), 0));
 		if (ticks > 0) {
 			getCooldowns(target).addCooldown(item, ticks);
 			if (Combatify.shields.contains(item.getItem()))
