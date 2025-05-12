@@ -195,7 +195,7 @@ public class MethodHandler {
 		piercingLevel += CustomEnchantmentHelper.getBreach(attackingItem, attacker.getRandom());
 		if (!(Combatify.CONFIG.armorPiercingDisablesShields() || attacker.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof LongSwordItem))
 			piercingLevel = 0;
-		if (piercingLevel > 0 && seconds <= 0) seconds = Combatify.CONFIG.shieldDisableTime().floatValue();
+		if (piercingLevel > 0 && seconds <= 0) seconds = Combatify.CONFIG.fallbackShieldDisableTime().floatValue();
 		seconds = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, null, target, attacker, damageSource, seconds);
 		if (seconds > 0.0F && getBlockingType(blockingItem).canBeDisabled() && blocksAttacks != null) {
 			if (piercingLevel > 0)
@@ -206,12 +206,7 @@ public class MethodHandler {
 	public static void arrowDisable(ServerLevel serverLevel, LivingEntity target, DamageSource damageSource, AbstractArrow abstractArrow, ItemStack blockingItem) {
 		BlocksAttacks blocksAttacks = blockingItem.get(DataComponents.BLOCKS_ATTACKS);
 		if (!getBlockingType(blockingItem).canBeDisabled()) return;
-		float damage = Combatify.CONFIG.shieldDisableTime().floatValue();
-		ConfigurableEntityData configurableEntityData;
-		if ((configurableEntityData = forEntity(target)) != null) {
-			if (configurableEntityData.shieldDisableTime() != null)
-				damage = configurableEntityData.shieldDisableTime().floatValue();
-		}
+		float damage = Combatify.CONFIG.fallbackShieldDisableTime().floatValue();
 		damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getPickupItemStackOrigin(), target, abstractArrow, damageSource, damage);
 		if (blocksAttacks != null) disable(serverLevel, target, blockingItem, blocksAttacks, damage);
 	}
@@ -400,14 +395,12 @@ public class MethodHandler {
 				if (result != null) results.add(result);
 			});
 			Integer attackInterval = null;
-			Double shieldDisableTime = null;
 			Boolean isMiscEntity = null;
 			for (ConfigurableEntityData configurableEntityData : results) {
 				attackInterval = conditionalChange(configurableEntityData.attackInterval(), attackInterval);
-				shieldDisableTime = conditionalChange(configurableEntityData.shieldDisableTime(), shieldDisableTime);
 				isMiscEntity = conditionalChange(configurableEntityData.isMiscEntity(), isMiscEntity);
 			}
-			ConfigurableEntityData configurableEntityData = new ConfigurableEntityData(Optional.ofNullable(attackInterval), Optional.ofNullable(shieldDisableTime), Optional.ofNullable(isMiscEntity));
+			ConfigurableEntityData configurableEntityData = new ConfigurableEntityData(Optional.ofNullable(attackInterval), Optional.ofNullable(isMiscEntity));
 			if (configurableEntityData.equals(ConfigurableEntityData.EMPTY)) return null;
 			return configurableEntityData;
 		}

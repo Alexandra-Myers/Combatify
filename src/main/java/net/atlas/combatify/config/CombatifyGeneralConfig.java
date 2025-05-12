@@ -89,7 +89,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
 	private DoubleHolder fistDamage;
-	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder fallbackShieldDisableTime;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
@@ -231,9 +230,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		fistDamage.setupTooltip(1);
 		projectileUncertainty = createObject("projectileUncertainty", ProjectileUncertainty.DEFAULT, ProjectileUncertainty.class, ProjectileUncertainty.STREAM_CODEC, false);
 		projectileUncertainty.tieToCategory(ctsD);
-		instantTippedArrowEffectMultiplier = createInRange("instantTippedArrowEffectMultiplier", 0.125, 0, 4);
-		instantTippedArrowEffectMultiplier.tieToCategory(ctsD);
-		instantTippedArrowEffectMultiplier.setupTooltip(1);
 		fallbackShieldDisableTime = createInRange("fallbackShieldDisableTime", 1.6, 0, 10);
 		fallbackShieldDisableTime.tieToCategory(ctsD);
 		fallbackShieldDisableTime.setupTooltip(1);
@@ -557,10 +553,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Double fistDamage() {
 		return fistDamage.get();
 	}
-	public Double instantTippedArrowEffectMultiplier() {
-		return instantTippedArrowEffectMultiplier.get();
-	}
-	public Double shieldDisableTime() {
+	public Double fallbackShieldDisableTime() {
 		return fallbackShieldDisableTime.get();
 	}
 	public Double snowballDamage() {
