@@ -213,19 +213,25 @@ public class Combatify implements ModInitializer {
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
 	public enum CombatifyState implements StringRepresentable {
-		VANILLA("Vanilla"),
-		COMBATIFY("Combatify"),
-		CTS_8C("CTS 8C"),;
+		VANILLA("Vanilla", "vanilla"),
+		COMBATIFY("Combatify", "combatify"),
+		CTS_8C("CTS 8C", "combat_test");
 
 		public final String name;
+		public final String key;
 
-		CombatifyState(String name) {
+		CombatifyState(String name, String key) {
 			this.name = name;
+			this.key = key;
 		}
 
 		@Override
 		public @NotNull String getSerializedName() {
-			return name;
+			return key;
+		}
+
+		public Component getComponent() {
+			return Component.translatableWithFallback("options.combatify_state." + key, name);
 		}
 
 		@Override

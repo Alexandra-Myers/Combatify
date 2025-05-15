@@ -51,7 +51,7 @@ dependencies {
 	modImplementation "com.viaversion:viafabricplus:4.0.1"
 	modApi "com.terraformersmc:modmenu:13.0.0-beta.1"
 	modApi "me.shedaniel.cloth:cloth-config-fabric:17.0.144"
-	modImplementation "net.rizecookey:cookeymod-vanilla:1.7.9+1.21.4"
+	modCompileOnly "net.rizecookey:cookeymod-vanilla:1.7.9+1.21.4"
 	modImplementation "eu.pb4:polymer-core:0.11.2+1.21.4"
 	modImplementation ("squeek.appleskin:appleskin-fabric:mc1.21.3-3.0.6")
 	include implementation("org.mozilla:rhino-all:${project.rhino_version}")
