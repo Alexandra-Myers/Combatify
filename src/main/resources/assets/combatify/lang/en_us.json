@@ -110,6 +110,7 @@
   "options.double_value": "%s: %s",
   "options.rhythmicAttack" : "Rhythmic Attacks",
   "options.augmentedArmHeight" : "CTS Arm Height",
+  "options.combatifyState" : "Combatify State",
   "options.shieldIndicator" : "Shield Indicator",
   "text.config.combatify-items-v3.title": "Combatify Items",
   "text.config.combatify-items-v3.reset": "",
