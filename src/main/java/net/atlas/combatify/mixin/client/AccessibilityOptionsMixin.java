@@ -20,7 +20,8 @@ public class AccessibilityOptionsMixin {
 	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0, argsOnly = true) Options options) {
 		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());
 
-		optionInstance.addAll(CombatifyClient.autoAttack,
+		optionInstance.addAll(CombatifyClient.combatifyState,
+			CombatifyClient.autoAttack,
 			CombatifyClient.shieldCrouch,
 			CombatifyClient.attackIndicatorMinValue,
 			CombatifyClient.attackIndicatorMaxValue);
