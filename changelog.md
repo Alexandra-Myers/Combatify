@@ -1,13 +1,12 @@
+
 ### Changes:
 ***
-- Version bump
+- Combatify no longer automatically detects CombatifyState, must be changed before joining a server if it is meant to be different (in accessibility settings)
 ***
 #### Config Changes:
 ***
-- Removed all hunger system configs in replacement of a single `foodImpl` config option, defining a JS file to use for food implementations.
-- Removed `critControls` to instead use `critImpl`, similar to `foodImpl` in purpose.
-- Armor calculations are now controlled using a JS file.
+- None
 ***
 #### Fixes:
 ***
-- Fixed trident void return
+- Fixed crashing when config is missing
