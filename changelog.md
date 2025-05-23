@@ -1,11 +1,11 @@
 ### Changes:
 ***
-- Version bump
+- Combatify no longer automatically detects CombatifyState, must be changed before joining a server if it is meant to be different (in accessibility settings)
 ***
 #### Config Changes:
 ***
-- I uh, I forgot, most of the changes were removing ones because Vanilla supported their functionality
+- None
 ***
 #### Fixes:
 ***
-- Fixed projectiles inheriting owner momentum
+- Fixed crashing when config is missing
