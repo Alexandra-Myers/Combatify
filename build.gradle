@@ -3,9 +3,12 @@ plugins {
 	id 'maven-publish'
 }
 
-archivesBaseName = project.archives_base_name
-version = project.version
+version = "$project.mod_version.$project.sub_version"
 group = project.maven_group
+
+base {
+	archivesName = "$project.archives_base_name-$project.minecraft_version-Fabric"
+}
 
 configurations {
 	includeClasspath
@@ -57,7 +60,7 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "net.atlas:atlas-core:1.1.2-BETA-1-1.21.1"
+	modImplementation "maven.modrinth:atlas-core:${project.atlas_core_version}-${project.minecraft_version}"
 	modImplementation "maven.modrinth:defaulted:1.1.1-Fabric-1.21"
 	modImplementation "de.florianmichael:ViaFabricPlus:3.4.9"
 	modApi "com.terraformersmc:modmenu:11.0.1"
@@ -84,10 +87,10 @@ loom {
 }
 
 processResources {
-	inputs.property "version", project.version
+	inputs.property "version", project.mod_version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.mod_version
 	}
 }
 
@@ -114,7 +117,7 @@ java {
 // If you plan to use a different file for the license, don't forget to change the file name here!
 jar {
 	from("LICENSE") {
-		rename { "${it}_${archivesBaseName}" }
+		rename { "${it}_${project.base.archivesName.get()}" }
 	}
 	from {
 		configurations.includeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

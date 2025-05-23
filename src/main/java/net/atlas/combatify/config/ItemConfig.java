@@ -30,7 +30,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.*;
 
-import java.io.InputStream;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -80,10 +79,6 @@ public class ItemConfig extends AtlasConfig {
 		List<BlockingType> altered = BlockingType.CODEC.listOf().orElse(Collections.emptyList()).parse(JsonOps.INSTANCE, defenders).getOrThrow();
 		altered.forEach(Combatify::registerBlockingType);
 		isModifying = false;
-	}
-	@Override
-	protected InputStream getDefaultedConfig() {
-		return Thread.currentThread().getContextClassLoader().getResourceAsStream("combatify-items-v3.json");
 	}
 
 	@Override

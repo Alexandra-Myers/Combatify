@@ -41,6 +41,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffects;
@@ -199,9 +200,34 @@ public class Combatify implements ModInitializer {
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
-	public enum CombatifyState {
-		VANILLA,
-		COMBATIFY,
-		CTS_8C
+
+	public enum CombatifyState implements StringRepresentable {
+		VANILLA("Vanilla", "vanilla"),
+		COMBATIFY("Combatify", "combatify"),
+		CTS_8C("CTS 8C", "combat_test");
+
+		public final String name;
+		public final String key;
+
+		CombatifyState(String name, String key) {
+			this.name = name;
+			this.key = key;
+		}
+
+		@Override
+		public @NotNull String getSerializedName() {
+			return key;
+		}
+
+		public Component getComponent() {
+			return Component.translatableWithFallback("options.combatify_state." + key, name);
+		}
+
+		@Override
+		public String toString() {
+			return "CombatifyState{" +
+				"name='" + name + '\'' +
+				'}';
+		}
 	}
 }

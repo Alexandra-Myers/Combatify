@@ -70,6 +70,18 @@ public class CombatifyClient implements ClientModInitializer {
 
 		}
 	);
+	public static final OptionInstance<Combatify.CombatifyState> combatifyState = new OptionInstance<>(
+		"options.combatifyState",
+		OptionInstance.noTooltip(),
+		(component, state) -> state.getComponent(),
+		new OptionInstance.Enum<>(Arrays.asList(Combatify.CombatifyState.values()), Codec.INT.xmap(ordinal -> switch (Mth.positiveModulo(ordinal, 3)) {
+			case 0 -> Combatify.CombatifyState.VANILLA;
+			case 1 -> Combatify.CombatifyState.CTS_8C;
+			default -> Combatify.CombatifyState.COMBATIFY;
+		}, Combatify.CombatifyState::ordinal)),
+		Combatify.CombatifyState.COMBATIFY,
+		value -> Combatify.state = value
+	);
 	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),

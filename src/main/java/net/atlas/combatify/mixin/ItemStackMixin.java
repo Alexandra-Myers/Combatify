@@ -77,11 +77,11 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
 	public void addAttackReach(Consumer<Component> consumer, Player player, Holder<Attribute> holder, AttributeModifier attributeModifier, CallbackInfo ci, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl) {
 		if (player != null) {
-			if (attributeModifier.id() == WeaponType.BASE_ATTACK_SPEED_CTS_ID) {
+			if (attributeModifier.is(WeaponType.BASE_ATTACK_SPEED_CTS_ID)) {
 				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
 				bl.set(true);
 			}
-			if (attributeModifier.id() == WeaponType.BASE_ATTACK_REACH_ID) {
+			if (attributeModifier.is(WeaponType.BASE_ATTACK_REACH_ID)) {
 				d.set(d.get() + player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE) + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
 				bl.set(true);
 			}
