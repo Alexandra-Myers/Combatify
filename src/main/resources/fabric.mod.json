@@ -11,7 +11,7 @@
   "contact": {
     "sources": "https://github.com/Alexandra-Myers/Combatify"
   },
-  "license": "GPL-3.0",
+  "license": "LGPL-2.1",
 	"icon": "assets/combatify/icon.png",
 
 	"environment": "*",
