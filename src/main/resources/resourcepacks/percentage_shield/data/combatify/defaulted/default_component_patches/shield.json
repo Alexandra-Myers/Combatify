@@ -9,13 +9,13 @@
           {
             "base": 0,
             "factor": 0.5,
-            "horizontal_blocking_angle": 106.1276203
+            "horizontal_blocking_angle": 73.8723797
           },
           {
             "type": "#combatify:negated_by_shields",
             "base": 0,
             "factor": 1,
-            "horizontal_blocking_angle": 106.1276203
+            "horizontal_blocking_angle": 73.8723797
           }
         ],
         "block_sound": "minecraft:item.shield.block",

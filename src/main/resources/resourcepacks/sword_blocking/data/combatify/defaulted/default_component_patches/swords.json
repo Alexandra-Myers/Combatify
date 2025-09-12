@@ -8,7 +8,7 @@
         {
           "base": 0,
           "factor": 0.5,
-          "horizontal_blocking_angle": 106.1276203
+          "horizontal_blocking_angle": 73.8723797
         }
       ],
       "block_sound": "minecraft:entity.player.hurt"
