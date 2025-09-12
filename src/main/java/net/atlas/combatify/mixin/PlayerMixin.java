@@ -21,6 +21,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -35,8 +36,10 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -46,6 +49,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+
+import static net.atlas.combatify.util.MethodHandler.sweepAttack;
 
 @SuppressWarnings("unused")
 @Mixin(value = Player.class, priority = 1400)
@@ -97,6 +103,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Shadow
 	public abstract void resetAttackStrengthTicker();
 
+	@Shadow
+	protected int enchantmentSeed;
 	@Unique
 	protected int attackStrengthMaxValue;
 
@@ -244,7 +252,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			bl4.set(checkSweepAttack());
 		if (bl4.get()) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-			this.betterSweepAttack(box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, target);
+			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
+				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
+				if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+					attackDamageBonus = (float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus) - damage;
+				if (Combatify.CONFIG.attackDecay() || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+					attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
+				return damage + attackDamageBonus;
+			}, target);
 			bl4.set(false);
 		}
 	}
@@ -260,12 +275,19 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			float attackDamage = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE);
 			if (attackDamage > 0.0F && this.checkSweepAttack() && Combatify.CONFIG.canSweepOnMiss()) {
 				float currentAttackReach = (float) MethodHandler.getCurrentAttackReach(player, 1.0F);
-				double dirX = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
-				double dirZ = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
+				double dirX = -Mth.sin(getYRot() * (float) (Math.PI / 180.0)) * 2.0;
+				double dirZ = Mth.cos(getYRot() * (float) (Math.PI / 180.0)) * 2.0;
 				AABB sweepBox = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(dirX, 0.0, dirZ);
 				if (Combatify.CONFIG.enableDebugLogging())
 					Combatify.LOGGER.info("Swept");
-				betterSweepAttack(sweepBox, currentAttackReach, attackDamage, null);
+				sweepAttack(player, sweepBox, currentAttackReach, attackDamage, (livingEntity, damage, damageSource) -> {
+					float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
+					if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+						attackDamageBonus = (float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus) - damage;
+					if (Combatify.CONFIG.attackDecay() || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+						attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
+					return damage + attackDamageBonus;
+				}, null);
 			}
 			this.combatify$resetAttackStrengthTicker(false);
 		}
@@ -342,36 +364,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!Combatify.CONFIG.sweepWithSweeping())
 			return sweepingItem && sweep;
 		return sweep;
-	}
-
-	@Unique
-	public void betterSweepAttack(AABB box, float reach, float damage, Entity entity) {
-		float sweepingDamageRatio = (float) (1.0F + getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
-		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
-
-		for (LivingEntity livingEntity : livingEntities) {
-			if (livingEntity == player || livingEntity == entity || this.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
-				continue;
-			EntityReference<?> ownerReference;
-			if (Combatify.CONFIG.sweepingNegatedForTamed()
-				&& (livingEntity instanceof OwnableEntity ownableEntity
-					&& (ownerReference = ownableEntity.getOwnerReference()) != null
-					&& player.getUUID().equals(ownerReference.getUUID())
-					|| livingEntity.is(getVehicle())
-					|| livingEntity.isPassengerOfSameVehicle(player)))
-				continue;
-			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
-			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach)) {
-				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
-				livingEntity.hurtOrSimulate(damageSources().playerAttack(player), sweepingDamageRatio);
-			}
-		}
-		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
-		if (player.level() instanceof ServerLevel serverLevel) {
-			double dirX = -Mth.sin(player.getYRot() * 0.017453292F);
-			double dirZ = Mth.cos(player.getYRot() * 0.017453292F);
-			serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, player.getX() + dirX, player.getY() + player.getBbHeight() * 0.5, player.getZ() + dirZ, 0, dirX, 0.0, dirZ, 0.0);
-		}
 	}
 
 	@Override

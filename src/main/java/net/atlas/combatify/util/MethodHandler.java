@@ -26,6 +26,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
@@ -35,9 +36,11 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -104,6 +107,32 @@ public class MethodHandler {
 			return 0.5F;
 		else
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
+	}
+
+	public static void sweepAttack(Player player, AABB box, float reach, float damage, TriFunction<LivingEntity, Float, DamageSource, Float> enchantFunction, Entity entity) {
+		float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
+		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
+		DamageSource damageSource = Optional.ofNullable(player.getWeaponItem().getItem().getDamageSource(player)).orElse(player.damageSources().playerAttack(player));
+
+		for (LivingEntity livingEntity : livingEntities) {
+			if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
+				continue;
+			EntityReference<?> ownerReference;
+			if (Combatify.CONFIG.sweepingNegatedForTamed()
+				&& (livingEntity instanceof OwnableEntity ownableEntity
+				&& (ownerReference = ownableEntity.getOwnerReference()) != null
+				&& player.getUUID().equals(ownerReference.getUUID())
+				|| livingEntity.is(player.getVehicle())
+				|| livingEntity.isPassengerOfSameVehicle(player)))
+				continue;
+			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
+			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && player.level() instanceof ServerLevel serverLevel && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
+				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+				EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
+			}
+		}
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
+		player.sweepAttack();
 	}
 
 	public static double getKnockbackResistance(LivingEntity entity) {
