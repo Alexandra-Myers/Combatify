@@ -40,6 +40,13 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 		return value instanceof LivingEntity;
 	}
 
+	public final RandomSourceWrapper getLevelRandom() {
+		return new RandomSourceWrapper(value.level().getRandom());
+	}
+	public final RandomSourceWrapper getRandom() {
+		return new RandomSourceWrapper(value.getRandom());
+	}
+
 	public final void kill() {
 		if (value.level() instanceof ServerLevel serverLevel) value.kill(serverLevel);
 	}
