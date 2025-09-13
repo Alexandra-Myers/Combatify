@@ -158,10 +158,8 @@
           }
         }
       ],
-      "affected": "victim",
       "effect": {
-        "type": "knockback_entity",
-        "inverse_direction": true
+        "type": "knockback_entity"
       },
       "considers_banner": true
     }

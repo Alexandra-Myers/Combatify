@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -13,6 +14,7 @@ import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -180,6 +182,10 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 			MethodHandler.knockback(instance, d, e, f);
 		else
 			original.call(instance, d, e, f);
+	}
+	@ModifyReceiver(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
+	public ItemStack modifyBlockingItem(ItemStack instance, DataComponentType dataComponentType) {
+		return getBlockingItem(thisEntity).stack();
 	}
 
 	@ModifyExpressionValue(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isUsingItem()Z"))
