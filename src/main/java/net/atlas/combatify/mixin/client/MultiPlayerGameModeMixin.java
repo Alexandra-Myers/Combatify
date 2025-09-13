@@ -48,7 +48,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 
 	@Override
 	public void combatify$swingInAir(Player player) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			player.combatify$resetAttackStrengthTicker(false);
 			return;
 		}

@@ -66,7 +66,7 @@ public class MethodHandler {
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
 		if (entity instanceof Player player)
 			return player.getAttackStrengthScale(baseTime);
-		return Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
+		return Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
 	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -288,7 +288,7 @@ public class MethodHandler {
 	}
 	public static InteractionHand canCrouchShield(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) return null;
-		if (!(((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)))) return null;
+		if (!(((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))) return null;
 		for (InteractionHand hand : InteractionHand.values()) {
 			ItemStack stack = entity.getItemInHand(hand);
 			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
@@ -321,7 +321,7 @@ public class MethodHandler {
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
 		double chargedBonus = updatePlayerReach(player, attackRange, strengthScale);

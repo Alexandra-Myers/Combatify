@@ -1,5 +1,6 @@
 package net.atlas.combatify;
 
+import com.google.common.base.Suppliers;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
@@ -57,6 +58,7 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
@@ -67,7 +69,7 @@ public class Combatify implements ModInitializer {
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
-	public static CombatifyState state = CombatifyState.COMBATIFY;
+	private static Supplier<CombatifyState> state = Suppliers.memoize(() -> CombatifyState.COMBATIFY);
 	public static boolean isLoaded = false;
 	public static boolean mobConfigIsDirty = true;
 	public static final List<Item> shields = new ArrayListExtensions<>();
@@ -82,8 +84,12 @@ public class Combatify implements ModInitializer {
 	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 
-	public static void markState(CombatifyState state) {
+	public static void markState(Supplier<CombatifyState> state) {
 		Combatify.state = state;
+	}
+
+	public static CombatifyState getState() {
+		return Combatify.state.get();
 	}
 
 	@Override

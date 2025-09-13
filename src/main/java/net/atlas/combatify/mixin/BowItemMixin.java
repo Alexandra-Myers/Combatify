@@ -17,7 +17,7 @@ public abstract class BowItemMixin extends ProjectileWeaponItem {
 	}
 	@ModifyExpressionValue(method = "releaseUsing", at = @At(value = "CONSTANT", args = "floatValue=1.0F", ordinal = 0))
 	public float releaseUsing(float original, @Local(ordinal = 1) final int time) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (float) (Combatify.CONFIG.bowUncertainty() * getFatigueForTime(time));
 	}
 }
