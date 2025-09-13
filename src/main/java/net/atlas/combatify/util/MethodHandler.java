@@ -29,6 +29,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -154,23 +155,33 @@ public class MethodHandler {
 			entity.knockback(strength, x, z);
 			return;
 		}
+		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
 			entity.hasImpulse = true;
 			Vec3 delta = entity.getDeltaMovement();
+			while (x * x + z * z < 1.0E-5) {
+				x = (Math.random() - Math.random()) * 0.01;
+				z = (Math.random() - Math.random()) * 0.01;
+			}
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
 	}
 	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
+		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
 			entity.hasImpulse = true;
 			Vec3 delta = entity.getDeltaMovement();
+			while (x * x + z * z < 1.0E-5) {
+				x = (Math.random() - Math.random()) * 0.01;
+				z = (Math.random() - Math.random()) * 0.01;
+			}
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
