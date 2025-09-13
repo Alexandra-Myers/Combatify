@@ -17,6 +17,6 @@
         "tier": "iron"
       }
     },
-    "property": "minecraft:blocking"
+    "property": "minecraft:using_item"
   }
 }

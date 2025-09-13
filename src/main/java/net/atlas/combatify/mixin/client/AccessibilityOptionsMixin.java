@@ -22,9 +22,7 @@ public class AccessibilityOptionsMixin {
 
 		optionInstance.addAll(CombatifyClient.combatifyState,
 			CombatifyClient.autoAttack,
-			CombatifyClient.shieldCrouch,
-			CombatifyClient.attackIndicatorMinValue,
-			CombatifyClient.attackIndicatorMaxValue);
+			CombatifyClient.shieldCrouch);
 
 		return optionInstance.toArray(new OptionInstance[0]);
 	}

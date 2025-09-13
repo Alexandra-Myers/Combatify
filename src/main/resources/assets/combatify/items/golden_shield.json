@@ -17,6 +17,6 @@
         "tier": "gold"
       }
     },
-    "property": "minecraft:blocking"
+    "property": "minecraft:using_item"
   }
 }

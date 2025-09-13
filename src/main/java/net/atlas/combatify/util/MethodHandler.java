@@ -76,6 +76,17 @@ public class MethodHandler {
 		return new Vec3(x, y, z);
 	}
 
+	public static double calculateValueBlacklistChargedReachModifier(@Nullable AttributeInstance attributeInstance) {
+		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
+
+		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
+			if (attributeModifier.is(Combatify.CHARGED_REACH_ID)) continue;
+			attributeInstanceBaseValue += attributeModifier.amount();
+		}
+
+		return calculateValueFromBase(attributeInstance, attributeInstanceBaseValue);
+	}
+
 	public static double calculateValue(@Nullable AttributeInstance attributeInstance, float damageBonus) {
 		if(attributeInstance == null)
 			return damageBonus;
@@ -329,6 +340,13 @@ public class MethodHandler {
 			chargedBonus = 0;
 		}
 		return (attackRange != null) ? attackRange.getValue() : baseAttackRange + chargedBonus;
+	}
+
+	public static double getCurrentAttackReachWithoutChargedReach(Player player) {
+		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
+		return (attackRange != null) ? calculateValueBlacklistChargedReachModifier(attackRange) : baseAttackRange;
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
