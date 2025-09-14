@@ -17,6 +17,6 @@
         "tier": "diamond"
       }
     },
-    "property": "minecraft:blocking"
+    "property": "minecraft:using_item"
   }
 }

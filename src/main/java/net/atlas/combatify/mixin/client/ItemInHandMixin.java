@@ -43,7 +43,7 @@ public abstract class ItemInHandMixin {
 	}
 	@WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 6))
 	private void modifyBowCode1(PoseStack instance, float x, float y, float z, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) float f, @Local(ordinal = 0, argsOnly = true) ItemStack itemStack) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, x, y, z);
 			return;
 		}

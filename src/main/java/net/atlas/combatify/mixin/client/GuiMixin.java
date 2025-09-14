@@ -101,23 +101,54 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-        float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		if (minIndicator == maxIndicator) minIndicator = 0;
+		int yPos = guiGraphics.guiHeight() / 2 - 7 + 16;
+		int xPos = guiGraphics.guiWidth() / 2 - 8;
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
-		boolean bl = false;
+		if (CombatifyClient.dualAttackIndicator.get() && Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+			boolean shouldPick = false;
+			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
+			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
+			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= 1.0)
+				shouldPick = this.minecraft.crosshairPickEntity.isAlive();
+			int bottomYPos = yPos + 8;
+			if (attackStrengthScale < 2) {
+				int topHeight = (int)Math.min(attackStrengthScale * 17.0F, 17);
+				int bottomHeight = (int)Math.min(Math.max(attackStrengthScale - 1.3F, 0) / (0.70000005F) * 17.0F, 17);
+				if (shouldPick) {
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
+				} else {
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 16, 4);
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, xPos, yPos, topHeight, 4);
+				}
+				guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, bottomYPos, 16, 4);
+				guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, xPos, bottomYPos, bottomHeight, 4);
+			} else if (shouldPick) {
+				double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraft.player);
+				if (minecraft.player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), minecraft.player.getEyePosition())) < reachLimited * reachLimited) guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
+				else {
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 16, 4);
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, xPos, yPos, 16, 4);
+				}
+				guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, bottomYPos, 16, 16);
+			}
+
+			ci.cancel();
+			return;
+		}
+		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		if (minIndicator == maxIndicator) minIndicator = 0;
+		boolean shouldPick = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator)
-			bl = this.minecraft.crosshairPickEntity.isAlive();
-		int j = guiGraphics.guiHeight() / 2 - 7 + 16;
-		int k = guiGraphics.guiWidth() / 2 - 8;
-		if (bl)
-			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, k, j, 16, 16);
+			shouldPick = this.minecraft.crosshairPickEntity.isAlive();
+		if (shouldPick)
+			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) {
 			int height = (int)((attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F) * 17.0F);
-			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, k, j, 16, 4);
-			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, k, j, height, 4);
+			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 16, 4);
+			guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, xPos, yPos, height, 4);
 		}
 		ci.cancel();
 	}
@@ -133,25 +164,56 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-		int n = guiGraphics.guiHeight() - 20;
-		int o = i + 91 + 6;
+		int yPos = guiGraphics.guiHeight() - 20;
+		int xPos = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT)
-			o = i - 91 - 22;
-		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		if (minIndicator == maxIndicator) minIndicator = 0;
+			xPos = i - 91 - 22;
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
-		boolean bl = false;
+		if (CombatifyClient.dualAttackIndicator.get() && Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+			boolean shouldPick = false;
+			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
+			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
+			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= 1.0)
+				shouldPick = this.minecraft.crosshairPickEntity.isAlive();
+			int bottomXPos = xPos + (humanoidArm == HumanoidArm.RIGHT ? -20 : 20);
+			if (attackStrengthScale < 2) {
+				int topHeight = (int)Math.min(attackStrengthScale * 19.0F, 18);
+				int bottomHeight = (int)Math.min(Math.max(attackStrengthScale - 1.3F, 0) / 0.70000005F * 19.0F, 19);
+				if (shouldPick) {
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
+				} else {
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 18, 18);
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - topHeight, xPos, yPos + 18 - topHeight, 18, topHeight);
+				}
+				guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, bottomXPos, yPos, 18, 18);
+				guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - bottomHeight, bottomXPos, yPos + 18 - bottomHeight, 18, bottomHeight);
+			} else if (shouldPick) {
+				double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(player);
+				if (player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= reachLimited * reachLimited) guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
+				else {
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 18, 18);
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, xPos, yPos, 18, 18);
+				}
+				guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, bottomXPos, yPos, 18, 18);
+			}
+
+			ci.cancel();
+			return;
+		}
+		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		if (minIndicator == maxIndicator) minIndicator = 0;
+		boolean shouldPick = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
 		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator)
-			bl = this.minecraft.crosshairPickEntity.isAlive();
-		if (bl)
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, o, n, 18, 18);
+			shouldPick = this.minecraft.crosshairPickEntity.isAlive();
+		if (shouldPick)
+			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) {
 			int height = (int)((attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F) * 19.0F);
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, o, n, 18, 18);
-			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - height, o, n + 18 - height, 18, height);
+			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 18, 18);
+			guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - height, xPos, yPos + 18 - height, 18, height);
 		}
 
 		ci.cancel();

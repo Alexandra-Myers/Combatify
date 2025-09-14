@@ -35,7 +35,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
 					.filter(attributeModifier -> attributeModifier.id().equals(Item.BASE_ATTACK_SPEED_ID))
 					.toList()
-					.isEmpty() && !Combatify.state.equals(Combatify.CombatifyState.CTS_8C);
+					.isEmpty() && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C);
 				int mul = Combatify.CONFIG.chargedAttacks() ? 2 : 1;
 				double newSpeed = speed - mod;
 				if (hasVanilla || newSpeed <= 0) newSpeed += mod;

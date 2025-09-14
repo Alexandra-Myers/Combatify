@@ -27,17 +27,21 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -64,7 +68,7 @@ public class MethodHandler {
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
 		if (entity instanceof Player player)
 			return player.getAttackStrengthScale(baseTime);
-		return Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
+		return Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
 	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -72,6 +76,17 @@ public class MethodHandler {
 		double z = Mth.clamp(vec3.z, box.minZ, box.maxZ);
 
 		return new Vec3(x, y, z);
+	}
+
+	public static double calculateValueBlacklistChargedReachModifier(@Nullable AttributeInstance attributeInstance) {
+		double attributeInstanceBaseValue = attributeInstance.getBaseValue();
+
+		for(AttributeModifier attributeModifier : attributeInstance.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
+			if (attributeModifier.is(Combatify.CHARGED_REACH_ID)) continue;
+			attributeInstanceBaseValue += attributeModifier.amount();
+		}
+
+		return calculateValueFromBase(attributeInstance, attributeInstanceBaseValue);
 	}
 
 	public static double calculateValue(@Nullable AttributeInstance attributeInstance, float damageBonus) {
@@ -108,6 +123,30 @@ public class MethodHandler {
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
 	}
 
+	public static void sweepAttack(Player player, AABB box, float reach, float damage, TriFunction<LivingEntity, Float, DamageSource, Float> enchantFunction, Entity entity) {
+		float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
+		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
+		DamageSource damageSource = Optional.ofNullable(player.getWeaponItem().getItem().getDamageSource(player)).orElse(player.damageSources().playerAttack(player));
+
+		for (LivingEntity livingEntity : livingEntities) {
+			if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
+				continue;
+			if (Combatify.CONFIG.sweepingNegatedForTamed()
+				&& (livingEntity instanceof OwnableEntity ownableEntity
+				&& player.getUUID().equals(ownableEntity.getOwnerUUID())
+				|| livingEntity.is(player.getVehicle())
+				|| livingEntity.isPassengerOfSameVehicle(player)))
+				continue;
+			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
+			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && player.level() instanceof ServerLevel serverLevel && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
+				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+				EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
+			}
+		}
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
+		player.sweepAttack();
+	}
+
 	public static double getKnockbackResistance(LivingEntity entity) {
 		double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
 		ItemStack blockingItem = getBlockingItem(entity).stack();
@@ -127,23 +166,33 @@ public class MethodHandler {
 			entity.knockback(strength, x, z);
 			return;
 		}
+		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
 			entity.hasImpulse = true;
 			Vec3 delta = entity.getDeltaMovement();
+			while (x * x + z * z < 1.0E-5) {
+				x = (Math.random() - Math.random()) * 0.01;
+				z = (Math.random() - Math.random()) * 0.01;
+			}
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
 	}
 	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
+		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
 			entity.hasImpulse = true;
 			Vec3 delta = entity.getDeltaMovement();
+			while (x * x + z * z < 1.0E-5) {
+				x = (Math.random() - Math.random()) * 0.01;
+				z = (Math.random() - Math.random()) * 0.01;
+			}
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
@@ -274,7 +323,7 @@ public class MethodHandler {
 			if (entity.getUseItem().getUseAnimation() == ItemUseAnimation.BLOCK) {
 				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
 			}
-		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))) {
+		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))) {
 			for (InteractionHand hand : InteractionHand.values()) {
 				ItemStack stack = entity.getItemInHand(hand);
 				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
@@ -306,7 +355,7 @@ public class MethodHandler {
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
 		double chargedBonus = updatePlayerReach(player, attackRange, strengthScale);
@@ -314,6 +363,13 @@ public class MethodHandler {
 			chargedBonus = 0;
 		}
 		return (attackRange != null) ? attackRange.getValue() : baseAttackRange + chargedBonus;
+	}
+
+	public static double getCurrentAttackReachWithoutChargedReach(Player player) {
+		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
+		return (attackRange != null) ? calculateValueBlacklistChargedReachModifier(attackRange) : baseAttackRange;
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);

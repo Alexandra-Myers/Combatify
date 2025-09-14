@@ -24,7 +24,7 @@ import squeek.appleskin.helpers.FoodHelper;
 public abstract class HUDOverlayHandlerMixin {
 	@ModifyExpressionValue(method = "shouldShowEstimatedHealth", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int modifyMinHunger(int original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumHealingLevel()");
 	}
 	@ModifyExpressionValue(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodProperties;saturation()F"))
@@ -34,7 +34,7 @@ public abstract class HUDOverlayHandlerMixin {
 	}
 	@WrapOperation(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lsqueek/appleskin/client/HUDOverlayHandler;drawHungerOverlay(Lsqueek/appleskin/api/event/HUDOverlayEvent$HungerRestored;Lnet/minecraft/client/Minecraft;IFZI)V"))
 	public void modifyNewHunger(HUDOverlayHandler instance, HUDOverlayEvent.HungerRestored event, Minecraft mc, int hunger, float alpha, boolean useRottenTextures, int guiTicks, Operation<Void> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0) FoodHelper.QueriedFoodResult foodResult) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, event, mc, hunger, alpha, useRottenTextures, guiTicks);
 			return;
 		}
@@ -42,7 +42,7 @@ public abstract class HUDOverlayHandlerMixin {
 	}
 	@WrapOperation(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lsqueek/appleskin/client/HUDOverlayHandler;drawSaturationOverlay(Lsqueek/appleskin/api/event/HUDOverlayEvent$Saturation;Lnet/minecraft/client/Minecraft;FFI)V", ordinal = 1))
 	public void modifyNewSaturation(HUDOverlayHandler instance, HUDOverlayEvent.Saturation event, Minecraft mc, float saturationGained, float alpha, int guiTicks, Operation<Void> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0) FoodHelper.QueriedFoodResult foodResult) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, event, mc, saturationGained, alpha, guiTicks);
 			return;
 		}

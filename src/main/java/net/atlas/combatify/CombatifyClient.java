@@ -79,8 +79,9 @@ public class CombatifyClient implements ClientModInitializer {
 			default -> Combatify.CombatifyState.COMBATIFY;
 		}, Combatify.CombatifyState::ordinal)),
 		Combatify.CombatifyState.COMBATIFY,
-		value -> Combatify.state = value
+		value -> {}
 	);
+	public static final OptionInstance<Boolean> dualAttackIndicator = OptionInstance.createBoolean("options.dualAttackIndicator", false);
 	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),
@@ -117,6 +118,7 @@ public class CombatifyClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
+		Combatify.markState(combatifyState::get);
 		if (Combatify.CONFIG.tieredShields()) {
 			EntityModelLayerRegistry.registerModelLayer(WOODEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);

@@ -15,7 +15,7 @@ public abstract class CrossbowItemMixin extends ProjectileWeaponItem {
 	}
 	@ModifyExpressionValue(method = "use", at = @At(value = "CONSTANT", args = "floatValue=1.0F", ordinal = 0))
 	public float releaseUsing(float original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.crossbowUncertainty().floatValue();
 	}
 }

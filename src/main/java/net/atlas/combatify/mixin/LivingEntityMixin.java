@@ -144,20 +144,20 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@ModifyReturnValue(method = "isDamageSourceBlocked", at = @At(value = "RETURN", ordinal = 0))
 	public boolean isDamageSourceBlocked(boolean original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.shieldProtectionArc() == 0D || original;
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D"))
 	public double modifyDotResultToGetRadians(double original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-        return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.acos(original) / -1;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+        return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.acos(original);
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "CONSTANT", args = "doubleValue=0.0", ordinal = 1))
 	public double modifyCompareValue(double original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc()) / -1;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc());
 	}
 
 	@ModifyReturnValue(method = "getItemBlockingWith", at = @At("RETURN"))

@@ -80,6 +80,6 @@ function fastHeal(foodData, player) {
 }
 function heal(foodData, player) {
     player.heal(1.0);
-    if (player.level().random.nextBoolean()) foodData.setFoodLevel(foodData.getFoodLevel() - 1);
+    if (player.getLevelRandom().nextBoolean()) foodData.setFoodLevel(foodData.getFoodLevel() - 1);
     return true;
 }

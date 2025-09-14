@@ -25,28 +25,28 @@ public class FoodHelperMixin {
 	}
 	@WrapOperation(method = "getEstimatedHealthIncrement(Lnet/minecraft/world/entity/player/Player;Lsqueek/appleskin/helpers/ConsumableFood;)F", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"))
 	private static int modifyMinHunger(int i, int j, Operation<Integer> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0, argsOnly = true) ConsumableFood food) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original.call(i, j);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original.call(i, j);
 		return (int) Combatify.CONFIG.getFoodImpl().execFoodGetterFunc(original.call(i, j), foodData, player, "estimateNewFoodLevel(foodData, player, foodProperties)", new JSImpl.Reference<>("foodProperties", food.food(), FoodPropertiesWrapper::new));
 	}
 	@WrapOperation(method = "getEstimatedHealthIncrement(Lnet/minecraft/world/entity/player/Player;Lsqueek/appleskin/helpers/ConsumableFood;)F", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(FF)F"))
 	private static float modifyMinHunger(float a, float b, Operation<Float> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0, argsOnly = true) ConsumableFood food) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original.call(a, b);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original.call(a, b);
 		return (float) Combatify.CONFIG.getFoodImpl().execFoodGetterFunc(original.call(a, b), foodData, player, "estimateNewSaturationLevel(foodData, player, foodProperties)", new JSImpl.Reference<>("foodProperties", food.food(), FoodPropertiesWrapper::new));
 	}
 	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "CONSTANT", args = "intValue=18"), remap = false)
 	private static int modifyMinHunger(int original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumHealingLevel()");
 	}
 	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(IFF)F", at = @At(value = "CONSTANT", args = "intValue=20"), remap = false)
 	private static int changeConst2(int original, @Local(ordinal = 0, argsOnly = true) int foodLevel, @Local(ordinal = 0, argsOnly = true) float saturationLevel, @Local(ordinal = 1, argsOnly = true) float exhaustionLevel) {
-		if(Combatify.CONFIG.getFoodImpl().execFunc("canFastHealRaw(foodLevel, saturationLevel, exhaustionLevel)", new JSImpl.Reference<>("foodLevel", new SimpleAPIWrapper<>(foodLevel)), new JSImpl.Reference<>("saturationLevel", new SimpleAPIWrapper<>(saturationLevel)), new JSImpl.Reference<>("exhaustionLevel", new SimpleAPIWrapper<>(exhaustionLevel))) || Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+		if(Combatify.CONFIG.getFoodImpl().execFunc("canFastHealRaw(foodLevel, saturationLevel, exhaustionLevel)", new JSImpl.Reference<>("foodLevel", new SimpleAPIWrapper<>(foodLevel)), new JSImpl.Reference<>("saturationLevel", new SimpleAPIWrapper<>(saturationLevel)), new JSImpl.Reference<>("exhaustionLevel", new SimpleAPIWrapper<>(exhaustionLevel))) || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
 			return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumFastHealingLevel()");
 		return 1000000;
 	}
 	@WrapMethod(method = "getEstimatedHealthIncrement(IFF)F", remap = false)
 	private static float changeExhaustion(int foodLevel, float saturationLevel, float exhaustionLevel, Operation<Float> original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original.call(foodLevel, saturationLevel, exhaustionLevel);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original.call(foodLevel, saturationLevel, exhaustionLevel);
 		if (Combatify.CONFIG.getFoodImpl().execFunc("shouldOverrideAppleSkin()")) return (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(0.0, "editAppleSkinHealthGained(foodLevel, saturationLevel, exhaustionLevel)", new JSImpl.Reference<>("foodLevel", new SimpleAPIWrapper<>(foodLevel)), new JSImpl.Reference<>("saturationLevel", new SimpleAPIWrapper<>(saturationLevel)), new JSImpl.Reference<>("exhaustionLevel", new SimpleAPIWrapper<>(exhaustionLevel)));
 		return original.call(foodLevel, saturationLevel, exhaustionLevel);
 	}

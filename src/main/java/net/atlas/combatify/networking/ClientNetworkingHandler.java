@@ -27,7 +27,6 @@ public class ClientNetworkingHandler {
 			sender.responseSender().sendPacket(ClientPlayNetworking.createC2SPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));
 			connectionState = ConnectionState.CONFIGURATION;
 		});
-		ClientPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, client) -> Combatify.markState(CombatifyState.COMBATIFY));
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel, (handler, sender, client) -> {
 			connectionState = ConnectionState.PLAY;
 			if (!ClientPlayNetworking.canSend(NetworkingHandler.ServerboundMissPacket.TYPE)) {
