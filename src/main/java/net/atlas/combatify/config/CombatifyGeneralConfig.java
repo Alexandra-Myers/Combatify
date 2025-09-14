@@ -243,7 +243,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		shieldDisableTime = createInRange("shieldDisableTime", 1.6, 0, 10);
 		shieldDisableTime.tieToCategory(ctsD);
 		shieldDisableTime.setupTooltip(1);
-		shieldProtectionArc = createInRange("shieldProtectionArc", 130, 0, 360);
+		shieldProtectionArc = createInRange("shieldProtectionArc", 73.8723797, 0, 180);
 		shieldProtectionArc.tieToCategory(ctsD);
 		shieldProtectionArc.setupTooltip(1);
 		minHitboxSize = createInRange("minHitboxSize", 0.9, 0, 5);

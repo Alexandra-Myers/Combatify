@@ -38,6 +38,7 @@
     "ServerConfigurationPacketMixin",
     "ServerEntityMixin",
     "ServerGamePacketMixin",
+    "ServerPlayerGameModeMixin",
     "ServerPlayerMixin",
     "ShieldDecorationRecipeMixin",
     "ShieldItemMixin",

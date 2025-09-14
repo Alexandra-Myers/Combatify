@@ -3,6 +3,7 @@ package net.atlas.combatify;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.combatify.client.ShieldMaterial;
+import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.fabricmc.api.ClientModInitializer;
@@ -80,7 +81,18 @@ public class CombatifyClient implements ClientModInitializer {
 			default -> Combatify.CombatifyState.COMBATIFY;
 		}, Combatify.CombatifyState::ordinal)),
 		Combatify.CombatifyState.COMBATIFY,
-		value -> Combatify.state = value
+		value -> {
+
+		}
+	);
+	public static final OptionInstance<DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
+		"options.dualAttackIndicator",
+		OptionInstance.noTooltip(),
+		OptionInstance.forOptionEnum(),
+		new OptionInstance.Enum<>(Arrays.asList(DualAttackIndicatorStatus.values()), Codec.INT.xmap(DualAttackIndicatorStatus::byId, DualAttackIndicatorStatus::getId)),
+		DualAttackIndicatorStatus.OFF,
+		value -> {
+		}
 	);
 	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
@@ -118,6 +130,7 @@ public class CombatifyClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
+		Combatify.markState(combatifyState::get);
 		if (Combatify.CONFIG.tieredShields()) {
 			EntityModelLayerRegistry.registerModelLayer(WOODEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 			EntityModelLayerRegistry.registerModelLayer(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);

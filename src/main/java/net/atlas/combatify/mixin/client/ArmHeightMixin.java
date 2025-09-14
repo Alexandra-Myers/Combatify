@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.At;
 public class ArmHeightMixin {
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
 	public float modifyArmHeight(float strengthScale) {
-		if (Combatify.CONFIG.chargedAttacks() && !Combatify.state.equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
 			strengthScale *= 0.5f;
-		if (CombatifyClient.augmentedArmHeight.get().orElse(!Combatify.state.equals(Combatify.CombatifyState.VANILLA)))
+		if (CombatifyClient.augmentedArmHeight.get().orElse(!Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))
 			strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
 		return strengthScale;
 	}

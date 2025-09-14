@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class FoodDataMixin {
 	@WrapMethod(method = "add")
 	public void capAt20(int i, float f, Operation<Void> original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(i, f);
 			return;
 		}
@@ -37,37 +37,37 @@ public class FoodDataMixin {
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int changeConst(int original, @Local(ordinal = 0, argsOnly = true) Player player) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumHealingLevel()");
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int changeConst2(int original, @Local(ordinal = 0, argsOnly = true) Player player) {
-		if (Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), player, "canFastHeal(foodData, player)") || Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumFastHealingLevel()");
+		if (Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), player, "canFastHeal(foodData, player)") || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumFastHealingLevel()");
 		return 1000000;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=10", ordinal = 0))
 	public int redirectTickTimer(int original, @Local(ordinal = 0, argsOnly = true) Player player) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) (Combatify.CONFIG.getFoodImpl().execGetterFunc(original / 20.0, "getFastHealSeconds()") * 20);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=80", ordinal = 0))
 	public int redirectTickTimer1(int original, @Local(ordinal = 0, argsOnly = true) Player player) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) (Combatify.CONFIG.getFoodImpl().execGetterFunc(original / 20.0, "getHealSeconds()") * 20);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=80", ordinal = 1))
 	public int redirectTickTimer2(int original, @Local(ordinal = 0, argsOnly = true) Player player) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) (Combatify.CONFIG.getFoodImpl().execGetterFunc(original / 20.0, "getStarvationSeconds()") * 20);
 	}
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;heal(F)V", ordinal = 0))
 	public void modifyFastHealing(Player instance, float health, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, health);
 			return;
 		}
@@ -79,7 +79,7 @@ public class FoodDataMixin {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V", ordinal = 0))
 	public void modifyFastHealing(FoodData instance, float exhaustion, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, exhaustion);
 			return;
 		}
@@ -90,7 +90,7 @@ public class FoodDataMixin {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;heal(F)V", ordinal = 1))
 	public void modifyNaturalHealing(Player instance, float health, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, health);
 			return;
 		}
@@ -102,7 +102,7 @@ public class FoodDataMixin {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V", ordinal = 1))
 	public void modifyNaturalHealing(FoodData instance, float exhaustion, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			original.call(instance, exhaustion);
 			return;
 		}

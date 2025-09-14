@@ -18,16 +18,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
-import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -148,20 +144,20 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@ModifyReturnValue(method = "isDamageSourceBlocked", at = @At(value = "RETURN", ordinal = 0))
 	public boolean isDamageSourceBlocked(boolean original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.shieldProtectionArc() == 360D || original;
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D"))
 	public double modifyDotResultToGetRadians(double original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-        return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : original * Math.PI;
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+        return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : Math.acos(original) / -1;
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "CONSTANT", args = "doubleValue=0.0", ordinal = 1))
 	public double modifyCompareValue(double original) {
-		if (Combatify.state.equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc() - 180D);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		return Combatify.CONFIG.shieldProtectionArc() == 180D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc()) / -1;
 	}
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {
