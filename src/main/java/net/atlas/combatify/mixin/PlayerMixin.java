@@ -220,6 +220,10 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			this.combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 		}
 	}
+	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
+	public void stopReset(Player instance, Operation<Void> original) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original.call(instance);
+	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 1) float attackDamageBonus) {
 		attacked = true;
@@ -273,7 +277,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		else original.call(instance, d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
-	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage) {
+	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Share("didSweep") LocalBooleanRef didSweep) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
 		bl4.set(false);
 		double d = this.getKnownMovement().horizontalDistanceSqr();
@@ -288,12 +292,13 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 				return damage + attackDamageBonus;
 			}, target);
+			didSweep.set(true);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
-	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4) {
+	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4, @Share("didSweep") LocalBooleanRef didSweep) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
-		bl4.set(checkSweepAttack());
+		bl4.set(didSweep.get());
 	}
 	@Override
 	public void combatify$attackAir() {
