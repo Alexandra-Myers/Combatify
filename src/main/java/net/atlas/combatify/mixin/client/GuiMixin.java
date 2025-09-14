@@ -127,7 +127,7 @@ public abstract class GuiMixin {
 			if (CombatifyClient.dualAttackIndicator.get() == DualAttackIndicatorStatus.BOTTOM) {
 				int bottomYPos = yPos + 8;
 				if (attackStrengthScale < 2) {
-					int topHeight = (int) Math.min(attackStrengthScale * 17.0F, 17);
+					int topHeight = (int) Math.min(attackStrengthScale * 17.0F, 16);
 					int bottomHeight = (int) Math.min(Math.max(attackStrengthScale - 1.3F, 0) / (0.70000005F) * 17.0F, 17);
 					if (shouldPick) {
 						guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
