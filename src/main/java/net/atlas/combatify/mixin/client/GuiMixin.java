@@ -125,7 +125,10 @@ public abstract class GuiMixin {
 			} else if (shouldPick) {
 				double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraft.player);
 				if (minecraft.player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), minecraft.player.getEyePosition())) < reachLimited * reachLimited) guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
-				else guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, xPos, yPos, 16, 4);
+				else {
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 16, 4);
+					guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, xPos, yPos, 16, 4);
+				}
 				guiGraphics.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, bottomYPos, 16, 16);
 			}
 
@@ -187,7 +190,10 @@ public abstract class GuiMixin {
 			} else if (shouldPick) {
 				double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(player);
 				if (player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= reachLimited * reachLimited) guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
-				else guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, xPos, yPos, 18, 18);
+				else {
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, xPos, yPos, 18, 18);
+					guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, xPos, yPos, 18, 18);
+				}
 				guiGraphics.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, bottomXPos, yPos, 18, 18);
 			}
 
