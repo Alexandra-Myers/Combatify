@@ -18,7 +18,7 @@ public abstract class DiggerItemMixin extends Item {
 	@WrapOperation(method = "postHurtEnemy",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
 	public void damage(ItemStack instance, int amount, LivingEntity livingEntity, EquipmentSlot equipmentSlot, Operation<Void> original) {
-		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
+		boolean bl = instance.getItem() instanceof AxeItem;
 		if (bl && Combatify.CONFIG.axesAreWeapons())
 			amount -= 1;
 		original.call(instance, amount, livingEntity, equipmentSlot);
