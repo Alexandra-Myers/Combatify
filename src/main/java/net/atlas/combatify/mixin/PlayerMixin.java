@@ -278,9 +278,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		bl4.set(false);
 		double d = this.getKnownMovement().horizontalDistanceSqr();
 		double e = (double)this.getSpeed() * 2.5;
-		if (!bl3 && !bl2 && this.onGround() && d < Mth.square(e))
-			bl4.set(checkSweepAttack());
-		if (bl4.get()) {
+		if (!bl3 && !bl2 && this.onGround() && d < Mth.square(e) && checkSweepAttack()) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
 				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
@@ -290,7 +288,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 				return damage + attackDamageBonus;
 			}, target);
-			bl4.set(false);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
