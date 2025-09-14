@@ -102,6 +102,8 @@
   "options.autoAttack" : "Auto-Attack",
   "options.shieldCrouch" : "Use Shield on Crouch",
   "options.dualAttackIndicator" : "Dual Attack Indicators",
+  "options.dualAttackIndicator.bottom" : "On (Bottom of Crosshair)",
+  "options.dualAttackIndicator.side" : "On (Side of Crosshair)",
   "options.attackIndicatorMaxValue" : "Attack Indicator Max Value",
   "options.attackIndicatorMaxValue.tooltip" : "Adjust this slider to change the value at which the Attack Indicator will finish charging to on screen. By default this is 2.0, to match CTS.",
   "options.attackIndicatorMaxValue.default" : "Default",

@@ -3,6 +3,7 @@ package net.atlas.combatify;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.combatify.client.ShieldMaterial;
+import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.fabricmc.api.ClientModInitializer;
@@ -81,7 +82,15 @@ public class CombatifyClient implements ClientModInitializer {
 		Combatify.CombatifyState.COMBATIFY,
 		value -> {}
 	);
-	public static final OptionInstance<Boolean> dualAttackIndicator = OptionInstance.createBoolean("options.dualAttackIndicator", false);
+	public static final OptionInstance<DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
+		"options.dualAttackIndicator",
+		OptionInstance.noTooltip(),
+		OptionInstance.forOptionEnum(),
+		new OptionInstance.Enum<>(Arrays.asList(DualAttackIndicatorStatus.values()), Codec.INT.xmap(DualAttackIndicatorStatus::byId, DualAttackIndicatorStatus::getId)),
+		DualAttackIndicatorStatus.OFF,
+		value -> {
+		}
+	);
 	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),

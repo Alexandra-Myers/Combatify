@@ -151,13 +151,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D"))
 	public double modifyDotResultToGetRadians(double original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
-        return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.acos(original);
+        return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.acos(original) / -1;
 	}
 
 	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "CONSTANT", args = "doubleValue=0.0", ordinal = 1))
 	public double modifyCompareValue(double original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc());
+		return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc()) / -1;
 	}
 
 	@ModifyReturnValue(method = "getItemBlockingWith", at = @At("RETURN"))
