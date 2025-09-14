@@ -43,6 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static net.atlas.combatify.util.MethodHandler.sweepAttack;
 
@@ -148,11 +149,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
 	public void redirectDurability(Player instance, Operation<Void> original) {
-		if (Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
-			resetAttackStrengthTicker(false, true);
-			return;
-		}
-		original.call(instance);
+		if (Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) resetAttackStrengthTicker(false, true, original::call);
 	}
 
 	@Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getItemBlockingWith()Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
@@ -201,7 +198,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
 	public void reset(CallbackInfo ci) {
-		ci.cancel();
+		int chargeTicks = (int) this.getCurrentItemAttackStrengthDelay() * ((Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || chargeTicks > (attackStrengthMaxValue - attackStrengthTicker)) {
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
+			this.attackStrengthMaxValue = chargeTicks;
+		} else ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;"))
 	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 1) float enchantDamage, @Local(ordinal = 2) float strengthScale, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
@@ -291,13 +293,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Override
 	public void combatify$resetAttackStrengthTicker(boolean hit) {
-		resetAttackStrengthTicker(hit, false);
+		resetAttackStrengthTicker(hit, false, Player::resetAttackStrengthTicker);
 	}
 	@Unique
-	public void resetAttackStrengthTicker(boolean hit, boolean force) {
+	public void resetAttackStrengthTicker(boolean hit, boolean force, Consumer<Player> vanillaReset) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
-			this.attackStrengthMaxValue = (int) (this.getCurrentItemAttackStrengthDelay()) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-			this.attackStrengthTicker = 0;
+			vanillaReset.accept(player);
 			return;
 		}
 		this.missedAttackRecovery = !hit && Combatify.CONFIG.missedAttackRecovery();
