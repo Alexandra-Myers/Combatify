@@ -1,24 +1,17 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.*;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -61,19 +54,6 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 		this.addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, tooltipDisplay, consumer, tooltipFlag);
 	}
 
-	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
-	public void addAttackReach(Consumer<Component> consumer, Player player, Holder<Attribute> holder, AttributeModifier attributeModifier, CallbackInfo ci, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl) {
-		if (player != null) {
-			if (attributeModifier.is(WeaponType.BASE_ATTACK_SPEED_CTS_ID)) {
-				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
-				bl.set(true);
-			}
-			if (attributeModifier.is(WeaponType.BASE_ATTACK_REACH_ID)) {
-				d.set(d.get() + player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE) + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
-				bl.set(true);
-			}
-		}
-	}
 	@Inject(method = "addAttributeTooltips", at = @At("RETURN"))
 	public void addPiercing(Consumer<Component> consumer, TooltipDisplay tooltipDisplay, Player player, CallbackInfo ci) {
 		if (tooltipDisplay.shows(DataComponents.ATTRIBUTE_MODIFIERS) && player != null) {

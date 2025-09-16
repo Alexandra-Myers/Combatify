@@ -41,7 +41,7 @@ public class NetworkingHandler {
 		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, context) -> {
 			ServerPlayer player = context.player().connection.getPlayer();
-			final ServerLevel serverLevel = player.serverLevel();
+			final ServerLevel serverLevel = player.level();
 			player.resetLastActionTime();
 			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition()))
 				return;

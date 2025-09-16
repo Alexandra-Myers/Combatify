@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
+import java.util.Set;
 
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.CombatifyClient;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 @Environment(EnvType.CLIENT)
 public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
@@ -80,6 +82,13 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 		}
 
 		poseStack.popPose();
+	}
+
+	@Override
+	public void getExtents(Set<Vector3f> set) {
+		PoseStack poseStack = new PoseStack();
+		poseStack.scale(1.0F, -1.0F, -1.0F);
+		this.model.root().getExtentsForGui(poseStack, set);
 	}
 
 	@Environment(EnvType.CLIENT)

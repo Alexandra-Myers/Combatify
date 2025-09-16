@@ -20,6 +20,7 @@
     "FishingHookMixin",
     "FoodDataMixin",
     "InvulnerabilityMixin",
+    "ItemAttributeModifiersDefaultDisplayMixin",
     "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",

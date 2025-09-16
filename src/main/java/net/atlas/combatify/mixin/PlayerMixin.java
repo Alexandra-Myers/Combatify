@@ -15,7 +15,6 @@ import net.atlas.combatify.config.JSImpl;
 import net.atlas.combatify.config.wrapper.*;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -34,6 +33,7 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
@@ -127,7 +127,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			cir.setReturnValue(super.hurtServer(serverLevel, source, amount));
 	}
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-	public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
+	public void readAdditionalSaveData(ValueInput valueInput, CallbackInfo ci) {
 		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(Combatify.CONFIG.fistDamage());
 		Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() + 1.5);
 		Objects.requireNonNull(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)).setBaseValue(Combatify.CONFIG.attackReach() ? 2.5 : 3);

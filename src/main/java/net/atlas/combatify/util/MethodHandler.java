@@ -209,14 +209,14 @@ public class MethodHandler {
 		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
 
 		return ProjectileUtil.getEntityHitResult(
-			entity.level(),
 			entity,
 			from,
 			to,
 			new AABB(from, to),
 			EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(e -> e != null
 				&& e.isPickable()
-				&& e instanceof LivingEntity)
+				&& e instanceof LivingEntity),
+			blockReachDistance * blockReachDistance
 		);
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
