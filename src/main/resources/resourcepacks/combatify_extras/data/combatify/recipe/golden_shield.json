@@ -8,7 +8,7 @@
   ],
   "key": {
     "X": "#minecraft:gold_tool_materials",
-    "#": "minecraft:gold_block"
+    "#": "#c:storage_blocks/gold"
   },
   "result": {
     "count": 1,

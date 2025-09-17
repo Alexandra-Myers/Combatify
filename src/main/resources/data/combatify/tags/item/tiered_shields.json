@@ -7,6 +7,10 @@
       "required": false
     },
     {
+      "id": "combatify:copper_shield",
+      "required": false
+    },
+    {
       "id": "combatify:iron_shield",
       "required": false
     },

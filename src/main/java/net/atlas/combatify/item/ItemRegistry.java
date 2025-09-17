@@ -18,6 +18,8 @@ public class ItemRegistry {
 	public static final Item WOODEN_LONGSWORD = registerItem(id("wooden_longsword"), properties -> new LongSwordItem(ToolMaterial.WOOD, 0, properties), new Item.Properties());
 	public static final Item STONE_KNIFE = registerItem(id("stone_knife"), properties -> new KnifeItem(ToolMaterial.STONE, properties), new Item.Properties());
 	public static final Item STONE_LONGSWORD = registerItem(id("stone_longsword"), properties -> new LongSwordItem(ToolMaterial.STONE, 1, properties), new Item.Properties());
+	public static final Item COPPER_KNIFE = registerItem(id("copper_knife"), properties -> new KnifeItem(ToolMaterial.COPPER, properties), new Item.Properties());
+	public static final Item COPPER_LONGSWORD = registerItem(id("copper_longsword"), properties -> new LongSwordItem(ToolMaterial.COPPER, 1, properties), new Item.Properties());
 	public static final Item IRON_KNIFE = registerItem(id("iron_knife"), properties -> new KnifeItem(ToolMaterial.IRON, properties), new Item.Properties());
 	public static final Item IRON_LONGSWORD = registerItem(id("iron_longsword"), properties -> new LongSwordItem(ToolMaterial.IRON, 2, properties), new Item.Properties());
 	public static final Item GOLD_KNIFE = registerItem(id("golden_knife"), properties -> new KnifeItem(ToolMaterial.GOLD, properties), new Item.Properties());

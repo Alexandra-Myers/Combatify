@@ -49,14 +49,7 @@ import static net.atlas.combatify.util.MethodHandler.sweepAttack;
 
 @SuppressWarnings("unused")
 @Mixin(value = Player.class, priority = 1400)
-public abstract class PlayerMixin extends LivingEntity implements PlayerExtensions {
-	/**
-	 * This is a crime, I know,
-	 * But it's okay we have to do this to fix a CTS bug
-	 */
-	@SuppressWarnings("WrongEntityDataParameterClass")
-	@Unique
-	private static final EntityDataAccessor<Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+public abstract class PlayerMixin extends AvatarMixin implements PlayerExtensions {
 
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
@@ -88,10 +81,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public abstract boolean hasContainerOpen();
 
 	@Shadow
-	@Final
-	protected static EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION;
-
-	@Shadow
 	public abstract void tick();
 
 	@Shadow
@@ -112,10 +101,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 
 	@Unique
 	public final Player player = ((Player) (Object)this);
-	@Inject(method = "defineSynchedData", at = @At("TAIL"))
-	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
-		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
-	}
 	@Inject(method = "hurtServer", at = @At("HEAD"))
 	public void injectSnowballKb(ServerLevel serverLevel, DamageSource damageSource, float amount, CallbackInfoReturnable<Boolean> cir, @Share("originalDamage") LocalFloatRef originalDamage) {
 		originalDamage.set(amount);
@@ -155,16 +140,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getItemBlockingWith()Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
 	public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
 		ci.cancel();
-	}
-
-	@Override
-	public boolean combatify$hasEnabledShieldOnCrouch() {
-		return entityData.get(DATA_PLAYER_USES_SHIELD_CROUCH);
-	}
-
-	@Override
-	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
-		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
 	}
 
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)

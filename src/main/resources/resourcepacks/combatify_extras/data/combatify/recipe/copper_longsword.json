@@ -2,17 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X#X",
-    "XXX",
-    " X "
+    "X",
+    "X",
+    "#"
   ],
   "key": {
-    "X": "#minecraft:diamond_tool_materials",
-    "#": "#c:storage_blocks/diamond"
+    "#": "combatify:copper_knife",
+    "X": "#minecraft:copper_tool_materials"
   },
   "result": {
     "count": 1,
-    "id": "combatify:diamond_shield"
+    "id": "combatify:copper_longsword"
   },
   "show_notification": true
 }

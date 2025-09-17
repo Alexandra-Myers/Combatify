@@ -1,24 +1,32 @@
 package net.atlas.combatify.mixin;
 
-import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.extensions.ClientInformationHolder;
-import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
+import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
+import net.minecraft.server.network.config.PrepareSpawnTask;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerConfigurationPacketListenerImpl.class)
-public class ServerConfigurationPacketMixin implements ClientInformationHolder {
+public abstract class ServerConfigurationPacketMixin implements ClientInformationHolder {
+	@Shadow
+	@Nullable
+	private PrepareSpawnTask prepareSpawnTask;
 	@Unique
 	public boolean hasShieldOnCrouch = true;
 
-	@Inject(method = "handleConfigurationFinished", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;placeNewPlayer(Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/network/CommonListenerCookie;)V"))
-	public void injectSettingShieldOnCrouch(ServerboundFinishConfigurationPacket serverboundFinishConfigurationPacket, CallbackInfo ci, @Local(ordinal = 0) ServerPlayer newPlayer) {
-		newPlayer.combatify$setShieldOnCrouch(hasShieldOnCrouch);
+	@WrapOperation(method = "handleConfigurationFinished", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/config/PrepareSpawnTask;spawnPlayer(Lnet/minecraft/network/Connection;Lnet/minecraft/server/network/CommonListenerCookie;)Lnet/minecraft/server/level/ServerPlayer;"))
+	public ServerPlayer injectSettingShieldOnCrouch(PrepareSpawnTask instance, Connection connection, CommonListenerCookie commonListenerCookie, Operation<ServerPlayer> original) {
+		ServerPlayer res = original.call(prepareSpawnTask, connection, commonListenerCookie);
+		res.combatify$setShieldOnCrouch(hasShieldOnCrouch);
+		return res;
 	}
 
 	@Override

@@ -61,7 +61,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 			setDeltaMovement(getDeltaMovement().multiply(0.4, 1.0, 0.4));
 			setSprinting(false);
 		}
-		if (!this.level().isClientSide) {
+		if (!this.level().isClientSide()) {
 			Entity target = getTarget();
 			double targetDistO;
 			if (target != null && !isBaby()) {
@@ -170,8 +170,9 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		if (Combatify.CONFIG.mobsCanGuard() && equipmentSlot == EquipmentSlot.OFFHAND) {
 			if (Combatify.CONFIG.tieredShields()) return switch (level) {
 				case 0 -> Items.SHIELD;
-				case 3 -> TieredShieldItem.IRON_SHIELD;
-				case 4 -> TieredShieldItem.DIAMOND_SHIELD;
+				case 1 -> TieredShieldItem.COPPER_SHIELD;
+				case 4 -> TieredShieldItem.IRON_SHIELD;
+				case 5 -> TieredShieldItem.DIAMOND_SHIELD;
                 default -> TieredShieldItem.GOLD_SHIELD;
             };
 			else return Items.SHIELD;
