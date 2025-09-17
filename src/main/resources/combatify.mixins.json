@@ -7,7 +7,6 @@
   "mixins": [
     "AbstractWindChargeMixin",
     "ArrowMixin",
-    "AvatarMixin",
     "BlockHitResultMixin",
     "BowItemMixin",
     "ClientboundUpdateAttributesPacketMixin",
@@ -63,7 +62,6 @@
     "client.AccessibilityOptionsMixin",
     "client.ArmedEntityRenderStateMixin",
     "client.ArmHeightMixin",
-    "client.AvatarRendererMixin",
     "client.ClientAttackAnimMixin",
     "client.ControlsMixin",
     "client.GameRendererMixin",
@@ -79,6 +77,7 @@
     "client.ModelFixMixins$ZombifiedPiglinModelFixMixin",
     "client.MultiPlayerGameModeMixin",
     "client.OptionsMixin",
+    "client.PlayerRendererMixin",
     "client.SpecialModelRenderersMixin",
     "client.VideoSettingsMixin",
     "compatibility.appleskin.FoodHelperMixin",

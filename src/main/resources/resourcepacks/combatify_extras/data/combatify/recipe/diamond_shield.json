@@ -8,7 +8,7 @@
   ],
   "key": {
     "X": "#minecraft:diamond_tool_materials",
-    "#": "#c:storage_blocks/diamond"
+    "#": "minecraft:diamond_block"
   },
   "result": {
     "count": 1,

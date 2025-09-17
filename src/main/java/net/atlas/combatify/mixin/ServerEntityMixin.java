@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.server.level.ServerEntity;
@@ -33,8 +32,8 @@ public abstract class ServerEntityMixin {
 			});
 		original.call(instance, packet);
 	}
-	@WrapOperation(method = "sendDirtyEntityData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerEntity$Synchronizer;sendToTrackingPlayersAndSelf(Lnet/minecraft/network/protocol/Packet;)V", ordinal = 1))
-	public void modifyAttributes1(ServerEntity.Synchronizer instance, Packet<? super ClientGamePacketListener> packet, Operation<Void> original) {
+	@WrapOperation(method = "sendDirtyEntityData", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerEntity;broadcastAndSend(Lnet/minecraft/network/protocol/Packet;)V", ordinal = 1))
+	public void modifyAttributes1(ServerEntity instance, Packet<?> packet, Operation<Void> original) {
 		if(entity instanceof ServerPlayer serverPlayer && Combatify.unmoddedPlayers.contains(serverPlayer.getUUID()) && packet instanceof ClientboundUpdateAttributesPacket clientboundUpdateAttributesPacket)
 			clientboundUpdateAttributesPacket.combatify$changeAttributes(serverPlayer);
 		original.call(instance, packet);

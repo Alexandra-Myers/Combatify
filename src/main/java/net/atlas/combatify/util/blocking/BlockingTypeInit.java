@@ -14,7 +14,6 @@ public class BlockingTypeInit {
 	public static final CombinedModifier NEW_SHIELD_PROTECTION = CombinedModifier.createFactorOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatableWithFallback("attribute.name.shield_reduction", "Shield Damage Reduction")), new AddValue(LevelBasedValue.perLevel(0.3F, 0.05F)), 100), Optional.empty());
 	public static final ComponentModifier SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.5F)), 10);
 	public static final ComponentModifier NEW_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.25F)), Optional.empty(), 10);
-	public static final ComponentModifier COPPER_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.2F)), Optional.empty(), 10);
 
 	public static final BlockingType EMPTY = BlockingType.builder().build("empty");
 	public static void init() {
