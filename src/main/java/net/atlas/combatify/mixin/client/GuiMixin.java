@@ -147,10 +147,10 @@ public abstract class GuiMixin {
 			} else {
 				HumanoidArm humanoidArm = this.minecraft.player.getMainArm();
 				yPos = (guiGraphics.guiHeight() - 11) / 2;
-				xPos = guiGraphics.guiWidth() / 2 - 9;
 				int crosshairYPos = (guiGraphics.guiHeight() - 15) / 2;
 				int crosshairXPos = (guiGraphics.guiWidth() - 15) / 2;
-				int sideXPos = xPos + 13;
+				xPos = crosshairXPos - 2;
+				int sideXPos = crosshairXPos + 13;
 				if (attackStrengthScale < 2) {
 					float chargeRatio = (attackStrengthScale - 1.3F) / (0.70000005F);
 					if (shouldPick) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_SIDE_FULL_PICK_SPRITE, crosshairXPos, crosshairYPos, 15, 15);
