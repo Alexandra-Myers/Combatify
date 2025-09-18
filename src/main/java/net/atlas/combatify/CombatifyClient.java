@@ -9,6 +9,7 @@ import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.Util;
+import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -82,6 +83,15 @@ public class CombatifyClient implements ClientModInitializer {
 		Combatify.CombatifyState.COMBATIFY,
 		value -> {
 
+		}
+	);
+	public static final OptionInstance<AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
+		"options.projectileChargeIndicator",
+		OptionInstance.noTooltip(),
+		OptionInstance.forOptionEnum(),
+		new OptionInstance.Enum<>(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)),
+		AttackIndicatorStatus.OFF,
+		value -> {
 		}
 	);
 	public static final OptionInstance<DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
