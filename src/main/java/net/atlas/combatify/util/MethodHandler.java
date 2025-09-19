@@ -117,7 +117,7 @@ public class MethodHandler {
 		return attributeInstance.getAttribute().value().sanitizeValue(attributeInstanceFinalValue);
 	}
 	public static float getFatigueForTime(int f) {
-		if (f < 60 || !Combatify.CONFIG.bowFatigue())
+		if (f < 60 || !Combatify.CONFIG.bowFatigue() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
 			return 0.5F;
 		else
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
