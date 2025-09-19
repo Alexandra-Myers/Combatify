@@ -37,6 +37,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -259,17 +260,32 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			enchantDamage *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((strengthScale - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 			combinedDamage.set(attackDamage + enchantDamage);
 		}
-		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		boolean strengthAppliesToEnchants = Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
+		if (strengthAppliesToEnchants)
 			combinedDamage.set(attackDamage);
-		if (!Combatify.CONFIG.getCritImpl().execFunc("overrideCrit()") || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || !Combatify.CONFIG.getCritImpl().execFunc("overrideCrit()"))
 			return;
-		if (bl3.get())
-			combinedDamage.set(combinedDamage.get() / 1.5F);
+		if (bl3.get()) {
+			if (strengthAppliesToEnchants) combinedDamage.set(combinedDamage.get() / 1.5F);
+			else attackDamage /= 1.5F;
+		}
 		GenericAPIWrapper<?> wrapper;
 		if (target instanceof Player p) wrapper = new PlayerWrapper<>(p);
 		else if (target instanceof LivingEntity l) wrapper = new LivingEntityWrapper<>(l);
 		else wrapper = new EntityWrapper<>(target);
-		bl3.set(Combatify.CONFIG.getCritImpl().execPlayerFunc(player, "runCrit(player, target, combinedDamage)", new JSImpl.Reference<>("target", wrapper), new JSImpl.Reference<>("combinedDamage", new SimpleAPIWrapper<>(combinedDamage))));
+		final MutableFloat finalAttackDamage = new MutableFloat(attackDamage);
+		bl3.set(Combatify.CONFIG.getCritImpl().execPlayerFunc(player, "runCrit(player, target, combinedDamage)", new JSImpl.Reference<>("target", wrapper), new JSImpl.Reference<>("combinedDamage", new SimpleAPIWrapper<>(strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
+			@Override
+			public float get() {
+				return finalAttackDamage.getValue();
+			}
+
+			@Override
+			public void set(float v) {
+				finalAttackDamage.setValue(v);
+			}
+		}))));
+		if (!strengthAppliesToEnchants) combinedDamage.set(finalAttackDamage.getValue() + enchantDamage);
 	}
 	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
@@ -287,7 +303,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
 				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
 				if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-					attackDamageBonus = (float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus) - damage;
+					attackDamageBonus = (float) MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus);
 				if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
 					attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 				return damage + attackDamageBonus;
@@ -315,7 +331,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 				sweepAttack(player, sweepBox, currentAttackReach, attackDamage, (livingEntity, damage, damageSource) -> {
 					float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
 					if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-						attackDamageBonus = (float) MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus) - damage;
+						attackDamageBonus = (float) MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus);
 					if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
 						attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 					return damage + attackDamageBonus;

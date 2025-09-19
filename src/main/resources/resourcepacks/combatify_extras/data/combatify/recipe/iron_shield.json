@@ -8,7 +8,7 @@
   ],
   "key": {
     "X": "#minecraft:iron_tool_materials",
-    "#": "minecraft:iron_block"
+    "#": "#c:storage_blocks/iron"
   },
   "result": {
     "count": 1,

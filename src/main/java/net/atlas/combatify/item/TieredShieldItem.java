@@ -2,8 +2,13 @@ package net.atlas.combatify.item;
 
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
@@ -27,6 +32,13 @@ public class TieredShieldItem extends ShieldItem {
 			.component(CustomDataComponents.BLOCKER, baseBlocker));
 		this.tier = tier;
 		shields.add(this);
+		if(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+			registerModelPredicate();
+	}
+
+	private void registerModelPredicate() {
+		ItemProperties.register(this, ResourceLocation.withDefaultNamespace("blocking"), (itemStack, clientWorld, livingEntity, i) ->
+			livingEntity != null && livingEntity.isBlocking() && MethodHandler.getBlockingItem(livingEntity).stack() == itemStack ? 1.0F : 0.0F);
 	}
 
 	@Override
