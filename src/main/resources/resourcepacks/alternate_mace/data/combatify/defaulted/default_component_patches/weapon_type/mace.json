@@ -1,0 +1,15 @@
+{
+  "tags": [
+    "combatify:weapon_type/mace"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:combat_test_weapon_stats",
+      "attack_damage": 2,
+      "attack_speed": -1.3,
+      "attack_reach": 0.5,
+      "persist_previous": false
+    }
+  ],
+  "patch": {}
+}
