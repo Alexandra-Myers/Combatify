@@ -14,6 +14,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,6 +30,9 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	@Shadow
 	@Final
 	private static EntityDataAccessor<Byte> ID_LOYALTY;
+
+	@Shadow
+	private boolean dealtDamage;
 
 	protected ThrownTridentMixin(EntityType<? extends AbstractArrow> entityType, Level level) {
 		super(entityType, level);
@@ -46,5 +50,9 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	public float editTridentDamage(float original) {
 		float diff = (float) (original - Combatify.CONFIG.thrownTridentDamage());
 		return original - diff;
+	}
+	@Inject(method = "onHitEntity", at = @At("TAIL"))
+	public void removeDealtDamage(EntityHitResult entityHitResult, CallbackInfo ci) {
+		if (Combatify.CONFIG.disableLoyaltyOnHitEntity()) dealtDamage = false;
 	}
 }
