@@ -56,6 +56,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder canInteractWhenCrouchShield;
 	private BooleanHolder bedrockImpaling;
 	private BooleanHolder dispensableTridents;
+	private BooleanHolder disableLoyaltyOnHitEntity;
 	private BooleanHolder snowballKB;
 	private BooleanHolder resetOnItemChange;
 	private BooleanHolder sweepWithSweeping;
@@ -263,6 +264,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		tieredShields.tieToCategory(extraB);
 		tieredShields.setRestartRequired(RestartRequiredMode.RESTART_BOTH);
 		tieredShields.setupTooltip(1);
+		disableLoyaltyOnHitEntity = createBoolean("disableLoyaltyOnHitEntity", false);
+		disableLoyaltyOnHitEntity.tieToCategory(extraB);
 		fishingHookKB = createBoolean("fishingHookKB", false);
 		fishingHookKB.tieToCategory(extraB);
 		fishingHookKB.setupTooltip(1);
@@ -459,6 +462,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean tridentVoidReturn() {
 		return tridentVoidReturn.get();
+	}
+	public Boolean disableLoyaltyOnHitEntity() {
+		return disableLoyaltyOnHitEntity.get();
 	}
 	public Boolean dispensableTridents() {
 		return dispensableTridents.get();
