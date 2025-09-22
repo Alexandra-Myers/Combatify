@@ -19,7 +19,7 @@ public abstract class ChunkMapMixin implements ChunkMapExtensions {
 	@Final
 	private Int2ObjectMap<ChunkMap.TrackedEntity> entityMap;
 
-	@Inject(method = "tick()V", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"), cancellable = true)
+	@Inject(method = "tick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;players()Ljava/util/List;"), cancellable = true)
 	public void cancelIfDelay(CallbackInfo ci) {
 		if (Combatify.CONFIG.delayedEntityUpdates()) ci.cancel();
 	}
