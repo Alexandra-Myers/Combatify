@@ -240,6 +240,8 @@
   "text.config.combatify-general.option.disableDuringShieldDelay": "Can Disable Shields On Delay",
   "text.config.combatify-general.option.disableDuringShieldDelay.tooltip": "Note: Requires Shield Delay to be non-zero to present any effect.",
   "text.config.combatify-general.option.disableLoyaltyOnHitEntity": "Disable Loyalty When Hitting an Entity",
+  "text.config.combatify-general.option.delayedEntityUpdates": "Delayed Entity Updates",
+  "text.config.combatify-general.option.delayedEntityUpdates.tooltip": "Delays sending entity information until after the entity has been ticked, fixing MC-297196.",
   "text.config.combatify-general.option.fishingHookKB": "Fishing Rod KB",
   "text.config.combatify-general.option.fishingHookKB.tooltip": "Fishing Rod deals knockback when hitting an entity.",
   "text.config.combatify-general.option.improvedMiscEntityAttacks": "Improved Misc Entity Attacks",
