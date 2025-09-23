@@ -53,7 +53,8 @@
       "net/minecraft/class_2781": ["net/atlas/combatify/extensions/IUpdateAttributesPacket"],
       "net/minecraft/class_636": ["net/atlas/combatify/extensions/IPlayerGameMode"],
       "net/minecraft/class_1282": ["net/atlas/combatify/extensions/DamageSourceExtension"],
-      "net/minecraft/class_1702": ["net/atlas/combatify/extensions/FoodDataExtensions"]
+      "net/minecraft/class_1702": ["net/atlas/combatify/extensions/FoodDataExtensions"],
+      "net/minecraft/class_3898": ["net/atlas/combatify/extensions/ChunkMapExtensions"]
     }
   }
 }
