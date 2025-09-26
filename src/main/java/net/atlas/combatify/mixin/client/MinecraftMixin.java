@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
@@ -12,6 +13,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -116,6 +119,11 @@ public abstract class MinecraftMixin {
 			}
 		}
 		return original.call(instance);
+	}
+	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
+	public void addReachCheck(MultiPlayerGameMode instance, Player player, Entity entity, Operation<Void> original) {
+		if (player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F)) original.call(instance, player, entity);
+		else instance.combatify$swingInAir(player);
 	}
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
