@@ -26,7 +26,6 @@ public class CombatUtil {
         Vec3 eyePosition = attacker.getEyePosition(0);
         double reach = MethodHandler.getCurrentAttackReach(attacker, 1F);
 		reach += 0.75;
-        if (!attacker.hasLineOfSight(target)) reach = 2.5;
         reach *= reach;
 
         if (canReach(eyePosition, target.getBoundingBox(), reach)) return true;

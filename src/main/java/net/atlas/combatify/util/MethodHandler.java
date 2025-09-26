@@ -11,7 +11,6 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
 import net.atlas.combatify.util.blocking.BlockingType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -39,7 +38,6 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
@@ -197,7 +195,7 @@ public class MethodHandler {
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
 		}
 	}
-	public static HitResult pickFromPos(Entity entity, double reach) {
+	public static HitResult pickCollisions(Entity entity, double reach) {
 		Vec3 viewVector = entity.getViewVector(1);
 		Vec3 pos = entity.getEyePosition(1);
 		Vec3 endPos = pos.add(viewVector.scale(reach));
@@ -221,14 +219,16 @@ public class MethodHandler {
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockHitResult = (BlockHitResult) instance;
-			BlockPos blockPos = blockHitResult.getBlockPos();
-			Level level = player.level();
-			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
-			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
-			if (rayTraceResult != null && bl) {
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? 1.25 : 0.25);
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
+			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
+			if (entity != null) {
+				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
+				reach *= reach;
+				if (dist > reach)
+					return instance;
 				double distanceTo = player.distanceTo(rayTraceResult.getEntity());
-				HitResult newResult = pickFromPos(player, distanceTo);
+				HitResult newResult = pickCollisions(player, distanceTo);
 				if (newResult.getType() != HitResult.Type.MISS)
 					return instance;
 				return rayTraceResult;

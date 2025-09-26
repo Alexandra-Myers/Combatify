@@ -64,6 +64,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder sweepingNegatedForTamed;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
+	private BooleanHolder delayedEntityUpdates;
 	private BooleanHolder strengthAppliesToEnchants;
 	private BooleanHolder percentageDamageEffects;
 	private BooleanHolder ctsKB;
@@ -277,6 +278,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		tieredShields.tieToCategory(extraB);
 		tieredShields.setRestartRequired(RestartRequiredMode.RESTART_BOTH);
 		tieredShields.setupTooltip(1);
+		delayedEntityUpdates = createBoolean("delayedEntityUpdates", false);
+		delayedEntityUpdates.tieToCategory(extraB);
+		delayedEntityUpdates.setupTooltip(1);
 		disableDuringShieldDelay = createBoolean("disableDuringShieldDelay", false);
 		disableDuringShieldDelay.tieToCategory(extraB);
 		disableDuringShieldDelay.setupTooltip(1);
@@ -469,6 +473,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean swingThroughGrass() {
 		return swingThroughGrass.get();
+	}
+	public Boolean delayedEntityUpdates() {
+		return delayedEntityUpdates.get();
 	}
 	public Boolean strengthAppliesToEnchants() {
 		return strengthAppliesToEnchants.get();
