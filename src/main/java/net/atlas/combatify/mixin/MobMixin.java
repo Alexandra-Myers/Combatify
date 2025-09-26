@@ -38,6 +38,8 @@ import static net.atlas.combatify.util.MethodHandler.*;
 public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Unique
 	private double targetDist = Integer.MAX_VALUE;
+	@Unique
+	private boolean overrideSprintLogic = false;
 	@Shadow
 	@Final
 	private static EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID;
@@ -55,7 +57,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		super(entityType, level);
 	}
 
-	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;tick()V"))
+	@Inject(method = "aiStep", at = @At("HEAD"))
 	public void updateSprinting(CallbackInfo ci) {
 		if (isBlocking()) {
 			setDeltaMovement(getDeltaMovement().multiply(0.4, 1.0, 0.4));
@@ -64,29 +66,31 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		if (!this.level().isClientSide) {
 			Entity target = getTarget();
 			double targetDistO;
-			if (target != null && !isBaby()) {
-				targetDistO = this.targetDist;
-				this.targetDist = this.distanceToSqr(target);
-				if (this.tickCount % 10 == 0) {
+			if (!overrideSprintLogic) {
+				if (target != null && !isBaby()) {
+					targetDistO = this.targetDist;
+					this.targetDist = this.distanceToSqr(target);
+					if (this.tickCount % 10 == 0) {
+						Entity sprintingMob = this;
+						Entity vehicle;
+						if (sprintingMob.isPassenger() && (vehicle = sprintingMob.getVehicle()) != null)
+							sprintingMob = vehicle;
+						boolean meetsSprintConditions = !(isUsingItem() || isBlocking())
+							&& !hasEffect(MobEffects.BLINDNESS)
+							&& sprintingMob.canSprint()
+							&& !isFallFlying();
+						double change = targetDistO - targetDist;
+						Difficulty difficulty = level().getDifficulty();
+						sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || targetDist > 25.0) && meetsSprintConditions);
+					}
+				} else {
+					targetDist = Integer.MAX_VALUE;
 					Entity sprintingMob = this;
 					Entity vehicle;
 					if (sprintingMob.isPassenger() && (vehicle = sprintingMob.getVehicle()) != null)
 						sprintingMob = vehicle;
-					boolean meetsSprintConditions = !(isUsingItem() || isBlocking())
-						&& !hasEffect(MobEffects.BLINDNESS)
-						&& sprintingMob.canSprint()
-						&& !isFallFlying();
-					double change = targetDistO - targetDist;
-					Difficulty difficulty = level().getDifficulty();
-					sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || targetDist > 25.0) && meetsSprintConditions);
+					sprintingMob.setSprinting(false);
 				}
-			} else {
-				targetDist = Integer.MAX_VALUE;
-				Entity sprintingMob = this;
-				Entity vehicle;
-				if (sprintingMob.isPassenger() && (vehicle = sprintingMob.getVehicle()) != null)
-					sprintingMob = vehicle;
-				sprintingMob.setSprinting(false);
 			}
 			if (tickCount % 5 == 0) {
 				if (!canGuard() && combatify$isGuarding()) stopGuarding();
@@ -103,6 +107,16 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
 		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
 		else original.call(instance, d, e, f);
+	}
+
+	@Override
+	public boolean combatify$overrideSprintLogic() {
+		return overrideSprintLogic;
+	}
+
+	@Override
+	public void combatify$setOverrideSprintLogic(boolean overrideSprintLogic) {
+		this.overrideSprintLogic = overrideSprintLogic;
 	}
 
 	@Unique

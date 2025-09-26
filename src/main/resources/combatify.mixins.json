@@ -24,7 +24,6 @@
     "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
-    "MeleeAttackGoalMixin",
     "MobEffectMixin",
     "MobMixin",
     "PiglinAiMixin",
@@ -52,9 +51,13 @@
     "compatibility.ConfigCommandMixin",
     "compatibility.InvulnerabilityMixin",
     "compatibility.polymer.PolymerComponentMixin",
+    "compatibility.sodium.SodiumGameOptionPagesMixin",
     "compatibility.viafabricplus.Attributes1_20_5Mixin",
     "compatibility.viafabricplus.EntityPacketRewriter1_20_5Mixin",
-    "compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin"
+    "compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin",
+    "goal.FleeSunGoalMixin",
+    "goal.GoalMixin",
+    "goal.MeleeAttackGoalMixin"
   ],
   "injectors": {
     "defaultRequire": 1
