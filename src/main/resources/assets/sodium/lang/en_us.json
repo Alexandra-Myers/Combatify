@@ -1,0 +1,9 @@
+{
+  "sodium.options.attack_indicator_max_value.tooltip": "Controls where the Attack Indicator stops being displayed on screen.",
+  "sodium.options.attack_indicator_min_value.tooltip": "Controls where the Attack Indicator begins to be displayed on screen.",
+  "sodium.options.augmented_arm_height.tooltip": "Controls how the arm height is impacted by attack cooldown.",
+  "sodium.options.dual_attack_indicator.tooltip": "Controls how the Dual Attack Indicators are displayed on screen.",
+  "sodium.options.projectile_charge_indicator.tooltip": "Controls where the Projectile Charge Indicator is displayed on screen.",
+  "sodium.options.rhythmic_attacks.tooltip": "Controls the animation for attacks.",
+  "sodium.options.shield_indicator.tooltip": "Controls where the Shield Indicator is displayed on screen."
+}
