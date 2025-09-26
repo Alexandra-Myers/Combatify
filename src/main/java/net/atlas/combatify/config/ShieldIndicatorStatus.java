@@ -19,7 +19,7 @@ public enum ShieldIndicatorStatus implements OptionEnum {
 	private static final ShieldIndicatorStatus[] BY_ID = Arrays.stream(values())
 		.sorted(Comparator.comparingInt(ShieldIndicatorStatus::getId))
 		.toArray(ShieldIndicatorStatus[]::new);
-	public static final Component[] AS_COMPONENTS = Arrays.stream(DualAttackIndicatorStatus.values()).map(dualAttackIndicatorStatus -> Component.translatable(dualAttackIndicatorStatus.getKey())).toArray(Component[]::new);
+	public static final Component[] AS_COMPONENTS = Arrays.stream(ShieldIndicatorStatus.values()).map(shieldIndicatorStatus -> Component.translatable(shieldIndicatorStatus.getKey())).toArray(Component[]::new);
 	private final int id;
 	private final String key;
 
