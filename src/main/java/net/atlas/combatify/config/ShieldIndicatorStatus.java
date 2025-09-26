@@ -2,6 +2,7 @@ package net.atlas.combatify.config;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,7 @@ public enum ShieldIndicatorStatus implements OptionEnum {
 	private static final ShieldIndicatorStatus[] BY_ID = Arrays.stream(values())
 		.sorted(Comparator.comparingInt(ShieldIndicatorStatus::getId))
 		.toArray(ShieldIndicatorStatus[]::new);
+	public static final Component[] AS_COMPONENTS = Arrays.stream(DualAttackIndicatorStatus.values()).map(dualAttackIndicatorStatus -> Component.translatable(dualAttackIndicatorStatus.getKey())).toArray(Component[]::new);
 	private final int id;
 	private final String key;
 

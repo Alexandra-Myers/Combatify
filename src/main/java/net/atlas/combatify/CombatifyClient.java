@@ -109,7 +109,7 @@ public class CombatifyClient implements ClientModInitializer {
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),
 		(optionText, value) -> value == 2.0 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMaxValue.default"))) : percentValueLabel(optionText, value),
 		new OptionInstance.IntRange(1, 200).xmap(sliderValue -> (double)sliderValue / 100.0, value -> (int)(value * 100.0)),
-		Codec.doubleRange(0.1, 2.0),
+		Codec.doubleRange(0.01, 2.0),
 		2.0,
 		value -> {
 

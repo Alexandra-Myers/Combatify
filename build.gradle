@@ -60,6 +60,7 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modCompileOnly "maven.modrinth:sodium:${project.sodium_version}"
 	modImplementation "maven.modrinth:atlas-core:${project.atlas_core_version}"
 	modImplementation "net.atlas:defaulted-fabric:${project.defaulted_version}"
 	modCompileOnly "com.viaversion:viafabricplus:${project.viafabricplus_version}"
