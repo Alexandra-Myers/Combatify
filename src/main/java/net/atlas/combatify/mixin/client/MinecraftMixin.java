@@ -104,10 +104,9 @@ public abstract class MinecraftMixin {
 	}
 	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
-		if (player == null || hitResult == null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-			return original.call(instance);
-		if (!player.combatify$isAttackAvailable(0.0F)) {
-			if (hitResult.getType() != HitResult.Type.BLOCK) {
+		if (missTime <= 0 && hitResult != null) {
+			assert player != null;
+			if (!player.combatify$isAttackAvailable(0.0F) && hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F)
 					return false;
@@ -118,7 +117,7 @@ public abstract class MinecraftMixin {
 				}
 			}
 		}
-		return original.call(instance);
+		return original.call(instance) && Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
 	public void addReachCheck(MultiPlayerGameMode instance, Player player, Entity entity, Operation<Void> original) {
