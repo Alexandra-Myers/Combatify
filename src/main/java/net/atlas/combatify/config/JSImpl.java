@@ -2,32 +2,55 @@ package net.atlas.combatify.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.wrapper.FoodDataWrapper;
-import net.atlas.combatify.config.wrapper.GenericAPIWrapper;
-import net.atlas.combatify.config.wrapper.PlayerWrapper;
-import net.atlas.combatify.config.wrapper.SimpleAPIWrapper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodData;
+import net.minecraft.Util;
+import net.minecraft.util.TimeUtil;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Kit;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Objects;
-import java.util.function.Function;
+import java.util.*;
 
 public class JSImpl {
+	public static final ThreadLocal<Context> CONTEXT;
+	public final Scriptable scope;
+	static {
+		CONTEXT = ThreadLocal.withInitial(Context::enter);
+	}
 	public final String fileName;
-	public String cachedFile = null;
+	public final String fileData;
+	public final Map<String, org.mozilla.javascript.Function> functions;
 	public static final Codec<JSImpl> CODEC = Codec.STRING.validate(str -> str.contains(".") ? DataResult.error(() -> "File loc not expected to contain a file extension!") : DataResult.success(str)).xmap(JSImpl::new, JSImpl::fileName);
 	public JSImpl(String fileName) {
+		String readFileData;
 		this.fileName = fileName;
+		this.scope = CONTEXT.get().initStandardObjects();
+		Reader reader;
+		try {
+			reader = new BufferedReader(new FileReader(FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + "/" + fileName + ".js"));
+			readFileData = Kit.readReader(reader);
+		} catch (IOException e) {
+			Combatify.JS_LOGGER.error("Error parsing JS File " + fileName + ". Exception: {}", e);
+			readFileData = "";
+		}
+		this.fileData = readFileData;
+		this.functions = new Object2ObjectOpenHashMap<>();
+		String[] funcs = Arrays.stream(fileData.split("function")).filter(s -> !s.isBlank()).map(str -> "function" + str).toArray(String[]::new);
+		for (String func : funcs) {
+			functions.put(func.substring("function ".length(), func.indexOf(')') + 1), CONTEXT.get().compileFunction(scope, func, fileName, 0, null));
+		}
+		List<Map.Entry<String, Function>> func = functions.entrySet().stream().toList();
+		for (Map.Entry<String, Function> stringFunctionEntry : func) {
+			String key = stringFunctionEntry.getKey();
+			scope.put(key.substring(0, key.indexOf('(')), scope, stringFunctionEntry.getValue());
+		}
 	}
 	public String fileName() {
 		return fileName;
@@ -55,132 +78,35 @@ public class JSImpl {
 			}
 		}
 	}
-	public boolean execFunc(String name, Reference<?, ?>... args) {
-		Context rhinoContext = Context.enter();
-		Scriptable scope = rhinoContext.initStandardObjects();
+	public boolean execFunc(String name, Object... args) {
+		long nanos = Util.getNanos();
 		try {
-			Object ret = invokeFunc(name, args, rhinoContext, scope);
+			Object ret = invokeFunc(name, args);
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.JS_LOGGER.info("Time spent running " + name + ": " + ((double) (Util.getNanos() - nanos) / TimeUtil.NANOSECONDS_PER_MILLISECOND) + " ms");
 			return !(ret instanceof Boolean bool) || bool;
 		} catch (Exception e) {
-			Combatify.JS_LOGGER.error("Error executing " + name + " function: " + e.getMessage());
-		} finally {
-			Context.exit();
+			Combatify.JS_LOGGER.error("Error executing " + name + " function: {}", e);
 		}
 		return false;
 	}
 
-	public double execGetterFunc(double fallback, String name, Reference<?, ?>... args) {
-		Context rhinoContext = Context.enter();
-		Scriptable scope = rhinoContext.initStandardObjects();
+	public double execGetterFunc(double fallback, String name, Object... args) {
+		long nanos = Util.getNanos();
 		try {
-			Object ret = invokeFunc(name, args, rhinoContext, scope);
+			Object ret = invokeFunc(name, args);
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.JS_LOGGER.info("Time spent running " + name + ": " + ((double) (Util.getNanos() - nanos) / TimeUtil.NANOSECONDS_PER_MILLISECOND) + " ms");
 			return !(ret instanceof Number number) ? fallback : number.doubleValue();
 		} catch (Exception e) {
-			Combatify.JS_LOGGER.error("Error executing " + name + " function: " + e.getMessage());
-		} finally {
-			Context.exit();
+			Combatify.JS_LOGGER.error("Error executing " + name + " function: {}", e);
 		}
 		return fallback;
 	}
 
-	public boolean execPlayerFunc(Player player, String name, Reference<?, ?>... args) {
-		Context rhinoContext = Context.enter();
-		Scriptable scope = rhinoContext.initStandardObjects();
-		try {
-			Object ret = handlePlayerBindings(player, name, args, rhinoContext, scope);
-			return !(ret instanceof Boolean bool) || bool;
-		} catch (Exception e) {
-			Combatify.JS_LOGGER.error("Error executing " + name + " function: " + e.getMessage());
-		} finally {
-			Context.exit();
-		}
-		return false;
-	}
-
-	public double execPlayerGetterFunc(double fallback, Player player, String name, Reference<?, ?>... args) {
-		Context rhinoContext = Context.enter();
-		Scriptable scope = rhinoContext.initStandardObjects();
-		try {
-			Object ret = handlePlayerBindings(player, name, args, rhinoContext, scope);
-			return !(ret instanceof Number number) ? fallback : number.doubleValue();
-		} catch (Exception e) {
-			Combatify.JS_LOGGER.error("Error executing " + name + " function: " + e.getMessage());
-		} finally {
-			Context.exit();
-		}
-		return fallback;
-	}
-
-	public boolean execFoodFunc(FoodData foodData, Player player, String name, Reference<?, ?>... args) {
-		Context rhinoContext = Context.enter();
-		Scriptable scope = rhinoContext.initStandardObjects();
-		try {
-			Object ret = handleFoodBindings(foodData, player, name, args, rhinoContext, scope);
-			return !(ret instanceof Boolean bool) || bool;
-		} catch (Exception e) {
-			Combatify.JS_LOGGER.error("Error executing " + name + " function: " + e.getMessage());
-		} finally {
-			Context.exit();
-		}
-		return false;
-	}
-
-	public double execFoodGetterFunc(double fallback, FoodData foodData, Player player, String name, Reference<?, ?>... args) {
-		Context rhinoContext = Context.enter();
-		Scriptable scope = rhinoContext.initStandardObjects();
-		try {
-			Object ret = handleFoodBindings(foodData, player, name, args, rhinoContext, scope);
-			return !(ret instanceof Number number) ? fallback : number.doubleValue();
-		} catch (Exception e) {
-			Combatify.JS_LOGGER.error("Error executing " + name + " function: " + e.getMessage());
-		} finally {
-			Context.exit();
-		}
-		return fallback;
-	}
-
-	public Object handleFoodBindings(FoodData foodData, Player player, String name, Reference<?, ?>[] args, Context rhinoContext, Scriptable scope) throws IOException {
-		if (ScriptableObject.hasProperty(scope, "foodData")) {
-			ScriptableObject.deleteProperty(scope, "foodData");
-		}
-		if (ScriptableObject.hasProperty(scope, "player")) {
-			ScriptableObject.deleteProperty(scope, "player");
-		}
-		ScriptableObject.putProperty(scope, "foodData", new FoodDataWrapper(foodData));
-		if (player != null) {
-			ScriptableObject.putProperty(scope, "player", new PlayerWrapper<>(player));
-		}
-		return invokeFunc(name, args, rhinoContext, scope);
-	}
-
-	public Object handlePlayerBindings(Player player, String name, Reference<?, ?>[] args, Context rhinoContext, Scriptable scope) throws IOException {
-		if (ScriptableObject.hasProperty(scope, "player")) {
-			ScriptableObject.deleteProperty(scope, "player");
-		}
-		ScriptableObject.putProperty(scope, "player", new PlayerWrapper<>(player));
-		return invokeFunc(name, args, rhinoContext, scope);
-	}
-
-	private Object invokeFunc(String name, Reference<?, ?>[] args, Context rhinoContext, Scriptable scope) throws IOException {
-		cleanUpBindings(scope, args);
-		for (Reference<?, ?> ref : args) {
-			Object value = ref.value;
-			if (value instanceof SimpleAPIWrapper<?> simple) value = simple.unwrap();
-			ScriptableObject.putProperty(scope, ref.name, value);
-		}
-		if (cachedFile == null) {
-			Reader reader = new BufferedReader(new FileReader(FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + "/" + fileName + ".js"));
-			cachedFile = Kit.readReader(reader);
-		}
-		rhinoContext.evaluateString(scope, cachedFile, fileName, 1, null);
-
-		return rhinoContext.evaluateString(scope, name + ";", fileName, 1, null);
-	}
-
-	private void cleanUpBindings(Scriptable scope, Reference<?, ?>... args) {
-		for (Reference<?, ?> ref : args) {
-			if (ScriptableObject.hasProperty(scope, ref.name)) ScriptableObject.deleteProperty(scope, ref.name);
-		}
+	private Object invokeFunc(String name, Object... params) {
+		String func = functions.keySet().stream().filter(function -> function.contains(name)).findFirst().orElseThrow();
+		return functions.get(func).call(CONTEXT.get(), scope, null, params);
 	}
 
 	@Override
@@ -193,10 +119,5 @@ public class JSImpl {
 	public int hashCode() {
 		return Objects.hash(fileName());
 	}
-
-	public record Reference<T extends GenericAPIWrapper<O>, O>(String name, T value) {
-		public Reference(String name, O value, Function<O, T> mapper) {
-			this(name, mapper.apply(value));
-		}
-	}
 }
+

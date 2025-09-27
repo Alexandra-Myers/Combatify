@@ -12,7 +12,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.CanSweep;
-import net.atlas.combatify.config.JSImpl;
 import net.atlas.combatify.config.wrapper.*;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
@@ -264,7 +263,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		else if (target instanceof LivingEntity l) wrapper = new LivingEntityWrapper<>(l);
 		else wrapper = new EntityWrapper<>(target);
 		final MutableFloat finalAttackDamage = new MutableFloat(attackDamage);
-		bl3.set(Combatify.CONFIG.getCritImpl().execPlayerFunc(player, "runCrit(player, target, combinedDamage)", new JSImpl.Reference<>("target", wrapper), new JSImpl.Reference<>("combinedDamage", new SimpleAPIWrapper<>(strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
+		bl3.set(Combatify.CONFIG.getCritImpl().execFunc("runCrit(player, target, combinedDamage)", new PlayerWrapper<>(player), wrapper, (strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
 			@Override
 			public float get() {
 				return finalAttackDamage.getValue();
@@ -274,7 +273,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			public void set(float v) {
 				finalAttackDamage.setValue(v);
 			}
-		}))));
+		})));
 		if (!strengthAppliesToEnchants) combinedDamage.set(finalAttackDamage.getValue() + enchantDamage);
 	}
 	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
