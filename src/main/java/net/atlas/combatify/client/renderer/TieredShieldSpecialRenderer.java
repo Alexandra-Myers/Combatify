@@ -13,7 +13,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -46,7 +45,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 	}
 
 	@Override
-	public void submit(@Nullable DataComponentMap dataComponentMap, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int j, boolean bl) {
+	public void submit(@Nullable DataComponentMap dataComponentMap, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int j, boolean bl, int k) {
 		BannerPatternLayers bannerPatternLayers = dataComponentMap != null ? dataComponentMap.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
 		DyeColor dyeColor = dataComponentMap != null ? dataComponentMap.get(DataComponents.BASE_COLOR) : null;
 		boolean hasBanner = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
@@ -55,9 +54,9 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 		Material material = CombatifyClient.tieredShieldMaterials.get(tier).choose(hasBanner);
 		submitNodeCollector.submitModelPart(this.model.handle(), poseStack, this.model.renderType(material.atlasLocation()), i, j, this.materials.get(material));
 		if (hasBanner) {
-			BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeCollector, i, j, this.model, Unit.INSTANCE, material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, null);
+			BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeCollector, i, j, this.model, Unit.INSTANCE, material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, bl, null, k);
 		} else {
-			submitNodeCollector.submitModelPart(this.model.plate(), poseStack, this.model.renderType(material.atlasLocation()), i, j, this.materials.get(material), false, bl, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
+			submitNodeCollector.submitModelPart(this.model.plate(), poseStack, this.model.renderType(material.atlasLocation()), i, j, this.materials.get(material), false, bl, -1, null, k);
 		}
 
 		poseStack.popPose();
