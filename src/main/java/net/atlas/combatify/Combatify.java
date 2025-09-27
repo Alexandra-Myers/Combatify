@@ -56,7 +56,9 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
+import org.mozilla.javascript.Context;
 
+import java.lang.ref.Cleaner;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -65,6 +67,9 @@ import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 @SuppressWarnings("unused")
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
+	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
+	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
+	public static final Cleaner CLEANER = Cleaner.create();
 	public static CombatifyGeneralConfig CONFIG = new CombatifyGeneralConfig();
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
@@ -80,8 +85,6 @@ public class Combatify implements ModInitializer {
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
-	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
-	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 
 	public static void markState(Supplier<CombatifyState> state) {
@@ -94,6 +97,7 @@ public class Combatify implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		Combatify.CLEANER.register(this, Context::exit);
 		isLoaded = true;
 		BlockingConditions.bootstrap();
 		PostBlockEffects.bootstrap();
