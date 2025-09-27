@@ -6,13 +6,11 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,24 +26,18 @@ public class ClientMethodHandler {
 			return null;
 		Minecraft minecraft = Minecraft.getInstance();
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
-			BlockHitResult blockHitResult = (BlockHitResult)instance;
-			BlockPos blockPos = blockHitResult.getBlockPos();
-			Level level = Objects.requireNonNull(minecraft.level);
 			Player minecraftPlayer = Objects.requireNonNull(minecraft.player);
 			Entity player = Objects.requireNonNull(minecraft.getCameraEntity());
-			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, getCurrentAttackReach(minecraftPlayer, 0.0F));
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? 1.25 : 0.25);
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
-			if (entity != null && bl) {
+			if (entity != null) {
 				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
-				double reach = MethodHandler.getCurrentAttackReach(minecraftPlayer, 1.0F);
 				reach *= reach;
-				if (!minecraftPlayer.hasLineOfSight(entity))
-					reach = 6.25;
 				if (dist > reach)
 					return null;
 				double enemyDistance = player.distanceTo(entity);
-				HitResult newResult = pickFromPos(player, enemyDistance);
+				HitResult newResult = pickCollisions(player, enemyDistance);
 				if (newResult.getType() != HitResult.Type.MISS)
 					return null;
 				return rayTraceResult;

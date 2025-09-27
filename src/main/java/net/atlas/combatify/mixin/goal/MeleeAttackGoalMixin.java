@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.goal;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.atlas.combatify.config.ConfigurableEntityData;
