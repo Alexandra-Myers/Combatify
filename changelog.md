@@ -1,14 +1,20 @@
 ### Changes:
 ***
-- Default shield now no longer knocks back the attacker, split into new datapack `combatify:default_shield_attacker_kb`
-- Added dual attack indicators, indicating fast hits and charged hits separately. Has three modes: off, bottom of crosshair (recommended), sides of crosshair
+- Added separate datapacks for the two mace weapon types.
+- Added a "Projectile Charge Indicator", showing when a projectile can be shot from weapons which use a charge.
+- Sodium Video Settings Support.
+- Updated all custom shield textures to better align with the Copper Shield added in 1.21.9
 ***
 #### Config Changes:
 ***
-- None
+- Added the config option `disableLoyaltyOnHitEntity`, disabling the Trident immediately returning to the holder when hitting a entity with Loyalty, instead dropping to the ground first.
+- Added the config option `delayEntityUpdates`, delaying the entity trackers syncing to the players until after the entity has ticked, fixing MC-297196.
+- When `mobsCanSprint` is on, mobs fleeing from the sun will now sprint towards safety.
 ***
 #### Fixes:
 ***
-- Combatify State no longer gets reset on leaving a server/world
-- Fixed issues 1,2,4,5,6,7,10,12.5,14,15, and 16 mentioned in issue #101 as well as other bugs
-- Corrected shield protection arc to 73.8723797, the mathematically correct value to CTS
+- Fixed issues with crits when `strengthAppliesToEnchants` is off
+- Fixed sweeping dealing full damage
+- Swing Through Grass no longer sometimes breaks blocks when not in range.
+- Optimised JavaScript implementation by, on average, around 1000x.
+- Fixed several bugs caused by backporting to 1.21.1 rather than updating it directly.
