@@ -2,13 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X",
-    "X",
-    "#"
+    " X",
+    " X",
+    " #"
   ],
   "key": {
-    "#": "combatify:golden_knife",
-    "X": "#minecraft:gold_tool_materials"
+    "#": {
+      "item": "combatify:golden_knife"
+    },
+    "X": {
+      "tag": "c:ingots/gold"
+    }
   },
   "result": {
     "count": 1,

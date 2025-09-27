@@ -2,13 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X",
-    "X",
-    "#"
+    " X",
+    " X",
+    " #"
   ],
   "key": {
-    "#": "combatify:stone_knife",
-    "X": "#minecraft:stone_tool_materials"
+    "#": {
+      "item": "combatify:stone_knife"
+    },
+    "X": {
+      "tag": "minecraft:stone_tool_materials"
+    }
   },
   "result": {
     "count": 1,

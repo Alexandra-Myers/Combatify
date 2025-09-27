@@ -8,30 +8,33 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.JSImpl;
-import net.atlas.combatify.config.wrapper.SimpleAPIWrapper;
+import net.atlas.combatify.config.wrapper.FoodDataWrapper;
+import net.atlas.combatify.config.wrapper.PlayerWrapper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FoodData.class)
 public class FoodDataMixin {
+	@Unique
+	private final FoodData foodData = FoodData.class.cast(this);
 	@WrapMethod(method = "add")
-	public void capAt20(int i, float f, Operation<Void> original) {
+	public void capAt20(int food, float saturation, Operation<Void> original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
-			original.call(i, f);
+			original.call(food, saturation);
 			return;
 		}
-		boolean cancel = Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), null, "addFood(foodData, food, saturation)", new JSImpl.Reference<>("food", new SimpleAPIWrapper<>(i)), new JSImpl.Reference<>("saturation", new SimpleAPIWrapper<>(f)));
-		if (!cancel) original.call(i, f);
+		boolean cancel = Combatify.CONFIG.getFoodImpl().execFunc("addFood(foodData, food, saturation)", new FoodDataWrapper(foodData), food, saturation);
+		if (!cancel) original.call(food, saturation);
 	}
 
 	@Inject(method = "tick", at = @At("HEAD"), cancellable = true)
 	public void onTickExecuteJS(Player player, CallbackInfo ci) {
-		boolean cancel = Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), player, "processHungerTick(foodData, player)");
+		boolean cancel = Combatify.CONFIG.getFoodImpl().execFunc("processHungerTick(foodData, player)", new FoodDataWrapper(foodData), new PlayerWrapper<>(player));
 		if (cancel) ci.cancel();
 	}
 
@@ -43,7 +46,7 @@ public class FoodDataMixin {
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int changeConst2(int original, @Local(ordinal = 0, argsOnly = true) Player player) {
-		if (Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), player, "canFastHeal(foodData, player)") || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumFastHealingLevel()");
+		if (Combatify.CONFIG.getFoodImpl().execFunc("canFastHeal(foodData, player)", new FoodDataWrapper(foodData), new PlayerWrapper<>(player)) || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumFastHealingLevel()");
 		return 1000000;
 	}
 
@@ -71,7 +74,7 @@ public class FoodDataMixin {
 			original.call(instance, health);
 			return;
 		}
-		cont.set(Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), instance, "fastHeal(foodData, player)"));
+		cont.set(Combatify.CONFIG.getFoodImpl().execFunc("fastHeal(foodData, player)", new FoodDataWrapper(foodData), new PlayerWrapper<>(instance)));
 		if (!cont.get()) {
 			original.call(instance, health);
 		}
@@ -94,7 +97,7 @@ public class FoodDataMixin {
 			original.call(instance, health);
 			return;
 		}
-		cont.set(Combatify.CONFIG.getFoodImpl().execFoodFunc(FoodData.class.cast(this), instance, "heal(foodData, player)"));
+		cont.set(Combatify.CONFIG.getFoodImpl().execFunc("heal(foodData, player)", new FoodDataWrapper(foodData), new PlayerWrapper<>(instance)));
 		if (!cont.get()) {
 			original.call(instance, health);
 		}

@@ -2,12 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X",
-    "#"
+    " X",
+    " #"
   ],
   "key": {
-    "#": "minecraft:stick",
-    "X": "#minecraft:stone_tool_materials"
+    "#": {
+      "item": "minecraft:stick"
+    },
+    "X": {
+      "tag": "minecraft:stone_tool_materials"
+    }
   },
   "result": {
     "count": 1,

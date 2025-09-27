@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "tag": "minecraft:netherite_tool_materials"
+            "tag": "c:ingots/netherite"
           }
         ]
       },

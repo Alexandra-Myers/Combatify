@@ -2,13 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X",
-    "X",
-    "#"
+    " X",
+    " X",
+    " #"
   ],
   "key": {
-    "#": "combatify:wooden_knife",
-    "X": "#minecraft:wooden_tool_materials"
+    "#": {
+      "item": "combatify:wooden_knife"
+    },
+    "X": {
+      "tag": "minecraft:planks"
+    }
   },
   "result": {
     "count": 1,

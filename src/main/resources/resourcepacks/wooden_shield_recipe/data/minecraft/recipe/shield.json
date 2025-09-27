@@ -7,8 +7,12 @@
     " X "
   ],
   "key": {
-    "X": "#minecraft:wooden_tool_materials",
-    "#": "#minecraft:stone_tool_materials"
+    "X": {
+      "tag": "minecraft:planks"
+    },
+    "#": {
+      "tag": "minecraft:stone_tool_materials"
+    }
   },
   "result": {
     "count": 1,

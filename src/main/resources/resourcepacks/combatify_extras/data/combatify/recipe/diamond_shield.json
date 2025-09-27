@@ -7,8 +7,12 @@
     " X "
   ],
   "key": {
-    "X": "#minecraft:diamond_tool_materials",
-    "#": "#c:storage_blocks/diamond"
+    "X": {
+      "tag": "c:gems/diamond"
+    },
+    "#": {
+      "tag": "c:storage_blocks/diamond"
+    }
   },
   "result": {
     "count": 1,

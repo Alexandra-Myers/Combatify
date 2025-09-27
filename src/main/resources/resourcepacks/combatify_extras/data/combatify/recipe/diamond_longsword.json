@@ -2,13 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X",
-    "X",
-    "#"
+    " X",
+    " X",
+    " #"
   ],
   "key": {
-    "#": "combatify:diamond_knife",
-    "X": "#minecraft:diamond_tool_materials"
+    "#": {
+      "item": "combatify:diamond_knife"
+    },
+    "X": {
+      "tag": "c:gems/diamond"
+    }
   },
   "result": {
     "count": 1,

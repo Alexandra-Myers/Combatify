@@ -7,8 +7,12 @@
     " X "
   ],
   "key": {
-    "X": "#minecraft:iron_tool_materials",
-    "#": "#c:storage_blocks/iron"
+    "X": {
+      "tag": "c:ingots/iron"
+    },
+    "#": {
+      "tag": "c:storage_blocks/iron"
+    }
   },
   "result": {
     "count": 1,
