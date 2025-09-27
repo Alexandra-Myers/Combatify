@@ -5,8 +5,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ArmourPiercingMode;
-import net.atlas.combatify.config.JSImpl;
-import net.atlas.combatify.config.wrapper.SimpleAPIWrapper;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.server.level.ServerLevel;
@@ -40,7 +38,7 @@ public class CombatRulesMixin {
 	@ModifyReturnValue(method = "getDamageAfterAbsorb", at = @At("RETURN"))
 	private static float changeArmourCalcs(float original, @Local(ordinal = 0, argsOnly = true) float amount, @Local(ordinal = 0, argsOnly = true) DamageSource damageSource, @Local(ordinal = 1, argsOnly = true) float armour, @Local(ordinal = 2, argsOnly = true) float toughness) {
 		if (Combatify.ITEMS.armourCalcs.get().execFunc("shouldOverrideArmorProtection()")) {
-			float result = (float) Combatify.ITEMS.armourCalcs.get().execGetterFunc(original, "armorProtection(damage, armor, armorToughness)", new JSImpl.Reference<>("damage", new SimpleAPIWrapper<>(amount)), new JSImpl.Reference<>("armor", new SimpleAPIWrapper<>(armour)), new JSImpl.Reference<>("armorToughness", new SimpleAPIWrapper<>(toughness)));
+			float result = (float) Combatify.ITEMS.armourCalcs.get().execGetterFunc(original, "armorProtection(damage, armor, armorToughness)", amount, armour, toughness);
 			ItemStack itemStack = damageSource.getWeaponItem();
 			if (itemStack != null && damageSource.getEntity().level() instanceof ServerLevel serverLevel) original = 1 - Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(serverLevel, itemStack, damageSource.getEntity(), damageSource, result), 0.0F, 1.0F);
 			else original = 1 - result;
@@ -52,7 +50,7 @@ public class CombatRulesMixin {
 	}
 	@ModifyReturnValue(method = "getDamageAfterMagicAbsorb", at = @At("RETURN"))
 	private static float changeEnchant(float original, @Local(ordinal = 0, argsOnly = true) float amount, @Local(ordinal = 1, argsOnly = true) float enchantLevel) {
-		if (Combatify.ITEMS.armourCalcs.get().execFunc("shouldOverrideEnchantmentProtection()")) original = (float) Combatify.ITEMS.armourCalcs.get().execGetterFunc(original, "enchantmentProtection(damage, protectionLevel)", new JSImpl.Reference<>("damage", new SimpleAPIWrapper<>(amount)), new JSImpl.Reference<>("protectionLevel", new SimpleAPIWrapper<>(enchantLevel)));
+		if (Combatify.ITEMS.armourCalcs.get().execFunc("shouldOverrideEnchantmentProtection()")) original = (float) Combatify.ITEMS.armourCalcs.get().execGetterFunc(original, "enchantmentProtection(damage, protectionLevel)", amount, enchantLevel);
 		return original;
 	}
 }
