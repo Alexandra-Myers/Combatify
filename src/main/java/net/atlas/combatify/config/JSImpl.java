@@ -7,6 +7,8 @@ import net.atlas.combatify.Combatify;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
+import net.minecraft.util.TimeUtil;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Kit;
@@ -77,8 +79,11 @@ public class JSImpl {
 		}
 	}
 	public boolean execFunc(String name, Object... args) {
+		long nanos = Util.getNanos();
 		try {
 			Object ret = invokeFunc(name, args);
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.JS_LOGGER.info("Time spent running " + name + ": " + ((double) (Util.getNanos() - nanos) / TimeUtil.NANOSECONDS_PER_MILLISECOND) + " ms");
 			return !(ret instanceof Boolean bool) || bool;
 		} catch (Exception e) {
 			Combatify.JS_LOGGER.error("Error executing " + name + " function: {}", e);
@@ -87,8 +92,11 @@ public class JSImpl {
 	}
 
 	public double execGetterFunc(double fallback, String name, Object... args) {
+		long nanos = Util.getNanos();
 		try {
 			Object ret = invokeFunc(name, args);
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.JS_LOGGER.info("Time spent running " + name + ": " + ((double) (Util.getNanos() - nanos) / TimeUtil.NANOSECONDS_PER_MILLISECOND) + " ms");
 			return !(ret instanceof Number number) ? fallback : number.doubleValue();
 		} catch (Exception e) {
 			Combatify.JS_LOGGER.error("Error executing " + name + " function: {}", e);
