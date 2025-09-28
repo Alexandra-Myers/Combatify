@@ -60,6 +60,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder snowballKB;
 	private BooleanHolder resetOnItemChange;
 	private BooleanHolder sweepWithSweeping;
+	private BooleanHolder sweepConditionsMatchMiss;
 	private BooleanHolder sweepingNegatedForTamed;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
@@ -297,6 +298,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
 		shieldOnlyWhenCharged.tieToCategory(extraB);
 		shieldOnlyWhenCharged.setupTooltip(2);
+		sweepConditionsMatchMiss = createBoolean("sweepConditionsMatchMiss", false);
+		sweepConditionsMatchMiss.tieToCategory(extraB);
+		sweepConditionsMatchMiss.setupTooltip(2);
 		sweepingNegatedForTamed = createBoolean("sweepingNegatedForTamed", false);
 		sweepingNegatedForTamed.tieToCategory(extraB);
 		sweepingNegatedForTamed.setupTooltip(1);
@@ -442,6 +446,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean sweepWithSweeping() {
 		return sweepWithSweeping.get();
+	}
+	public Boolean sweepConditionsMatchMiss() {
+		return sweepConditionsMatchMiss.get();
 	}
 	public Boolean sweepingNegatedForTamed() {
 		return sweepingNegatedForTamed.get();

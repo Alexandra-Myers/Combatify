@@ -284,6 +284,9 @@
   "text.config.combatify-general.option.shieldOnlyWhenCharged.tooltip.1": "   Note: Does not apply to swords.",
   "text.config.combatify-general.option.sweepingNegatedForTamed": "Sweeping Negated For Tamed",
   "text.config.combatify-general.option.sweepingNegatedForTamed.tooltip": "Makes Sweeping Edge ineffective against entities you have tamed.",
+  "text.config.combatify-general.option.sweepConditionsMatchMiss": "Sweeping Conditions Match Missed Sweeps",
+  "text.config.combatify-general.option.sweepConditionsMatchMiss.tooltip": "Makes Sweeping Edge work in air when hitting an entity, matching how it works on a missed attack.",
+  "text.config.combatify-general.option.sweepConditionsMatchMiss.tooltip.1": "   Note: Does not make it possible to sweep on a critical hit",
   "text.config.combatify-general.option.swordBlocking": "Sword Blocking",
   "text.config.combatify-general.option.swordBlocking.tooltip": "Enables blocking with a sword.",
 
