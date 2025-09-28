@@ -9,7 +9,6 @@
     "ArrowMixin",
     "BlockHitResultMixin",
     "BowItemMixin",
-    "ChunkMapMixin",
     "ClientboundUpdateAttributesPacketMixin",
     "CombatRulesMixin",
     "CommandsMixin",
@@ -26,7 +25,6 @@
     "ItemStackMixin",
     "LivingEntityMixin",
     "LootContextParamSetsMixin",
-    "goal.MeleeAttackGoalMixin",
     "MobEffectMixin",
     "MobMixin",
     "PiglinAiMixin",
@@ -36,6 +34,7 @@
     "ProjectileWeaponItemMixin",
     "RamTargetMixin",
     "ResourceLocationMixin",
+    "ServerChunkCacheMixin",
     "ServerConfigurationPacketMixin",
     "ServerEntityMixin",
     "ServerGamePacketMixin",
@@ -59,7 +58,8 @@
     "compatibility.viafabricplus.EntityPacketRewriter1_20_5Mixin",
     "compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin",
     "goal.FleeSunGoalMixin",
-    "goal.GoalMixin"
+    "goal.GoalMixin",
+    "goal.MeleeAttackGoalMixin"
   ],
   "injectors": {
     "defaultRequire": 1
