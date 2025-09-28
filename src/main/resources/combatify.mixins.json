@@ -10,7 +10,6 @@
     "AvatarMixin",
     "BlockHitResultMixin",
     "BowItemMixin",
-    "ChunkMapMixin",
     "ClientboundUpdateAttributesPacketMixin",
     "CombatRulesMixin",
     "CommandsMixin",
