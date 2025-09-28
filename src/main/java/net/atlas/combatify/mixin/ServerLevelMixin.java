@@ -1,15 +1,10 @@
 package net.atlas.combatify.mixin;
 
-import com.google.common.collect.Lists;
 import net.atlas.combatify.Combatify;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.*;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.TickRateManager;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -19,10 +14,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin extends Level implements ServerEntityGetter, WorldGenLevel {
@@ -31,34 +26,11 @@ public abstract class ServerLevelMixin extends Level implements ServerEntityGett
 	}
 
 	@Shadow
-	public abstract List<ServerPlayer> players();
-
-	@Shadow
 	@Final
 	private ServerChunkCache chunkSource;
 
-	@Inject(method = "method_31420", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;pop()V", ordinal = 1))
-	public void runSyncDelayed(TickRateManager tickRateManager, ProfilerFiller profilerFiller, Entity entity, CallbackInfo ci) {
-		if (Combatify.CONFIG.delayedEntityUpdates()) {
-			List<ServerPlayer> list = Lists.newArrayList();
-			List<ServerPlayer> list2 = this.players();
-
-			ChunkMap.TrackedEntity trackedEntity = chunkSource.chunkMap.combatify$getTrackedEntity(entity);
-			if (trackedEntity == null) return;
-			SectionPos sectionPos = trackedEntity.lastSectionPos;
-			SectionPos sectionPos2 = SectionPos.of(entity);
-			boolean bl = !Objects.equals(sectionPos, sectionPos2);
-			if (bl) {
-				trackedEntity.updatePlayers(list2);
-				if (entity instanceof ServerPlayer) list.add((ServerPlayer) entity);
-
-				trackedEntity.lastSectionPos = sectionPos2;
-			}
-
-			if (bl || this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(sectionPos2.chunk().toLong()))
-				trackedEntity.serverEntity.sendChanges();
-
-			if (!list.isEmpty()) trackedEntity.updatePlayers(list);
-		}
+	@Inject(method = "tick", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/entity/PersistentEntitySectionManager;tick()V")), at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;push(Ljava/lang/String;)V", ordinal = 0))
+	public void runSyncDelayed(BooleanSupplier booleanSupplier, CallbackInfo ci) {
+		if (Combatify.CONFIG.delayedEntityUpdates()) this.chunkSource.chunkMap.tick();
 	}
 }
