@@ -269,7 +269,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		bl4.set(false);
 		double d = this.getKnownMovement().horizontalDistanceSqr();
 		double e = (double)this.getSpeed() * 2.5;
-		if (!bl3 && !bl2 && this.onGround() && d < Mth.square(e) && checkSweepAttack()) {
+		boolean isSweepPossible = Combatify.CONFIG.sweepConditionsMatchMiss() || this.onGround();
+		if (!bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && checkSweepAttack()) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
 				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;

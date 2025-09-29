@@ -60,6 +60,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder snowballKB;
 	private BooleanHolder resetOnItemChange;
 	private BooleanHolder sweepWithSweeping;
+	private BooleanHolder sweepConditionsMatchMiss;
 	private BooleanHolder sweepingNegatedForTamed;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
@@ -87,6 +88,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder enableDebugLogging;
 	private BooleanHolder mobsCanGuard;
 	private BooleanHolder mobsCanSprint;
+	private BooleanHolder mobsUsePlayerAttributes;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
@@ -294,9 +296,15 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		mobsCanSprint = createBoolean("mobsCanSprint", false);
 		mobsCanSprint.tieToCategory(extraB);
 		mobsCanSprint.setupTooltip(1);
+		mobsUsePlayerAttributes = createBoolean("mobsUsePlayerAttributes", false);
+		mobsUsePlayerAttributes.tieToCategory(extraB);
+		mobsUsePlayerAttributes.setupTooltip(1);
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
 		shieldOnlyWhenCharged.tieToCategory(extraB);
 		shieldOnlyWhenCharged.setupTooltip(2);
+		sweepConditionsMatchMiss = createBoolean("sweepConditionsMatchMiss", false);
+		sweepConditionsMatchMiss.tieToCategory(extraB);
+		sweepConditionsMatchMiss.setupTooltip(2);
 		sweepingNegatedForTamed = createBoolean("sweepingNegatedForTamed", false);
 		sweepingNegatedForTamed.tieToCategory(extraB);
 		sweepingNegatedForTamed.setupTooltip(1);
@@ -443,6 +451,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean sweepWithSweeping() {
 		return sweepWithSweeping.get();
 	}
+	public Boolean sweepConditionsMatchMiss() {
+		return sweepConditionsMatchMiss.get();
+	}
 	public Boolean sweepingNegatedForTamed() {
 		return sweepingNegatedForTamed.get();
 	}
@@ -526,6 +537,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean mobsCanSprint() {
 		return mobsCanSprint.get();
+	}
+	public Boolean mobsUsePlayerAttributes() {
+		return mobsUsePlayerAttributes.get();
 	}
 	public Boolean enableDebugLogging() {
 		return enableDebugLogging.get();

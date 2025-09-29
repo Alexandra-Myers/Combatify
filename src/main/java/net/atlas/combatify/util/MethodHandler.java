@@ -10,7 +10,6 @@ import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.util.blocking.BlockingType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
@@ -39,7 +38,6 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
@@ -52,9 +50,9 @@ public class MethodHandler {
 	public static int changeIFrames(int original, DamageSource source) {
 		Entity entity2 = source.getEntity();
 		int invulnerableTime = original - 10;
-		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
-			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
+		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof LivingEntity livingEntity && !(livingEntity.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
+			int base = Math.min(getCurrentItemAttackStrengthDelay(livingEntity), invulnerableTime);
+			invulnerableTime = livingEntity instanceof Player && !Combatify.CONFIG.canAttackEarly() ? Math.max(2, base - 2) : base;
 		}
 
 		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
@@ -301,14 +299,13 @@ public class MethodHandler {
 	}
 	public static InteractionHand canCrouchShield(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) return null;
-		if (!(((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))) return null;
+		if (!((entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && ((entity.onGround() && entity.isCrouching()) || entity.isPassenger()))) return null;
 		for (InteractionHand hand : InteractionHand.values()) {
 			ItemStack stack = entity.getItemInHand(hand);
 			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
 			if (blocksAttacks != null) {
-				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && getBlockingType(stack).requireFullCharge();
 				boolean canUse = !(entity instanceof Player player) || getBlocking(stack).canUse(stack, entity.level(), player, hand);
-				if (!stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock() && canUse) {
+				if (canUse && !stack.isEmpty() && stack.getUseAnimation() == ItemUseAnimation.BLOCK && !isItemOnCooldown(entity, stack) && getBlockingType(stack).canCrouchBlock()) {
 					return hand;
 				}
 			}
@@ -423,6 +420,17 @@ public class MethodHandler {
 
 	public static double getPiercingLevel(ItemStack itemStack) {
 		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
+	}
+
+	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
+		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
+		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
+		if (!Combatify.CONFIG.mobsUsePlayerAttributes() || attackSpeed == null) return 10;
+		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C));
+		double speed = attackSpeed.getValue();
+		speed = Mth.clamp(speed, 1.0, 1024.0);
+		double result = (1.0 / speed * 20.0);
+		return hasVanilla ? (int) result : (int) Math.round(result);
 	}
 
 	@SuppressWarnings("deprecation")
