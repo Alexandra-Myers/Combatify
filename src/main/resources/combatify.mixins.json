@@ -47,6 +47,7 @@
     "TridentItemMixin",
     "UseCooldownMixin",
     "accessor.CombatTrackerAccessor",
+    "accessor.FleeSunGoalAccessor",
     "accessor.LivingEntityAccessor",
     "compatibility.AtlasCoreMixin",
     "compatibility.ConfigCommandMixin",
