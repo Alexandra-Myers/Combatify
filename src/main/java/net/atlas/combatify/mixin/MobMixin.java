@@ -13,14 +13,15 @@ import net.atlas.combatify.mixin.accessor.CombatTrackerAccessor;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -92,9 +93,35 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 					sprintingMob.setSprinting(false);
 				}
 			}
-			if (tickCount % 5 == 0) {
-				if (!canGuard() && combatify$isGuarding()) stopGuarding();
-				else if (canGuard() && ((CombatTrackerAccessor)getCombatTracker()).isInCombat() && !combatify$isGuarding()) startGuarding();
+			if (Combatify.CONFIG.mobsCanGuard() && tickCount % 5 == 0) {
+				boolean shouldGuard = ((CombatTrackerAccessor)getCombatTracker()).isInCombat();
+				boolean isInHittingRange = false;
+				for (CombatEntry combatEntry : ((CombatTrackerAccessor) getCombatTracker()).getEntries()) {
+					if (combatEntry.source().is(DamageTypeTags.IS_PROJECTILE)) {
+						isInHittingRange = true;
+						break;
+					}
+					if (combatEntry.source().getEntity() instanceof LivingEntity livingEntity) {
+						for (EquipmentSlot equipmentSlot : EquipmentSlotGroup.HAND.slots()) {
+							Item heldItem = livingEntity.getItemBySlot(equipmentSlot).getItem();
+							if (heldItem instanceof ProjectileItem || heldItem instanceof ProjectileWeaponItem) {
+								isInHittingRange = true;
+								break;
+							}
+						}
+						if (livingEntity instanceof Player player) {
+							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox(), player.getEyePosition())));
+							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? 1 : 0);
+							if (distanceToAttacker <= reach) isInHittingRange = true;
+						} else if (livingEntity instanceof Mob mob && mob.isWithinMeleeAttackRange(this)) {
+							isInHittingRange = true;
+							break;
+						}
+					}
+				}
+				shouldGuard &= isInHittingRange;
+				if (!(canGuard() && shouldGuard) && combatify$isGuarding()) stopGuarding();
+				else if (canGuard() && shouldGuard && !combatify$isGuarding()) startGuarding();
 			}
 		}
 	}

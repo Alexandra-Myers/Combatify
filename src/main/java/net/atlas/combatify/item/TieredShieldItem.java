@@ -24,9 +24,9 @@ public class TieredShieldItem extends ShieldItem {
 	public final ToolMaterial tier;
 	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), properties -> new TieredShieldItem(ToolMaterial.IRON, properties, 0, 3, ExtendedBlockingData.NEW_SHIELD), new Item.Properties());
 	public static final Item GOLD_SHIELD = registerItem(id("golden_shield"), properties -> new TieredShieldItem(ToolMaterial.GOLD, properties, 0, 1, ExtendedBlockingData.NEW_SHIELD), new Item.Properties());
-	public static final Item COPPER_SHIELD = registerItem(id("copper_shield"), properties -> new TieredShieldItem(ToolMaterial.COPPER, properties, 1.25F, 2, ExtendedBlockingData.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.COPPER_SHIELD_KNOCKBACK))), new Item.Properties());
+	public static final Item COPPER_SHIELD = registerItem(id("copper_shield"), properties -> new TieredShieldItem(ToolMaterial.COPPER, properties, 1.25F, 2, ExtendedBlockingData.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.WEAK_SHIELD_KNOCKBACK))), new Item.Properties());
 	public static final Item DIAMOND_SHIELD = registerItem(id("diamond_shield"), properties -> new TieredShieldItem(ToolMaterial.DIAMOND, properties, 0, 5, ExtendedBlockingData.NEW_SHIELD),new Item.Properties());
-	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(ToolMaterial.NETHERITE, properties, 0, 5, ExtendedBlockingData.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.SHIELD_KNOCKBACK))), new Item.Properties().fireResistant());
+	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(ToolMaterial.NETHERITE, properties, 1, 5, ExtendedBlockingData.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.SHIELD_KNOCKBACK))), new Item.Properties().fireResistant());
 
 	public TieredShieldItem(ToolMaterial tier, Properties properties, float base, int lvl, ExtendedBlockingData baseExtendedBlockingData) {
 		super(properties.durability(tier.durability() * 2)
