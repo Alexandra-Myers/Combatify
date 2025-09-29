@@ -50,9 +50,9 @@ public class MethodHandler {
 	public static int changeIFrames(int original, DamageSource source) {
 		Entity entity2 = source.getEntity();
 		int invulnerableTime = original - 10;
-		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
-			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
+		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof LivingEntity livingEntity && !(livingEntity.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
+			int base = Math.min(getCurrentItemAttackStrengthDelay(livingEntity), invulnerableTime);
+			invulnerableTime = livingEntity instanceof Player && !Combatify.CONFIG.canAttackEarly() ? Math.max(2, base - 2) : base;
 		}
 
 		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
@@ -420,6 +420,17 @@ public class MethodHandler {
 
 	public static double getPiercingLevel(ItemStack itemStack) {
 		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
+	}
+
+	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
+		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
+		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
+		if (!Combatify.CONFIG.mobsUsePlayerAttributes() || attackSpeed == null) return 10;
+		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C));
+		double speed = attackSpeed.getValue();
+		speed = Mth.clamp(speed, 1.0, 1024.0);
+		double result = (1.0 / speed * 20.0);
+		return hasVanilla ? (int) result : (int) Math.round(result);
 	}
 
 	@SuppressWarnings("deprecation")

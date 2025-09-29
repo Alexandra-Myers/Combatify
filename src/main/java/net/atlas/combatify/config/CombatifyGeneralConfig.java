@@ -88,6 +88,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder enableDebugLogging;
 	private BooleanHolder mobsCanGuard;
 	private BooleanHolder mobsCanSprint;
+	private BooleanHolder mobsUsePlayerAttributes;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
@@ -295,6 +296,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		mobsCanSprint = createBoolean("mobsCanSprint", false);
 		mobsCanSprint.tieToCategory(extraB);
 		mobsCanSprint.setupTooltip(1);
+		mobsUsePlayerAttributes = createBoolean("mobsUsePlayerAttributes", false);
+		mobsUsePlayerAttributes.tieToCategory(extraB);
+		mobsUsePlayerAttributes.setupTooltip(1);
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
 		shieldOnlyWhenCharged.tieToCategory(extraB);
 		shieldOnlyWhenCharged.setupTooltip(2);
@@ -533,6 +537,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean mobsCanSprint() {
 		return mobsCanSprint.get();
+	}
+	public Boolean mobsUsePlayerAttributes() {
+		return mobsUsePlayerAttributes.get();
 	}
 	public Boolean enableDebugLogging() {
 		return enableDebugLogging.get();

@@ -20,9 +20,13 @@ import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -54,8 +58,31 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
+	@Shadow
+	@Final
+	private static double DEFAULT_ATTACK_REACH;
+
 	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
+	}
+
+	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+	public void readAdditionalSaveData(ValueInput valueInput, CallbackInfo ci) {
+		var attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
+		if (attackSpeed != null && getType().is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
+	}
+
+	@ModifyReturnValue(method = "createMobAttributes", at = @At(value = "RETURN"))
+	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, DEFAULT_ATTACK_REACH).add(Attributes.ATTACK_SPEED, 1);
+	}
+
+	@Inject(method = "baseTick", at = @At("HEAD"))
+	public void addReachUpdate(CallbackInfo ci) {
+		if (firstTick) {
+			var attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
+			if (attackSpeed != null && getType().is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
+		}
 	}
 
 	@Inject(method = "aiStep", at = @At("HEAD"))
@@ -175,6 +202,13 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		return (this.entityData.get(DATA_MOB_FLAGS_ID) & 8) != 0;
 	}
 
+	@WrapOperation(method = "getAttackBoundingBox", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;inflate(DDD)Lnet/minecraft/world/phys/AABB;"))
+	public AABB modReach(AABB instance, double d, double e, double f, Operation<AABB> original) {
+		var attackReach = getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.CONFIG.mobsUsePlayerAttributes() && attackReach != null) return original.call(instance, attackReach.getValue(), e, attackReach.getValue());
+		return original.call(instance, d, e, f);
+	}
+
 	@ModifyExpressionValue(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;getKnockback(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F"))
 	public float addSprintKB(float original) {
 		return original + (Combatify.CONFIG.mobsCanSprint() && isSprinting() ? 1.0F : 0.0F);
@@ -210,11 +244,11 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	private static Item enableShields(Item original, @Local(ordinal = 0, argsOnly = true) EquipmentSlot equipmentSlot, @Local(ordinal = 0, argsOnly = true) int level) {
 		if (Combatify.CONFIG.mobsCanGuard() && equipmentSlot == EquipmentSlot.OFFHAND) {
 			if (Combatify.CONFIG.tieredShields()) return switch (level) {
-				case 0 -> Items.SHIELD;
 				case 1 -> TieredShieldItem.COPPER_SHIELD;
+				case 2 -> TieredShieldItem.GOLD_SHIELD;
 				case 4 -> TieredShieldItem.IRON_SHIELD;
 				case 5 -> TieredShieldItem.DIAMOND_SHIELD;
-                default -> TieredShieldItem.GOLD_SHIELD;
+                default -> Items.SHIELD;
             };
 			else return Items.SHIELD;
 		}

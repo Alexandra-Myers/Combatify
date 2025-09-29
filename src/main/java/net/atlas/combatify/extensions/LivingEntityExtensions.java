@@ -3,6 +3,14 @@ package net.atlas.combatify.extensions;
 import net.minecraft.world.item.ItemCooldowns;
 
 public interface LivingEntityExtensions {
+	default boolean combatify$isAttackAvailable(float baseTime) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
+
+	default void combatify$resetAttackStrengthTicker(boolean var1) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
+
 	default int combatify$getCrouchBlockingTicks() {
 		throw new IllegalStateException("Extension has not been applied");
 	}

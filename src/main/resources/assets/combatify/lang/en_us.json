@@ -279,6 +279,8 @@
   "text.config.combatify-general.option.mobsCanGuard.tooltip": "Allows mobs to use blocking items in their off-hand while on the ground.",
   "text.config.combatify-general.option.mobsCanSprint": "Mobs Can Sprint",
   "text.config.combatify-general.option.mobsCanSprint.tooltip": "Allows certain mobs that use melee attacks to sprint under certain conditions.",
+  "text.config.combatify-general.option.mobsUsePlayerAttributes": "Mobs Use Player Attributes",
+  "text.config.combatify-general.option.mobsUsePlayerAttributes.tooltip": "Makes mobs use the attack speed and entity interaction range attributes from Players (not with same values).",
   "text.config.combatify-general.option.shieldOnlyWhenCharged": "Shield Only When Charged",
   "text.config.combatify-general.option.shieldOnlyWhenCharged.tooltip": "Only allows you to block with a shield during charge.",
   "text.config.combatify-general.option.shieldOnlyWhenCharged.tooltip.1": "   Note: Does not apply to swords.",
