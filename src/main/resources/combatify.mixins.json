@@ -80,6 +80,7 @@
     "client.ModelFixMixins$AbstractZombieModelFixMixin",
     "client.ModelFixMixins$IllagerModelFixMixin",
     "client.ModelFixMixins$PiglinModelFixMixin",
+    "client.ModelFixMixins$SkeletonModelFixMixin",
     "client.ModelFixMixins$ZombieVillagerModelFixMixin",
     "client.ModelFixMixins$ZombifiedPiglinModelFixMixin",
     "client.MultiPlayerGameModeMixin",

@@ -74,20 +74,20 @@ public class ClientMethodHandler {
 
 		bobArms(modelPart, modelPart2, g);
 	}
-	public static void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, HumanoidArm humanoidArm, float f, float g, float headXRot) {
-		float h = Mth.sin(f * 3.1415927F);
-		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
-		modelPart2.zRot = 0.0F;
-		modelPart.zRot = 0.0F;
+	public static void animateZombieArms(ModelPart leftArm, ModelPart rightArm, HumanoidArm humanoidArm, float attackTime, float ageInTicks, float headXRot) {
+		float h = Mth.sin(attackTime * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F);
+		rightArm.zRot = 0.0F;
+		leftArm.zRot = 0.0F;
 		boolean isRightHanded = humanoidArm == HumanoidArm.RIGHT;
-		ModelPart modelPart3 = isRightHanded ? modelPart2 : modelPart;
-		ModelPart modelPart4 = isRightHanded ? modelPart : modelPart2;
-		modelPart3.yRot = -(0.1F - h * 0.6F);
-		modelPart4.yRot = (!isRightHanded ? -30.0F : 30.0F) * 0.017453292F + (0.1F - h * 0.6F);
-		modelPart3.xRot = (float) (-Math.PI / 2.25F);
-		modelPart4.xRot = modelPart4.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
-		modelPart2.xRot += h * 1.2F - i * 0.4F;
-		modelPart.xRot += h * 1.2F - i * 0.4F;
-		bobArms(modelPart2, modelPart, g);
+		ModelPart mainHandArm = isRightHanded ? rightArm : leftArm;
+		ModelPart offHandArm = isRightHanded ? leftArm : rightArm;
+		mainHandArm.yRot = -(0.1F - h * 0.6F);
+		offHandArm.yRot = (!isRightHanded ? -30.0F : 30.0F) * 0.017453292F + (0.1F - h * 0.6F);
+		mainHandArm.xRot = (float) (-Math.PI / 2.25F);
+		offHandArm.xRot = offHandArm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+		rightArm.xRot += h * 1.2F - i * 0.4F;
+		leftArm.xRot += h * 1.2F - i * 0.4F;
+		bobArms(rightArm, leftArm, ageInTicks);
 	}
 }
