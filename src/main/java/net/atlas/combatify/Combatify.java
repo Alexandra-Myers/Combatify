@@ -8,7 +8,6 @@ import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
-import net.atlas.combatify.component.generators.BlocksAttacksGenerator;
 import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
@@ -179,7 +178,6 @@ public class Combatify implements ModInitializer {
 		}
 
 		DefaultedRegistries.registerPatchGenerator("combat_test_weapon_stats", WeaponStatsGenerator.CODEC);
-		DefaultedRegistries.registerPatchGenerator("modify_blocks_attacks", BlocksAttacksGenerator.CODEC);
 		ModContainer modContainer = FabricLoader.getInstance().getModContainer("combatify").get();
 		ResourceManagerHelper.registerBuiltinResourcePack(id("alternate_mace"), modContainer, Component.translatable("pack.combatify.alternate_mace"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), modContainer, Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
