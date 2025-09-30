@@ -22,7 +22,7 @@
             },
             {
               "type": "change_item_damage",
-              "amount": 1.25
+              "amount": 1
             }
           ]
         },
