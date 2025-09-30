@@ -182,11 +182,13 @@ public class Combatify implements ModInitializer {
 		ModContainer modContainer = FabricLoader.getInstance().getModContainer("combatify").get();
 		ResourceManagerHelper.registerBuiltinResourcePack(id("alternate_mace"), modContainer, Component.translatable("pack.combatify.alternate_mace"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), modContainer, Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("copper_age_rebalance"), modContainer, Component.translatable("pack.combatify.copper_age_rebalance"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("default_mace"), modContainer, Component.translatable("pack.combatify.default_mace"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("default_shield"), modContainer, Component.translatable("pack.combatify.default_shield"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("default_shield_attacker_kb"), modContainer, Component.translatable("pack.combatify.default_shield_attacker_knockback"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("old_sword_blocking"), modContainer, Component.translatable("pack.combatify.old_sword_blocking"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("percentage_shield"), modContainer, Component.translatable("pack.combatify.percentage_shield"), ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("shield_enchantments"), modContainer, Component.translatable("pack.combatify.shield_enchantments"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("shield_no_banner"), modContainer, Component.translatable("pack.combatify.shield_no_banner"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("sword_blocking"), modContainer, Component.translatable("pack.combatify.sword_blocking"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("vanilla_attack_balancing"), modContainer, Component.translatable("pack.combatify.vanilla_attack_balancing"), ResourcePackActivationType.NORMAL);

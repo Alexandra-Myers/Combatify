@@ -1,0 +1,14 @@
+{
+  "tags": [
+    "combatify:knives"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:combat_test_weapon_stats",
+      "attack_damage": 1,
+      "attack_speed": 1,
+      "persist_previous": false
+    }
+  ],
+  "patch": {}
+}

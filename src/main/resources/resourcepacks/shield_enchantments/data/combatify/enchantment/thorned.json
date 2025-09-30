@@ -1,0 +1,59 @@
+{
+  "anvil_cost": 5,
+  "description": {
+    "translate": "enchantment.minecraft.thorned",
+    "fallback": "Thorned"
+  },
+  "effects": {
+    "combatify:post_block_effects": [
+      {
+        "effect": {
+          "type": "all_of",
+          "effects": [
+            {
+              "type": "hurt_entity",
+              "damage_type": "thorns",
+              "max_damage": 5.0,
+              "min_damage": {
+                  "type": "minecraft:linear",
+                  "base": 1.0,
+                  "per_level_above_first": 0.5
+              }
+            },
+            {
+              "type": "change_item_damage",
+              "amount": 1.25
+            }
+          ]
+        },
+        "enchanted": "victim",
+        "affected": "attacker",
+        "requirements": {
+          "chance": {
+            "type": "minecraft:enchantment_level",
+            "amount": {
+              "type": "minecraft:linear",
+              "base": 0.1,
+              "per_level_above_first": 0.1
+            }
+          },
+          "condition": "minecraft:random_chance"
+        }
+      }
+    ]
+  },
+  "max_cost": {
+    "base": 20,
+    "per_level_above_first": 10
+  },
+  "max_level": 4,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 10
+  },
+  "slots": [
+    "hand"
+  ],
+  "supported_items": "#combatify:enchantable/shield",
+  "weight": 1
+}

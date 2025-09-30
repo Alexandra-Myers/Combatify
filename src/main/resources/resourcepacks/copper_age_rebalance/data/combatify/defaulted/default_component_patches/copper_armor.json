@@ -1,0 +1,23 @@
+{
+    "items": [
+        "copper_helmet",
+        "copper_chestplate",
+        "copper_leggings",
+        "copper_boots",
+        "copper_horse_armor"
+    ],
+    "patch_generators": [
+        {
+            "generator": "defaulted:armor_stats",
+            "durability": {
+              "helmet": 187,
+              "chestplate": 272,
+              "leggings": 255,
+              "boots": 221,
+              "any": 272
+            },
+            "persist_previous": true
+        }
+    ],
+    "patch": {}
+}

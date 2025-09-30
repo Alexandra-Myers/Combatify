@@ -405,6 +405,13 @@ public class MethodHandler {
 		return change < (difficulty == Difficulty.NORMAL ? -0.25 : 0);
 	}
 
+	public static boolean shouldSprintFromDistance(Difficulty difficulty, double dist) {
+		double minDistToSprintFrom = 25.0;
+		if (difficulty == Difficulty.PEACEFUL || difficulty == Difficulty.EASY) minDistToSprintFrom = 64.0;
+		if (difficulty == Difficulty.NORMAL) minDistToSprintFrom = 36.0;
+		return dist > minDistToSprintFrom;
+	}
+
 	public static boolean processSprintAbility(Entity entity, Operation<Boolean> base) {
 		return switch (entity) {
 			case Mob mob when mob.combatify$overrideSprintLogic() -> true;

@@ -1,0 +1,21 @@
+{
+    "tags": [
+        "defaulted:copper_tools"
+    ],
+    "patch_generators": [
+        {
+            "generator": "defaulted:tool_material",
+            "weapon_level": 1,
+            "base_tier": "copper",
+            "uses": 310
+        },
+        {
+            "generator": "defaulted:modify_from_tool_material",
+            "components": [
+            	"durability"
+            ]
+        }
+    ],
+    "patch": {},
+    "priority": 800
+}
