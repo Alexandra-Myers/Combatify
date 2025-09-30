@@ -264,7 +264,7 @@
   "text.config.combatify-general.option.shieldOnlyWhenCharged": "Shield Only When Charged",
   "text.config.combatify-general.option.shieldOnlyWhenCharged.tooltip": "Only allows you to block with a shield during charge.",
   "text.config.combatify-general.option.shieldOnlyWhenCharged.tooltip.1": "   Note: Does not apply to swords.",
-  "text.config.combatify-general.option.sweepConditionsMatchMiss": "Sweeping Conditions Match Missed Sweeps",
+  "text.config.combatify-general.option.sweepConditionsMatchMiss": "Mid-Air Sweeping",
   "text.config.combatify-general.option.sweepConditionsMatchMiss.tooltip": "Makes Sweeping Edge work in air when hitting an entity, matching how it works on a missed attack.",
   "text.config.combatify-general.option.sweepConditionsMatchMiss.tooltip.1": "   Note: Does not make it possible to sweep on a critical hit",
   "text.config.combatify-general.option.sweepingNegatedForTamed": "Sweeping Negated For Tamed",
