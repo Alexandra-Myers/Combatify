@@ -1,0 +1,31 @@
+{
+    "items": [
+        "golden_helmet",
+        "golden_chestplate",
+        "golden_leggings",
+        "golden_boots",
+        "golden_horse_armor"
+    ],
+    "patch_generators": [
+        {
+            "generator": "defaulted:armor_stats",
+            "armor": {
+              "helmet": 2,
+              "chestplate": 6,
+              "leggings": 5,
+              "boots": 2,
+              "any": 7
+            },
+            "armor_toughness": 2,
+            "durability": {
+              "helmet": 286,
+              "chestplate": 416,
+              "leggings": 390,
+              "boots": 338,
+              "any": 416
+            },
+            "persist_previous": true
+        }
+    ],
+    "patch": {}
+}

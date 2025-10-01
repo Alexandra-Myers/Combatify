@@ -1,0 +1,88 @@
+{
+    "tags": [
+        "defaulted:golden_tools"
+    ],
+    "patch_generators": [
+        {
+            "generator": "defaulted:tool_material",
+            "base_tier": "gold",
+            "uses": 565,
+            "attack_damage_bonus": 1,
+            "mining_speed": 15.0,
+            "weapon_level": 2,
+            "incorrect_blocks": "minecraft:incorrect_for_iron_tool"
+        },
+        {
+            "generator": "defaulted:modify_from_tool_material",
+            "components": [
+            	"durability"
+            ]
+        },
+        {
+        	"generator": "defaulted:conditional",
+            "condition": "in_tag",
+            "tags": [
+            	"minecraft:pickaxes"
+            ],
+            "patch_generators": [
+                {
+                    "generator": "defaulted:modify_from_tool_material",
+                    "components": [
+                        "tool"
+                    ],
+                    "mineable_blocks": "minecraft:mineable/pickaxe"
+                }
+            ]
+        },
+        {
+        	"generator": "defaulted:conditional",
+            "condition": "in_tag",
+            "tags": [
+            	"minecraft:axes"
+            ],
+            "patch_generators": [
+                {
+                    "generator": "defaulted:modify_from_tool_material",
+                    "components": [
+                        "tool"
+                    ],
+                    "mineable_blocks": "minecraft:mineable/axe"
+                }
+            ]
+        },
+        {
+        	"generator": "defaulted:conditional",
+            "condition": "in_tag",
+            "tags": [
+            	"minecraft:shovels"
+            ],
+            "patch_generators": [
+                {
+                    "generator": "defaulted:modify_from_tool_material",
+                    "components": [
+                        "tool"
+                    ],
+                    "mineable_blocks": "minecraft:mineable/shovel"
+                }
+            ]
+        },
+        {
+        	"generator": "defaulted:conditional",
+            "condition": "in_tag",
+            "tags": [
+            	"minecraft:hoes"
+            ],
+            "patch_generators": [
+                {
+                    "generator": "defaulted:modify_from_tool_material",
+                    "components": [
+                        "tool"
+                    ],
+                    "mineable_blocks": "minecraft:mineable/hoe"
+                }
+            ]
+        }
+    ],
+    "patch": {},
+    "priority": 800
+}

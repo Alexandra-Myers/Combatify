@@ -1,0 +1,36 @@
+{
+  "anvil_cost": 3,
+  "description": {
+    "translate": "enchantment.combatify.recovery",
+    "fallback": "Recovery"
+  },
+  "effects": {
+    "combatify:shield_disable_time": [
+      {
+        "effect": {
+          "type": "minecraft:add",
+          "value": {
+            "type": "minecraft:linear",
+            "base": -1.0,
+            "per_level_above_first": -1.0
+          }
+        },
+        "enchanted": "victim"
+      }
+    ]
+  },
+  "max_cost": {
+    "base": 75,
+    "per_level_above_first": 25
+  },
+  "max_level": 1,
+  "min_cost": {
+    "base": 25,
+    "per_level_above_first": 25
+  },
+  "slots": [
+    "hand"
+  ],
+  "supported_items": "#combatify:enchantable/shield",
+  "weight": 1
+}

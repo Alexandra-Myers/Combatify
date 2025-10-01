@@ -1,0 +1,24 @@
+{
+    "items": [
+        "iron_helmet",
+        "iron_chestplate",
+        "iron_leggings",
+        "iron_boots",
+        "iron_horse_armor"
+    ],
+    "patch_generators": [
+        {
+            "generator": "defaulted:armor_stats",
+            "armor_toughness": 1,
+            "durability": {
+              "helmet": 319,
+              "chestplate": 464,
+              "leggings": 435,
+              "boots": 377,
+              "any": 464
+            },
+            "persist_previous": true
+        }
+    ],
+    "patch": {}
+}

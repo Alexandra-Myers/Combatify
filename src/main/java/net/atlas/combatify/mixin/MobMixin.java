@@ -109,7 +109,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 							&& !isFallFlying();
 						double change = targetDistO - targetDist;
 						Difficulty difficulty = level().getDifficulty();
-						sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || targetDist > 25.0) && meetsSprintConditions);
+						sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || shouldSprintFromDistance(difficulty, targetDist)) && meetsSprintConditions);
 					}
 				} else {
 					targetDist = Integer.MAX_VALUE;
