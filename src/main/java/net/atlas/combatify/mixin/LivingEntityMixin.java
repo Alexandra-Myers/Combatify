@@ -19,7 +19,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -32,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
@@ -216,12 +214,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
 		if (bl.get() && amount > 0)
 			indicateDamage(e, f);
-		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB()))
-			MethodHandler.projectileKnockback(instance, d, e, f);
-		else if (Combatify.CONFIG.ctsKB())
-			MethodHandler.knockback(instance, d, e, f);
-		else
-			original.call(instance, d, e, f);
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, d, e, f, original::call);
 	}
 	@ModifyReceiver(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
 	public ItemStack modifyBlockingItem(ItemStack instance, DataComponentType dataComponentType) {
