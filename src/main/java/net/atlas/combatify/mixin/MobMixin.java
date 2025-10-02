@@ -62,6 +62,10 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static double DEFAULT_ATTACK_REACH;
 
+	@Shadow
+	@Nullable
+	private LivingEntity target;
+
 	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
@@ -158,9 +162,8 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f, original);
 	}
 	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
-		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
-		else original.call(instance, d, e, f);
+	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0) DamageSource damageSource) {
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call);
 	}
 
 	@Override

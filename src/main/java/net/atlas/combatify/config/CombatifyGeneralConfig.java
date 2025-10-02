@@ -67,10 +67,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder delayedEntityUpdates;
 	private BooleanHolder strengthAppliesToEnchants;
 	private BooleanHolder percentageDamageEffects;
-	private BooleanHolder ctsKB;
 	private BooleanHolder tierDamageNerf;
 	private BooleanHolder tridentVoidReturn;
-	private BooleanHolder midairKB;
 	private BooleanHolder fishingHookKB;
 	private BooleanHolder shieldOnlyWhenCharged;
 	private BooleanHolder letVanillaConnect;
@@ -97,6 +95,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
+	private EnumHolder<KnockbackMode> knockbackMode;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
 	private ObjectHolder<AttackDecay> attackDecay;
@@ -172,9 +171,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach = createBoolean("creativeAttackReach", false);
 		creativeAttackReach.tieToCategory(ctsB);
 		creativeAttackReach.setupTooltip(1);
-		ctsKB = createBoolean("ctsKB", true);
-		ctsKB.tieToCategory(ctsB);
-		ctsKB.setupTooltip(1);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ctsB);
 		ctsMomentumPassedToProjectiles.setupTooltip(1);
@@ -247,6 +243,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		eatingInterruptionMode = createEnum("eatingInterruptionMode", EatingInterruptionMode.FULL_RESET, EatingInterruptionMode.class, EatingInterruptionMode.values(), e -> Component.translatable("text.config.combatify-general.option.eatingInterruptionMode." + e.name().toLowerCase(Locale.ROOT)));
 		eatingInterruptionMode.tieToCategory(ctsE);
 		eatingInterruptionMode.setupTooltip(4);
+		knockbackMode = createEnum("knockbackMode", KnockbackMode.CTS_8C, KnockbackMode.class, KnockbackMode.values(), e -> Component.translatable("text.config.combatify-general.option.knockbackMode." + e.name().toLowerCase(Locale.ROOT)));
+		knockbackMode.tieToCategory(ctsB);
+		knockbackMode.setupTooltip(6);
 		foodImpl = createCodecBacked("foodImpl", new JSImpl("cts_food_impl"), JSImpl.CODEC);
 		foodImpl.tieToCategory(ctsE);
 		foodImpl.setupTooltip(1);
@@ -287,9 +286,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		magicHasIFrames = createBoolean("magicHasIFrames", true);
 		magicHasIFrames.tieToCategory(extraB);
 		magicHasIFrames.setupTooltip(1);
-		midairKB = createBoolean("midairKB", false);
-		midairKB.tieToCategory(extraB);
-		midairKB.setupTooltip(2);
 		mobsCanGuard = createBoolean("mobsCanGuard", false);
 		mobsCanGuard.tieToCategory(extraB);
 		mobsCanGuard.setupTooltip(1);
@@ -472,8 +468,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean percentageDamageEffects() {
 		return percentageDamageEffects.get();
 	}
-	public Boolean ctsKB() {
-		return ctsKB.get();
+	public KnockbackMode knockbackMode() {
+		return knockbackMode.get();
 	}
 	public Boolean tierDamageNerf() {
 		return tierDamageNerf.get();
@@ -486,9 +482,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean dispensableTridents() {
 		return dispensableTridents.get();
-	}
-	public Boolean midairKB() {
-		return midairKB.get();
 	}
 	public Boolean fishingHookKB() {
 		return fishingHookKB.get();
