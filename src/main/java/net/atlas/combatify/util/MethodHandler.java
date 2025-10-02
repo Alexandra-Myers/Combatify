@@ -10,7 +10,6 @@ import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.util.blocking.BlockingType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
@@ -39,7 +38,6 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
@@ -52,9 +50,9 @@ public class MethodHandler {
 	public static int changeIFrames(int original, DamageSource source) {
 		Entity entity2 = source.getEntity();
 		int invulnerableTime = original - 10;
-		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof Player player && !(player.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
-			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
-			invulnerableTime = base >= 4 && !Combatify.CONFIG.canAttackEarly() ? base - 2 : base;
+		if (!Combatify.CONFIG.instaAttack() && Combatify.CONFIG.iFramesBasedOnWeapon() && entity2 instanceof LivingEntity livingEntity && !(livingEntity.getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20 && !Combatify.CONFIG.attackSpeed())) {
+			int base = Math.min(getCurrentItemAttackStrengthDelay(livingEntity), invulnerableTime);
+			invulnerableTime = livingEntity instanceof Player && !Combatify.CONFIG.canAttackEarly() ? Math.max(2, base - 2) : base;
 		}
 
 		if (source.is(DamageTypeTags.IS_PROJECTILE) && !Combatify.CONFIG.projectilesHaveIFrames())
@@ -139,7 +137,7 @@ public class MethodHandler {
 				continue;
 			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
 			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && player.level() instanceof ServerLevel serverLevel && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
-				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+				Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback);
 				EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
 			}
 		}
@@ -162,10 +160,6 @@ public class MethodHandler {
 	}
 
 	public static void knockback(LivingEntity entity, double strength, double x, double z) {
-		if (!Combatify.CONFIG.ctsKB()) {
-			entity.knockback(strength, x, z);
-			return;
-		}
 		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
@@ -181,7 +175,7 @@ public class MethodHandler {
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength * 0.75) : Math.min(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
 	}
-	public static void projectileKnockback(LivingEntity entity, double strength, double x, double z) {
+	public static void midairKnockback(LivingEntity entity, double strength, double x, double z) {
 		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
@@ -195,6 +189,38 @@ public class MethodHandler {
 			}
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, Math.min(0.4, strength * 0.75), delta.z / 2.0 - diff.z);
+		}
+	}
+	public static void oldKnockback(LivingEntity entity, double strength, double x, double z) {
+		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
+		double knockbackRes = getKnockbackResistance(entity);
+
+		strength *= 1.0 - knockbackRes;
+		if (!(strength <= 0.0F)) {
+			entity.hasImpulse = true;
+			Vec3 scaledDelta = entity.getDeltaMovement().scale(0.5);
+			while (x * x + z * z < 1.0E-5) {
+				x = (Math.random() - Math.random()) * 0.01;
+				z = (Math.random() - Math.random()) * 0.01;
+			}
+			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
+			entity.setDeltaMovement(scaledDelta.x - diff.x, Math.min(0.4, scaledDelta.y + strength), scaledDelta.z - diff.z);
+		}
+	}
+	public static void combatTest5Knockback(LivingEntity entity, double strength, double x, double z) {
+		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
+		double knockbackRes = getKnockbackResistance(entity);
+
+		strength *= 1.0 - knockbackRes;
+		if (!(strength <= 0.0F)) {
+			entity.hasImpulse = true;
+			Vec3 delta = entity.getDeltaMovement();
+			while (x * x + z * z < 1.0E-5) {
+				x = (Math.random() - Math.random()) * 0.01;
+				z = (Math.random() - Math.random()) * 0.01;
+			}
+			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
+			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength) : Math.max(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
 	}
 	public static HitResult pickCollisions(Entity entity, double reach) {
@@ -301,7 +327,7 @@ public class MethodHandler {
 	}
 	public static InteractionHand canCrouchShield(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) return null;
-		if (!(((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))) return null;
+		if (!((entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && ((entity.onGround() && entity.isCrouching()) || entity.isPassenger()))) return null;
 		for (InteractionHand hand : InteractionHand.values()) {
 			ItemStack stack = entity.getItemInHand(hand);
 			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
@@ -408,6 +434,13 @@ public class MethodHandler {
 		return change < (difficulty == Difficulty.NORMAL ? -0.25 : 0);
 	}
 
+	public static boolean shouldSprintFromDistance(Difficulty difficulty, double dist) {
+		double minDistToSprintFrom = 25.0;
+		if (difficulty == Difficulty.PEACEFUL || difficulty == Difficulty.EASY) minDistToSprintFrom = 64.0;
+		if (difficulty == Difficulty.NORMAL) minDistToSprintFrom = 36.0;
+		return dist > minDistToSprintFrom;
+	}
+
 	public static boolean processSprintAbility(Entity entity, Operation<Boolean> base) {
 		return switch (entity) {
 			case Mob mob when mob.combatify$overrideSprintLogic() -> true;
@@ -423,6 +456,17 @@ public class MethodHandler {
 
 	public static double getPiercingLevel(ItemStack itemStack) {
 		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
+	}
+
+	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
+		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
+		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
+		if (!Combatify.CONFIG.mobsUsePlayerAttributes() || attackSpeed == null) return 10;
+		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C));
+		double speed = attackSpeed.getValue();
+		speed = Mth.clamp(speed, 1.0, 1024.0);
+		double result = (1.0 / speed * 20.0);
+		return hasVanilla ? (int) result : (int) Math.round(result);
 	}
 
 	@SuppressWarnings("deprecation")

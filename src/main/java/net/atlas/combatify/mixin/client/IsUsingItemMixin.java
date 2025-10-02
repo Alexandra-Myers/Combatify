@@ -1,6 +1,5 @@
 package net.atlas.combatify.mixin.client;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.util.MethodHandler;
@@ -15,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public class IsUsingItemMixin {
 	@WrapMethod(method = "get")
 	public boolean accountForBlocking(ItemStack itemStack, ClientLevel clientLevel, LivingEntity livingEntity, int i, ItemDisplayContext itemDisplayContext, Operation<Boolean> original) {
-		if (livingEntity != null && livingEntity.isBlocking() && MethodHandler.getBlockingItem(livingEntity).stack() == itemStack) return true;
+		if (livingEntity != null && !livingEntity.isUsingItem() && livingEntity.isBlocking() && MethodHandler.getBlockingItem(livingEntity).stack() == itemStack) return true;
 		return original.call(itemStack, clientLevel, livingEntity, i, itemDisplayContext);
 	}
 }

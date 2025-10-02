@@ -91,6 +91,8 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean canUse(ItemStack itemStack, Level level, Player user, InteractionHand hand) {
+		boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && user.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && blockingType().requireFullCharge();
+		if (stillRequiresCharge) return false;
 		return blockingCondition.canUse(itemStack, level, user, hand);
 	}
 
