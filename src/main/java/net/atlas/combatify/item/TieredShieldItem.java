@@ -34,7 +34,7 @@ public class TieredShieldItem extends ShieldItem {
 			.repairable(tier.repairItems())
 			.enchantable(tier.enchantmentValue())
 			.component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)
-			.component(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(0, 1, List.of(new BlocksAttacks.DamageReduction(73.8723797F, Optional.empty(), 0.0F, 0.25f + lvl * 0.05F)), BlocksAttacks.ItemDamageFunction.DEFAULT, Optional.empty(), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK)))
+			.component(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(0, 1, List.of(new BlocksAttacks.DamageReduction(73.8723797F, Optional.empty(), base, 0.25f + lvl * 0.05F)), BlocksAttacks.ItemDamageFunction.DEFAULT, Optional.empty(), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK)))
 			.component(CustomDataComponents.EXTENDED_BLOCKING_DATA, baseExtendedBlockingData));
 		this.tier = tier;
 		shields.add(this);
