@@ -48,9 +48,11 @@ public abstract class ServerGamePacketMixin {
 
 	@WrapOperation(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;canInteractWithEntity(Lnet/minecraft/world/phys/AABB;D)Z"))
 	public boolean redirectCheck(ServerPlayer instance, AABB aabb, double v, Operation<Boolean> original, @Local(ordinal = 0) Entity entity) {
-		if (entity instanceof ServerPlayer target)
-            return CombatUtil.allowReach(player, target);
-		return original.call(instance, aabb, v);
+		boolean result;
+		if (entity instanceof ServerPlayer target) result = CombatUtil.allowReach(player, target);
+		else result = original.call(instance, aabb, v);
+		if (Combatify.unmoddedPlayers.contains(player.getUUID()) && !result) player.combatify$attackAir();
+		return result;
 	}
 
 }

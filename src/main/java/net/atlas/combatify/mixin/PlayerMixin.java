@@ -14,6 +14,9 @@ import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.config.wrapper.*;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -46,8 +49,28 @@ import static net.atlas.combatify.util.MethodHandler.sweepAttack;
 
 @SuppressWarnings("unused")
 @Mixin(value = Player.class, priority = 1400)
-public abstract class PlayerMixin extends AvatarMixin implements PlayerExtensions {
+public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
+	/**
+	 * This is a crime, I know,
+	 * But it's okay we have to do this to fix a CTS bug
+	 */
+	@SuppressWarnings("WrongEntityDataParameterClass")
+	@Unique
+	private static final EntityDataAccessor<Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+	@Inject(method = "defineSynchedData", at = @At("TAIL"))
+	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
+		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
+	}
 
+	@Override
+	public boolean combatify$hasEnabledShieldOnCrouch() {
+		return entityData.get(DATA_PLAYER_USES_SHIELD_CROUCH);
+	}
+
+	@Override
+	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
+		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
+	}
 	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}

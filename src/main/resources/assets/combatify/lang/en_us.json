@@ -220,6 +220,8 @@
   "text.config.combatify-general.option.tridentVoidReturn": "Trident Returns From The Void",
   "text.config.combatify-general.option.tridentVoidReturn.tooltip": "Allows Tridents with Loyalty to return to you from the void.",
 
+  "text.config.combatify-general.option.aimAssistTicks": "CTS 5 Aim Assist Ticks",
+  "text.config.combatify-general.option.aimAssistTicks.tooltip": "Time, in ticks, for which a hit result will be maintained to improve aim, also known by the name \"Coyote Time\".",
   "text.config.combatify-general.option.shieldDelay": "Shield Delay",
   "text.config.combatify-general.option.shieldDelay.tooltip": "Time, in ticks, for which shields will have to be held before being able to protect the user.",
   "text.config.combatify-general.option.instantHealthBonus": "Instant Health Bonus",

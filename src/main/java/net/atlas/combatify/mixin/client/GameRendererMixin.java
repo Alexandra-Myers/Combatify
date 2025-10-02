@@ -4,17 +4,25 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.client.ClientMethodHandler;
+import net.atlas.combatify.extensions.MinecraftExtensions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
+	@Shadow
+	@Final
+	private Minecraft minecraft;
+
 	@ModifyExpressionValue(method = "pick(F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
 	public HitResult injectBedrockBridging(HitResult original, @Local(ordinal = 0) Entity entity, @Local(ordinal = 0, argsOnly = true) float f) {
 		HitResult redirectedResult = ClientMethodHandler.redirectResult(original);
@@ -31,6 +39,10 @@ public class GameRendererMixin {
 		} else if (redirectedResult != null) {
 			original = redirectedResult;
 		}
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || Combatify.CONFIG.aimAssistTicks() == 0)
+			((MinecraftExtensions)minecraft).combatify$setAimAssistHitResult(null);
+		else if (original.getType() == HitResult.Type.ENTITY)
+			((MinecraftExtensions)minecraft).combatify$setAimAssistHitResult(original);
 		return original;
 	}
 }

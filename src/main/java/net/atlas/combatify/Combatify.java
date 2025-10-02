@@ -108,7 +108,7 @@ public class Combatify implements ModInitializer {
 		WeaponType.init();
 		networkingHandler = new NetworkingHandler();
 		AttackEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+			if (Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResult.PASS;
 		});
@@ -146,7 +146,7 @@ public class Combatify implements ModInitializer {
 		DataComponentPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
 				ServerPlayer player = packetContext.getPlayer();
 				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;

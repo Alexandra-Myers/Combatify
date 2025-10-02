@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.extensions.MinecraftExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -32,7 +33,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
 @Mixin(Minecraft.class)
-public abstract class MinecraftMixin {
+public abstract class MinecraftMixin implements MinecraftExtensions {
+	@Unique
+	public boolean retainAttack;
+	@Unique
+	public HitResult aimAssistHitResult;
+	@Unique
+	public int aimAssistTicks;
 	@Shadow
 	@Final
 	public Options options;
@@ -40,8 +47,6 @@ public abstract class MinecraftMixin {
 	@Shadow
 	@Nullable
 	public LocalPlayer player;
-	@Unique
-	public boolean retainAttack;
 
 	@Shadow
 	@Nullable
@@ -69,6 +74,10 @@ public abstract class MinecraftMixin {
 	@Final
 	public MouseHandler mouseHandler;
 
+	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(F)V"))
+	public void injectAimAssistDecrement(CallbackInfo ci) {
+		if (--aimAssistTicks <= 0) this.aimAssistHitResult = null;
+	}
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
 		if (screen != null)
@@ -128,6 +137,11 @@ public abstract class MinecraftMixin {
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
 		this.retainAttack = false;
 	}
+	@ModifyExpressionValue(method = "startAttack", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;")), at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;"))
+	public HitResult modifyHitResult(HitResult original) {
+		if (this.aimAssistHitResult != null && original.getType() != HitResult.Type.ENTITY) original = this.aimAssistHitResult;
+		return original;
+	}
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))
 	public boolean removeMissTime(boolean original) {
@@ -155,7 +169,7 @@ public abstract class MinecraftMixin {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
 			if (!cannotPerform) {
 				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? this.player.combatify$isAttackAvailable(-1.0F) : this.player.getAttackStrengthScale(-1.0F) >= 1.0F;
-				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK) {
+				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK && this.aimAssistHitResult == null) {
 					this.retainAttack = false;
 				} else if (bl1 && canAutoAttack && bl2) {
 					this.startAttack();
@@ -168,7 +182,7 @@ public abstract class MinecraftMixin {
 	public boolean ensureNotReachingAroundContinue(boolean original) {
 		if (original) return true;
 		assert this.hitResult != null;
-		return ((BlockHitResult)this.hitResult).combatify$isLedgeEdge();
+		return ((BlockHitResult)this.hitResult).combatify$isLedgeEdge() || this.aimAssistHitResult != null;
 	}
 	@ModifyExpressionValue(method = "continueAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
 	public boolean alterResult(boolean original) {
@@ -176,5 +190,12 @@ public abstract class MinecraftMixin {
 			original |= player.isBlocking();
 		}
 		return original;
+	}
+
+	@Override
+	public void combatify$setAimAssistHitResult(@Nullable HitResult aimAssistHitResult) {
+		this.aimAssistHitResult = aimAssistHitResult;
+		if (aimAssistHitResult != null) aimAssistTicks = Combatify.CONFIG.aimAssistTicks();
+		else aimAssistTicks = 0;
 	}
 }

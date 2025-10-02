@@ -7,7 +7,6 @@
   "mixins": [
     "AbstractWindChargeMixin",
     "ArrowMixin",
-    "AvatarMixin",
     "BlockHitResultMixin",
     "BowItemMixin",
     "ClientboundUpdateAttributesPacketMixin",
