@@ -87,6 +87,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder mobsCanGuard;
 	private BooleanHolder mobsCanSprint;
 	private BooleanHolder mobsUsePlayerAttributes;
+	private IntegerHolder aimAssistTicks;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
@@ -217,6 +218,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		tridentVoidReturn.tieToCategory(ctsB);
 		tridentVoidReturn.setupTooltip(1);
 
+		aimAssistTicks = createInRange("aimAssistTicks", 0, 0, 10, true);
+		aimAssistTicks.tieToCategory(ctsI);
+		aimAssistTicks.setupTooltip(1);
 		shieldDelay = createInRange("shieldDelay", 0, 0, 2000, false);
 		shieldDelay.tieToCategory(ctsI);
 		shieldDelay.setupTooltip(1);
@@ -468,9 +472,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean percentageDamageEffects() {
 		return percentageDamageEffects.get();
 	}
-	public KnockbackMode knockbackMode() {
-		return knockbackMode.get();
-	}
 	public Boolean tierDamageNerf() {
 		return tierDamageNerf.get();
 	}
@@ -537,6 +538,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean enableDebugLogging() {
 		return enableDebugLogging.get();
 	}
+	public Integer aimAssistTicks() {
+		return aimAssistTicks.get();
+	}
 	public Integer shieldDelay() {
 		return shieldDelay.get();
 	}
@@ -602,6 +606,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public EatingInterruptionMode eatingInterruptionMode() {
 		return eatingInterruptionMode.get();
+	}
+	public KnockbackMode knockbackMode() {
+		return knockbackMode.get();
 	}
 	public JSImpl getCritImpl() {
 		return critImpl.get();
