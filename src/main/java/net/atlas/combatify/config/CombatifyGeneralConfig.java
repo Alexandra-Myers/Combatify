@@ -244,7 +244,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		eatingInterruptionMode.tieToCategory(ctsE);
 		eatingInterruptionMode.setupTooltip(4);
 		knockbackMode = createEnum("knockbackMode", KnockbackMode.CTS_8C, KnockbackMode.class, KnockbackMode.values(), e -> Component.translatable("text.config.combatify-general.option.knockbackMode." + e.name().toLowerCase(Locale.ROOT)));
-		knockbackMode.tieToCategory(ctsB);
+		knockbackMode.tieToCategory(ctsE);
 		knockbackMode.setupTooltip(6);
 		foodImpl = createCodecBacked("foodImpl", new JSImpl("cts_food_impl"), JSImpl.CODEC);
 		foodImpl.tieToCategory(ctsE);
