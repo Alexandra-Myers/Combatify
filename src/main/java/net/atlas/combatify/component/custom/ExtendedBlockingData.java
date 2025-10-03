@@ -68,6 +68,10 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 		ExtendedBlockingData::new
 	);
 
+	public ExtendedBlockingData withProtection(List<CombinedModifier> protection) {
+		return new ExtendedBlockingData(new Tooltip(protection, tooltip.knockbackModifiers), blockingTypeLocation, postBlockEffect, blockingCondition);
+	}
+
 	public ExtendedBlockingData withKnockback(List<ComponentModifier> knockback) {
 		return new ExtendedBlockingData(new Tooltip(tooltip.protectionModifiers, knockback), blockingTypeLocation, postBlockEffect, blockingCondition);
 	}

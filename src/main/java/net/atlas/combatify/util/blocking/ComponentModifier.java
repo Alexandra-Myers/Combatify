@@ -75,7 +75,7 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 		}
 		val *= componentValueFactor;
 		if (val > 0) res.add(buildComponent(tooltipComponent, val));
-		if (!others.isEmpty()) others.getFirst().tryCombine(others, blockingLevel, randomSource);
+		if (!others.isEmpty()) res.addAll(others.getFirst().tryCombine(others, blockingLevel, randomSource));
 		return res;
 	}
 	public float tryCombineVal(List<ComponentModifier> others, int blockingLevel, RandomSource randomSource) {
