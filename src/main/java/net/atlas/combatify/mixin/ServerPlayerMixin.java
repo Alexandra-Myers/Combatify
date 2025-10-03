@@ -31,6 +31,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
@@ -61,12 +62,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void hitreg(CallbackInfo ci) {
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
-		if (this.player.combatify$isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
+		if (Combatify.unmoddedPlayers.contains(getUUID()) && this.player.combatify$isAttackAvailable(-1.0F) && retainAttack) {
 			retainAttack = false;
 			combatify$customSwing(InteractionHand.MAIN_HAND);
 			Entity entity = getCamera();
-			if (entity == null)
-				entity = this.player;
 			Vec3 eyePos = entity.getEyePosition(1.0f);
 			Vec3 viewVector = entity.getViewVector(1.0f);
 			double reach = entityInteractionRange();
@@ -81,15 +80,21 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			else
 				hitResult = MethodHandler.redirectResult(player, hitResult);
 			if (hitResult.getType() == HitResult.Type.ENTITY)
-				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult)hitResult).getEntity(), isShiftKeyDown()));
+				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), isShiftKeyDown()));
+			else if (hitResult.getType() == HitResult.Type.MISS)
+				combatify$attackAir();
 		}
+	}
+	@Inject(method = "drop(Z)Z", at = @At("HEAD"))
+	public void disableOnDropItem(boolean bl, CallbackInfoReturnable<Boolean> cir) {
+		if (Combatify.unmoddedPlayers.contains(getUUID()))
+			Combatify.isPlayerAttacking.put(getUUID(), false);
 	}
 	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
 	public void removeReset(InteractionHand hand, CallbackInfo ci) {
 		super.swing(hand);
 		if (Combatify.unmoddedPlayers.contains(getUUID())) {
-			if (Combatify.isPlayerAttacking.get(getUUID()))
-				handleInteract();
+			if (Combatify.isPlayerAttacking.get(getUUID())) handleInteract();
 			Combatify.isPlayerAttacking.put(getUUID(), true);
 		}
 		ci.cancel();

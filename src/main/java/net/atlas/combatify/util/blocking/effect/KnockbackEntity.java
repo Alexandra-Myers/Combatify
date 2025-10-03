@@ -3,6 +3,7 @@ package net.atlas.combatify.util.blocking.effect;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +31,7 @@ public record KnockbackEntity(LevelBasedValue strength, boolean force, boolean i
 		double x = targetPosition.x() - attackerPosition.x();
 		double z = targetPosition.z() - attackerPosition.z();
 		if (force) toApply.hurtMarked = true;
-		MethodHandler.knockback(toApply, strength.calculate(enchantmentLevel), x, z);
+		Combatify.CONFIG.knockbackMode().runKnockback(toApply, null, strength.calculate(enchantmentLevel), x, z, LivingEntity::knockback);
 	}
 
 	private Vec3 getPosition(EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, LivingEntity toApply, Vec3 position, boolean inverse) {

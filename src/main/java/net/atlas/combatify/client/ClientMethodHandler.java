@@ -45,50 +45,50 @@ public class ClientMethodHandler {
 		}
 		return null;
 	}
-	public static void animateBlockingBase(ModelPart arm, boolean rightHanded, float f, float headXRot) {
-		float h = Mth.sin(f * 3.1415927F);
-		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
+	public static void animateBlockingBase(ModelPart arm, boolean rightHanded, float attackTime, float headXRot) {
+		float h = Mth.sin(attackTime * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F);
 		arm.yRot = (!rightHanded ? -30.0F : 30.0F) * 0.017453292F - (0.1F - h * 0.6F);
 		arm.xRot = arm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
 		arm.xRot += h * 1.2F - i * 0.4F;
 	}
-	public static <T extends Mob> void swingWeaponDown(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headXRot) {
-		float h = Mth.sin(f * 3.1415927F);
-		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
-		modelPart.zRot = 0.0F;
-		modelPart2.zRot = 0.0F;
+	public static <T extends Mob> void swingWeaponDown(ModelPart rightArm, ModelPart leftArm, T mob, float attackTime, float ageInTicks, float headXRot) {
+		float h = Mth.sin(attackTime * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F);
+		rightArm.zRot = 0.0F;
+		leftArm.zRot = 0.0F;
 		if (mob.getMainArm() == HumanoidArm.RIGHT) {
-			modelPart.yRot = 0.15707964F;
-			modelPart2.yRot = 30.0F * 0.017453292F - 0.15707964F;
-			modelPart.xRot = -1.8849558F + Mth.cos(g * 0.09F) * 0.15F;
-			modelPart2.xRot = modelPart2.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
-			modelPart.xRot += h * 2.2F - i * 0.4F;
-			modelPart2.xRot += h * 1.2F - i * 0.4F;
+			rightArm.yRot = 0.15707964F;
+			leftArm.yRot = 30.0F * 0.017453292F - 0.15707964F;
+			rightArm.xRot = -1.8849558F + Mth.cos(ageInTicks * 0.09F) * 0.15F;
+			leftArm.xRot = leftArm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+			rightArm.xRot += h * 2.2F - i * 0.4F;
+			leftArm.xRot += h * 1.2F - i * 0.4F;
 		} else {
-			modelPart.yRot = -30.0F * 0.017453292F + 0.15707964F;
-			modelPart2.yRot = -0.15707964F;
-			modelPart.xRot = modelPart.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
-			modelPart2.xRot = -1.8849558F + Mth.cos(g * 0.09F) * 0.15F;
-			modelPart.xRot += h * 1.2F - i * 0.4F;
-			modelPart2.xRot += h * 2.2F - i * 0.4F;
+			rightArm.yRot = -30.0F * 0.017453292F + 0.15707964F;
+			leftArm.yRot = -0.15707964F;
+			rightArm.xRot = rightArm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
+			leftArm.xRot = -1.8849558F + Mth.cos(ageInTicks * 0.09F) * 0.15F;
+			rightArm.xRot += h * 1.2F - i * 0.4F;
+			leftArm.xRot += h * 2.2F - i * 0.4F;
 		}
 
-		bobArms(modelPart, modelPart2, g);
+		bobArms(rightArm, leftArm, ageInTicks);
 	}
-	public static <T extends Mob> void animateZombieArms(ModelPart modelPart, ModelPart modelPart2, T mob, float f, float g, float headXRot) {
-		float h = Mth.sin(f * 3.1415927F);
-		float i = Mth.sin((1.0F - (1.0F - f) * (1.0F - f)) * 3.1415927F);
-		modelPart2.zRot = 0.0F;
-		modelPart.zRot = 0.0F;
+	public static <T extends Mob> void animateZombieArms(ModelPart leftArm, ModelPart rightArm, T mob, float attackTime, float ageInTicks, float headXRot) {
+		float h = Mth.sin(attackTime * 3.1415927F);
+		float i = Mth.sin((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F);
+		rightArm.zRot = 0.0F;
+		leftArm.zRot = 0.0F;
 		boolean isRightHanded = mob.getMainArm() == HumanoidArm.RIGHT;
-		ModelPart modelPart3 = isRightHanded ? modelPart2 : modelPart;
-		ModelPart modelPart4 = isRightHanded ? modelPart : modelPart2;
+		ModelPart modelPart3 = isRightHanded ? rightArm : leftArm;
+		ModelPart modelPart4 = isRightHanded ? leftArm : rightArm;
 		modelPart3.yRot = -(0.1F - h * 0.6F);
 		modelPart4.yRot = (!isRightHanded ? -30.0F : 30.0F) * 0.017453292F + (0.1F - h * 0.6F);
 		modelPart3.xRot = (float) (-Math.PI / 2.25F);
 		modelPart4.xRot = modelPart4.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
-		modelPart2.xRot += h * 1.2F - i * 0.4F;
-		modelPart.xRot += h * 1.2F - i * 0.4F;
-		bobArms(modelPart2, modelPart, g);
+		rightArm.xRot += h * 1.2F - i * 0.4F;
+		leftArm.xRot += h * 1.2F - i * 0.4F;
+		bobArms(rightArm, leftArm, ageInTicks);
 	}
 }

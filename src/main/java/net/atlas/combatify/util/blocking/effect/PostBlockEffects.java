@@ -12,6 +12,7 @@ public class PostBlockEffects {
 
 	public static void bootstrap() {
 		ID_MAPPER.put(DoNothing.ID, DoNothing.MAP_CODEC);
+		ID_MAPPER.put(ChangeItemDamage.ID, ChangeItemDamage.MAP_CODEC);
 		ID_MAPPER.put(KnockbackEntity.ID, KnockbackEntity.MAP_CODEC);
 		ID_MAPPER.put(HurtEntity.ID, HurtEntity.MAP_CODEC);
 		ID_MAPPER.put(ApplyEffect.ID, ApplyEffect.MAP_CODEC);

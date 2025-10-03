@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin.client;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -7,11 +8,12 @@ import net.atlas.combatify.client.ClientMethodHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.model.*;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.AbstractIllager;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -103,6 +105,30 @@ public class ModelFixMixins {
 				return;
 			}
 			original.call(modelPart, modelPart2, bl, f, g);
+		}
+	}
+	@Mixin(SkeletonModel.class)
+	public static class SkeletonModelFixMixin<T extends Mob & RangedAttackMob> extends HumanoidModel<T> {
+		public SkeletonModelFixMixin(ModelPart modelPart) {
+			super(modelPart);
+		}
+
+		@Inject(method = "setupAnim(Lnet/minecraft/world/entity/Mob;FFFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;isAggressive()Z"))
+		public void injectGuardCheck(T mob, float f, float g, float h, float i, float j, CallbackInfo ci) {
+			ItemStack itemStack = mob.getMainHandItem();
+			if (!(mob.isAggressive() && (itemStack.isEmpty() || !itemStack.is(Items.BOW))) && MethodHandler.isMobGuarding(mob)) {
+				boolean rightHanded = mob.getMainArm() == HumanoidArm.RIGHT;
+				ModelPart arm = rightHanded ? leftArm : rightArm;
+				ClientMethodHandler.animateBlockingBase(arm, rightHanded, attackTime, head.xRot);
+			}
+		}
+		@ModifyExpressionValue(method = "setupAnim(Lnet/minecraft/world/entity/Mob;FFFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;getMainHandItem()Lnet/minecraft/world/item/ItemStack;"))
+		public ItemStack injectGuardCheck(ItemStack original, @Local(ordinal = 0, argsOnly = true) T mob, @Local(ordinal = 2, argsOnly = true) float ageInTicks) {
+			if ((original.isEmpty() || !original.is(Items.BOW)) && MethodHandler.isMobGuarding(mob)) {
+				ClientMethodHandler.animateZombieArms(leftArm, rightArm, mob, attackTime, ageInTicks, head.xRot);
+				return Items.BOW.getDefaultInstance();
+			}
+			return original;
 		}
 	}
 }

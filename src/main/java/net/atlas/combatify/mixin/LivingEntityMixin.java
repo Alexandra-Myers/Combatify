@@ -14,6 +14,7 @@ import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -21,6 +22,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
@@ -41,6 +45,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	private double piercingNegation;
 	@Unique
 	private ItemCooldowns fallbackCooldowns = MethodHandler.createItemCooldowns();
+	@Unique
+	protected int attackStrengthMaxValue;
 
 	public LivingEntityMixin(EntityType<?> entityType, Level level) {
 		super(entityType, level);
@@ -58,6 +64,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract void indicateDamage(double d, double e);
 
+	@Shadow
+	public abstract double getAttributeValue(Holder<Attribute> holder);
+
+	@Shadow
+	public int attackStrengthTicker;
+
 	@Override
 	public ItemCooldowns combatify$getFallbackCooldowns() {
 		return fallbackCooldowns;
@@ -65,6 +77,34 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "tick", at = @At(value = "RETURN"))
 	public void tickCooldowns(CallbackInfo ci) {
 		fallbackCooldowns.tick();
+		if (!(LivingEntity.class.cast(this) instanceof Player))
+			attackStrengthTicker++;
+	}
+
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit) {
+		resetAttackStrengthTicker(false);
+	}
+
+	@Unique
+	public void resetAttackStrengthTicker(boolean force) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+			return;
+		}
+		if ((!Combatify.CONFIG.attackSpeed() && getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20) || Combatify.CONFIG.instaAttack())
+			return;
+		int chargeTicks = MethodHandler.getCurrentItemAttackStrengthDelay(LivingEntity.class.cast(this));
+		if (force || chargeTicks > (attackStrengthMaxValue - attackStrengthTicker)) {
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
+			this.attackStrengthMaxValue = chargeTicks;
+			this.attackStrengthTicker = 0;
+		}
+	}
+
+	@Override
+	public boolean combatify$isAttackAvailable(float baseTime) {
+		return attackStrengthMaxValue - (attackStrengthTicker + baseTime) <= 0;
 	}
 
 	@SuppressWarnings("unused")
@@ -124,12 +164,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
 		if (bl.get() && amount > 0)
 			indicateDamage(e, f);
-		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB()))
-			MethodHandler.projectileKnockback(instance, d, e, f);
-		else if (Combatify.CONFIG.ctsKB())
-			MethodHandler.knockback(instance, d, e, f);
-		else
-			original.call(instance, d, e, f);
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, d, e, f, original::call);
 	}
 
 	@ModifyExpressionValue(method = "startUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isUsingItem()Z"))

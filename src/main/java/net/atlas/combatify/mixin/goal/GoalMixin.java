@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin.goal;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.mixin.accessor.FleeSunGoalAccessor;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.FleeSunGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -9,17 +10,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.lang.reflect.Field;
-
 @Mixin(Goal.class)
 public class GoalMixin {
 	@Inject(method = "stop", at = @At(value = "HEAD"))
 	public void injectSprinting(CallbackInfo ci) {
 		if (Combatify.CONFIG.mobsCanSprint() && Goal.class.cast(this) instanceof FleeSunGoal fleeSunGoal) {
 			try {
-				Field mobField = FleeSunGoal.class.getDeclaredField("mob");
-				mobField.setAccessible(true);
-				PathfinderMob mob = (PathfinderMob) mobField.get(fleeSunGoal);
+				PathfinderMob mob = ((FleeSunGoalAccessor)fleeSunGoal).getMob();
 				mob.combatify$setOverrideSprintLogic(false);
 				mob.setSprinting(false);
 			} catch (Exception e) {

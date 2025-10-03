@@ -19,10 +19,18 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
 public abstract class ItemInHandMixin {
 	@Shadow @Final private Minecraft minecraft;
+	@Shadow
+	private float oMainHandHeight;
+
+	@Shadow
+	private float oOffHandHeight;
+
 	@ModifyExpressionValue(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isUsingItem()Z", ordinal = 1))
 	private boolean modifyUseItemCheck(boolean original, @Local(ordinal = 0, argsOnly = true) AbstractClientPlayer abstractClientPlayer, @Local(ordinal = 0, argsOnly = true) InteractionHand interactionHand, @Share("isFakingUsingItem") LocalBooleanRef fakeUsingItem) {
 		boolean isReallyUsingItem = abstractClientPlayer.isUsingItem() && abstractClientPlayer.getUsedItemHand() == interactionHand;
@@ -53,5 +61,13 @@ public abstract class ItemInHandMixin {
 		float n = MethodHandler.getFatigueForTime((int) r) - 0.1F;
 		float o = m * n;
 		original.call(instance, o * 0.0F, o * 0.004F, o * 0.0F);
+	}
+	@Inject(method = "itemUsed", at = @At("HEAD"))
+	private void modifyOldStates(InteractionHand interactionHand, CallbackInfo ci) {
+		if (interactionHand == InteractionHand.MAIN_HAND) {
+			this.oMainHandHeight = 0.0F;
+		} else {
+			this.oOffHandHeight = 0.0F;
+		}
 	}
 }

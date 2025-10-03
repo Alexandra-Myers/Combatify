@@ -80,6 +80,10 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 		Blocker::new
 	);
 
+	public Blocker withProtection(List<CombinedModifier> protection) {
+		return new Blocker(damageParsers, new Tooltip(protection, tooltip.knockbackModifiers, tooltip.markBlocked), blockingTypeLocation, useSeconds, postBlockEffect, blockingCondition);
+	}
+
 	public Blocker withKnockback(List<ComponentModifier> knockback) {
 		return new Blocker(damageParsers, new Tooltip(tooltip.protectionModifiers, knockback, tooltip.markBlocked), blockingTypeLocation, useSeconds, postBlockEffect, blockingCondition);
 	}

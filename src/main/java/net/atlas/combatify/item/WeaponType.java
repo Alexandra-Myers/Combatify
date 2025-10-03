@@ -15,7 +15,7 @@ import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID;
 public record WeaponType(String name, double damageOffset, double speed, double reach, boolean useHoeDamage, boolean tierable) {
 	public static final WeaponType EMPTY = createBasicUntierable("empty", 0, 0, 0);
 	public static final WeaponType LONGSWORD = createWithHoeDamageFormula("longsword", 0, 0.5, 1);
-	public static final WeaponType KNIFE = createBasic("knife", 1, 1, 0.25);
+	public static final WeaponType KNIFE = createBasic("knife", 1, 1, 0);
 	public static final ResourceLocation BASE_ATTACK_SPEED_CTS_ID = ResourceLocation.withDefaultNamespace("base_attack_speed_cts");
 	public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
 

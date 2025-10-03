@@ -287,9 +287,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!strengthAppliesToEnchants) combinedDamage.set(finalAttackDamage.getValue() + enchantDamage);
 	}
 	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
-		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
-		else original.call(instance, d, e, f);
+	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0) DamageSource damageSource) {
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Share("didSweep") LocalBooleanRef didSweep) {
@@ -297,7 +296,8 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		bl4.set(false);
 		double d = this.getKnownMovement().horizontalDistanceSqr();
 		double e = (double)this.getSpeed() * 2.5;
-		if (!bl3 && !bl2 && this.onGround() && d < Mth.square(e) && checkSweepAttack()) {
+		boolean isSweepPossible = Combatify.CONFIG.sweepConditionsMatchMiss() || this.onGround();
+		if (!bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && checkSweepAttack()) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
 				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;

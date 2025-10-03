@@ -1,0 +1,14 @@
+{
+  "tags": [
+    "combatify:tiered_shields"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:modify_from_tool_material",
+      "components": [
+        "durability"
+      ],
+      "max_damage_factor": 2
+    }
+  ]
+}
