@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -75,7 +74,7 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 		}
 		val *= componentValueFactor;
 		if (val > 0) res.add(buildComponent(tooltipComponent, val));
-		if (!others.isEmpty()) others.getFirst().tryCombine(others, blockingLevel, randomSource);
+		if (!others.isEmpty()) res.addAll(others.getFirst().tryCombine(others, blockingLevel, randomSource));
 		return res;
 	}
 	public float tryCombineVal(List<ComponentModifier> others, int blockingLevel, RandomSource randomSource) {
