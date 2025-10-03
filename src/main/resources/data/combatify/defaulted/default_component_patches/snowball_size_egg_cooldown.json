@@ -1,16 +1,13 @@
 {
-  "items": [
-    "minecraft:snowball",
-    "minecraft:egg",
-    "minecraft:brown_egg",
-    "minecraft:blue_egg"
+  "tags": [
+    "combatify:projectiles_with_cooldowns"
   ],
   "patch_generators": [
     {
       "generator": "defaulted:conditional",
-      "condition": "is_item",
-      "items": [
-        "minecraft:snowball"
+      "condition": "in_tag",
+      "tags": [
+        "combatify:becomes_normal_stack_size"
       ],
       "patch": {
         "minecraft:max_stack_size": 64
