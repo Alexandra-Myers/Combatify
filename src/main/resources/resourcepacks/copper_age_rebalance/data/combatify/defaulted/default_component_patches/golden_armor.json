@@ -17,7 +17,7 @@
               "any": 7
             },
             "armor_toughness": 2,
-            "durability": {
+            "max_damage": {
               "helmet": 286,
               "chestplate": 416,
               "leggings": 390,

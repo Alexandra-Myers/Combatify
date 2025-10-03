@@ -9,7 +9,7 @@
     "patch_generators": [
         {
             "generator": "defaulted:armor_stats",
-            "durability": {
+            "max_damage": {
               "helmet": 187,
               "chestplate": 272,
               "leggings": 255,
