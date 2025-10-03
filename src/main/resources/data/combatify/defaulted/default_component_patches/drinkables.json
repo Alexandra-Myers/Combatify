@@ -1,15 +1,6 @@
 {
-  "items": [
-    "minecraft:mushroom_stew",
-    "minecraft:rabbit_stew",
-    "minecraft:beetroot_soup",
-    "minecraft:suspicious_stew",
-    "minecraft:potion",
-    "minecraft:splash_potion",
-    "minecraft:lingering_potion",
-    "minecraft:milk_bucket",
-    "minecraft:honey_bottle",
-    "minecraft:ominous_bottle"
+  "tags": [
+    "combatify:fast_drinkables"
   ],
   "patch_generators": [
     {
