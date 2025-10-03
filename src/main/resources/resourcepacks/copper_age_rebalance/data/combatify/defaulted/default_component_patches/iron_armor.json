@@ -10,7 +10,7 @@
         {
             "generator": "defaulted:armor_stats",
             "armor_toughness": 1,
-            "durability": {
+            "max_damage": {
               "helmet": 319,
               "chestplate": 464,
               "leggings": 435,
