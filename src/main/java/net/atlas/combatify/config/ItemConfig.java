@@ -9,6 +9,8 @@ import io.netty.buffer.ByteBuf;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.item.WeaponStats;
+import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -37,6 +39,11 @@ import java.util.function.IntFunction;
 import static net.atlas.combatify.Combatify.*;
 
 public class ItemConfig extends AtlasConfig {
+	public static final List<RegistryConfigDataWrapper<Item, ConfigurableItemData>> DEFAULT_ITEMS;
+	static {
+		DEFAULT_ITEMS = List.of(new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.PROJECTILES_WITH_COOLDOWNS), new ConfigurableItemData(WeaponStats.EMPTY, null, 0.2)),
+			new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.FAST_DRINKABLES), new ConfigurableItemData(WeaponStats.EMPTY, 1.0, null)));
+	}
 	public boolean isModifying = false;
 	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;
 	public TagHolder<List<RegistryConfigDataWrapper<Item, ConfigurableItemData>>> items;
@@ -50,7 +57,7 @@ public class ItemConfig extends AtlasConfig {
 		ConfigurableEntityData.CODEC);
 
 	public ItemConfig() {
-		super(id("combatify-items-v3"));
+		super(id("combatify-items-1.21-v3"));
 	}
 
 	@Override
@@ -83,7 +90,7 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public void defineConfigHolders() {
-		items = createCodecBacked("items", new ArrayList<>(), ITEMS_CODEC.codec().listOf());
+		items = createCodecBacked("items", DEFAULT_ITEMS, ITEMS_CODEC.codec().listOf());
 		entities = createCodecBacked("entities", new ArrayList<>(), ENTITIES_CODEC.codec().listOf());
 		armourCalcs = createCodecBacked("armor_calculation", new JSImpl("armor_calculations"), JSImpl.CODEC);
 	}
@@ -118,7 +125,7 @@ public class ItemConfig extends AtlasConfig {
 
 	public void saveToNetwork(RegistryFriendlyByteBuf buf) {
 		super.saveToNetwork(buf);
-		writeMap(buf, Combatify.registeredTypes, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		writeMap(buf, registeredTypes, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
 	}
 
 	@Override
