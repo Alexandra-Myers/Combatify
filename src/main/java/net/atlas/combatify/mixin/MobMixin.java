@@ -11,17 +11,22 @@ import net.atlas.combatify.extensions.MobExtensions;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.mixin.accessor.CombatTrackerAccessor;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -53,10 +58,32 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
+	@Shadow
+	@Final
+	private static double DEFAULT_ATTACK_REACH;
+
 	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
+	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+	public void readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
+		var attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
+		if (attackSpeed != null && getType().is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
+	}
+
+	@ModifyReturnValue(method = "createMobAttributes", at = @At(value = "RETURN"))
+	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, DEFAULT_ATTACK_REACH).add(Attributes.ATTACK_SPEED, 1);
+	}
+
+	@Inject(method = "baseTick", at = @At("HEAD"))
+	public void addReachUpdate(CallbackInfo ci) {
+		if (firstTick) {
+			var attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
+			if (attackSpeed != null && getType().is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
+		}
+	}
 	@Inject(method = "aiStep", at = @At("HEAD"))
 	public void updateSprinting(CallbackInfo ci) {
 		if (isBlocking()) {
@@ -81,7 +108,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 							&& !isFallFlying();
 						double change = targetDistO - targetDist;
 						Difficulty difficulty = level().getDifficulty();
-						sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || targetDist > 25.0) && meetsSprintConditions);
+						sprintingMob.setSprinting((this.getHealth() <= getPinchHealth(this, difficulty) || shouldSprintToCloseInOnTarget(difficulty, change) || shouldSprintFromDistance(difficulty, targetDist)) && meetsSprintConditions);
 					}
 				} else {
 					targetDist = Integer.MAX_VALUE;
@@ -92,11 +119,44 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 					sprintingMob.setSprinting(false);
 				}
 			}
-			if (tickCount % 5 == 0) {
-				if (!canGuard() && combatify$isGuarding()) stopGuarding();
-				else if (canGuard() && ((CombatTrackerAccessor)getCombatTracker()).isInCombat() && !combatify$isGuarding()) startGuarding();
+			if (Combatify.CONFIG.mobsCanGuard() && tickCount % 5 == 0) {
+				boolean shouldGuard = ((CombatTrackerAccessor)getCombatTracker()).isInCombat();
+				boolean isInHittingRange = false;
+				for (CombatEntry combatEntry : ((CombatTrackerAccessor) getCombatTracker()).getEntries()) {
+					if (combatEntry.source().is(DamageTypeTags.IS_PROJECTILE)) {
+						isInHittingRange = true;
+						break;
+					}
+					if (combatEntry.source().getEntity() instanceof LivingEntity livingEntity) {
+						for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES.stream().filter(EquipmentSlotGroup.HAND::test).toList()) {
+							Item heldItem = livingEntity.getItemBySlot(equipmentSlot).getItem();
+							if (heldItem instanceof ProjectileItem || heldItem instanceof ProjectileWeaponItem) {
+								isInHittingRange = true;
+								break;
+							}
+						}
+						if (livingEntity instanceof Player player) {
+							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox(), player.getEyePosition())));
+							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? 1 : 0);
+							if (distanceToAttacker <= reach) isInHittingRange = true;
+						} else if (livingEntity instanceof Mob mob && mob.isWithinMeleeAttackRange(this)) {
+							isInHittingRange = true;
+							break;
+						}
+					}
+				}
+				shouldGuard &= isInHittingRange;
+				if (!(canGuard() && shouldGuard) && combatify$isGuarding()) stopGuarding();
+				else if (canGuard() && shouldGuard && !combatify$isGuarding()) startGuarding();
 			}
 		}
+	}
+
+	@WrapOperation(method = "getAttackBoundingBox", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;inflate(DDD)Lnet/minecraft/world/phys/AABB;"))
+	public AABB modReach(AABB instance, double d, double e, double f, Operation<AABB> original) {
+		var attackReach = getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.CONFIG.mobsUsePlayerAttributes() && attackReach != null) return original.call(instance, attackReach.getValue(), e, attackReach.getValue());
+		return original.call(instance, d, e, f);
 	}
 
 	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
@@ -104,9 +164,8 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f, original);
 	}
 	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
-		if (Combatify.CONFIG.ctsKB()) MethodHandler.knockback(instance, d, e, f);
-		else original.call(instance, d, e, f);
+	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0) DamageSource damageSource) {
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call);
 	}
 
 	@Override
@@ -183,10 +242,10 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	private static Item enableShields(Item original, @Local(ordinal = 0, argsOnly = true) EquipmentSlot equipmentSlot, @Local(ordinal = 0, argsOnly = true) int level) {
 		if (Combatify.CONFIG.mobsCanGuard() && equipmentSlot == EquipmentSlot.OFFHAND) {
 			if (Combatify.CONFIG.tieredShields()) return switch (level) {
-				case 0 -> Items.SHIELD;
+				case 1 -> TieredShieldItem.GOLD_SHIELD;
 				case 3 -> TieredShieldItem.IRON_SHIELD;
 				case 4 -> TieredShieldItem.DIAMOND_SHIELD;
-                default -> TieredShieldItem.GOLD_SHIELD;
+				default -> Items.SHIELD;
             };
 			else return Items.SHIELD;
 		}

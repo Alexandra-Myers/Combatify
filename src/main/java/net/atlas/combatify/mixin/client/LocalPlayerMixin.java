@@ -54,13 +54,16 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Unique
 	LocalPlayer thisPlayer = (LocalPlayer)(Object)this;
 	@Environment(EnvType.CLIENT)
-	@Inject(method = "tick", at = @At("HEAD"))
+	@Inject(method = "tick", at = @At("RETURN"))
 	public void injectSneakShield(CallbackInfo ci) {
-		boolean isBlocking = isBlocking();
-		if (isBlocking != wasShieldBlocking) {
-			wasShieldBlocking = isBlocking;
-			if (isBlocking) shieldBlockingHand = getBlockingItem(thisPlayer).useHand();
-			if (isBlocking && !isUsingItem()) minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
+		if (this.hasClientLoaded()) {
+			boolean isBlocking = isBlocking();
+			if (isBlocking != wasShieldBlocking) {
+				wasShieldBlocking = isBlocking;
+				if (isBlocking) shieldBlockingHand = getBlockingItem(thisPlayer).useHand();
+				if (isBlocking && !isUsingItem())
+					minecraft.gameRenderer.itemInHandRenderer.itemUsed(shieldBlockingHand);
+			}
 		}
 	}
 

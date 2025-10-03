@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin.client;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -106,6 +107,29 @@ public class ModelFixMixins {
 				return;
 			}
 			original.call(modelPart, modelPart2, bl, f, g);
+		}
+	}
+	@Mixin(SkeletonModel.class)
+	public static class SkeletonModelFixMixin<T extends SkeletonRenderState> extends HumanoidModel<T> {
+		public SkeletonModelFixMixin(ModelPart modelPart) {
+			super(modelPart);
+		}
+
+		@Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/SkeletonRenderState;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/entity/state/SkeletonRenderState;isAggressive:Z"))
+		public void injectGuardCheck(T skeletonRenderState, CallbackInfo ci) {
+			if (!(skeletonRenderState.isAggressive && !skeletonRenderState.isHoldingBow) && skeletonRenderState.combatify$mobIsGuarding()) {
+				boolean rightHanded = skeletonRenderState.mainArm == HumanoidArm.RIGHT;
+				ModelPart arm = rightHanded ? leftArm : rightArm;
+				ClientMethodHandler.animateBlockingBase(arm, rightHanded, skeletonRenderState.attackTime, head.xRot);
+			}
+		}
+		@ModifyExpressionValue(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/SkeletonRenderState;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/entity/state/SkeletonRenderState;isHoldingBow:Z"))
+		public boolean injectGuardCheck(boolean original, @Local(ordinal = 0, argsOnly = true) T skeletonRenderState) {
+			if (!original && skeletonRenderState.combatify$mobIsGuarding()) {
+				ClientMethodHandler.animateZombieArms(leftArm, rightArm, skeletonRenderState.mainArm, skeletonRenderState.attackTime, skeletonRenderState.ageInTicks, head.xRot);
+				return true;
+			}
+			return original;
 		}
 	}
 }

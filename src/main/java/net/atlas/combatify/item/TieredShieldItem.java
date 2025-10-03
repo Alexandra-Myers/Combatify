@@ -21,7 +21,7 @@ public class TieredShieldItem extends ShieldItem {
 	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), properties -> new TieredShieldItem(ToolMaterial.IRON, properties, 3, Blocker.NEW_SHIELD), new Item.Properties());
 	public static final Item GOLD_SHIELD = registerItem(id("golden_shield"), properties -> new TieredShieldItem(ToolMaterial.GOLD, properties, 1, Blocker.NEW_SHIELD), new Item.Properties());
 	public static final Item DIAMOND_SHIELD = registerItem(id("diamond_shield"), properties -> new TieredShieldItem(ToolMaterial.DIAMOND, properties, 5, Blocker.NEW_SHIELD),new Item.Properties());
-	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(ToolMaterial.NETHERITE, properties, 5, Blocker.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.SHIELD_KNOCKBACK))), new Item.Properties().fireResistant());
+	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(ToolMaterial.NETHERITE, properties, 5, Blocker.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.SHIELD_KNOCKBACK)).withProtection(Collections.singletonList(BlockingTypeInit.NETHERITE_SHIELD_PROTECTION))), new Item.Properties().fireResistant());
 
 	public TieredShieldItem(ToolMaterial tier, Properties properties, int lvl, Blocker baseBlocker) {
 		super(properties.durability(tier.durability() * 2)

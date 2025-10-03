@@ -61,16 +61,15 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder snowballKB;
 	private BooleanHolder resetOnItemChange;
 	private BooleanHolder sweepWithSweeping;
+	private BooleanHolder sweepConditionsMatchMiss;
 	private BooleanHolder sweepingNegatedForTamed;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
 	private BooleanHolder delayedEntityUpdates;
 	private BooleanHolder strengthAppliesToEnchants;
 	private BooleanHolder percentageDamageEffects;
-	private BooleanHolder ctsKB;
 	private BooleanHolder tierDamageNerf;
 	private BooleanHolder tridentVoidReturn;
-	private BooleanHolder midairKB;
 	private BooleanHolder fishingHookKB;
 	private BooleanHolder shieldOnlyWhenCharged;
 	private BooleanHolder letVanillaConnect;
@@ -89,6 +88,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder enableDebugLogging;
 	private BooleanHolder mobsCanGuard;
 	private BooleanHolder mobsCanSprint;
+	private BooleanHolder mobsUsePlayerAttributes;
+	private IntegerHolder aimAssistTicks;
 	private IntegerHolder shieldDelay;
 	private IntegerHolder instantHealthBonus;
 	private IntegerHolder shieldChargePercentage;
@@ -99,6 +100,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
+	private EnumHolder<KnockbackMode> knockbackMode;
 	private EnumHolder<ArrowDisableMode> arrowDisableMode;
 	private EnumHolder<ArmourPiercingMode> armourPiercingMode;
 	private ObjectHolder<AttackDecay> attackDecay;
@@ -177,9 +179,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach = createBoolean("creativeAttackReach", false);
 		creativeAttackReach.tieToCategory(ctsB);
 		creativeAttackReach.setupTooltip(1);
-		ctsKB = createBoolean("ctsKB", true);
-		ctsKB.tieToCategory(ctsB);
-		ctsKB.setupTooltip(1);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ctsB);
 		ctsMomentumPassedToProjectiles.setupTooltip(1);
@@ -226,6 +225,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		tridentVoidReturn.tieToCategory(ctsB);
 		tridentVoidReturn.setupTooltip(1);
 
+		aimAssistTicks = createInRange("aimAssistTicks", 0, 0, 10, true);
+		aimAssistTicks.tieToCategory(ctsI);
+		aimAssistTicks.setupTooltip(1);
 		shieldDelay = createInRange("shieldDelay", 0, 0, 2000, false);
 		shieldDelay.tieToCategory(ctsI);
 		shieldDelay.setupTooltip(1);
@@ -258,6 +260,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		eatingInterruptionMode = createEnum("eatingInterruptionMode", EatingInterruptionMode.FULL_RESET, EatingInterruptionMode.class, EatingInterruptionMode.values(), e -> Component.translatable("text.config.combatify-general.option.eatingInterruptionMode." + e.name().toLowerCase(Locale.ROOT)));
 		eatingInterruptionMode.tieToCategory(ctsE);
 		eatingInterruptionMode.setupTooltip(4);
+		knockbackMode = createEnum("knockbackMode", KnockbackMode.CTS_8C, KnockbackMode.class, KnockbackMode.values(), e -> Component.translatable("text.config.combatify-general.option.knockbackMode." + e.name().toLowerCase(Locale.ROOT)));
+		knockbackMode.tieToCategory(ctsE);
+		knockbackMode.setupTooltip(6);
 		foodImpl = createCodecBacked("foodImpl", new JSImpl("cts_food_impl"), JSImpl.CODEC);
 		foodImpl.tieToCategory(ctsE);
 		foodImpl.setupTooltip(1);
@@ -301,18 +306,21 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		magicHasIFrames = createBoolean("magicHasIFrames", true);
 		magicHasIFrames.tieToCategory(extraB);
 		magicHasIFrames.setupTooltip(1);
-		midairKB = createBoolean("midairKB", false);
-		midairKB.tieToCategory(extraB);
-		midairKB.setupTooltip(2);
 		mobsCanGuard = createBoolean("mobsCanGuard", false);
 		mobsCanGuard.tieToCategory(extraB);
 		mobsCanGuard.setupTooltip(1);
 		mobsCanSprint = createBoolean("mobsCanSprint", false);
 		mobsCanSprint.tieToCategory(extraB);
 		mobsCanSprint.setupTooltip(1);
+		mobsUsePlayerAttributes = createBoolean("mobsUsePlayerAttributes", false);
+		mobsUsePlayerAttributes.tieToCategory(extraB);
+		mobsUsePlayerAttributes.setupTooltip(1);
 		shieldOnlyWhenCharged = createBoolean("shieldOnlyWhenCharged", false);
 		shieldOnlyWhenCharged.tieToCategory(extraB);
 		shieldOnlyWhenCharged.setupTooltip(2);
+		sweepConditionsMatchMiss = createBoolean("sweepConditionsMatchMiss", false);
+		sweepConditionsMatchMiss.tieToCategory(extraB);
+		sweepConditionsMatchMiss.setupTooltip(2);
 		sweepingNegatedForTamed = createBoolean("sweepingNegatedForTamed", false);
 		sweepingNegatedForTamed.tieToCategory(extraB);
 		sweepingNegatedForTamed.setupTooltip(1);
@@ -465,6 +473,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean sweepWithSweeping() {
 		return sweepWithSweeping.get();
 	}
+	public Boolean sweepConditionsMatchMiss() {
+		return sweepConditionsMatchMiss.get();
+	}
 	public Boolean sweepingNegatedForTamed() {
 		return sweepingNegatedForTamed.get();
 	}
@@ -483,9 +494,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean percentageDamageEffects() {
 		return percentageDamageEffects.get();
 	}
-	public Boolean ctsKB() {
-		return ctsKB.get();
-	}
 	public Boolean tierDamageNerf() {
 		return tierDamageNerf.get();
 	}
@@ -497,9 +505,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean disableLoyaltyOnHitEntity() {
 		return disableLoyaltyOnHitEntity.get();
-	}
-	public Boolean midairKB() {
-		return midairKB.get();
 	}
 	public Boolean fishingHookKB() {
 		return fishingHookKB.get();
@@ -549,8 +554,14 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public Boolean mobsCanSprint() {
 		return mobsCanSprint.get();
 	}
+	public Boolean mobsUsePlayerAttributes() {
+		return mobsUsePlayerAttributes.get();
+	}
 	public Boolean enableDebugLogging() {
 		return enableDebugLogging.get();
+	}
+	public Integer aimAssistTicks() {
+		return aimAssistTicks.get();
 	}
 	public Integer shieldDelay() {
 		return shieldDelay.get();
@@ -623,6 +634,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public EatingInterruptionMode eatingInterruptionMode() {
 		return eatingInterruptionMode.get();
+	}
+	public KnockbackMode knockbackMode() {
+		return knockbackMode.get();
 	}
 	public JSImpl getCritImpl() {
 		return critImpl.get();
