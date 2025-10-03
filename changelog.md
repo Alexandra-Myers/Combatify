@@ -27,7 +27,7 @@
 - Fixed incompatibilities caused by the knockback delay fix
 - Fixed mobs sprinting to flee the sun not working in production
 - Fixed Copper Shields not showing base protection in their tooltip
-- Fixed datapack errors relating to 1.21.5's `combatify:blocks_attacks` component
+- Fixed datapack errors relating to 1.21.5's `minecraft:blocks_attacks` component
 - Fixed shield crouch use anim
 - Fixed bugged arm model when skeletons use shields
 - Fixed 1.21 drinking time and egg/snowball cooldowns
