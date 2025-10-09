@@ -2,7 +2,6 @@ package net.atlas.combatify.mixin.compatibility.cookeymod;
 
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.atlas.combatify.extensions.MiscCategoryExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,7 +10,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.rizecookey.cookeymod.CookeyMod;
 import org.spongepowered.asm.mixin.Mixin;
 
-@ModSpecific("cookeymod")
 @Mixin(LocalPlayer.class)
 public abstract class DisableMissedAttackRecoveryMixin extends AbstractClientPlayer implements PlayerExtensions {
 	public DisableMissedAttackRecoveryMixin(ClientLevel clientLevel, GameProfile gameProfile) {

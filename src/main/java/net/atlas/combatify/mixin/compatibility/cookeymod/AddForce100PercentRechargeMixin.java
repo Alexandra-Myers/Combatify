@@ -1,6 +1,5 @@
 package net.atlas.combatify.mixin.compatibility.cookeymod;
 
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.atlas.combatify.extensions.MiscCategoryExtensions;
 import net.rizecookey.cookeymod.config.ModConfig;
 import net.rizecookey.cookeymod.config.category.Category;
@@ -12,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@ModSpecific("cookeymod")
 @Mixin(MiscCategory.class)
 public abstract class AddForce100PercentRechargeMixin extends Category implements MiscCategoryExtensions {
 	@Unique

@@ -7,19 +7,25 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
@@ -62,6 +68,11 @@ public abstract class ItemInHandMixin {
 		float o = m * n;
 		original.call(instance, o * 0.0F, o * 0.004F, o * 0.0F);
 	}
+	@WrapOperation(method = "renderArmWithItem", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;isAutoSpinAttack()Z")), at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;applyItemArmTransform(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/entity/HumanoidArm;F)V", ordinal = 2))
+	private void addBlockingAnim(ItemInHandRenderer instance, PoseStack poseStack, HumanoidArm humanoidArm, float f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) ItemStack stack) {
+		original.call(instance, poseStack, humanoidArm, f);
+		if (!(stack.getItem() instanceof ShieldItem)) applyItemBlockTransform(poseStack, humanoidArm);
+	}
 	@Inject(method = "itemUsed", at = @At("HEAD"))
 	private void modifyOldStates(InteractionHand interactionHand, CallbackInfo ci) {
 		if (interactionHand == InteractionHand.MAIN_HAND) {
@@ -69,5 +80,16 @@ public abstract class ItemInHandMixin {
 		} else {
 			this.oOffHandHeight = 0.0F;
 		}
+	}
+	/* Values from 15w33b, thanks to Fuzss for providing them
+		https://github.com/Fuzss/swordblockingcombat/blob/1.15/src/main/java/com/fuzs/swordblockingcombat/client/handler/RenderBlockingHandler.java
+	*/
+	@Unique
+	public void applyItemBlockTransform(PoseStack poseStack, HumanoidArm humanoidArm) {
+		int reverse = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
+		poseStack.translate(reverse * -0.14142136F, 0.08F, 0.14142136F);
+		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
+		poseStack.mulPose(Axis.YP.rotationDegrees(reverse * 13.365F));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(reverse * 78.05F));
 	}
 }

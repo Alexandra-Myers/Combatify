@@ -6,7 +6,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.atlas.combatify.config.wrapper.FoodDataWrapper;
 import net.atlas.combatify.config.wrapper.FoodPropertiesWrapper;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
@@ -17,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import squeek.appleskin.helpers.FoodHelper;
 
-@ModSpecific("appleskin")
 @Mixin(FoodHelper.class)
 public class FoodHelperMixin {
 	@ModifyExpressionValue(method = "getEstimatedHealthIncrement(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/food/FoodProperties;)F", at = @At(value = "CONSTANT", args = "floatValue=18.0"))

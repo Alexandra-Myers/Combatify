@@ -4,10 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.atlas.combatify.config.wrapper.FoodDataWrapper;
 import net.atlas.combatify.config.wrapper.FoodPropertiesWrapper;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
@@ -20,18 +17,12 @@ import squeek.appleskin.api.event.HUDOverlayEvent;
 import squeek.appleskin.client.HUDOverlayHandler;
 import squeek.appleskin.helpers.FoodHelper;
 
-@ModSpecific("appleskin")
 @Mixin(HUDOverlayHandler.class)
 public abstract class HUDOverlayHandlerMixin {
 	@ModifyExpressionValue(method = "shouldShowEstimatedHealth", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int modifyMinHunger(int original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumHealingLevel()");
-	}
-	@ModifyExpressionValue(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodProperties;saturation()F"))
-	public float captureFoodSaturationIncrement(float original, @Share("foodSaturationIncrement") LocalFloatRef inc) {
-		inc.set(original);
-		return original;
 	}
 	@WrapOperation(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lsqueek/appleskin/client/HUDOverlayHandler;drawHungerOverlay(Lsqueek/appleskin/api/event/HUDOverlayEvent$HungerRestored;Lnet/minecraft/client/Minecraft;IFZI)V"))
 	public void modifyNewSaturation(HUDOverlayHandler instance, HUDOverlayEvent.HungerRestored event, Minecraft mc, int hunger, float alpha, boolean useRottenTextures, int guiTicks, Operation<Void> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0) FoodHelper.QueriedFoodResult foodResult) {

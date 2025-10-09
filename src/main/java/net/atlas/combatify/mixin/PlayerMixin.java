@@ -1,7 +1,6 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -41,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -156,28 +156,12 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			Combatify.isPlayerAttacking.put(player.getUUID(), false);
 	}
 
-	@Dynamic
-	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = {@At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/world/item/Item;)Z"), @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/extensions/IItemStackExtension;canPerformAction(Lnet/neoforged/neoforge/common/ItemAbility;)Z")})
-	public boolean changeUsedShield(boolean original) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() || original;
-	}
-
 	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getUsedItemHand()Lnet/minecraft/world/InteractionHand;"))
 	public InteractionHand useCurrentBlockingHand(InteractionHand original) {
 		return MethodHandler.getBlockingItem(player).useHand() != null ? MethodHandler.getBlockingItem(player).useHand() : original;
 	}
 
-	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
-	public ItemStack useCurrentBlockingItemStats(ItemStack instance) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
-	}
-
-	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
-	public ItemStack useCurrentBlockingItem(ItemStack instance, int i, LivingEntity livingEntity, EquipmentSlot equipmentSlot) {
-		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
-	}
-
-	@ModifyReceiver(method = "hurtCurrentlyUsedShield", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
+	@ModifyExpressionValue(method = "hurtCurrentlyUsedShield", slice = @Slice(to = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z")), at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Player;useItem:Lnet/minecraft/world/item/ItemStack;"))
 	public ItemStack useCurrentBlockingItem(ItemStack instance) {
 		return !MethodHandler.getBlockingItem(player).stack().isEmpty() ? MethodHandler.getBlockingItem(player).stack() : instance;
 	}

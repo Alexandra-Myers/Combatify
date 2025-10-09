@@ -3,13 +3,11 @@ package net.atlas.combatify.mixin.compatibility.cookeymod;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.rizecookey.cookeymod.CookeyMod;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@ModSpecific("cookeymod")
 @Mixin(ItemInHandRenderer.class)
 public class ArmHeightFixMixin {
 	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))

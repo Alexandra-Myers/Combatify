@@ -27,6 +27,7 @@
     "LootContextParamSetsMixin",
     "MobEffectMixin",
     "MobMixin",
+    "ModifyShieldMixin",
     "PiglinAiMixin",
     "PlayerListMixin",
     "PlayerMixin",
@@ -52,9 +53,9 @@
     "accessor.LivingEntityAccessor",
     "compatibility.AtlasCoreMixin",
     "compatibility.ConfigCommandMixin",
-    "compatibility.InvulnerabilityMixin",
+    "compatibility.neoforge.InvulnerabilityMixin",
+    "compatibility.neoforge.ModifyShieldMixin",
     "compatibility.polymer.PolymerComponentMixin",
-    "compatibility.sodium.SodiumGameOptionPagesMixin",
     "compatibility.viafabricplus.Attributes1_20_5Mixin",
     "compatibility.viafabricplus.EntityPacketRewriter1_20_5Mixin",
     "compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin",
@@ -88,9 +89,13 @@
     "client.VideoSettingsMixin",
     "compatibility.appleskin.FoodHelperMixin",
     "compatibility.appleskin.HUDOverlayHandlerMixin",
+    "compatibility.appleskin.neoforge.HungerOverlayMixin",
+    "compatibility.appleskin.neoforge.NeoForgeHUDOverlayHandlerMixin",
+    "compatibility.appleskin.neoforge.SaturationOverlayMixin",
     "compatibility.cookeymod.AddForce100PercentRechargeMixin",
     "compatibility.cookeymod.ArmHeightFixMixin",
-    "compatibility.cookeymod.DisableMissedAttackRecoveryMixin"
+    "compatibility.cookeymod.DisableMissedAttackRecoveryMixin",
+    "compatibility.sodium.SodiumGameOptionPagesMixin"
   ],
   "mixinPriority": 1200
 }

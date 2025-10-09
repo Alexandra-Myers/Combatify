@@ -1,23 +1,46 @@
 package net.atlas.combatify.mixin;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import net.fabricmc.loader.api.FabricLoader;
-import net.atlas.combatify.annotation.mixin.Incompatible;
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
-import org.spongepowered.asm.service.MixinService;
-import org.spongepowered.asm.util.Annotations;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 public class MixinPlugin implements IMixinConfigPlugin {
+	public static final Multimap<String, MatchingMods> incompatibleMixins;
+	public static final Multimap<String, MatchingMods> modSpecificMixins;
+	static {
+		ImmutableMultimap.Builder<String, MatchingMods> incompatible = ImmutableMultimap.builder();
+		ImmutableMultimap.Builder<String, MatchingMods> modSpecific = ImmutableMultimap.builder();
+		incompatible.put("net.atlas.combatify.mixin.InvulnerabilityMixin", new MatchingMods("neoforge"));
+		incompatible.put("net.atlas.combatify.mixin.ModifyShieldMixin", new MatchingMods("neoforge"));
+		incompatible.put("net.atlas.combatify.mixin.compatibility.appleskin.HUDOverlayHandlerMixin", new MatchingMods("neoforge"));
+		incompatible.put("net.atlas.combatify.mixin.client.ArmHeightMixin", new MatchingMods("cookeymod"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.neoforge.InvulnerabilityMixin", new MatchingMods("neoforge"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.neoforge.ModifyShieldMixin", new MatchingMods("neoforge"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.FoodHelperMixin", new MatchingMods("appleskin"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.HUDOverlayHandlerMixin", new MatchingMods("appleskin"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.neoforge.NeoForgeHUDOverlayHandlerMixin", new MatchingMods("appleskin", "neoforge"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.neoforge.HungerOverlayMixin", new MatchingMods("appleskin", "neoforge"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.neoforge.SaturationOverlayMixin", new MatchingMods("appleskin", "neoforge"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.cookeymod.AddForce100PercentRechargeMixin", new MatchingMods("cookeymod"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.cookeymod.ArmHeightFixMixin", new MatchingMods("cookeymod"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.cookeymod.DisableMissedAttackRecoveryMixin", new MatchingMods("cookeymod"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.polymer.PolymerComponentMixin", new MatchingMods("polymer-core"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.sodium.SodiumGameOptionPagesMixin", new MatchingMods("sodium"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.viafabricplus.Attributes1_20_5Mixin", new MatchingMods("viafabricplus"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.viafabricplus.EntityPacketRewriter1_20_5Mixin", new MatchingMods("viafabricplus"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.viafabricplus.ProtocolCombatTest8cTo1_16_2PacketHandlersMixin", new MatchingMods("viafabricplus"));
+		incompatibleMixins = incompatible.build();
+		modSpecificMixins = modSpecific.build();
+	}
 	@Override
 	public void onLoad(String mixinPackage) {
 
@@ -31,32 +54,25 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
 		Logger logger = LogManager.getLogger("Combatify");
-		try {
-			ClassNode mixin = MixinService.getService().getBytecodeProvider().getClassNode(mixinClassName, false);
-
-			if (mentionsActiveMods(Incompatible.class, mixin)) {
-				logger.warn("[{}] Mod \"{}\" is marked incompatible with mixin \"{}\", cancelling application.",
-					getClass().getSimpleName(),
-					getFirstMentionedActiveMod(Incompatible.class, mixin),
-					mixinClassName);
-				return false;
-			}
-			if (hasAnnotation(ModSpecific.class, mixin)) {
-				if (mentionsActiveMods(ModSpecific.class, mixin)) {
-					logger.info("[{}] Loading mod-specific mixin \"{}\" since mod \"{}\" is present.",
-						getClass().getSimpleName(),
-						mixinClassName,
-						getFirstMentionedActiveMod(ModSpecific.class, mixin));
-					return true;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();
+		if (mentionsActiveMods(incompatibleMixins, mixinClassName)) {
+			logger.warn("[{}] {} marked incompatible with mixin \"{}\", cancelling application.",
+				getClass().getSimpleName(),
+				getFirstMentionedActiveMod(incompatibleMixins, mixinClassName).forIncompatible(),
+				mixinClassName);
 			return false;
 		}
+		if (modSpecificMixins.containsKey(mixinClassName)) {
+			if (mentionsActiveMods(modSpecificMixins, mixinClassName)) {
+				logger.info("[{}] Loading mod-specific mixin \"{}\" since {}.",
+					getClass().getSimpleName(),
+					mixinClassName,
+					getFirstMentionedActiveMod(modSpecificMixins, mixinClassName).forModSpecific());
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -79,34 +95,33 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	}
 
-	public boolean hasAnnotation(Class<? extends Annotation> annotationClass, ClassNode mixin) {
-		return Annotations.getInvisible(mixin, annotationClass) != null;
-	}
-
-	@SuppressWarnings("unchecked")
-	public String getFirstMentionedActiveMod(Class<? extends Annotation> annotationClass, ClassNode mixin) {
+	public MatchingMods getFirstMentionedActiveMod(Multimap<String, MatchingMods> toRead, String mixinClassName) {
 		FabricLoader fabricLoader = FabricLoader.getInstance();
-		AnnotationNode annotationNode = Annotations.getInvisible(mixin, annotationClass);
-		List<Object> values;
-		if (annotationNode == null || (values = annotationNode.values) == null) {
-			return null;
-		}
-
-		for (int i = 0; i < values.size(); i += 2) {
-			Object pKey = values.get(i);
-			Object pValue = values.size() > i + 1 ? values.get(i + 1) : null;
-			if ("value".equals(pKey) && pValue instanceof List) {
-				for (String modId : (List<String>) pValue) {
-					if (fabricLoader.isModLoaded(modId)) {
-						return modId;
-					}
+		if (toRead.containsKey(mixinClassName)) {
+			for (MatchingMods modId : toRead.get(mixinClassName)) {
+				if (modId.areModsLoaded(fabricLoader)) {
+					return modId;
 				}
 			}
 		}
 		return null;
 	}
 
-	public boolean mentionsActiveMods(Class<? extends Annotation> annotationClass, ClassNode mixin) {
-		return getFirstMentionedActiveMod(annotationClass, mixin) != null;
+	public boolean mentionsActiveMods(Multimap<String, MatchingMods> toRead, String mixinClassName) {
+		return getFirstMentionedActiveMod(toRead, mixinClassName) != null;
+	}
+	public record MatchingMods(String... mods) {
+		public boolean areModsLoaded(FabricLoader fabricLoader) {
+			for (String mod : mods) if (!fabricLoader.isModLoaded(mod)) return false;
+			return true;
+		}
+
+		public String forModSpecific() {
+			return mods.length == 1 ? "mod \"" + mods[0] + "\" is present" : "mods \"" + Arrays.toString(mods) + "\" are present";
+		}
+
+		public String forIncompatible() {
+			return mods.length == 1 ? "Mod \"" + mods[0] + "\" is" : "Mods \"" + Arrays.toString(mods) + "\" are";
+		}
 	}
 }

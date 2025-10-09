@@ -3,7 +3,6 @@ package net.atlas.combatify.mixin.compatibility.sodium;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.caffeinemc.mods.sodium.client.gui.SodiumGameOptionPages;
@@ -23,7 +22,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-@ModSpecific("sodium")
 @Mixin(SodiumGameOptionPages.class)
 public class SodiumGameOptionPagesMixin {
 	@Shadow(remap = false)
