@@ -17,7 +17,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -25,7 +24,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -84,6 +82,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Override
 	public void combatify$resetAttackStrengthTicker(boolean hit) {
 		resetAttackStrengthTicker(false);
+	}
+
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit, boolean force) {
+		resetAttackStrengthTicker(force);
 	}
 
 	@Unique

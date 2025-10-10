@@ -1,5 +1,6 @@
 package net.atlas.combatify.component;
 
+import com.mojang.serialization.Codec;
 import eu.pb4.polymer.core.api.other.PolymerComponent;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.component.custom.CanSweep;
@@ -29,6 +30,9 @@ public class CustomDataComponents {
 	public static DataComponentType<Float> PIERCING_LEVEL = register(
 		"combatify:piercing_level", builder -> builder.persistent(ExtraCodecs.POSITIVE_FLOAT).networkSynchronized(ByteBufCodecs.FLOAT)
 	);
+	public static DataComponentType<Float> CHARGED_REACH = register(
+		"combatify:charged_reach", builder -> builder.persistent(Codec.floatRange(0, Float.MAX_VALUE)).networkSynchronized(ByteBufCodecs.FLOAT)
+	);
 	private static <T> DataComponentType<T> register(String string, UnaryOperator<DataComponentType.Builder<T>> unaryOperator) {
 		combatifyComponents.add(ResourceLocation.parse(string));
 		return Registry.register(
@@ -41,6 +45,7 @@ public class CustomDataComponents {
 			PolymerComponent.registerDataComponent(CAN_SWEEP);
 			PolymerComponent.registerDataComponent(BLOCKING_LEVEL);
 			PolymerComponent.registerDataComponent(PIERCING_LEVEL);
+			PolymerComponent.registerDataComponent(CHARGED_REACH);
 		}
 	}
 }

@@ -6,7 +6,6 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
@@ -243,7 +242,7 @@ public class MethodHandler {
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
-			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? 1.25 : 0.25);
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null) {
@@ -367,8 +366,8 @@ public class MethodHandler {
 		double chargedBonus = 0;
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		if (attackRange != null) {
-			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = item.getChargedAttackBonus();
+			ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
+			chargedBonus = getChargedReach(item);
 			AttributeModifier modifier = new AttributeModifier(Combatify.CHARGED_REACH_ID, chargedBonus, AttributeModifier.Operation.ADD_VALUE);
 			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
@@ -475,6 +474,10 @@ public class MethodHandler {
 		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
 	}
 
+	public static double getChargedReach(ItemStack itemStack) {
+		return itemStack.getOrDefault(CustomDataComponents.CHARGED_REACH, 1F);
+	}
+
 	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
 		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
 		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
@@ -494,16 +497,13 @@ public class MethodHandler {
 				ConfigurableItemData result = configDataWrapper.match(item.builtInRegistryHolder());
 				if (result != null) results.add(result);
 			});
-			Double chargedReach = null;
 			Double useSeconds = null;
 			Double cooldownSeconds = null;
 			for (ConfigurableItemData configurableItemData : results) {
-				chargedReach = conditionalChange(configurableItemData.weaponStats().chargedReach(), chargedReach);
 				useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
 				cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
 			}
-			WeaponStats weaponStats = new WeaponStats(chargedReach);
-			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, useSeconds, cooldownSeconds);
+			ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
 			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
 			return configurableItemData;
 		}

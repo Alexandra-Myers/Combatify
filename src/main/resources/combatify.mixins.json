@@ -21,7 +21,6 @@
     "FishingHookMixin",
     "FoodDataMixin",
     "InvulnerabilityMixin",
-    "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
     "LootContextParamSetsMixin",

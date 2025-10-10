@@ -69,7 +69,7 @@ public class SodiumGameOptionPagesMixin {
 				.build())
 			.add(OptionImpl.createBuilder(TriState.class, vanillaOpts)
 				.setName(Component.translatable("options.rhythmicAttack"))
-				.setTooltip(Component.translatable("sodium.options.rhythmic_attack.tooltip"))
+				.setTooltip(Component.translatable("sodium.options.rhythmic_attacks.tooltip"))
 				.setControl(opts -> new CyclingControl<>(opts, TriState.class, new Component[] { CommonComponents.OPTION_OFF, Component.translatable("options.context_decided"), CommonComponents.OPTION_ON }))
 				.setBinding((opts, value) -> CombatifyClient.rhythmicAttacks.set(value), (opts) -> CombatifyClient.rhythmicAttacks.get())
 				.build())

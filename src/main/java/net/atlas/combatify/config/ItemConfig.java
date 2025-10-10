@@ -9,7 +9,6 @@ import io.netty.buffer.ByteBuf;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.fabricmc.api.EnvType;
@@ -41,8 +40,8 @@ import static net.atlas.combatify.Combatify.*;
 public class ItemConfig extends AtlasConfig {
 	public static final List<RegistryConfigDataWrapper<Item, ConfigurableItemData>> DEFAULT_ITEMS;
 	static {
-		DEFAULT_ITEMS = List.of(new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.PROJECTILES_WITH_COOLDOWNS), new ConfigurableItemData(WeaponStats.EMPTY, null, 0.2)),
-			new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.FAST_DRINKABLES), new ConfigurableItemData(WeaponStats.EMPTY, 1.0, null)));
+		DEFAULT_ITEMS = List.of(new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.PROJECTILES_WITH_COOLDOWNS), new ConfigurableItemData(null, 0.2)),
+			new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.FAST_DRINKABLES), new ConfigurableItemData(1.0, null)));
 	}
 	public boolean isModifying = false;
 	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;

@@ -52,11 +52,6 @@ public class TieredShieldItem extends ShieldItem {
 		return tier.getEnchantmentValue();
 	}
 
-	@Override
-	public Item combatify$self() {
-		return this;
-	}
-
 	public static void init() {
 
 	}
