@@ -7,7 +7,11 @@ public interface LivingEntityExtensions {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 
-	default void combatify$resetAttackStrengthTicker(boolean var1) {
+	default void combatify$resetAttackStrengthTicker(boolean hit) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
+
+	default void combatify$resetAttackStrengthTicker(boolean hit, boolean force) {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 
