@@ -108,6 +108,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		resetAttackStrengthTicker(false);
 	}
 
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit, boolean force) {
+		resetAttackStrengthTicker(force);
+	}
+
 	@Unique
 	public void resetAttackStrengthTicker(boolean force) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
