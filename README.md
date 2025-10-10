@@ -76,7 +76,7 @@
     - Cleaving enchantment disables shields for 0.5 more seconds per level, maximum level 3
     - Cleaving enchantment gives axes (+2/+3/+4) extra damage
     - Axes now get Cleaving instead of Sharpness from enchantment table
-15. Axes and Hoes now take 1 durability for attacking
+15. Axes now take 1 durability for attacking
 16. Strength I/II now adds +20%/+40% (was +3/+6 damage) (Matched for Weakness)
 
 17. Tridents with impaling now deal enchantment damage to all mobs that are in water or rain
