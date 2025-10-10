@@ -1,5 +1,6 @@
 {
   "values": [
+    "minecraft:wooden_spear",
     {
       "id": "combatify:wooden_longsword",
       "required": false

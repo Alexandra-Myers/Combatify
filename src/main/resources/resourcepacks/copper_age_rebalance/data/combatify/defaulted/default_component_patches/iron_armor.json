@@ -4,7 +4,8 @@
         "iron_chestplate",
         "iron_leggings",
         "iron_boots",
-        "iron_horse_armor"
+        "iron_horse_armor",
+        "iron_nautilus_armor"
     ],
     "patch_generators": [
         {

@@ -128,7 +128,7 @@ public abstract class GuiMixin {
 			boolean shouldPick = false;
 			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && (CombatifyClient.dualAttackIndicator.get().equals(DualAttackIndicatorStatus.SIDE) ? this.minecraft.player.combatify$isAttackAvailable(0) : attackStrengthScale >= 1.0)) {
+			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && (CombatifyClient.dualAttackIndicator.get().equals(DualAttackIndicatorStatus.SIDE) ? this.minecraft.player.combatify$isAttackAvailable(0, this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND)) : attackStrengthScale >= 1.0)) {
 				shouldPick = this.minecraft.player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), this.minecraft.player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(this.minecraft.player, 0.0F);
 				shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
 			}

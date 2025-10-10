@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -26,7 +27,7 @@ public class MeleeAttackGoalMixin {
 	public boolean modResult(Operation<Boolean> original) {
 		var attackSpeed = mob.getAttribute(Attributes.ATTACK_SPEED);
 		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.getType().is(Combatify.HAS_BOOSTED_SPEED);
-		if (Combatify.CONFIG.mobsUsePlayerAttributes() && shouldOverrideDefaultAttackInterval) return mob.combatify$isAttackAvailable(0);
+		if (Combatify.CONFIG.mobsUsePlayerAttributes() && shouldOverrideDefaultAttackInterval) return mob.combatify$isAttackAvailable(0, mob.getItemInHand(InteractionHand.MAIN_HAND));
 		return original.call();
 	}
 

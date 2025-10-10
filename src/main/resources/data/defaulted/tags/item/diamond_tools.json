@@ -1,5 +1,6 @@
 {
   "values": [
+    "minecraft:diamond_spear",
     {
       "id": "combatify:diamond_longsword",
       "required": false

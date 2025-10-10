@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -267,7 +268,7 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 			Optional<CommandFunction<CommandSourceStack>> optional = serverFunctionManager.get(function);
 			if (optional.isPresent()) {
 				CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
-					.withPermission(2)
+					.withPermission(LevelBasedPermissionSet.GAMEMASTER)
 					.withSuppressedOutput()
 					.withEntity(value)
 					.withLevel(serverLevel)

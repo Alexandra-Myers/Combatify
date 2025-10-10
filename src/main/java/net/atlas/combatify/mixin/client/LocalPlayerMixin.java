@@ -1,11 +1,13 @@
 package net.atlas.combatify.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -13,8 +15,10 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -81,9 +85,14 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
         player.invulnerableTime = x / 2;
     }
 
-	@ModifyExpressionValue(method = "canStartSprinting", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
+	@ModifyExpressionValue(method = "isSlowDueToUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
 	private boolean isShieldCrouching(boolean original) {
 		return original || isBlocking();
+	}
+	@ModifyReceiver(method = "isSlowDueToUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getOrDefault(Lnet/minecraft/core/component/DataComponentType;Ljava/lang/Object;)Ljava/lang/Object;"))
+	private ItemStack isShieldCrouching(ItemStack instance, DataComponentType<?> dataComponentType, Object o) {
+		ItemStack blockingItem = MethodHandler.getBlockingItem(thisPlayer).stack();
+		return blockingItem.isEmpty() ? instance : blockingItem;
 	}
 
 	@Override

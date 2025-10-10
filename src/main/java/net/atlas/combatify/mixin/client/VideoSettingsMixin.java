@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.combatify.CombatifyClient;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
@@ -16,16 +15,14 @@ import java.util.Arrays;
 @SuppressWarnings("unused")
 @Mixin(VideoSettingsScreen.class)
 public class VideoSettingsMixin {
-	@ModifyReturnValue(method = "options", at = @At("RETURN"))
+	@ModifyReturnValue(method = "interfaceOptions", at = @At("RETURN"))
 	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0, argsOnly = true) Options options) {
 		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());
-		int i = optionInstance.indexOf(Minecraft.getInstance().options.attackIndicator());
 
-		optionInstance.addAll(i + 1,
-			CombatifyClient.dualAttackIndicator,
+		optionInstance.addAll(CombatifyClient.dualAttackIndicator,
 			CombatifyClient.shieldIndicator,
-			CombatifyClient.projectileChargeIndicator);
-		optionInstance.addAll(CombatifyClient.attackIndicatorMinValue,
+			CombatifyClient.projectileChargeIndicator,
+			CombatifyClient.attackIndicatorMinValue,
 			CombatifyClient.attackIndicatorMaxValue,
 			CombatifyClient.rhythmicAttacks,
 			CombatifyClient.augmentedArmHeight);

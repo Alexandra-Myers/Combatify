@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.*;
@@ -22,7 +23,7 @@ public abstract class ServerGamePacketMixin {
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
-		if (!(player.combatify$isAttackAvailable(1.0F)))
+		if (!(player.combatify$isAttackAvailable(1.0F, player.getItemInHand(InteractionHand.MAIN_HAND))))
 			ci.cancel();
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			if (player.combatify$isRetainingAttack()) {
@@ -30,7 +31,7 @@ public abstract class ServerGamePacketMixin {
 				ci.cancel();
 				return;
 			}
-			if (!player.combatify$isAttackAvailable(0.0F)) {
+			if (!player.combatify$isAttackAvailable(0.0F, player.getItemInHand(InteractionHand.MAIN_HAND))) {
 				float var1 = player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
 					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);

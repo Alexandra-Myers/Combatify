@@ -36,6 +36,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -108,6 +109,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		resetAttackStrengthTicker(false);
 	}
 
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit, boolean force) {
+		resetAttackStrengthTicker(force);
+	}
+
 	@Unique
 	public void resetAttackStrengthTicker(boolean force) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
@@ -125,7 +131,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	@Override
-	public boolean combatify$isAttackAvailable(float baseTime) {
+	public boolean combatify$isAttackAvailable(float baseTime, ItemStack weapon) {
 		return attackStrengthMaxValue - (attackStrengthTicker + baseTime) <= 0;
 	}
 
@@ -234,6 +240,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@ModifyReturnValue(method = "getItemBlockingWith", at = @At("RETURN"))
 	public ItemStack removeMojangStupidity(ItemStack original) {
 		return original == null && !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty() ? MethodHandler.getBlockingItem(thisEntity).stack() : original;
+	}
+
+	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
+		ItemStack itemStack = this.getWeaponItem();
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, itemStack.getDamageSource(thisEntity, () -> this.damageSources().mobAttack(thisEntity)), d, e, f, original::call);
+	}
+	@Inject(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
+	public void resetSprint(Entity entity, float f, Vec3 vec3, CallbackInfo ci) {
+		if (isSprinting()) setSprinting(false);
 	}
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {

@@ -6,11 +6,11 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.config.item.WeaponStats;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -120,29 +120,33 @@ public class MethodHandler {
 	}
 
 	public static void sweepAttack(Player player, AABB box, float reach, float damage, TriFunction<LivingEntity, Float, DamageSource, Float> enchantFunction, Entity entity) {
-		float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
-		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
-		DamageSource damageSource = Optional.ofNullable(player.getWeaponItem().getItem().getDamageSource(player)).orElse(player.damageSources().playerAttack(player));
-
-		for (LivingEntity livingEntity : livingEntities) {
-			if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
-				continue;
-			EntityReference<?> ownerReference;
-			if (Combatify.CONFIG.sweepingNegatedForTamed()
-				&& (livingEntity instanceof OwnableEntity ownableEntity
-				&& (ownerReference = ownableEntity.getOwnerReference()) != null
-				&& player.getUUID().equals(ownerReference.getUUID())
-				|| livingEntity.is(player.getVehicle())
-				|| livingEntity.isPassengerOfSameVehicle(player)))
-				continue;
-			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
-			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && player.level() instanceof ServerLevel serverLevel && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
-				Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback);
-				EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
-			}
-		}
 		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
-		player.sweepAttack();
+		if (player.level() instanceof ServerLevel serverLevel) {
+			float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
+			List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
+			DamageSource damageSource = player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player));
+
+			for (LivingEntity livingEntity : livingEntities) {
+				if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
+					continue;
+				EntityReference<?> ownerReference;
+				if (Combatify.CONFIG.sweepingNegatedForTamed()
+					&& (livingEntity instanceof OwnableEntity ownableEntity
+					&& (ownerReference = ownableEntity.getOwnerReference()) != null
+					&& player.getUUID().equals(ownerReference.getUUID())
+					|| livingEntity.is(player.getVehicle())
+					|| livingEntity.isPassengerOfSameVehicle(player)))
+					continue;
+				float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
+				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
+					Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback);
+					EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
+				}
+			}
+			double d = -Mth.sin(player.getYRot() * (float) (Math.PI / 180.0));
+			double e = Mth.cos(player.getYRot() * (float) (Math.PI / 180.0));
+			serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, player.getX() + d, player.getY(0.5), player.getZ() + e, 0, d, 0.0, e, 0.0);
+		}
 	}
 
 	public static double getKnockbackResistance(LivingEntity entity) {
@@ -247,7 +251,7 @@ public class MethodHandler {
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK) {
-			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? 1.25 : 0.25);
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null) {
@@ -347,8 +351,8 @@ public class MethodHandler {
 		double chargedBonus = 0;
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		if (attackRange != null) {
-			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = item.getChargedAttackBonus();
+			ItemStack item = player.getItemInHand(InteractionHand.MAIN_HAND);
+			chargedBonus = getChargedReach(item);
 			AttributeModifier modifier = new AttributeModifier(Combatify.CHARGED_REACH_ID, chargedBonus, AttributeModifier.Operation.ADD_VALUE);
 			if (strengthScale > charge && !player.isCrouching() && Combatify.CONFIG.chargedReach())
 				attackRange.addOrUpdateTransientModifier(modifier);
@@ -457,6 +461,10 @@ public class MethodHandler {
 		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
 	}
 
+	public static double getChargedReach(ItemStack itemStack) {
+		return itemStack.getOrDefault(CustomDataComponents.CHARGED_REACH, 1F);
+	}
+
 	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
 		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
 		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
@@ -476,14 +484,11 @@ public class MethodHandler {
 				ConfigurableItemData result = configDataWrapper.match(item.builtInRegistryHolder());
 				if (result != null) results.add(result);
 			});
-			Double chargedReach = null;
 			Double useSeconds = null;
 			for (ConfigurableItemData configurableItemData : results) {
-				chargedReach = conditionalChange(configurableItemData.weaponStats().chargedReach(), chargedReach);
 				useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
 			}
-			WeaponStats weaponStats = new WeaponStats(chargedReach);
-			ConfigurableItemData configurableItemData = new ConfigurableItemData(weaponStats, useSeconds);
+			ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
 			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
 			return configurableItemData;
 		}

@@ -27,7 +27,7 @@ public class ArmedEntityRenderStateMixin implements ArmedEntityRenderStateExtens
 	}
 
 	@Inject(method = "extractArmedEntityRenderState", at = @At("RETURN"))
-	private static void addGuardingFlag(LivingEntity livingEntity, ArmedEntityRenderState armedEntityRenderState, ItemModelResolver itemModelResolver, CallbackInfo ci) {
+	private static void addGuardingFlag(LivingEntity livingEntity, ArmedEntityRenderState armedEntityRenderState, ItemModelResolver itemModelResolver, float f, CallbackInfo ci) {
 		armedEntityRenderState.combatify$setMobIsGuarding(false);
 		if (livingEntity instanceof Mob mob) armedEntityRenderState.combatify$setMobIsGuarding(MethodHandler.isMobGuarding(mob));
 	}

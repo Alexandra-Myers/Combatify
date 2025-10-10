@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
@@ -31,7 +32,7 @@ public record RunFunction(ResourceLocation function) implements PostBlockEffect 
 		Optional<CommandFunction<CommandSourceStack>> optional = serverFunctionManager.get(this.function);
 		if (optional.isPresent()) {
 			CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
-				.withPermission(2)
+				.withPermission(LevelBasedPermissionSet.GAMEMASTER)
 				.withSuppressedOutput()
 				.withEntity(toApply)
 				.withLevel(serverLevel)

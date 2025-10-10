@@ -24,13 +24,13 @@ public class ModelFixMixins {
 			super(modelPart);
 		}
 
-		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/ZombieRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZFF)V"))
-		public void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, float f, float g, Operation<Void> original, @Local(argsOnly = true) T renderState) {
+		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/ZombieRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZLnet/minecraft/client/renderer/entity/state/UndeadRenderState;)V"))
+		public <S extends UndeadRenderState> void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, S undeadRenderState, Operation<Void> original, @Local(argsOnly = true) T renderState) {
 			if (renderState.combatify$mobIsGuarding()) {
-				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, f, g, head.xRot);
+				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, undeadRenderState, head.xRot);
 				return;
 			}
-			original.call(modelPart, modelPart2, bl, f, g);
+			original.call(modelPart, modelPart2, bl, undeadRenderState);
 		}
 	}
 	@Mixin(IllagerModel.class)
@@ -39,13 +39,13 @@ public class ModelFixMixins {
 		@Final
 		private ModelPart head;
 
-		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/IllagerRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZFF)V"))
-		public void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, float f, float g, Operation<Void> original, @Local(argsOnly = true) T renderState) {
+		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/IllagerRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZLnet/minecraft/client/renderer/entity/state/UndeadRenderState;)V"))
+		public <S extends UndeadRenderState> void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, S undeadRenderState, Operation<Void> original, @Local(argsOnly = true) T renderState) {
 			if (renderState.combatify$mobIsGuarding()) {
-				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, f, g, head.xRot);
+				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, undeadRenderState, head.xRot);
 				return;
 			}
-			original.call(modelPart, modelPart2, bl, f, g);
+			original.call(modelPart, modelPart2, bl, undeadRenderState);
 		}
 		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/IllagerRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;swingWeaponDown(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/world/entity/HumanoidArm;FF)V"))
 		public void injectGuardCheck1(ModelPart modelPart, ModelPart modelPart2, HumanoidArm humanoidArm, float f, float g, Operation<Void> original, @Local(argsOnly = true) T renderState) {
@@ -62,7 +62,7 @@ public class ModelFixMixins {
 		public PiglinModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
 		}
-		@WrapOperation(method = "setupAttackAnimation(Lnet/minecraft/client/renderer/entity/state/PiglinRenderState;F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;swingWeaponDown(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/world/entity/HumanoidArm;FF)V"))
+		@WrapOperation(method = "setupAttackAnimation(Lnet/minecraft/client/renderer/entity/state/PiglinRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;swingWeaponDown(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/world/entity/HumanoidArm;FF)V"))
 		public void injectGuardCheck1(ModelPart modelPart, ModelPart modelPart2, HumanoidArm humanoidArm, float f, float g, Operation<Void> original, @Local(argsOnly = true) T renderState) {
 			if (renderState.combatify$mobIsGuarding()) {
 				ClientMethodHandler.swingWeaponDown(modelPart, modelPart2, humanoidArm, f, g, head.xRot);
@@ -85,13 +85,13 @@ public class ModelFixMixins {
 			super(modelPart);
 		}
 
-		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/ZombifiedPiglinRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZFF)V"))
-		public void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, float f, float g, Operation<Void> original, @Local(argsOnly = true) T renderState) {
+		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/ZombifiedPiglinRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZLnet/minecraft/client/renderer/entity/state/UndeadRenderState;)V"))
+		public <S extends UndeadRenderState> void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, S undeadRenderState, Operation<Void> original, @Local(argsOnly = true) T renderState) {
 			if (renderState.combatify$mobIsGuarding()) {
-				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, f, g, head.xRot);
+				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, undeadRenderState, head.xRot);
 				return;
 			}
-			original.call(modelPart, modelPart2, bl, f, g);
+			original.call(modelPart, modelPart2, bl, undeadRenderState);
 		}
 	}
 	@Mixin(ZombieVillagerModel.class)
@@ -100,13 +100,13 @@ public class ModelFixMixins {
 			super(modelPart);
 		}
 
-		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/ZombieVillagerRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZFF)V"))
-		public void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, float f, float g, Operation<Void> original, @Local(argsOnly = true) T renderState) {
+		@WrapOperation(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/ZombieVillagerRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;animateZombieArms(Lnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/model/geom/ModelPart;ZLnet/minecraft/client/renderer/entity/state/UndeadRenderState;)V"))
+		public <S extends UndeadRenderState> void injectGuardCheck(ModelPart modelPart, ModelPart modelPart2, boolean bl, S undeadRenderState, Operation<Void> original, @Local(argsOnly = true) T renderState) {
 			if (renderState.combatify$mobIsGuarding()) {
-				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, f, g, head.xRot);
+				ClientMethodHandler.animateZombieArms(modelPart, modelPart2, renderState.mainArm, undeadRenderState, head.xRot);
 				return;
 			}
-			original.call(modelPart, modelPart2, bl, f, g);
+			original.call(modelPart, modelPart2, bl, undeadRenderState);
 		}
 	}
 	@Mixin(SkeletonModel.class)
@@ -126,7 +126,8 @@ public class ModelFixMixins {
 		@ModifyExpressionValue(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/SkeletonRenderState;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/entity/state/SkeletonRenderState;isHoldingBow:Z"))
 		public boolean injectGuardCheck(boolean original, @Local(ordinal = 0, argsOnly = true) T skeletonRenderState) {
 			if (!original && skeletonRenderState.combatify$mobIsGuarding()) {
-				ClientMethodHandler.animateZombieArms(leftArm, rightArm, skeletonRenderState.mainArm, skeletonRenderState.attackTime, skeletonRenderState.ageInTicks, head.xRot);
+				ClientMethodHandler.animateBlockingZombieArms(leftArm, rightArm, skeletonRenderState.mainArm, skeletonRenderState.attackTime, head.xRot);
+				AnimationUtils.bobArms(rightArm, leftArm, skeletonRenderState.ageInTicks);
 				return true;
 			}
 			return original;

@@ -14,6 +14,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -93,7 +95,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 		if (player != null) {
 			ItemStack stack = player.getUseItem();
 			boolean bl = getBlockingType(stack).canBlockHit() && !getBlockingType(stack).isEmpty();
-			if (bl && this.player.combatify$isAttackAvailable(0.0F))
+			if (bl && this.player.combatify$isAttackAvailable(0.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)))
 				if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK)
 					startAttack();
 			return bl;
@@ -115,7 +117,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
 		if (missTime <= 0 && hitResult != null) {
 			assert player != null;
-			if (!player.combatify$isAttackAvailable(0.0F) && hitResult.getType() != HitResult.Type.BLOCK) {
+			if (!player.combatify$isAttackAvailable(0.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) && hitResult.getType() != HitResult.Type.BLOCK) {
 				float var1 = this.player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F)
 					return false;
@@ -168,7 +170,9 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 		if (player != null && missTime <= 0) {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
 			if (!cannotPerform) {
-				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? this.player.combatify$isAttackAvailable(-1.0F) : this.player.getAttackStrengthScale(-1.0F) >= 1.0F;
+				float minAttackCharge = player.getItemInHand(InteractionHand.MAIN_HAND).getOrDefault(DataComponents.MINIMUM_ATTACK_CHARGE, Combatify.CONFIG.chargedAttacks() ? 0.5F : 1.0F);
+				if (!Combatify.getState().equals(Combatify.CombatifyState.VANILLA) && Combatify.CONFIG.chargedAttacks()) minAttackCharge *= 2;
+				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? this.player.combatify$isAttackAvailable(-1.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) : this.player.getAttackStrengthScale(-1.0F) >= minAttackCharge;
 				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK && this.aimAssistHitResult == null) {
 					this.retainAttack = false;
 				} else if (bl1 && canAutoAttack && bl2) {

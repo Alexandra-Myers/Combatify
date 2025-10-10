@@ -79,11 +79,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "predicates": {
-                    "combatify:has_component": {
-                      "components": [
-                        "minecraft:base_color"
-                      ]
-                    }
+                    "minecraft:base_color": {}
                   }
                 }
               },
@@ -137,11 +133,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "predicates": {
-                    "combatify:has_component": {
-                      "components": [
-                        "minecraft:base_color"
-                      ]
-                    }
+                    "minecraft:base_color": {}
                   }
                 }
               },

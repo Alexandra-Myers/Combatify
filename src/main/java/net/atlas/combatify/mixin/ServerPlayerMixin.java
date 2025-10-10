@@ -65,7 +65,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void hitreg(CallbackInfo ci) {
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
-		if (Combatify.unmoddedPlayers.contains(getUUID()) && this.player.combatify$isAttackAvailable(-1.0F) && retainAttack) {
+		if (Combatify.unmoddedPlayers.contains(getUUID()) && this.player.combatify$isAttackAvailable(-1.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) && retainAttack) {
 			retainAttack = false;
 			combatify$customSwing(InteractionHand.MAIN_HAND);
 			Entity entity = getCamera();
@@ -106,7 +106,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public void handleInteract() {
 		if (retainAttack)
 			return;
-		if (!combatify$isAttackAvailable(0.0F)) {
+		if (!combatify$isAttackAvailable(0.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND))) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
 				combatify$resetAttackStrengthTicker(!combatify$getMissedAttackRecovery());

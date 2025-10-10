@@ -4,7 +4,8 @@
         "copper_chestplate",
         "copper_leggings",
         "copper_boots",
-        "copper_horse_armor"
+        "copper_horse_armor",
+        "copper_nautilus_armor"
     ],
     "patch_generators": [
         {

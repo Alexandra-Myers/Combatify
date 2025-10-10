@@ -1,13 +1,18 @@
 package net.atlas.combatify.extensions;
 
 import net.minecraft.world.item.ItemCooldowns;
+import net.minecraft.world.item.ItemStack;
 
 public interface LivingEntityExtensions {
-	default boolean combatify$isAttackAvailable(float baseTime) {
+	default boolean combatify$isAttackAvailable(float baseTime, ItemStack weapon) {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 
-	default void combatify$resetAttackStrengthTicker(boolean var1) {
+	default void combatify$resetAttackStrengthTicker(boolean hit) {
+		throw new IllegalStateException("Extension has not been applied");
+	}
+
+	default void combatify$resetAttackStrengthTicker(boolean hit, boolean force) {
 		throw new IllegalStateException("Extension has not been applied");
 	}
 

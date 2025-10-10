@@ -6,10 +6,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.state.UndeadRenderState;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.SwingAnimationType;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +30,7 @@ public class ClientMethodHandler {
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			Player minecraftPlayer = Objects.requireNonNull(minecraft.player);
 			Entity player = Objects.requireNonNull(minecraft.getCameraEntity());
-			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? 1.25 : 0.25);
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + ((Combatify.CONFIG.chargedReach() && !minecraftPlayer.isCrouching()) ? getChargedReach(minecraftPlayer.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null) {
@@ -74,7 +77,14 @@ public class ClientMethodHandler {
 
 		bobArms(modelPart, modelPart2, g);
 	}
-	public static void animateZombieArms(ModelPart leftArm, ModelPart rightArm, HumanoidArm humanoidArm, float attackTime, float ageInTicks, float headXRot) {
+	public static <T extends UndeadRenderState> void animateZombieArms(ModelPart leftArm, ModelPart rightArm, HumanoidArm humanoidArm, T undeadRenderState, float headXRot) {
+		float attackTime = undeadRenderState.attackTime;
+		if (undeadRenderState.swingAnimationType != SwingAnimationType.STAB) {
+			animateBlockingZombieArms(leftArm, rightArm, humanoidArm, attackTime, headXRot);
+		}
+		bobArms(rightArm, leftArm, undeadRenderState.ageInTicks);
+	}
+	public static void animateBlockingZombieArms(ModelPart leftArm, ModelPart rightArm, HumanoidArm humanoidArm, float attackTime, float headXRot) {
 		float h = Mth.sin(attackTime * 3.1415927F);
 		float i = Mth.sin((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F);
 		rightArm.zRot = 0.0F;
@@ -88,6 +98,5 @@ public class ClientMethodHandler {
 		offHandArm.xRot = offHandArm.xRot * 0.5F - 0.9424779F + Mth.clamp(headXRot, -1.3962634F, 0.43633232F);
 		rightArm.xRot += h * 1.2F - i * 0.4F;
 		leftArm.xRot += h * 1.2F - i * 0.4F;
-		bobArms(rightArm, leftArm, ageInTicks);
 	}
 }

@@ -32,7 +32,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,7 +141,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 						}
 						if (livingEntity instanceof Player player) {
 							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox(), player.getEyePosition())));
-							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? 1 : 0);
+							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) : 0);
 							if (distanceToAttacker <= reach) isInHittingRange = true;
 						} else if (livingEntity instanceof Mob mob && mob.isWithinMeleeAttackRange(this)) {
 							isInHittingRange = true;
@@ -160,10 +159,6 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
 	public float getDamageBonus(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float f, Operation<Float> original) {
 		return CustomEnchantmentHelper.modifyDamage(serverLevel, itemStack, entity, damageSource, f, original);
-	}
-	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0) DamageSource damageSource) {
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call);
 	}
 
 	@Override
@@ -215,11 +210,6 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@ModifyExpressionValue(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;getKnockback(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F"))
 	public float addSprintKB(float original) {
 		return original + (Combatify.CONFIG.mobsCanSprint() && isSprinting() ? 1.0F : 0.0F);
-	}
-
-	@Inject(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
-	public void resetSprint(ServerLevel serverLevel, Entity entity, CallbackInfoReturnable<Boolean> cir) {
-		if (isSprinting()) setSprinting(false);
 	}
 
 	@Inject(method = "populateDefaultEquipmentSlots", at = @At("HEAD"))

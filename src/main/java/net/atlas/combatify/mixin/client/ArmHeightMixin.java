@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Incompatible("cookeymod")
 @Mixin(ItemInHandRenderer.class)
 public class ArmHeightMixin {
-	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
+	@ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemSwapScale(F)F"))
 	public float modifyArmHeight(float strengthScale) {
 		if (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
 			strengthScale *= 0.5f;
