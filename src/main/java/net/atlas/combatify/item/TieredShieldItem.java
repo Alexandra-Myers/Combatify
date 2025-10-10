@@ -36,11 +36,6 @@ public class TieredShieldItem extends ShieldItem {
 		shields.add(this);
 	}
 
-	@Override
-	public Item combatify$self() {
-		return this;
-	}
-
 	public static void init() {
 
 	}

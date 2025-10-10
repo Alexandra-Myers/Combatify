@@ -7,6 +7,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +28,7 @@ public class ClientMethodHandler {
 		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			Player minecraftPlayer = Objects.requireNonNull(minecraft.player);
 			Entity player = Objects.requireNonNull(minecraft.getCameraEntity());
-			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + ((Combatify.CONFIG.chargedReach() && !player.isCrouching()) ? 1.25 : 0.25);
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + ((Combatify.CONFIG.chargedReach() && !minecraftPlayer.isCrouching()) ? getChargedReach(minecraftPlayer.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);
 			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
 			if (entity != null) {

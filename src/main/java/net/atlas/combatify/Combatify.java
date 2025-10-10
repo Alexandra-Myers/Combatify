@@ -38,13 +38,11 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
@@ -53,7 +51,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -149,14 +146,15 @@ public class Combatify implements ModInitializer {
 		ItemSubPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
 				ServerPlayer player = packetContext.getPlayer();
-				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
-				if (itemStack.has(CustomDataComponents.BLOCKER)) {
-					Blocker blocker = itemStack.get(CustomDataComponents.BLOCKER);
-					assert blocker != null;
-					itemStack1.set(DataComponents.CONSUMABLE, new Consumable(blocker.useSeconds(), ItemUseAnimation.BLOCK, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHIELD_BREAK), false, Collections.emptyList()));
+				if (player == null || moddedPlayers.contains(player.getUUID())) {
+					if (itemStack.has(CustomDataComponents.BLOCKER)) itemStack1.set(CustomDataComponents.BLOCKER, itemStack.get(CustomDataComponents.BLOCKER));
+					if (itemStack.has(CustomDataComponents.CAN_SWEEP)) itemStack1.set(CustomDataComponents.CAN_SWEEP, itemStack.get(CustomDataComponents.CAN_SWEEP));
+					if (itemStack.has(CustomDataComponents.BLOCKING_LEVEL)) itemStack1.set(CustomDataComponents.BLOCKING_LEVEL, itemStack.get(CustomDataComponents.BLOCKING_LEVEL));
+					if (itemStack.has(CustomDataComponents.PIERCING_LEVEL)) itemStack1.set(CustomDataComponents.PIERCING_LEVEL, itemStack.get(CustomDataComponents.PIERCING_LEVEL));
+					if (itemStack.has(CustomDataComponents.CHARGED_REACH)) itemStack1.set(CustomDataComponents.CHARGED_REACH, itemStack.get(CustomDataComponents.CHARGED_REACH));
 				}
 				return itemStack1;
 			});
