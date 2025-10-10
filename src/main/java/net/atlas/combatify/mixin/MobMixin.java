@@ -142,7 +142,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 						}
 						if (livingEntity instanceof Player player) {
 							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox(), player.getEyePosition())));
-							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? 1 : 0);
+							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) : 0);
 							if (distanceToAttacker <= reach) isInHittingRange = true;
 						} else if (livingEntity instanceof Mob mob && mob.isWithinMeleeAttackRange(this)) {
 							isInHittingRange = true;

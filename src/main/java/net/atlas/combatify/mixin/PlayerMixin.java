@@ -11,6 +11,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.CanSweep;
+import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.wrapper.*;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
@@ -24,11 +25,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -169,14 +167,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	@Inject(method = "attack", at = @At(value = "TAIL"))
 	public void resetTicker(Entity target, CallbackInfo ci) {
 		if (attacked) {
-			boolean isMiscTarget = target.getType().equals(EntityType.END_CRYSTAL)
-				|| target.getType().equals(EntityType.ITEM_FRAME)
-				|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
-				|| target.getType().equals(EntityType.PAINTING)
-				|| target instanceof ArmorStand
-				|| target instanceof Boat
-				|| target instanceof AbstractMinecart
-				|| target instanceof Interaction;
+			boolean isMiscTarget = false;
+			ConfigurableEntityData configurableEntityData;
+			if ((configurableEntityData = MethodHandler.forEntity(target)) != null) {
+				if (configurableEntityData.isMiscEntity() != null)
+					isMiscTarget = configurableEntityData.isMiscEntity();
+			}
 			this.combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 		}
 	}
@@ -307,6 +303,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void combatify$resetAttackStrengthTicker(boolean hit) {
 		resetAttackStrengthTicker(hit, false, Player::resetAttackStrengthTicker);
 	}
+
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit, boolean force) {
+		resetAttackStrengthTicker(hit, force, Player::resetAttackStrengthTicker);
+	}
+
 	@Unique
 	public void resetAttackStrengthTicker(boolean hit, boolean force, Consumer<Player> vanillaReset) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {

@@ -146,10 +146,16 @@ public class Combatify implements ModInitializer {
 		DataComponentPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
 				ServerPlayer player = packetContext.getPlayer();
-				if (player == null || moddedPlayers.contains(player.getUUID())) return itemStack;
+				if (player == null || moddedPlayers.contains(player.getUUID())) {
+					if (itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA)) itemStack1.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA));
+					if (itemStack.has(CustomDataComponents.CAN_SWEEP)) itemStack1.set(CustomDataComponents.CAN_SWEEP, itemStack.get(CustomDataComponents.CAN_SWEEP));
+					if (itemStack.has(CustomDataComponents.BLOCKING_LEVEL)) itemStack1.set(CustomDataComponents.BLOCKING_LEVEL, itemStack.get(CustomDataComponents.BLOCKING_LEVEL));
+					if (itemStack.has(CustomDataComponents.PIERCING_LEVEL)) itemStack1.set(CustomDataComponents.PIERCING_LEVEL, itemStack.get(CustomDataComponents.PIERCING_LEVEL));
+					if (itemStack.has(CustomDataComponents.CHARGED_REACH)) itemStack1.set(CustomDataComponents.CHARGED_REACH, itemStack.get(CustomDataComponents.CHARGED_REACH));
+				}
 				return itemStack1;
 			});
 		}
