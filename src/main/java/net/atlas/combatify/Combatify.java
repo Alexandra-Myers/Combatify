@@ -149,7 +149,17 @@ public class Combatify implements ModInitializer {
 		ItemSubPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.PIERCING_LEVEL));
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
+			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, player) -> {
+				if (player == null || moddedPlayers.contains(player.getUUID())) {
+					if (itemStack.has(CustomDataComponents.BLOCKER)) itemStack1.set(CustomDataComponents.BLOCKER, itemStack.get(CustomDataComponents.BLOCKER));
+					if (itemStack.has(CustomDataComponents.CAN_SWEEP)) itemStack1.set(CustomDataComponents.CAN_SWEEP, itemStack.get(CustomDataComponents.CAN_SWEEP));
+					if (itemStack.has(CustomDataComponents.BLOCKING_LEVEL)) itemStack1.set(CustomDataComponents.BLOCKING_LEVEL, itemStack.get(CustomDataComponents.BLOCKING_LEVEL));
+					if (itemStack.has(CustomDataComponents.PIERCING_LEVEL)) itemStack1.set(CustomDataComponents.PIERCING_LEVEL, itemStack.get(CustomDataComponents.PIERCING_LEVEL));
+					if (itemStack.has(CustomDataComponents.CHARGED_REACH)) itemStack1.set(CustomDataComponents.CHARGED_REACH, itemStack.get(CustomDataComponents.CHARGED_REACH));
+				}
+				return itemStack1;
+			});
 		}
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
