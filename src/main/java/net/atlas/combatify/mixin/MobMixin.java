@@ -11,6 +11,7 @@ import net.atlas.combatify.extensions.MobExtensions;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.mixin.accessor.CombatTrackerAccessor;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.AABB;
@@ -91,8 +93,9 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Inject(method = "aiStep", at = @At("HEAD"))
 	public void updateSprinting(CallbackInfo ci) {
 		if (isBlocking()) {
-			setDeltaMovement(getDeltaMovement().multiply(0.4, 1.0, 0.4));
-			setSprinting(false);
+			UseEffects useEffects = MethodHandler.getBlockingItem(this).stack().getOrDefault(DataComponents.USE_EFFECTS, UseEffects.DEFAULT);
+			setDeltaMovement(getDeltaMovement().multiply(useEffects.speedMultiplier(), 1.0, useEffects.speedMultiplier()));
+			if (!useEffects.canSprint()) setSprinting(false);
 		}
 		if (!this.level().isClientSide()) {
 			Entity target = getTarget();
@@ -179,7 +182,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Unique
 	public void startGuarding() {
 		this.startUsingItem(InteractionHand.OFF_HAND);
-		this.setSprinting(false);
+		if (!getItemInHand(InteractionHand.OFF_HAND).getOrDefault(DataComponents.USE_EFFECTS, UseEffects.DEFAULT).canSprint()) this.setSprinting(false);
 		this.setGuarding(true);
 	}
 

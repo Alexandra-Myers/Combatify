@@ -86,6 +86,15 @@ public class CombatifyClient implements ClientModInitializer {
 
 		}
 	);
+	public static final OptionInstance<AttackIndicatorStatus> spearChargeIndicator = new OptionInstance<>(
+		"options.spearChargeIndicator",
+		OptionInstance.noTooltip(),
+		OptionInstance.forOptionEnum(),
+		new OptionInstance.Enum<>(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)),
+		AttackIndicatorStatus.OFF,
+		value -> {
+		}
+	);
 	public static final OptionInstance<AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
 		"options.projectileChargeIndicator",
 		OptionInstance.noTooltip(),

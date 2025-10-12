@@ -290,7 +290,7 @@ public class MethodHandler {
 		BlocksAttacks blocksAttacks = blockingItem.get(DataComponents.BLOCKS_ATTACKS);
 		if (!getBlockingType(blockingItem).canBeDisabled()) return;
 		float damage = Combatify.CONFIG.fallbackShieldDisableTime().floatValue();
-		damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getPickupItemStackOrigin(), target, abstractArrow, damageSource, damage);
+		damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getWeaponItem(), target, abstractArrow, damageSource, damage);
 		if (blocksAttacks != null) disable(serverLevel, target, blockingItem, blocksAttacks, damage);
 	}
 	public static void disable(ServerLevel serverLevel, LivingEntity target, ItemStack item, BlocksAttacks blocksAttacks, float damage) {

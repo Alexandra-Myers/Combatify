@@ -4,6 +4,7 @@
   "sodium.options.augmented_arm_height.tooltip": "Controls how the arm height is impacted by attack cooldown.",
   "sodium.options.dual_attack_indicator.tooltip": "Controls how the Dual Attack Indicators are displayed on screen.",
   "sodium.options.projectile_charge_indicator.tooltip": "Controls where the Projectile Charge Indicator is displayed on screen.",
+  "sodium.options.spear_charge_indicator.tooltip": "Controls where the Spear Charge Indicator is displayed on screen.",
   "sodium.options.rhythmic_attacks.tooltip": "Controls the animation for attacks.",
   "sodium.options.shield_indicator.tooltip": "Controls where the Shield Indicator is displayed on screen."
 }

@@ -13,6 +13,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -23,9 +24,11 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,6 +37,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import java.util.Arrays;
 
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 import static net.atlas.combatify.util.MethodHandler.getFatigueForTime;
@@ -56,6 +61,10 @@ public abstract class GuiMixin {
 	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_shield_indicator_full");
 	@Unique
 	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_shield_indicator_disabled");
+	@Unique
+	private static final ResourceLocation CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_special_indicator_full");
+	@Unique
+	private static final ResourceLocation HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_special_indicator_full");
 	@Unique
 	private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_full");
 	@Unique
@@ -104,7 +113,9 @@ public abstract class GuiMixin {
 						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, xPos, yPos, 16, 16);
 					else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
 						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
-					if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, yPos);
+					MutableInt mutableYPos = new MutableInt(yPos);
+					if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
+					if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderSpearChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
 				}
 			}
 		}
@@ -123,6 +134,7 @@ public abstract class GuiMixin {
 		}
 		int yPos = guiGraphics.guiHeight() / 2 - 7 + 16;
 		int xPos = guiGraphics.guiWidth() / 2 - 8;
+		MutableInt mutableYPos = new MutableInt(yPos);
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
 		if (CombatifyClient.dualAttackIndicator.get().isOn() && Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			boolean shouldPick = false;
@@ -133,19 +145,20 @@ public abstract class GuiMixin {
 				shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
 			}
 			if (CombatifyClient.dualAttackIndicator.get() == DualAttackIndicatorStatus.BOTTOM) {
-				int bottomYPos = yPos + 8;
 				if (attackStrengthScale < 2) {
-					if (shouldPick) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
-					else renderCrosshairProgress(guiGraphics, xPos, yPos, attackStrengthScale);
-					renderCrosshairProgress(guiGraphics, xPos, bottomYPos, (attackStrengthScale - 1.3F) / (0.70000005F));
+					if (shouldPick) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
+					else renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), attackStrengthScale);
+					renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), (attackStrengthScale - 1.3F) / (0.70000005F));
 				} else if (shouldPick) {
 					double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraft.player);
 					if (minecraft.player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), minecraft.player.getEyePosition())) < reachLimited * reachLimited)
-						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
-					else renderCrosshairProgress(guiGraphics, xPos, yPos, 1);
-					guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, bottomYPos, 16, 16);
+						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
+					else renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), 1);
+					guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
+				} else {
+					if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
+					if (CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderSpearChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
 				}
-				else if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, yPos);
 			} else {
 				HumanoidArm humanoidArm = this.minecraft.player.getMainArm();
 				yPos = (guiGraphics.guiHeight() - 11) / 2;
@@ -165,11 +178,10 @@ public abstract class GuiMixin {
 					renderSideCrosshairProgress(guiGraphics, humanoidArm, xPos, yPos, 1, 1, true);
 					renderSideCrosshairProgress(guiGraphics, humanoidArm, sideXPos, yPos, 1, 1, false);
 				}
-				yPos = guiGraphics.guiHeight() / 2 - 7 + 16;
 				xPos = guiGraphics.guiWidth() / 2 - 8;
 
-				if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, yPos);
-
+				if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
+				if (CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderSpearChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
 			}
 
 			ci.cancel();
@@ -186,10 +198,13 @@ public abstract class GuiMixin {
 			shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
 		}
 		if (shouldPick)
-			guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
+			guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator)
-			renderCrosshairProgress(guiGraphics, xPos, yPos, (attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F));
-		else if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, yPos);
+			renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), (attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F));
+		else {
+			if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
+			if (CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderSpearChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
+		}
 		ci.cancel();
 	}
 	@Inject(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
@@ -208,6 +223,8 @@ public abstract class GuiMixin {
 		int xPos = i + 91 + 6;
 		if (humanoidArm == HumanoidArm.RIGHT)
 			xPos = i - 91 - 22;
+		MutableInt mutableXPos = new MutableInt(xPos);
+		int offset = humanoidArm == HumanoidArm.RIGHT ? -20 : 20;
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
 		if (CombatifyClient.dualAttackIndicator.get().isOn() && Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
 			boolean shouldPick = false;
@@ -217,17 +234,19 @@ public abstract class GuiMixin {
 				shouldPick = player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F);
 				shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
 			}
-			int bottomXPos = xPos + (humanoidArm == HumanoidArm.RIGHT ? -20 : 20);
 			if (attackStrengthScale < 2) {
-				if (shouldPick) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
-				else renderHotbarProgress(guiGraphics, xPos, yPos, attackStrengthScale);
-				renderHotbarProgress(guiGraphics, bottomXPos, yPos, (attackStrengthScale - 1.3F) / 0.70000005F);
+				if (shouldPick) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
+				else renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, attackStrengthScale);
+				renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, (attackStrengthScale - 1.3F) / 0.70000005F);
 			} else if (shouldPick) {
 				double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(player);
-				if (player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= reachLimited * reachLimited) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
-				else renderHotbarProgress(guiGraphics, xPos, yPos, 1);
-				guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, bottomXPos, yPos, 18, 18);
-			} else if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, player, xPos, yPos);
+				if (player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= reachLimited * reachLimited) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
+				else renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, 1);
+				guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
+			} else {
+				if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
+				if (CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderSpearChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
+			}
 
 			ci.cancel();
 			return;
@@ -242,9 +261,12 @@ public abstract class GuiMixin {
 			shouldPick = player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F);
 			shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
 		}
-		if (shouldPick) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
-		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) renderHotbarProgress(guiGraphics, xPos, yPos, (attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F));
-		else if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, player, xPos, yPos);
+		if (shouldPick) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
+		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, (attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F));
+		else {
+			if (CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
+			if (CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderSpearChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
+		}
 
 		ci.cancel();
 	}
@@ -261,25 +283,30 @@ public abstract class GuiMixin {
 			guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE, xPos, yPos, 18, 18);
 		else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
 			guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SHIELD_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
-		if (!minecraft.options.attackIndicator().get().equals(AttackIndicatorStatus.HOTBAR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, minecraft.player, xPos, yPos);
+		MutableInt mutableXPos = new MutableInt(xPos);
+		if (!minecraft.options.attackIndicator().get().equals(AttackIndicatorStatus.HOTBAR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
+		if (!minecraft.options.attackIndicator().get().equals(AttackIndicatorStatus.HOTBAR) && CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderSpearChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
 	}
 	@Unique
-	private void renderProjectileChargeOnHotbar(GuiGraphics guiGraphics, Player player, int xPos, int yPos) {
+	private void renderProjectileChargeOnHotbar(GuiGraphics guiGraphics, Player player, MutableInt mutableXPos, int yPos, boolean right) {
 		ItemStack useItem = player.getUseItem();
 		int time = useItem.getUseDuration(player) - player.getUseItemRemainingTicks();
 		switch (useItem.getItem()) {
 			case BowItem ignored -> {
 				float power = BowItem.getPowerForTime(time);
+				int xPos = mutableXPos.getAndAdd(right ? -20 : 20);
 				if (power < 1) renderHotbarProgress(guiGraphics, xPos, yPos, power);
 				else if (getFatigueForTime(time) <= 0.5f) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
 			}
 			case CrossbowItem ignored -> {
 				float power = (float) time / CrossbowItem.getChargeDuration(useItem, player);
+				int xPos = mutableXPos.getAndAdd(right ? -20 : 20);
 				if (power < 1) renderHotbarProgress(guiGraphics, xPos, yPos, power);
 				else guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
 			}
 			case TridentItem ignored -> {
 				float power = (float) time / 10;
+				int xPos = mutableXPos.getAndAdd(right ? -20 : 20);
 				if (power < 1) renderHotbarProgress(guiGraphics, xPos, yPos, power);
 				else guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
 			}
@@ -287,26 +314,155 @@ public abstract class GuiMixin {
 		}
 	}
 	@Unique
-	private void renderProjectileChargeOnCrosshair(GuiGraphics guiGraphics, Player player, int xPos, int yPos) {
+	private void renderProjectileChargeOnCrosshair(GuiGraphics guiGraphics, Player player, int xPos, MutableInt mutableYPos) {
 		ItemStack useItem = player.getUseItem();
 		int time = useItem.getUseDuration(player) - player.getUseItemRemainingTicks();
 		switch (useItem.getItem()) {
 			case BowItem ignored -> {
 				float power = BowItem.getPowerForTime(time);
+				int yPos = mutableYPos.getAndAdd(8);
 				if (power < 1) renderCrosshairProgress(guiGraphics, xPos, yPos, power);
 				else if (getFatigueForTime(time) <= 0.5f) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
 			}
 			case CrossbowItem ignored -> {
 				float power = (float) time / CrossbowItem.getChargeDuration(useItem, player);
+				int yPos = mutableYPos.getAndAdd(8);
 				if (power < 1) renderCrosshairProgress(guiGraphics, xPos, yPos, power);
 				else guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
 			}
 			case TridentItem ignored -> {
 				float power = (float) time / 10;
+				int yPos = mutableYPos.getAndAdd(8);
 				if (power < 1) renderCrosshairProgress(guiGraphics, xPos, yPos, power);
 				else guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
 			}
 			default -> {}
+		}
+	}
+	@Unique
+	private void renderSpearChargeOnHotbar(GuiGraphics guiGraphics, Player player, MutableInt xPos, int yPos, boolean right) {
+		ItemStack useItem = player.getUseItem();
+		if (useItem.has(DataComponents.KINETIC_WEAPON)) {
+			int time = useItem.getUseDuration(player) - player.getUseItemRemainingTicks();
+			KineticWeapon kineticWeapon = useItem.get(DataComponents.KINETIC_WEAPON);
+			if (time >= kineticWeapon.delayTicks()) {
+				time -= kineticWeapon.delayTicks();
+				int damageMaxDuration = kineticWeapon.damageConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0);
+				int knockbackMaxDuration = kineticWeapon.knockbackConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0);
+				int dismountMaxDuration = kineticWeapon.dismountConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0);
+				int[] indicatorTimes = new int[] {damageMaxDuration};
+				boolean knockbackLastsAsLongAsDamage = knockbackMaxDuration >= damageMaxDuration;
+				boolean dismountLastsAsLongAsDamage = dismountMaxDuration >= damageMaxDuration;
+				boolean dismountCombined = dismountMaxDuration == knockbackMaxDuration;
+				if (!knockbackLastsAsLongAsDamage) {
+					indicatorTimes = Arrays.copyOf(indicatorTimes, indicatorTimes.length + 1);
+					indicatorTimes[indicatorTimes.length - 1] = indicatorTimes[indicatorTimes.length - 2];
+					indicatorTimes[0] = knockbackMaxDuration;
+				}
+				if (!dismountLastsAsLongAsDamage && !dismountCombined) {
+					int originalLength = indicatorTimes.length;
+					indicatorTimes = Arrays.copyOf(indicatorTimes, indicatorTimes.length + 1);
+					if (knockbackMaxDuration > dismountMaxDuration) {
+						for (int indicator = originalLength; indicator > 0; indicator--) {
+							indicatorTimes[indicator] = indicatorTimes[indicator - 1];
+						}
+						indicatorTimes[0] = dismountMaxDuration;
+					} else {
+						indicatorTimes[originalLength] = indicatorTimes[originalLength - 1];
+						indicatorTimes[originalLength - 1] = dismountMaxDuration;
+					}
+				}
+				int baseXPos = xPos.intValue() - 4;
+				if (!right) {
+					xPos.add(4);
+					baseXPos += 4;
+				}
+				int baseYPos = yPos + 1;
+				for (int indicator = 0; indicator < indicatorTimes.length; indicator++) {
+					int previousTime = 0;
+					if (indicator > 0) previousTime = indicatorTimes[indicator - 1];
+					int diff = indicatorTimes[indicator] - previousTime;
+					int diffTime = time - previousTime;
+					float power = 1.0F - (float) diffTime / diff;
+					if (power > 0) {
+						renderHotbarProgress(guiGraphics, xPos.getAndAdd(right ? -20 : 20), yPos, power);
+						boolean isDismount = dismountMaxDuration >= indicatorTimes[indicator];
+						boolean isKnockback = knockbackMaxDuration >= indicatorTimes[indicator];
+						int newXPos = baseXPos;
+						if (right) xPos.add(-4);
+						guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE, newXPos, baseYPos, 5, 5);
+						newXPos += 4;
+						if (isKnockback) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE, newXPos, baseYPos, 5, 5);
+						newXPos += 4;
+						if (isDismount) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE, newXPos, baseYPos, 5, 5);
+						break;
+					}
+				}
+			} else {
+				float power = (float) time / kineticWeapon.delayTicks();
+				renderHotbarProgress(guiGraphics, xPos.getAndAdd(right ? -20 : 20), yPos, power);
+			}
+		}
+	}
+	@Unique
+	private void renderSpearChargeOnCrosshair(GuiGraphics guiGraphics, Player player, int xPos, MutableInt yPos) {
+		ItemStack useItem = player.getUseItem();
+		if (useItem.has(DataComponents.KINETIC_WEAPON)) {
+			int time = useItem.getUseDuration(player) - player.getUseItemRemainingTicks();
+			KineticWeapon kineticWeapon = useItem.get(DataComponents.KINETIC_WEAPON);
+			if (time >= kineticWeapon.delayTicks()) {
+				time -= kineticWeapon.delayTicks();
+				int damageMaxDuration = kineticWeapon.damageConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0);
+				int knockbackMaxDuration = kineticWeapon.knockbackConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0);
+				int dismountMaxDuration = kineticWeapon.dismountConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0);
+				int[] indicatorTimes = new int[] {damageMaxDuration};
+				boolean knockbackLastsAsLongAsDamage = knockbackMaxDuration >= damageMaxDuration;
+				boolean dismountLastsAsLongAsDamage = dismountMaxDuration >= damageMaxDuration;
+				boolean dismountCombined = dismountMaxDuration == knockbackMaxDuration;
+				if (!knockbackLastsAsLongAsDamage) {
+					indicatorTimes = Arrays.copyOf(indicatorTimes, indicatorTimes.length + 1);
+					indicatorTimes[indicatorTimes.length - 1] = indicatorTimes[indicatorTimes.length - 2];
+					indicatorTimes[0] = knockbackMaxDuration;
+				}
+				if (!dismountLastsAsLongAsDamage && !dismountCombined) {
+					int originalLength = indicatorTimes.length;
+					indicatorTimes = Arrays.copyOf(indicatorTimes, indicatorTimes.length + 1);
+					if (knockbackMaxDuration > dismountMaxDuration) {
+						for (int indicator = originalLength; indicator > 0; indicator--) {
+							indicatorTimes[indicator] = indicatorTimes[indicator - 1];
+						}
+						indicatorTimes[0] = dismountMaxDuration;
+					} else {
+						indicatorTimes[originalLength] = indicatorTimes[originalLength - 1];
+						indicatorTimes[originalLength - 1] = dismountMaxDuration;
+					}
+				}
+				int baseXPos = guiGraphics.guiWidth() / 2 - 5;
+				for (int indicator = 0; indicator < indicatorTimes.length; indicator++) {
+					int previousTime = 0;
+					if (indicator > 0) previousTime = indicatorTimes[indicator - 1];
+					int diff = indicatorTimes[indicator] - previousTime;
+					int diffTime = time - previousTime;
+					float power = 1.0F - (float) diffTime / diff;
+					if (power > 0) {
+						int newYPos = yPos.intValue();
+						renderCrosshairProgress(guiGraphics, xPos, yPos.getAndAdd(8), power);
+						boolean isDismount = dismountMaxDuration >= indicatorTimes[indicator];
+						boolean isKnockback = knockbackMaxDuration >= indicatorTimes[indicator];
+						newYPos += 4;
+						int newXPos = baseXPos;
+						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE, newXPos, newYPos, 3, 3);
+						newXPos += 4;
+						if (isKnockback) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE, newXPos, newYPos, 3, 3);
+						newXPos += 4;
+						if (isDismount) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE, newXPos, newYPos, 3, 3);
+						break;
+					}
+				}
+			} else {
+				float power = (float) time / kineticWeapon.delayTicks();
+				renderCrosshairProgress(guiGraphics, xPos, yPos.getAndAdd(8), power);
+			}
 		}
 	}
 	@Unique
