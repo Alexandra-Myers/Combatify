@@ -62,10 +62,10 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 	}
 	public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 		try {
-			hashMap.put("eggDamage", ProjectileDamage.class.getDeclaredField("eggDamage"));
-			hashMap.put("snowballDamage", ProjectileDamage.class.getDeclaredField("snowballDamage"));
-			hashMap.put("windChargeDamage", ProjectileDamage.class.getDeclaredField("windChargeDamage"));
-			hashMap.put("thrownTridentDamage", ProjectileDamage.class.getDeclaredField("thrownTridentDamage"));
+			hashMap.put("egg_damage", ProjectileDamage.class.getDeclaredField("eggDamage"));
+			hashMap.put("snowball_damage", ProjectileDamage.class.getDeclaredField("snowballDamage"));
+			hashMap.put("wind_charge_damage", ProjectileDamage.class.getDeclaredField("windChargeDamage"));
+			hashMap.put("thrown_trident_damage", ProjectileDamage.class.getDeclaredField("thrownTridentDamage"));
 		} catch (NoSuchFieldException ignored) {
 		}
 
@@ -98,10 +98,10 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 	@Override
 	public Codec<ProjectileDamage> getCodec(AtlasConfig.ConfigHolder<ProjectileDamage> configHolder) {
 		return RecordCodecBuilder.create(instance ->
-			instance.group(Codecs.doubleRange(0, 40).optionalFieldOf("eggDamage", 0.0).forGetter(ProjectileDamage::eggDamage),
-					Codecs.doubleRange(0, 40).optionalFieldOf("snowballDamage", 0.0).forGetter(ProjectileDamage::snowballDamage),
-					Codecs.doubleRange(0, 40).optionalFieldOf("windChargeDamage", 1.0).forGetter(ProjectileDamage::windChargeDamage),
-					Codecs.doubleRange(0, 40).optionalFieldOf("thrownTridentDamage", 8.0).forGetter(ProjectileDamage::thrownTridentDamage))
+			instance.group(Codecs.doubleRange(0, 40).optionalFieldOf("egg_damage", 0.0).forGetter(ProjectileDamage::eggDamage),
+					Codecs.doubleRange(0, 40).optionalFieldOf("snowball_damage", 0.0).forGetter(ProjectileDamage::snowballDamage),
+					Codecs.doubleRange(0, 40).optionalFieldOf("wind_charge_damage", 1.0).forGetter(ProjectileDamage::windChargeDamage),
+					Codecs.doubleRange(0, 40).optionalFieldOf("thrown_trident_damage", 8.0).forGetter(ProjectileDamage::thrownTridentDamage))
 				.apply(instance, (eggDamage, snowballDamage, windChargeDamage, thrownTridentDamage) -> new ProjectileDamage(configHolder, eggDamage, snowballDamage, windChargeDamage, thrownTridentDamage)));
 	}
 
@@ -160,10 +160,10 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 	public List<AbstractConfigListEntry<?>> transformIntoConfigEntries() {
 		if (this.resetTranslation == null) this.resetTranslation = () -> Component.translatable(this.owner.getTranslationResetKey());
 		List<AbstractConfigListEntry<?>> entries = new ArrayList<>();
-		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "eggDamage"), this.eggDamage, this.resetTranslation.get(), () -> 0.0, (damage) -> this.eggDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
-		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "snowballDamage"), this.snowballDamage, this.resetTranslation.get(), () -> 0.0, (damage) -> this.snowballDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
-		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "windChargeDamage"), this.windChargeDamage, this.resetTranslation.get(), () -> 1.0, (damage) -> this.windChargeDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
-		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "thrownTridentDamage"), this.thrownTridentDamage, this.resetTranslation.get(), () -> 8.0, (damage) -> this.thrownTridentDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
+		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "egg_damage"), this.eggDamage, this.resetTranslation.get(), () -> 0.0, (damage) -> this.eggDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
+		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "snowball_damage"), this.snowballDamage, this.resetTranslation.get(), () -> 0.0, (damage) -> this.snowballDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
+		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "wind_charge_damage"), this.windChargeDamage, this.resetTranslation.get(), () -> 1.0, (damage) -> this.windChargeDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
+		entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "thrown_trident_damage"), this.thrownTridentDamage, this.resetTranslation.get(), () -> 8.0, (damage) -> this.thrownTridentDamage = Mth.clamp(damage, 0.0, 40.0), Optional::empty, false));
 		entries.forEach((entry) -> entry.setEditable(!this.owner.serverManaged));
 		return entries;
 	}

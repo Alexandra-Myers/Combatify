@@ -195,7 +195,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (MethodHandler.getBlockingItem(instance).useHand() != null) return MethodHandler.getBlockingItem(instance).useHand();
 		return interactionHand;
 	}
-	@Inject(method = "hurtServer", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 0, shift = At.Shift.AFTER))
+	@Inject(method = "hurtServer", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;invulnerableTime:I", ordinal = 1, shift = At.Shift.AFTER))
 	public void injectEatingInterruption(ServerLevel serverLevel, DamageSource source, float f, CallbackInfoReturnable<Boolean> cir) {
 		Entity entity = source.getEntity();
 		boolean canInterrupt = thisEntity.isUsingItem() && (getUseItem().getUseAnimation() == ItemUseAnimation.EAT || getUseItem().getUseAnimation() == ItemUseAnimation.DRINK);
