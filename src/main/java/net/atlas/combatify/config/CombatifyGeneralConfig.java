@@ -125,7 +125,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	@Override
 	public Component getFormattedName() {
-		return Component.translatable("text.config." + this.name.getPath() + ".title").withStyle(Style.EMPTY.withColor(AtlasCore.CONFIG.configNameDisplayColour.get()));
+		return Component.translatableWithFallback("text.config." + this.name.getPath() + ".title", "Combatify General").withStyle(Style.EMPTY.withColor(AtlasCore.CONFIG.configNameDisplayColour.get()));
 	}
 
 	@Override
@@ -656,8 +656,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		}
 		public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 			try {
-				hashMap.put("bowUncertainty", ProjectileUncertainty.class.getDeclaredField("bowUncertainty"));
-				hashMap.put("crossbowUncertainty", ProjectileUncertainty.class.getDeclaredField("crossbowUncertainty"));
+				hashMap.put("bow_uncertainty", ProjectileUncertainty.class.getDeclaredField("bowUncertainty"));
+				hashMap.put("crossbow_uncertainty", ProjectileUncertainty.class.getDeclaredField("crossbowUncertainty"));
 			} catch (NoSuchFieldException ignored) {
 			}
 
@@ -688,8 +688,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		@Override
 		public Codec<ProjectileUncertainty> getCodec(ConfigHolder<ProjectileUncertainty> configHolder) {
 			return RecordCodecBuilder.create(instance ->
-				instance.group(Codecs.doubleRange(0, 4).optionalFieldOf("bowUncertainty", 0.25).forGetter(ProjectileUncertainty::bowUncertainty),
-					Codecs.doubleRange(0, 4).optionalFieldOf("crossbowUncertainty", 0.25).forGetter(ProjectileUncertainty::crossbowUncertainty))
+				instance.group(Codecs.doubleRange(0, 4).optionalFieldOf("bow_uncertainty", 0.25).forGetter(ProjectileUncertainty::bowUncertainty),
+					Codecs.doubleRange(0, 4).optionalFieldOf("crossbow_uncertainty", 0.25).forGetter(ProjectileUncertainty::crossbowUncertainty))
 					.apply(instance, (bowUncertainty, crossbowUncertainty) -> new ProjectileUncertainty(configHolder, bowUncertainty, crossbowUncertainty)));
 		}
 
@@ -748,8 +748,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		public List<AbstractConfigListEntry<?>> transformIntoConfigEntries() {
 			if (this.resetTranslation == null) this.resetTranslation = () -> Component.translatable(this.owner.getTranslationResetKey());
 			List<AbstractConfigListEntry<?>> entries = new ArrayList<>();
-			entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "bowUncertainty"), this.bowUncertainty, this.resetTranslation.get(), () -> 0.25, (uncertainty) -> this.bowUncertainty = Mth.clamp(uncertainty, 0.0, 4.0), Optional::empty, false));
-			entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "crossbowUncertainty"), this.crossbowUncertainty, this.resetTranslation.get(), () -> 0.25, (uncertainty) -> this.crossbowUncertainty = Mth.clamp(uncertainty, 0.0, 4.0), Optional::empty, false));
+			entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "bow_uncertainty"), this.bowUncertainty, this.resetTranslation.get(), () -> 0.25, (uncertainty) -> this.bowUncertainty = Mth.clamp(uncertainty, 0.0, 4.0), Optional::empty, false));
+			entries.add(new DoubleListEntry(convertFieldToNameComponent.apply(this, "crossbow_uncertainty"), this.crossbowUncertainty, this.resetTranslation.get(), () -> 0.25, (uncertainty) -> this.crossbowUncertainty = Mth.clamp(uncertainty, 0.0, 4.0), Optional::empty, false));
 			entries.forEach((entry) -> entry.setEditable(!this.owner.serverManaged));
 			return entries;
 		}

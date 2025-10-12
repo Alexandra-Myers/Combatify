@@ -80,12 +80,12 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public static final Map<String, Field> fields = Util.make(new HashMap<>(), (hashMap) -> {
 		try {
 			hashMap.put("enabled", AttackDecay.class.getDeclaredField("enabled"));
-			hashMap.put("minCharge", AttackDecay.class.getDeclaredField("minCharge"));
-			hashMap.put("maxCharge", AttackDecay.class.getDeclaredField("maxCharge"));
-			hashMap.put("minPercentageBase", AttackDecay.class.getDeclaredField("minPercentageBase"));
-			hashMap.put("maxPercentageBase", AttackDecay.class.getDeclaredField("maxPercentageBase"));
-			hashMap.put("minPercentageEnchants", AttackDecay.class.getDeclaredField("minPercentageEnchants"));
-			hashMap.put("maxPercentageEnchants", AttackDecay.class.getDeclaredField("maxPercentageEnchants"));
+			hashMap.put("min_charge", AttackDecay.class.getDeclaredField("minCharge"));
+			hashMap.put("max_charge", AttackDecay.class.getDeclaredField("maxCharge"));
+			hashMap.put("min_percentage_base", AttackDecay.class.getDeclaredField("minPercentageBase"));
+			hashMap.put("max_percentage_base", AttackDecay.class.getDeclaredField("maxPercentageBase"));
+			hashMap.put("min_percentage_enchants", AttackDecay.class.getDeclaredField("minPercentageEnchants"));
+			hashMap.put("max_percentage_enchants", AttackDecay.class.getDeclaredField("maxPercentageEnchants"));
 		} catch (NoSuchFieldException ignored) {
 		}
 
@@ -122,12 +122,12 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public Codec<AttackDecay> getCodec(AtlasConfig.ConfigHolder<AttackDecay> configHolder) {
 		return RecordCodecBuilder.create(instance ->
 			instance.group(Codec.BOOL.optionalFieldOf("enabled", false).forGetter(AttackDecay::enabled),
-					ExtraCodecs.intRange(0, 200).optionalFieldOf("minCharge", 0).forGetter(AttackDecay::minCharge),
-					ExtraCodecs.intRange(0, 200).optionalFieldOf("maxCharge", 100).forGetter(AttackDecay::maxCharge),
-					ExtraCodecs.intRange(0, 200).optionalFieldOf("minPercentageBase", 20).forGetter(AttackDecay::minPercentageBase),
-					ExtraCodecs.intRange(0, 200).optionalFieldOf("maxPercentageBase", 100).forGetter(AttackDecay::maxPercentageBase),
-					ExtraCodecs.intRange(0, 200).optionalFieldOf("minPercentageEnchants", 0).forGetter(AttackDecay::minPercentageEnchants),
-					ExtraCodecs.intRange(0, 200).optionalFieldOf("maxPercentageEnchants", 100).forGetter(AttackDecay::maxPercentageEnchants))
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("min_charge", 0).forGetter(AttackDecay::minCharge),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("max_charge", 100).forGetter(AttackDecay::maxCharge),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("min_percentage_base", 20).forGetter(AttackDecay::minPercentageBase),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("max_percentage_base", 100).forGetter(AttackDecay::maxPercentageBase),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("min_percentage_enchants", 0).forGetter(AttackDecay::minPercentageEnchants),
+					ExtraCodecs.intRange(0, 200).optionalFieldOf("max_percentage_enchants", 100).forGetter(AttackDecay::maxPercentageEnchants))
 				.apply(instance, (enabled, minCharge, maxCharge, minPercentageBase, maxPercentageBase, minPercentageEnchants, maxPercentageEnchants) -> new AttackDecay(configHolder, enabled, minCharge, maxCharge, minPercentageBase, maxPercentageBase, minPercentageEnchants, maxPercentageEnchants)));
 	}
 
@@ -188,12 +188,12 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 		if (this.resetTranslation == null) this.resetTranslation = () -> Component.translatable(this.owner.getTranslationResetKey());
 		List<AbstractConfigListEntry<?>> entries = new ArrayList<>();
 		entries.add(new BooleanListEntry(convertFieldToNameComponent.apply(this, "enabled"), this.enabled, this.resetTranslation.get(), () -> false, (enabled) -> this.enabled = enabled, setupTooltip(1, "enabled"), false));
-		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "minCharge"), this.minCharge, this.resetTranslation.get(), () -> 0, (charge) -> this.minCharge = Mth.clamp(charge, 0, 200), setupTooltip(1, "minCharge"), false));
-		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "maxCharge"), this.maxCharge, this.resetTranslation.get(), () -> 100, (charge) -> this.maxCharge = Mth.clamp(charge, 0, 200), setupTooltip(1, "maxCharge"), false));
-		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "minPercentageBase"), this.minPercentageBase, this.resetTranslation.get(), () -> 20, (percent) -> this.minPercentageBase = Mth.clamp(percent, 0, 200), setupTooltip(3, "minPercentageBase"), false));
-		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "maxPercentageBase"), this.maxPercentageBase, this.resetTranslation.get(), () -> 100, (percent) -> this.maxPercentageBase = Mth.clamp(percent, 0, 200), setupTooltip(3, "maxPercentageBase"), false));
-		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "minPercentageEnchants"), this.minPercentageEnchants, this.resetTranslation.get(), () -> 0, (percent) -> this.minPercentageEnchants = Mth.clamp(percent, 0, 200), setupTooltip(2, "minPercentageEnchants"), false));
-		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "maxPercentageEnchants"), this.maxPercentageEnchants, this.resetTranslation.get(), () -> 100, (percent) -> this.maxPercentageEnchants = Mth.clamp(percent, 0, 200), setupTooltip(2, "maxPercentageEnchants"), false));
+		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "min_charge"), this.minCharge, this.resetTranslation.get(), () -> 0, (charge) -> this.minCharge = Mth.clamp(charge, 0, 200), setupTooltip(1, "min_charge"), false));
+		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "max_charge"), this.maxCharge, this.resetTranslation.get(), () -> 100, (charge) -> this.maxCharge = Mth.clamp(charge, 0, 200), setupTooltip(1, "max_charge"), false));
+		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "min_percentage_base"), this.minPercentageBase, this.resetTranslation.get(), () -> 20, (percent) -> this.minPercentageBase = Mth.clamp(percent, 0, 200), setupTooltip(3, "min_percentage_base"), false));
+		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "max_percentage_base"), this.maxPercentageBase, this.resetTranslation.get(), () -> 100, (percent) -> this.maxPercentageBase = Mth.clamp(percent, 0, 200), setupTooltip(3, "max_percentage_base"), false));
+		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "min_percentage_enchants"), this.minPercentageEnchants, this.resetTranslation.get(), () -> 0, (percent) -> this.minPercentageEnchants = Mth.clamp(percent, 0, 200), setupTooltip(2, "min_percentage_enchants"), false));
+		entries.add(new IntegerListEntry(convertFieldToNameComponent.apply(this, "max_percentage_enchants"), this.maxPercentageEnchants, this.resetTranslation.get(), () -> 100, (percent) -> this.maxPercentageEnchants = Mth.clamp(percent, 0, 200), setupTooltip(2, "max_percentage_enchants"), false));
 		entries.forEach((entry) -> entry.setEditable(!this.owner.serverManaged));
 		return entries;
 	}
