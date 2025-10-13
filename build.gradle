@@ -61,7 +61,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "maven.modrinth:sodium:${project.sodium_version}"
-	modImplementation "maven.modrinth:atlas-core:${project.atlas_core_version}-${project.minecraft_version}"
+	modImplementation "maven.modrinth:atlas-core:${project.atlas_core_version}"
 	modImplementation "net.atlas:defaulted-fabric:1.1.0"
 	modImplementation "com.viaversion:viafabricplus:4.0.1"
 	modApi "com.terraformersmc:modmenu:13.0.0-beta.1"
