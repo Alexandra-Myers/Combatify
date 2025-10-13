@@ -297,11 +297,13 @@ public abstract class GuiMixin {
 				int xPos = mutableXPos.getAndAdd(right ? -20 : 20);
 				if (power < 1) renderHotbarProgress(guiGraphics, xPos, yPos, power);
 				else if (getFatigueForTime(time) <= 0.5f) {
-					float fatigueProgress = 1 - ((float) (time - 20) / 40);
-					renderHotbarProgress(guiGraphics, xPos, yPos, fatigueProgress);
-					int indicatorXPos = xPos + 1;
-					int indicatorYPos = yPos + 1;
-					guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE, indicatorXPos, indicatorYPos, 5, 5);
+					if (Combatify.CONFIG.bowFatigue() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+						float fatigueProgress = 1 - ((float) (time - 20) / 40);
+						renderHotbarProgress(guiGraphics, xPos, yPos, fatigueProgress);
+						int indicatorXPos = xPos + 1;
+						int indicatorYPos = yPos + 1;
+						guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE, indicatorXPos, indicatorYPos, 5, 5);
+					} else guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 18, 18);
 				}
 			}
 			case CrossbowItem ignored -> {
@@ -329,11 +331,13 @@ public abstract class GuiMixin {
 				int yPos = mutableYPos.getAndAdd(8);
 				if (power < 1) renderCrosshairProgress(guiGraphics, xPos, yPos, power);
 				else if (getFatigueForTime(time) <= 0.5f) {
-					float fatigueProgress = 1 - ((float) (time - 20) / 40);
-					renderCrosshairProgress(guiGraphics, xPos, yPos, fatigueProgress);
-					int indicatorXPos = guiGraphics.guiWidth() / 2 - 1;
-					int indicatorYPos = yPos + 4;
-					guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE, indicatorXPos, indicatorYPos, 3, 3);
+					if (Combatify.CONFIG.bowFatigue() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+						float fatigueProgress = 1 - ((float) (time - 20) / 40);
+						renderCrosshairProgress(guiGraphics, xPos, yPos, fatigueProgress);
+						int indicatorXPos = guiGraphics.guiWidth() / 2 - 1;
+						int indicatorYPos = yPos + 4;
+						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE, indicatorXPos, indicatorYPos, 3, 3);
+					} else guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
 				}
 			}
 			case CrossbowItem ignored -> {
