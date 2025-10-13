@@ -327,7 +327,7 @@ public class MethodHandler {
 				damage = configurableEntityData.shieldDisableTime().floatValue();
 		}
 		if (target.level() instanceof ServerLevel serverLevel) {
-			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getPickupItemStackOrigin(), target, abstractArrow, damageSource, damage);
+			damage = CustomEnchantmentHelper.modifyShieldDisable(serverLevel, abstractArrow.getWeaponItem(), target, abstractArrow, damageSource, damage);
 		}
 		disableShield(target, Math.max(damage, 0), blockingItem);
 	}
