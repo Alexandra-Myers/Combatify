@@ -108,7 +108,7 @@ dependencies {
 
 processResources {
 	exclude "architectury.common.json"
-	inputs.property 'version', project.version
+	inputs.property 'version', project.mod_version
 
 	filesMatching('META-INF/neoforge.mods.toml') {
 		expand version: inputs.properties.version
