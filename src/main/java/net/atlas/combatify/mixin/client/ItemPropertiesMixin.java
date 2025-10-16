@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ItemProperties.class)
 public class ItemPropertiesMixin {
-	@WrapMethod(method = "register")
+	@WrapMethod(method = "register(Lnet/minecraft/world/item/Item;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/renderer/item/ClampedItemPropertyFunction;)V")
 	private static void alterAllBlocking(Item item, ResourceLocation resourceLocation, ClampedItemPropertyFunction clampedItemPropertyFunction, Operation<Void> original) {
 		if (resourceLocation.equals(ResourceLocation.withDefaultNamespace("blocking"))) original.call(item, resourceLocation, (ClampedItemPropertyFunction) (itemStack, clientLevel, livingEntity, i) -> livingEntity != null && livingEntity.isBlocking() && MethodHandler.getBlockingItem(livingEntity).stack() == itemStack ? 1.0F : 0.0F);
 		else original.call(item, resourceLocation, clampedItemPropertyFunction);

@@ -11,20 +11,20 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.neoforged.neoforge.registries.DeferredItem;
 
-import static net.atlas.combatify.Combatify.id;
 import static net.atlas.combatify.Combatify.shields;
-import static net.atlas.combatify.item.ItemRegistry.registerItem;
+import static net.atlas.combatify.item.CombatifyItems.registerItem;
 
 import java.util.Collections;
 import java.util.List;
 
 public class TieredShieldItem extends ShieldItem {
 	public final Tier tier;
-	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), properties -> new TieredShieldItem(Tiers.IRON, properties, 3, Blocker.NEW_SHIELD), new Item.Properties());
-	public static final Item GOLD_SHIELD = registerItem(id("golden_shield"), properties -> new TieredShieldItem(Tiers.GOLD, properties, 1, Blocker.NEW_SHIELD), new Item.Properties());
-	public static final Item DIAMOND_SHIELD = registerItem(id("diamond_shield"), properties -> new TieredShieldItem(Tiers.DIAMOND, properties, 5, Blocker.NEW_SHIELD),new Item.Properties());
-	public static final Item NETHERITE_SHIELD = registerItem(id("netherite_shield"), properties -> new TieredShieldItem(Tiers.NETHERITE, properties, 5, Blocker.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.SHIELD_KNOCKBACK)).withProtection(List.of(BlockingTypeInit.NETHERITE_SHIELD_PROTECTION, BlockingTypeInit.NEW_SHIELD_PROTECTION))), new Item.Properties().fireResistant());
+	public static final DeferredItem<Item> IRON_SHIELD = registerItem("iron_shield", properties -> new TieredShieldItem(Tiers.IRON, properties, 3, Blocker.NEW_SHIELD), new Item.Properties());
+	public static final DeferredItem<Item> GOLD_SHIELD = registerItem("golden_shield", properties -> new TieredShieldItem(Tiers.GOLD, properties, 1, Blocker.NEW_SHIELD), new Item.Properties());
+	public static final DeferredItem<Item> DIAMOND_SHIELD = registerItem("diamond_shield", properties -> new TieredShieldItem(Tiers.DIAMOND, properties, 5, Blocker.NEW_SHIELD),new Item.Properties());
+	public static final DeferredItem<Item> NETHERITE_SHIELD = registerItem("netherite_shield", properties -> new TieredShieldItem(Tiers.NETHERITE, properties, 5, Blocker.NEW_SHIELD.withKnockback(Collections.singletonList(BlockingTypeInit.SHIELD_KNOCKBACK)).withProtection(List.of(BlockingTypeInit.NETHERITE_SHIELD_PROTECTION, BlockingTypeInit.NEW_SHIELD_PROTECTION))), new Item.Properties().fireResistant());
 
 	public TieredShieldItem(Tier tier, Properties properties, int lvl, Blocker baseBlocker) {
 		super(properties.durability(tier.getUses() * 2)

@@ -129,7 +129,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	@Override
 	public Component getFormattedName() {
-		return Component.translatable("text.config." + this.name.getPath() + ".title").withStyle(Style.EMPTY.withColor(AtlasCore.CONFIG.configNameDisplayColour.get()));
+		return Component.translatableWithFallback("text.config." + this.name.getPath() + ".title", "Combatify General").withStyle(Style.EMPTY.withColor(AtlasCore.CONFIG.configNameDisplayColour.get()));
 	}
 
 	@Override

@@ -2,33 +2,20 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
-import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
-import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.util.MethodHandler;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.*;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -58,7 +45,7 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	public abstract String toString();
 
 	@Shadow
-	protected abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<T> dataComponentType, Item.TooltipContext tooltipContext, Consumer<Component> consumer, TooltipFlag tooltipFlag);
+	public abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<T> dataComponentType, Item.TooltipContext tooltipContext, Consumer<Component> consumer, TooltipFlag tooltipFlag);
 
 	@Shadow
 	public abstract boolean isEmpty();
@@ -69,42 +56,9 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	@Shadow
 	public abstract int getUseDuration(LivingEntity livingEntity);
 
-	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;)V"))
+	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/util/AttributeUtil;addAttributeTooltips(Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;Lnet/neoforged/neoforge/common/util/AttributeTooltipContext;)V"))
 	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) Consumer<Component> consumer) {
 		addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, consumer, tooltipFlag);
-	}
-
-	@Inject(method = "addModifierTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;operation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
-	public void addAttackReach(Consumer<Component> consumer, Player player, Holder<Attribute> holder, AttributeModifier attributeModifier, CallbackInfo ci, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl) {
-		if (player != null) {
-			if (attributeModifier.is(WeaponType.BASE_ATTACK_SPEED_CTS_ID)) {
-				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
-				bl.set(true);
-			}
-			if (attributeModifier.is(WeaponType.BASE_ATTACK_REACH_ID)) {
-				d.set(d.get() + player.getAttributeBaseValue(Attributes.ENTITY_INTERACTION_RANGE) + (Combatify.CONFIG.attackReach() ? 0 : 0.5));
-				bl.set(true);
-			}
-		}
-	}
-	@Inject(method = "addAttributeTooltips", at = @At("RETURN"))
-	public void addPiercing(Consumer<Component> consumer, Player player, CallbackInfo ci) {
-		ItemAttributeModifiers itemAttributeModifiers = getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-		if (itemAttributeModifiers.showInTooltip() && player != null) {
-			double piercingLevel = MethodHandler.getPiercingLevel(this.stack);
-			if (Combatify.CONFIG.configOnlyWeapons()) piercingLevel += CustomEnchantmentHelper.getBreach(this.stack, player.getRandom());
-			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
-			if (piercingLevel > 0) {
-				consumer.accept(CommonComponents.EMPTY);
-				consumer.accept(Component.translatable("item.modifiers.mainhand").withStyle(ChatFormatting.GRAY));
-				consumer.accept(
-					CommonComponents.space().append(
-						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),
-							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
-							Component.translatableWithFallback("attribute.name.armor_piercing", "Armor Piercing"))).withStyle(ChatFormatting.DARK_GREEN));
-			}
-			if (getBlocking(this.stack).canShowInTooltip(this.stack, player)) getBlocking(this.stack).tooltip().appendTooltipInfo(consumer, player, this.stack);
-		}
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
 	public int getUseDuration(int original) {

@@ -1,0 +1,45 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+#issueTrackerURL = ""
+license = "LGPL-2.1"
+
+[[mods]]
+modId = "combatify"
+version = "${version}"
+displayName = "Combatify"
+authors = "Alexandra, zOnlyKroks"
+description = '''
+A mod library and standalone mod that adds features from the combat test snapshots
+'''
+logoFile = "assets/combatify/icon.png"
+
+[[dependencies.combatify]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.combatify]]
+modId = "atlas_core"
+type = "required"
+versionRange = "[1.1.2,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.combatify]]
+modId = "defaulted"
+type = "required"
+versionRange = "[1.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.combatify]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.21.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "combatify.mixins.json"

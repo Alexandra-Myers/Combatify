@@ -28,10 +28,6 @@ public class NetworkingHandler {
 		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateBridgingStatusPacket.TYPE, UpdateBridgingStatusPacket.CODEC);
 		PayloadTypeRegistry.configurationS2C().register(ClientboundClientInformationRetrievalPacket.TYPE, ClientboundClientInformationRetrievalPacket.CODEC);
-		ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
-			if (ServerConfigurationNetworking.canSend(handler, ClientboundClientInformationRetrievalPacket.TYPE))
-				handler.addTask(new ClientRetrievalTask());
-		});
 		ServerPlayConnectionEvents.DISCONNECT.register(modDetectionNetworkChannel, (handler, server) -> {
 			if (unmoddedPlayers.contains(handler.player.getUUID())) {
 				unmoddedPlayers.remove(handler.player.getUUID());
@@ -49,7 +45,7 @@ public class NetworkingHandler {
 		});
 		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> {
 			context.networkHandler().combatify$setShieldOnCrouch(payload.useShieldOnCrouch);
-			context.networkHandler().completeTask(ClientRetrievalTask.TYPE);
+			context.networkHandler().finishCurrentTask(ClientRetrievalTask.TYPE);
 		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> context.player().connection.getPlayer().combatify$setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {

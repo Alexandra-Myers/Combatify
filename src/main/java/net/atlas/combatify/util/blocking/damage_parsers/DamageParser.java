@@ -8,22 +8,22 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.ComponentModifier.DataSet;
+import net.atlas.defaulted.extension.LateBoundIdMapper;
 import net.minecraft.advancements.critereon.TagPredicate;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageType;
 
 public interface DamageParser {
-	Codec<DamageParser> CODEC = BlockingTypeInit.DAMAGE_PARSER_TYPE_REG
-		.byNameCodec()
+	LateBoundIdMapper<ResourceLocation, MapCodec<? extends DamageParser>> ID_MAPPER = new LateBoundIdMapper<>();
+	Codec<DamageParser> CODEC = ID_MAPPER.codec(ResourceLocation.CODEC)
 		.dispatch(DamageParser::codec, mapCodec -> mapCodec);
-	static void bootstrap(Registry<MapCodec<? extends DamageParser>> registry) {
-		Registry.register(registry, "percentage_base", PercentageBase.CODEC);
-		Registry.register(registry, "percentage_limit", PercentageLimit.CODEC);
-		Registry.register(registry, "nullify", Nullify.CODEC);
+	static void bootstrap() {
+		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("percentage_base"), PercentageBase.CODEC);
+		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("percentage_limit"), PercentageLimit.CODEC);
+		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("nullify"), Nullify.CODEC);
 	}
 	float parse(float originalValue, DataSet protection, Holder<DamageType> damageType);
 

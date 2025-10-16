@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -12,7 +14,10 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.config.ConfigurableEntityData;
-import net.atlas.combatify.config.wrapper.*;
+import net.atlas.combatify.config.wrapper.EntityWrapper;
+import net.atlas.combatify.config.wrapper.GenericAPIWrapper;
+import net.atlas.combatify.config.wrapper.LivingEntityWrapper;
+import net.atlas.combatify.config.wrapper.PlayerWrapper;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +28,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -33,9 +40,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.player.SweepAttackEvent;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
@@ -270,14 +281,15 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0) DamageSource damageSource) {
 		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call);
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
-	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Share("didSweep") LocalBooleanRef didSweep) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
-		bl4.set(false);
+	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/CommonHooks;fireSweepAttack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Z)Lnet/neoforged/neoforge/event/entity/player/SweepAttackEvent;"))
+	public SweepAttackEvent createSweep(Player player, Entity target, boolean isVanillaSweep, Operation<SweepAttackEvent> original, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original.call(player, target, isVanillaSweep);
 		double d = this.getKnownMovement().horizontalDistanceSqr();
 		double e = (double)this.getSpeed() * 2.5;
 		boolean isSweepPossible = Combatify.CONFIG.sweepConditionsMatchMiss() || this.onGround();
-		if (!bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && checkSweepAttack()) {
+		SweepAttackEvent event = original.call(player, target, !bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && checkSweepAttack());
+		boolean realSweep = event.isSweeping();
+		if (realSweep) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
 				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
@@ -287,13 +299,16 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 					attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 				return damage + attackDamageBonus;
 			}, target);
-			didSweep.set(true);
 		}
+		return event;
 	}
-	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
-	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4, @Share("didSweep") LocalBooleanRef didSweep) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
-		bl4.set(didSweep.get());
+
+	@Definition(id = "flag2", local = @Local(type = boolean.class, ordinal = 3))
+	@Expression("flag2 != false")
+	@ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
+	public boolean resweep(boolean original) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		return false;
 	}
 	@Override
 	public void combatify$attackAir() {

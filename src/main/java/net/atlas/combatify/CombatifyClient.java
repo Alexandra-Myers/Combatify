@@ -4,8 +4,6 @@ import com.mojang.serialization.Codec;
 import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.OptionInstance;
@@ -14,6 +12,12 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -21,7 +25,9 @@ import java.util.Objects;
 import static net.minecraft.client.Options.genericValueLabel;
 import static net.minecraft.client.Options.percentValueLabel;
 
-public class CombatifyClient implements ClientModInitializer {
+@Mod(value = Combatify.MOD_ID, dist = Dist.CLIENT)
+@EventBusSubscriber(modid = Combatify.MOD_ID, value = Dist.CLIENT)
+public class CombatifyClient {
 	public static final ModelLayerLocation IRON_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("iron_shield"),"main");
 	public static final ModelLayerLocation GOLDEN_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("golden_shield"),"main");
 	public static final ModelLayerLocation DIAMOND_SHIELD_MODEL_LAYER = new ModelLayerLocation(Combatify.id("diamond_shield"),"main");
@@ -128,16 +134,18 @@ public class CombatifyClient implements ClientModInitializer {
 			}
 	);
 
-	@Override
-	public void onInitializeClient() {
+	public CombatifyClient(ModContainer container) {
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
 		Combatify.markState(combatifyState::get);
+	}
+	@SubscribeEvent
+	public static void registerModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		if (Combatify.CONFIG.tieredShields()) {
-			EntityModelLayerRegistry.registerModelLayer(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(GOLDEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
-			EntityModelLayerRegistry.registerModelLayer(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(IRON_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(GOLDEN_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(DIAMOND_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
+			event.registerLayerDefinition(NETHERITE_SHIELD_MODEL_LAYER, ShieldModel::createLayer);
 		}
 	}
 }

@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(AtlasCore.class)
 public class AtlasCoreMixin {
-	@WrapOperation(method = "lambda$onInitialize$1", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/networking/v1/ServerPlayNetworking;send(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"))
+	@WrapOperation(method = "lambda$new$1", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/networking/v1/ServerPlayNetworking;send(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"))
 	private static void removeForUnmodded(ServerPlayer player, CustomPacketPayload payload, Operation<Void> original, @Local(ordinal = 0) AtlasConfig atlasConfig) {
 		if (!ServerPlayNetworking.canSend(player, NetworkingHandler.RemainingUseSyncPacket.TYPE) && atlasConfig.name.getNamespace().equals(Combatify.MOD_ID)) return;
 		original.call(player, payload);
 	}
-	@WrapOperation(method = "lambda$onInitialize$4", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/networking/v1/ServerPlayNetworking;send(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"))
+	@WrapOperation(method = "lambda$new$4", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/networking/v1/ServerPlayNetworking;send(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"))
 	private static void removeForUnmodded1(ServerPlayer player, CustomPacketPayload payload, Operation<Void> original, @Local(ordinal = 0) ContextBasedConfig contextBasedConfig) {
 		if (!ServerPlayNetworking.canSend(player, NetworkingHandler.RemainingUseSyncPacket.TYPE) && contextBasedConfig.name.getNamespace().equals(Combatify.MOD_ID)) return;
 		original.call(player, payload);

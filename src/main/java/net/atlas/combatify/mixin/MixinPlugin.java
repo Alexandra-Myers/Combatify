@@ -19,17 +19,11 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	static {
 		ImmutableMultimap.Builder<String, MatchingMods> incompatible = ImmutableMultimap.builder();
 		ImmutableMultimap.Builder<String, MatchingMods> modSpecific = ImmutableMultimap.builder();
-		incompatible.put("net.atlas.combatify.mixin.InvulnerabilityMixin", new MatchingMods("neoforge"));
-		incompatible.put("net.atlas.combatify.mixin.ModifyShieldMixin", new MatchingMods("neoforge"));
-		incompatible.put("net.atlas.combatify.mixin.compatibility.appleskin.HUDOverlayHandlerMixin", new MatchingMods("neoforge"));
 		incompatible.put("net.atlas.combatify.mixin.client.ArmHeightMixin", new MatchingMods("cookeymod"));
-		modSpecific.put("net.atlas.combatify.mixin.compatibility.neoforge.InvulnerabilityMixin", new MatchingMods("neoforge"));
-		modSpecific.put("net.atlas.combatify.mixin.compatibility.neoforge.ModifyShieldMixin", new MatchingMods("neoforge"));
 		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.FoodHelperMixin", new MatchingMods("appleskin"));
 		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.HUDOverlayHandlerMixin", new MatchingMods("appleskin"));
-		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.neoforge.NeoForgeHUDOverlayHandlerMixin", new MatchingMods("appleskin", "neoforge"));
-		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.neoforge.HungerOverlayMixin", new MatchingMods("appleskin", "neoforge"));
-		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.neoforge.SaturationOverlayMixin", new MatchingMods("appleskin", "neoforge"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.HungerOverlayMixin", new MatchingMods("appleskin"));
+		modSpecific.put("net.atlas.combatify.mixin.compatibility.appleskin.SaturationOverlayMixin", new MatchingMods("appleskin"));
 		modSpecific.put("net.atlas.combatify.mixin.compatibility.cookeymod.AddForce100PercentRechargeMixin", new MatchingMods("cookeymod"));
 		modSpecific.put("net.atlas.combatify.mixin.compatibility.cookeymod.ArmHeightFixMixin", new MatchingMods("cookeymod"));
 		modSpecific.put("net.atlas.combatify.mixin.compatibility.cookeymod.DisableMissedAttackRecoveryMixin", new MatchingMods("cookeymod"));

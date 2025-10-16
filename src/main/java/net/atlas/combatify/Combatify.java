@@ -8,14 +8,12 @@ import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
 import net.atlas.combatify.component.custom.Blocker;
-import net.atlas.combatify.component.generators.WeaponStatsGenerator;
+import net.atlas.combatify.component.generators.CombatifyPatchGenerators;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.critereon.ItemSubPredicateInit;
-import net.atlas.combatify.item.CombatifyItemTags;
-import net.atlas.combatify.item.ItemRegistry;
-import net.atlas.combatify.item.TieredShieldItem;
-import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
+import net.atlas.combatify.item.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
@@ -23,29 +21,30 @@ import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.atlas.defaulted.DefaultComponentPatchesManager;
-import net.atlas.defaulted.Defaulted;
-import net.atlas.defaulted.DefaultedExpectPlatform;
 import net.atlas.defaulted.component.ItemPatches;
-import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -53,6 +52,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -60,18 +60,30 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.neoforged.neoforge.client.event.AddAttributeTooltipsEvent;
+import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.mozilla.javascript.Context;
 
 import java.lang.ref.Cleaner;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static net.atlas.combatify.util.MethodHandler.getBlocking;
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 @SuppressWarnings("unused")
-public class Combatify implements ModInitializer {
+@Mod(value = Combatify.MOD_ID)
+@EventBusSubscriber(modid = Combatify.MOD_ID)
+public class Combatify {
 	public static final String MOD_ID = "combatify";
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
@@ -102,8 +114,7 @@ public class Combatify implements ModInitializer {
 		return Combatify.state.get();
 	}
 
-	@Override
-	public void onInitialize() {
+	public Combatify(net.neoforged.fml.ModContainer container) {
 		Combatify.CLEANER.register(this, Context::exit);
 		isLoaded = true;
 		BlockingConditions.bootstrap();
@@ -144,9 +155,10 @@ public class Combatify implements ModInitializer {
 		});
 
 		LOGGER.info("Init started.");
-		CustomDataComponents.registerDataComponents();
-		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
-		ItemSubPredicateInit.init();
+		IEventBus eventBus = container.getEventBus();
+		CustomDataComponents.registerDataComponents(eventBus);
+		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents(eventBus);
+		ItemSubPredicateInit.init(eventBus);
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
 			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
@@ -184,8 +196,9 @@ public class Combatify implements ModInitializer {
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
+		if (CONFIG.configOnlyWeapons() || CONFIG.tieredShields()) CombatifyItems.register(eventBus);
 
-		Registry.register(DefaultedExpectPlatform.getPatchGenRegistry(), Defaulted.id("combat_test_weapon_stats"), WeaponStatsGenerator.CODEC);
+		CombatifyPatchGenerators.init(eventBus);
 		ModContainer modContainer = FabricLoader.getInstance().getModContainer("combatify").get();
 		ResourceManagerHelper.registerBuiltinResourcePack(id("alternate_mace"), modContainer, Component.translatable("pack.combatify.alternate_mace"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), modContainer, Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);
@@ -204,6 +217,41 @@ public class Combatify implements ModInitializer {
 		if (Combatify.CONFIG.percentageDamageEffects()) {
 			MobEffects.DAMAGE_BOOST.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onFinishedLoading(FMLLoadCompleteEvent event) {
+		CustomDataComponents.postInit();
+		CustomEnchantmentEffectComponents.postInit();
+		ItemSubPredicateInit.postInit();
+	}
+
+	@SubscribeEvent
+	static void onRegisterConfigurationTasks(RegisterConfigurationTasksEvent event) {
+		if (ServerConfigurationNetworking.canSend((ServerConfigurationPacketListenerImpl) event.getListener(), NetworkingHandler.ClientboundClientInformationRetrievalPacket.TYPE)) event.register(new NetworkingHandler.ClientRetrievalTask());
+	}
+
+	@SubscribeEvent
+	public static void addPiercingTooltip(AddAttributeTooltipsEvent event) {
+		@Nullable Player player = event.getContext().player();
+		ItemStack stack = event.getStack();
+		Consumer<Component> consumer = event::addTooltipLines;
+		ItemAttributeModifiers itemAttributeModifiers = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+		if (itemAttributeModifiers.showInTooltip() && player != null) {
+			double piercingLevel = MethodHandler.getPiercingLevel(stack);
+			if (Combatify.CONFIG.configOnlyWeapons()) piercingLevel += CustomEnchantmentHelper.getBreach(stack, player.getRandom());
+			piercingLevel = Mth.clamp(piercingLevel, 0, 1);
+			if (piercingLevel > 0) {
+				consumer.accept(CommonComponents.EMPTY);
+				consumer.accept(Component.translatable("item.modifiers.mainhand").withStyle(ChatFormatting.GRAY));
+				consumer.accept(
+					CommonComponents.space().append(
+						Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(),
+							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
+							Component.translatableWithFallback("attribute.name.armor_piercing", "Armor Piercing"))).withStyle(ChatFormatting.DARK_GREEN));
+			}
+			if (getBlocking(stack).canShowInTooltip(stack, player)) getBlocking(stack).tooltip().appendTooltipInfo(consumer, player, stack);
 		}
 	}
 

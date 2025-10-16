@@ -16,7 +16,7 @@ public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements Sin
 
 	@Override
 	public DataComponentType<Integer> componentType() {
-		return CustomDataComponents.BLOCKING_LEVEL;
+		return CustomDataComponents.BLOCKING_LEVEL.get();
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,9 +15,10 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(PolymerComponent.class)
 public interface PolymerComponentMixin {
+	@SuppressWarnings("ALL")
 	@ModifyReturnValue(method = "canSync", at = @At("RETURN"))
 	private static boolean enableSyncForModded(boolean original, @Local(argsOnly = true) PacketContext packetContext, @Local(argsOnly = true) DataComponentType<?> key) {
-		return original || (packetContext.getPlayer() != null && Combatify.moddedPlayers.contains(packetContext.getPlayer().getUUID()) && isCombatifyComponent(key));
+		return original || (packetContext.getPlayer() != null && Combatify.moddedPlayers.contains(ServerPlayer.class.cast(packetContext.getPlayer()).getUUID()) && isCombatifyComponent(key));
 	}
 	@Unique
 	private static boolean isCombatifyComponent(DataComponentType<?> dataComponentType) {
