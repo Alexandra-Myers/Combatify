@@ -1,10 +1,7 @@
 package net.atlas.combatify.critereon;
 
 import com.mojang.serialization.Codec;
-import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.advancements.critereon.ItemSubPredicate;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -21,11 +18,5 @@ public class ItemSubPredicateInit {
 	}
 	public static void init(IEventBus eventBus) {
 		ITEM_SUB_PREDICATES.register(eventBus);
-	}
-	public static void postInit() {
-		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			RegistrySyncUtils.setServerEntry(BuiltInRegistries.ITEM_SUB_PREDICATE_TYPE, BLOCKING_LEVEL.get());
-			RegistrySyncUtils.setServerEntry(BuiltInRegistries.ITEM_SUB_PREDICATE_TYPE, HAS_COMPONENT.get());
-		}
 	}
 }

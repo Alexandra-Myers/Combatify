@@ -1,11 +1,9 @@
 package net.atlas.combatify.component;
 
 import com.mojang.serialization.Codec;
-import eu.pb4.polymer.core.api.other.PolymerComponent;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.custom.Blocker;
 import net.atlas.combatify.component.custom.CanSweep;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -43,14 +41,5 @@ public class CustomDataComponents {
 	}
 	public static void registerDataComponents(IEventBus eventBus) {
 		DATA_COMPONENTS.register(eventBus);
-	}
-	public static void postInit() {
-		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerComponent.registerDataComponent(BLOCKER.get());
-			PolymerComponent.registerDataComponent(CAN_SWEEP.get());
-			PolymerComponent.registerDataComponent(BLOCKING_LEVEL.get());
-			PolymerComponent.registerDataComponent(PIERCING_LEVEL.get());
-			PolymerComponent.registerDataComponent(CHARGED_REACH.get());
-		}
 	}
 }

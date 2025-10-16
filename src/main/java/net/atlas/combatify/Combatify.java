@@ -2,6 +2,8 @@ package net.atlas.combatify;
 
 import com.google.common.base.Suppliers;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
+import eu.pb4.polymer.core.api.other.PolymerComponent;
+import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
@@ -33,8 +35,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.advancements.critereon.ItemSubPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
@@ -64,9 +68,10 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.client.event.AddAttributeTooltipsEvent;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
+import net.neoforged.neoforge.registries.ModifyRegistriesEvent;
+import net.neoforged.neoforge.registries.callback.AddCallback;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -102,6 +107,7 @@ public class Combatify {
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
+	public static boolean hasPolymer = false;
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
 	public static final TagKey<EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
@@ -161,6 +167,7 @@ public class Combatify {
 		ItemSubPredicateInit.init(eventBus);
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
+			hasPolymer = true;
 			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, player) -> {
 				if (player == null || moddedPlayers.contains(player.getUUID())) {
@@ -221,10 +228,22 @@ public class Combatify {
 	}
 
 	@SubscribeEvent
-	public static void onFinishedLoading(FMLLoadCompleteEvent event) {
-		CustomDataComponents.postInit();
-		CustomEnchantmentEffectComponents.postInit();
-		ItemSubPredicateInit.postInit();
+	public static void onModifyRegistries(ModifyRegistriesEvent event) {
+		event.getRegistry(Registries.DATA_COMPONENT_TYPE).addCallback((AddCallback<DataComponentType<?>>) (registry, id, resourceKey, type) -> {
+			if (resourceKey.location().getNamespace().equals("combatify") && hasPolymer) {
+				PolymerComponent.registerDataComponent(type);
+			}
+		});
+		event.getRegistry(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE).addCallback((AddCallback<DataComponentType<?>>) (registry, id, resourceKey, type) -> {
+			if (resourceKey.location().getNamespace().equals("combatify") && hasPolymer) {
+				PolymerComponent.registerEnchantmentEffectComponent(type);
+			}
+		});
+		event.getRegistry(Registries.ITEM_SUB_PREDICATE_TYPE).addCallback((AddCallback<ItemSubPredicate.Type<?>>) (registry, id, resourceKey, type) -> {
+			if (resourceKey.location().getNamespace().equals("combatify") && hasPolymer) {
+				RegistrySyncUtils.setServerEntry(registry, resourceKey.location());
+			}
+		});
 	}
 
 	@SubscribeEvent

@@ -1,10 +1,8 @@
 package net.atlas.combatify.component;
 
-import eu.pb4.polymer.core.api.other.PolymerComponent;
 import net.atlas.combatify.component.custom.ProtectionBaseFactor;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.enchantment.TargetedConditionalEffect;
@@ -33,12 +31,5 @@ public class CustomEnchantmentEffectComponents {
 	}
 	public static void registerEnchantmentEffectComponents(IEventBus bus) {
 		ENCHANTMENT_EFFECT_COMPONENTS.register(bus);
-	}
-	public static void postInit() {
-		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerComponent.registerEnchantmentEffectComponent(POST_BLOCK_EFFECTS.get());
-			PolymerComponent.registerEnchantmentEffectComponent(SHIELD_EFFECTIVENESS.get());
-			PolymerComponent.registerEnchantmentEffectComponent(SHIELD_DISABLE.get());
-		}
 	}
 }
