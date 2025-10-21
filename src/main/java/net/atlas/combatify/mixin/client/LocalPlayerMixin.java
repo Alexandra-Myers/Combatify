@@ -2,6 +2,8 @@ package net.atlas.combatify.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
@@ -18,6 +20,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
@@ -76,9 +79,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		connection.send(new ServerboundSwingPacket(interactionHand));
 	}
 
-	@ModifyExpressionValue(method = "hasEnoughFoodToSprint", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
-	public float modifyFoodRequirement(float original) {
-		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original : (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumSprintLevel(player)", new PlayerWrapper<>(thisPlayer));
+	@WrapOperation(method = "hasEnoughFoodToSprint", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;hasEnoughFood()Z"))
+	public boolean modifyFoodRequirement(FoodData instance, Operation<Boolean> original) {
+		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original.call(instance) : instance.getFoodLevel() > (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(6.0F, "getMinimumSprintLevel(player)", new PlayerWrapper<>(thisPlayer));
 	}
     @Redirect(method = "hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {
