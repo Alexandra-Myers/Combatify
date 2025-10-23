@@ -26,9 +26,6 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	@Final
 	private static EntityDataAccessor<Byte> ID_LOYALTY;
 
-	@Shadow
-	public ItemStack tridentItem;
-
 	protected ThrownTridentMixin(EntityType<? extends AbstractArrow> entityType, Level level) {
 		super(entityType, level);
 	}

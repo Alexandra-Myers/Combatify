@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BannerPattern;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -30,7 +31,6 @@ import java.util.List;
 
 import static net.atlas.combatify.CombatifyClient.*;
 
-@SuppressWarnings("deprecation")
 @Mixin(BlockEntityWithoutLevelRenderer.class)
 public class RendererMixin {
 	@Shadow
@@ -58,6 +58,7 @@ public class RendererMixin {
 		}
 	}
 
+	@Unique
 	private static @NotNull Material getMaterial(ItemStack stack, boolean hasBanner) {
 		Material spriteIdentifier = hasBanner ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
 		if (stack.is(TieredShieldItem.IRON_SHIELD)) spriteIdentifier = hasBanner ? IRON_SHIELD_BASE : IRON_SHIELD_BASE_NO_PATTERN;
@@ -66,6 +67,4 @@ public class RendererMixin {
 		if (stack.is(TieredShieldItem.NETHERITE_SHIELD)) spriteIdentifier = hasBanner ? NETHERITE_SHIELD_BASE : NETHERITE_SHIELD_BASE_NO_PATTERN;
 		return spriteIdentifier;
 	}
-
-
 }
