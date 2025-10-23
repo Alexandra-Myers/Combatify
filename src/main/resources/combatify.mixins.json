@@ -24,6 +24,7 @@
     "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
+    "MappedRegistryAccessor",
     "MiscCategoryMixin",
     "MobEffectMixin",
     "MobMixin",
