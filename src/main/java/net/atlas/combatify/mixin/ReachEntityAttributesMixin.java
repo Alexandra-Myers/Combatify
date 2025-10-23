@@ -5,6 +5,9 @@ import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.util.CombatUtil;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -17,6 +20,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
@@ -56,5 +60,16 @@ public class ReachEntityAttributesMixin {
 	@Redirect(method = "onInitialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/Registry;register(Lnet/minecraft/core/Registry;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/Object;)Ljava/lang/Object;", ordinal = 1))
 	private <V, T extends V> T disableRegister(Registry<V> registry, ResourceLocation resourceLocation, T object) {
 		return object;
+	}
+	@Inject(method = "onInitialize", at = @At("RETURN"), remap = false)
+	private void addAliasAttackReach(CallbackInfo ci) {
+		var holder = BuiltInRegistries.ATTRIBUTE
+			.getHolderOrThrow(BuiltInRegistries.ATTRIBUTE.getResourceKey(NewAttributes.ATTACK_REACH).orElseThrow());
+		@SuppressWarnings("unchecked")
+		var reg = (MappedRegistryAccessor<Attribute>) BuiltInRegistries.ATTRIBUTE;
+		var loc = new ResourceLocation(ReachEntityAttributes.MOD_ID, "attack_range");
+		var key = ResourceKey.create(Registries.ATTRIBUTE, loc);
+		reg.getByKey().put(key, holder);
+		reg.getByLocation().put(loc, holder);
 	}
 }
