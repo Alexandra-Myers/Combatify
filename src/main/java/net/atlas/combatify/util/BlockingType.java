@@ -2,11 +2,15 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import net.atlas.combatify.extensions.ItemExtensions;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
@@ -14,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static net.atlas.combatify.Combatify.EMPTY;
 
@@ -113,4 +118,24 @@ public abstract class BlockingType {
 	public abstract double getShieldKnockbackResistanceValue(ItemStack stack);
 	public abstract @NotNull InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand);
 	public abstract boolean canUse(Level world, Player user, InteractionHand hand);
+	public void appendTooltips(ItemStack itemStack, Consumer<Component> appender) {
+		ItemExtensions item = (ItemExtensions) itemStack.getItem();
+		float f = item.getBlockingType().getShieldBlockDamageValue(itemStack);
+		double g = item.getBlockingType().getShieldKnockbackResistanceValue(itemStack);
+		if (!item.getBlockingType().isPercentage())
+			appender.accept((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), getProtectionComponent())).withStyle(ChatFormatting.DARK_GREEN));
+		else
+			appender.accept((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), getReductionComponent())).withStyle(ChatFormatting.DARK_GREEN));
+		if (g > 0.0) {
+			appender.accept((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
+		}
+	}
+
+	public Component getProtectionComponent() {
+		return Component.translatable("attribute.name.generic.shield_strength");
+	}
+
+	public Component getReductionComponent() {
+		return Component.translatable("attribute.name.generic.shield_reduction");
+	}
 }

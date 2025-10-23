@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.atlas.combatify.CombatifyClient;
@@ -26,9 +26,9 @@ public class VideoSettingsMixin {
 		int i = optionInstance.indexOf(Minecraft.getInstance().options.attackIndicator());
 
 		optionInstance.add(i + 1, CombatifyClient.shieldIndicator);
-		optionInstance.addAll(CombatifyClient.attackIndicatorValue,
-			CombatifyClient.rhythmicAttacks,
-			CombatifyClient.fishingRodLegacy);
+		optionInstance.addAll(CombatifyClient.attackIndicatorMinValue,
+			CombatifyClient.attackIndicatorMaxValue,
+			CombatifyClient.rhythmicAttacks);
 
 		return optionInstance.toArray(new OptionInstance[0]);
 	}

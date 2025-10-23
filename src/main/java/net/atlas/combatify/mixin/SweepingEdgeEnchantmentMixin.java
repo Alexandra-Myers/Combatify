@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public class SweepingEdgeEnchantmentMixin {
 
 	@ModifyReturnValue(method = "getSweepingDamageRatio", at = @At(value = "RETURN"))
-	private static float getSweepingDamageRatio(float original, @Local(ordinal = 0) int lvl) {
+	private static float getSweepingDamageRatio(float original, @Local(ordinal = 0, argsOnly = true) int lvl) {
 		return 0.5F - 0.5F / (float)(lvl + 1);
 	}
 }

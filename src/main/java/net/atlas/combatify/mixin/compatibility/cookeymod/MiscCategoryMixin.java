@@ -1,4 +1,4 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.compatibility.cookeymod;
 
 import net.atlas.combatify.extensions.IMiscCategory;
 import net.rizecookey.cookeymod.config.ModConfig;

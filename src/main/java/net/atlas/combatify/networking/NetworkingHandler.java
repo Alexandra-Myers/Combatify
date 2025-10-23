@@ -8,7 +8,6 @@ import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
-import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
@@ -30,9 +29,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -57,24 +55,11 @@ public class NetworkingHandler {
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundMissPacket.TYPE, (packet, player, responseSender) -> {
 			final ServerLevel serverLevel = player.serverLevel();
 			player.resetLastActionTime();
-			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition())) {
+			if (!serverLevel.getWorldBorder().isWithinBounds(player.blockPosition()))
 				return;
-			}
-			double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
-			d *= d;
-			if(!player.hasLineOfSight(player)) {
-				d = 6.25;
-			}
-
-			AABB aABB = player.getBoundingBox();
-			Vec3 eyePos = player.getEyePosition(0.0F);
-			eyePos.distanceToSqr(MethodHandler.getNearestPointTo(aABB, eyePos));
-			double dist = 0;
-			if (dist < d) {
-				((PlayerExtensions)player).attackAir();
-			}
-
+			((PlayerExtensions)player).combatify$attackAir();
 		});
+		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, player, responseSender) -> ((ClientInformationHolder) player).combatify$setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
 			boolean bl = CONFIG.configOnlyWeapons() || CONFIG.defender() || CONFIG.piercer() || !CONFIG.letVanillaConnect();
 			if(!ServerPlayNetworking.canSend(handler.player, AtlasConfigPacket.TYPE)) {
@@ -104,7 +89,7 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -114,7 +99,7 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_SPEED).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_CTS_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
@@ -139,26 +124,26 @@ public class NetworkingHandler {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_DAMAGE).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+							if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_DAMAGE, modifiers.get(index));
 					}
-					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage() ? 1 : 2), AttributeModifier.Operation.ADDITION));
 				}
 				if (configurableItemData.speed != null) {
 					if (attributeModifiers.containsKey(Attributes.ATTACK_SPEED)) {
 						List<Integer> indexes = new ArrayList<>();
 						List<AttributeModifier> modifiers = attributeModifiers.get(Attributes.ATTACK_SPEED).stream().toList();
 						for (AttributeModifier modifier : modifiers)
-							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+							if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_CTS_UUID)
 								indexes.add(modifiers.indexOf(modifier));
 						if (!indexes.isEmpty())
 							for (Integer index : indexes)
 								attributeModifiers.remove(Attributes.ATTACK_SPEED, modifiers.get(index));
 					}
-					attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADDITION));
+					attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed(), AttributeModifier.Operation.ADDITION));
 				}
 				if (configurableItemData.reach != null) {
 					if (attributeModifiers.containsKey(NewAttributes.ATTACK_REACH)) {
@@ -319,6 +304,30 @@ public class NetworkingHandler {
 		 */
 		@Override
 		public PacketType<?> getType() {
+			return TYPE;
+		}
+	}
+	public record ServerboundClientInformationExtensionPacket(boolean useShieldOnCrouch) implements FabricPacket {
+		public static final PacketType<ServerboundClientInformationExtensionPacket> TYPE = PacketType.create(Combatify.id("client_extras"), ServerboundClientInformationExtensionPacket::new);
+
+		public ServerboundClientInformationExtensionPacket(FriendlyByteBuf buf) {
+			this(buf.readBoolean());
+		}
+
+		public void write(FriendlyByteBuf buf) {
+			buf.writeBoolean(useShieldOnCrouch);
+		}
+
+		/**
+		 * Returns the packet type of this packet.
+		 *
+		 * <p>Implementations should store the packet type instance in a {@code static final}
+		 * field and return that here, instead of creating a new instance.
+		 *
+		 * @return the type of this packet
+		 */
+		@Override
+		public @NotNull PacketType<?> getType() {
 			return TYPE;
 		}
 	}

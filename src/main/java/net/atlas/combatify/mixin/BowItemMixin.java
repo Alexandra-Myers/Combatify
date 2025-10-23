@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,7 +19,7 @@ public abstract class BowItemMixin extends ProjectileWeaponItem {
 	private BowItemMixin(Properties properties) {
 		super(properties);
 	}
-	@ModifyConstant(method = "releaseUsing", constant = @Constant(floatValue = 1.0F, ordinal = 0))
+	@ModifyExpressionValue(method = "releaseUsing", at = @At(value = "CONSTANT", args = "floatValue=1.0F", ordinal = 0))
 	public float releaseUsing(float constant, @Local(ordinal = 1) final int time) {
 		return Combatify.CONFIG.bowUncertainty() * getFatigueForTime(time);
 	}

@@ -3,13 +3,9 @@ package net.atlas.combatify.util;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,44 +15,28 @@ import static net.atlas.combatify.util.MethodHandler.*;
 
 @Environment(EnvType.CLIENT)
 public class ClientMethodHandler {
-	public static void redirectResult(@Nullable HitResult instance) {
+	public static HitResult redirectResult(@Nullable HitResult instance) {
 		if (instance == null)
-			return;
+			return null;
 		Minecraft minecraft = Minecraft.getInstance();
-		if(instance.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockHitResult = (BlockHitResult)instance;
-			BlockPos blockPos = blockHitResult.getBlockPos();
-			Level level = Objects.requireNonNull(minecraft.level);
-			Player player = Objects.requireNonNull(minecraft.player);
-			boolean bl = !level.getBlockState(blockPos).canOcclude() && !level.getBlockState(blockPos).getBlock().hasCollision;
-			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
+		if (instance.getType() == HitResult.Type.BLOCK) {
+			Player minecraftPlayer = Objects.requireNonNull(minecraft.player);
+			Entity player = Objects.requireNonNull(minecraft.getCameraEntity());
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + (!minecraftPlayer.isCrouching() ? getChargedReach(minecraftPlayer.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
 			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
-			if (entity != null && bl) {
+			if (entity != null) {
 				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
-				double reach = MethodHandler.getCurrentAttackReach(player, 1.0F);
 				reach *= reach;
-				if (!player.hasLineOfSight(entity))
-					reach = 6.25;
 				if (dist > reach)
-					return;
+					return null;
 				double enemyDistance = player.distanceTo(entity);
-				double d = 0;
-				HitResult check;
-				while (d <= enemyDistance) {
-					check = pickFromPos(player, enemyDistance, d);
-					if (check.getType() == HitResult.Type.BLOCK) {
-						BlockState state = level.getBlockState(((BlockHitResult) check).getBlockPos());
-						bl = !state.canOcclude() && !state.getBlock().hasCollision;
-						if (!bl)
-							return;
-					}
-					d += 0.0002;
-				}
-				minecraft.hitResult = rayTraceResult;
-				if (entity instanceof LivingEntity || entity instanceof ItemFrame) {
-					minecraft.crosshairPickEntity = entity;
-				}
+				HitResult newResult = pickCollisions(player, enemyDistance);
+				if (newResult.getType() != HitResult.Type.MISS)
+					return null;
+				return rayTraceResult;
 			}
 		}
+		return null;
 	}
 }

@@ -2,6 +2,8 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
@@ -63,17 +65,13 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Shadow
 	public abstract int getArmorValue();
 
-
-	@Shadow
-	public abstract boolean isDamageSourceBlocked(DamageSource damageSource);
-
 	@Shadow
 	protected int useItemRemaining;
 
 	@SuppressWarnings("unused")
 	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
-		return !MethodHandler.getBlockingItem(thisEntity).isEmpty();
+		return !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty();
 	}
 
 	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
@@ -150,24 +148,24 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		}
 		return bl;
 	}
-	@ModifyConstant(method = "handleDamageEvent", constant = @Constant(intValue = 20, ordinal = 0))
+	@ModifyExpressionValue(method = "handleDamageEvent", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
 	private int syncInvulnerability(int x) {
 		return 10;
 	}
 
-	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
-	public boolean shield(LivingEntity instance, DamageSource source, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
-		if (amount.get() > 0.0F && isDamageSourceBlocked(source)) {
+	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isDamageSourceBlocked(Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+	public boolean shield(LivingEntity instance, DamageSource source, Operation<Boolean> original, @Local(ordinal = 0) LocalFloatRef amount, @Local(ordinal = 1) LocalFloatRef f, @Local(ordinal = 2) LocalFloatRef g, @Local(ordinal = 0) LocalBooleanRef bl) {
+		if (amount.get() > 0.0F && original.call(instance, source)) {
 			if(MethodHandler.getBlockingItem(thisEntity).getItem() instanceof ItemExtensions shieldItem) {
-				shieldItem.getBlockingType().block(instance, null, MethodHandler.getBlockingItem(thisEntity), source, amount, f, g, bl);
+				shieldItem.getBlockingType().block(instance, null, MethodHandler.getBlockingItem(thisEntity).stack(), source, amount, f, g, bl);
 			}
 		}
 		return false;
 	}
-	@ModifyConstant(method = "hurt", constant = @Constant(intValue = 20, ordinal = 0))
-	public int changeIFrames(int constant, @Local(ordinal = 0) final DamageSource source, @Local(ordinal = 0) final float amount) {
+	@ModifyExpressionValue(method = "hurt", at = @At(value = "CONSTANT", args = "intValue=20", ordinal = 0))
+	public int changeIFrames(int original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(ordinal = 0, argsOnly = true) final float amount) {
 		Entity entity2 = source.getEntity();
-		int invulnerableTime = 10;
+		int invulnerableTime = original - 10;
 		if (entity2 instanceof Player player) {
 			int base = (int) Math.min(player.getCurrentItemAttackStrengthDelay(), invulnerableTime);
 			invulnerableTime = base >= 4 ? base - 2 : base;
@@ -199,8 +197,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public float changeIFrames(float constant) {
 		return constant - 10;
 	}
-	@Redirect(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void modifyKB(LivingEntity instance, double d, double e, double f, @Local(ordinal = 0) final DamageSource source) {
+	@WrapOperation(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source) {
 		if ((Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook) || (!source.is(DamageTypeTags.IS_PROJECTILE) && Combatify.CONFIG.midairKB())) {
 			MethodHandler.projectileKnockback(thisEntity, 0.4, e, f);
 		} else {
@@ -232,7 +230,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return amount;
 	}
 	@Override
-	public boolean hasEnabledShieldOnCrouch() {
+	public boolean combatify$hasEnabledShieldOnCrouch() {
 		return true;
 	}
 

@@ -3,12 +3,14 @@ package net.atlas.combatify.extensions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 
-public interface PlayerExtensions {
-	boolean isAttackAvailable(float baseTime);
+public interface PlayerExtensions extends ClientInformationHolder {
+	void combatify$resetAttackStrengthTicker(boolean hit, boolean force);
 
-	void customSwing(InteractionHand interactionHand);
+	boolean combatify$isAttackAvailable(float baseTime);
 
-	void resetAttackStrengthTicker(boolean var1);
+	void combatify$customSwing(InteractionHand interactionHand);
+
+	void combatify$resetAttackStrengthTicker(boolean hit);
 
 	default boolean ctsShieldDisable(float damage, Item item) {
 		return false;
@@ -17,9 +19,8 @@ public interface PlayerExtensions {
 	default boolean hasEnabledShieldOnCrouch() {
 		return false;
 	}
-	boolean getMissedAttackRecovery();
+	boolean combatify$getMissedAttackRecovery();
 
-    void attackAir();
+    void combatify$attackAir();
 
-	int getAttackStrengthStartValue();
 }

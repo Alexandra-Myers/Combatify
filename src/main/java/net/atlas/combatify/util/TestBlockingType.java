@@ -6,6 +6,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.Tierable;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -94,5 +95,15 @@ public class TestBlockingType extends BlockingType {
 	@Override
 	public boolean canUse(Level world, Player user, InteractionHand hand) {
 		return true;
+	}
+
+	@Override
+	public Component getProtectionComponent() {
+		return Component.translatable("attribute.name.generic.damage_protection");
+	}
+
+	@Override
+	public Component getReductionComponent() {
+		return Component.translatable("attribute.name.generic.damage_reduction");
 	}
 }

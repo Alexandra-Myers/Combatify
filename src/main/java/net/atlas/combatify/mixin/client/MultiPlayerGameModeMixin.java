@@ -1,7 +1,8 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IPlayerGameMode;
@@ -12,7 +13,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Interaction;
@@ -58,8 +58,8 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 		cir.setReturnValue(false);
 	}
 
-	@Redirect(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
-	public void redirectReset(Player instance, @Local(ordinal = 0) Entity target) {
+	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
+	public void redirectReset(Player instance, Operation<Void> original, @Local(ordinal = 0) Entity target) {
 		boolean isMiscTarget = target.getType().equals(EntityType.END_CRYSTAL)
 			|| target.getType().equals(EntityType.ITEM_FRAME)
 			|| target.getType().equals(EntityType.GLOW_ITEM_FRAME)
@@ -68,22 +68,22 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 			|| target instanceof Boat
 			|| target instanceof AbstractMinecart
 			|| target instanceof Interaction;
-		((PlayerExtensions)instance).resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+		((PlayerExtensions)instance).combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
 	}
-	@Redirect(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
-	public void redirectReset2(LocalPlayer instance) {
+	@WrapOperation(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
+	public void redirectReset2(LocalPlayer instance, Operation<Void> original) {
 		if(getPlayerMode() == GameType.ADVENTURE)
 			return;
-		((PlayerExtensions)instance).resetAttackStrengthTicker(true);
+		((PlayerExtensions)instance).combatify$resetAttackStrengthTicker(true);
 	}
 
 	@Override
-	public void swingInAir(Player player) {
+	public void combatify$swingInAir(Player player) {
 		ensureHasSentCarriedItem();
 		ClientPlayNetworking.send(new NetworkingHandler.ServerboundMissPacket());
 		if (localPlayerMode != GameType.SPECTATOR) {
-			((PlayerExtensions)player).attackAir();
-			((PlayerExtensions)player).resetAttackStrengthTicker(false);
+			((PlayerExtensions)player).combatify$attackAir();
+			((PlayerExtensions)player).combatify$resetAttackStrengthTicker(false);
 		}
 	}
 }

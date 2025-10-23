@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
+import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -21,6 +22,12 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+		if (mixinClassName.endsWith("ArmHeightMixin") && FabricLoader.getInstance().isModLoaded("cookeymod")) return false;
+		if (!mixinClassName.contains(".compatibility.")) return true;
+		String mixinPackage = mixinClassName.substring(0, mixinClassName.lastIndexOf("."));
+		String immediatePackage = mixinPackage.substring(mixinPackage.lastIndexOf(".") + 1);
+		if (immediatePackage.equals("rea") && !FabricLoader.getInstance().isModLoaded("reach-entity-attributes")) return false;
+		if (immediatePackage.equals("cookeymod") && !FabricLoader.getInstance().isModLoaded("cookeymod")) return false;
 		return true;
 	}
 

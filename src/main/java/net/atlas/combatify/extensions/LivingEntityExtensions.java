@@ -1,7 +1,7 @@
 package net.atlas.combatify.extensions;
 
 public interface LivingEntityExtensions {
-	boolean hasEnabledShieldOnCrouch();
+	boolean combatify$hasEnabledShieldOnCrouch();
 
 	void setPiercingNegation(double negation);
 

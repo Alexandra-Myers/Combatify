@@ -7,6 +7,7 @@ import net.atlas.combatify.config.ConfigurableWeaponData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.Tiers;
 
@@ -23,8 +24,7 @@ public enum WeaponType {
 	KNIFE,
     TRIDENT;
 
-    public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-    public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+	public static final UUID BASE_ATTACK_SPEED_CTS_UUID = UUID.fromString("FA233E1C-4110-4865-B01B-901007a318e1");
     public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
 
     WeaponType() {
@@ -36,9 +36,9 @@ public enum WeaponType {
         double speed = this.getSpeed(tier);
         double damage = this.getDamage(tier);
         double reach = this.getReach();
-        attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
+        attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
 		if (!Combatify.CONFIG.instaAttack())
-			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
+			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_CTS_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
         if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
             attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
         }
@@ -49,9 +49,9 @@ public enum WeaponType {
 		double speed = this.getSpeed(tier);
 		double damage = this.getDamage(tier);
 		double reach = this.getReach();
-		attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
+		attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
 		if (!Combatify.CONFIG.instaAttack())
-			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
+			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_CTS_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
 		if (reach != 0.0F && Combatify.CONFIG.attackReach()) {
 			attributeModifiers.put(NewAttributes.ATTACK_REACH, new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
 		}

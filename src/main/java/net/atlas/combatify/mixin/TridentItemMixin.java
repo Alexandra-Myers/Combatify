@@ -33,7 +33,7 @@ public class TridentItemMixin extends Item implements Vanishable, ItemExtensions
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(Tiers.NETHERITE, var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+		this.setDefaultModifiers(output);
 	}
 
 	@Override

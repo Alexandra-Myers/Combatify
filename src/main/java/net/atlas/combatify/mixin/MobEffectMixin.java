@@ -1,21 +1,21 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.atlas.combatify.Combatify;
 import net.minecraft.world.effect.MobEffect;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(MobEffect.class)
 public class MobEffectMixin {
 
-	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))
-	public int changeInstantHealthTick(int constant) {
+	@ModifyExpressionValue(method = "applyEffectTick", at = @At(value = "CONSTANT", args = "intValue=4"))
+	public int changeInstantHealthTick(int original) {
 		return Combatify.CONFIG.instantHealthBonus();
 	}
 
-	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
-	public int changeInstantHealth(int constant) {
+	@ModifyExpressionValue(method = "applyInstantenousEffect", at = @At(value = "CONSTANT", args = "intValue=4"))
+	public int changeInstantHealth(int original) {
 		return Combatify.CONFIG.instantHealthBonus();
 	}
 }

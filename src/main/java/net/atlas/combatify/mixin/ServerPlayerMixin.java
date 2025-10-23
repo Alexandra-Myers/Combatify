@@ -34,6 +34,7 @@ import static net.atlas.combatify.Combatify.scheduleHitResult;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPlayerExtensions {
 
+	@Unique
 	private boolean retainAttack;
 
 	@Shadow
@@ -94,7 +95,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			connection.send(new ClientboundPingPacket(3492));
 			awaitingResponse = true;
 		}
-		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
+		if (((PlayerExtensions) this.player).combatify$isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
 			swing(InteractionHand.MAIN_HAND);
 		}
@@ -153,12 +154,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 			return;
 		}
-		if (!isAttackAvailable(0.0F)) {
+		if (!combatify$isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
 				if(hit)
 					this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
-				resetAttackStrengthTicker(!getMissedAttackRecovery());
+				combatify$resetAttackStrengthTicker(!combatify$getMissedAttackRecovery());
 				return;
 			}
 
@@ -201,7 +202,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", player.getName().getString());
 					}
 				} else {
-					attackAir();
+					combatify$attackAir();
 				}
 			}
 		}

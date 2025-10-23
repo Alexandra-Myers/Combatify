@@ -1,6 +1,8 @@
 package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.PlayerExtensions;
@@ -28,18 +30,18 @@ public abstract class ServerGamePacketMixin {
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
-		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
+		if (!(((PlayerExtensions) player).combatify$isAttackAvailable(1.0F)))
 			ci.cancel();
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
 				ci.cancel();
 			}
-			if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
+			if (!((PlayerExtensions) player).combatify$isAttackAvailable(0.0F)) {
 				float var1 = player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
 					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
-					((PlayerExtensions) player).resetAttackStrengthTicker(!((PlayerExtensions) player).getMissedAttackRecovery());
+					((PlayerExtensions) player).combatify$resetAttackStrengthTicker(!((PlayerExtensions) player).combatify$getMissedAttackRecovery());
 					ci.cancel();
 				}
 
@@ -51,8 +53,8 @@ public abstract class ServerGamePacketMixin {
 		}
 	}
 
-	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))
-	public double redirectCheck(AABB instance, Vec3 old) {
+	@WrapOperation(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;distanceToSqr(Lnet/minecraft/world/phys/Vec3;)D"))
+	public double redirectCheck(AABB instance, Vec3 old, Operation<Double> original) {
 		if (targetEntity instanceof ServerPlayer target) {
 			if (CombatUtil.allowReach(player, target)) {
 				return 0;

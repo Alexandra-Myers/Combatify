@@ -1,5 +1,6 @@
 package net.atlas.combatify;
 
+import com.google.common.base.Suppliers;
 import net.atlas.combatify.config.CombatifyConfig;
 import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
@@ -15,7 +16,9 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -30,11 +33,13 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 public class Combatify implements ModInitializer {
 	public static final String MOD_ID = "combatify";
+	public static Supplier<CombatifyState> state = Suppliers.memoize(() -> CombatifyState.COMBATIFY);
 	public static final CombatifyConfig CONFIG = CombatifyConfig.createAndLoad();
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
@@ -51,6 +56,15 @@ public class Combatify implements ModInitializer {
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
 	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
+
+
+	public static void markState(Supplier<CombatifyState> state) {
+		Combatify.state = state;
+	}
+
+	public static CombatifyState getState() {
+		return Combatify.state.get();
+	}
 
 	@Override
 	public void onInitialize() {
@@ -74,7 +88,7 @@ public class Combatify implements ModInitializer {
 		if (CONFIG.tieredShields()) {
 			TieredShieldItem.init();
 			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
-			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.WOODEN_SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
+			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
 		if(CONFIG.piercer()) {
 			PiercingEnchantment.registerEnchants();
@@ -96,5 +110,34 @@ public class Combatify implements ModInitializer {
 	}
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);
+	}
+	public enum CombatifyState implements StringRepresentable {
+		VANILLA("Vanilla", "vanilla"),
+		COMBATIFY("Combatify", "combatify"),
+		CTS_8C("CTS 8C", "combat_test");
+
+		public final String name;
+		public final String key;
+
+		CombatifyState(String name, String key) {
+			this.name = name;
+			this.key = key;
+		}
+
+		@Override
+		public @NotNull String getSerializedName() {
+			return key;
+		}
+
+		public Component getComponent() {
+			return Component.translatableWithFallback("options.combatify_state." + key, name);
+		}
+
+		@Override
+		public String toString() {
+			return "CombatifyState{" +
+				"name='" + name + '\'' +
+				'}';
+		}
 	}
 }
