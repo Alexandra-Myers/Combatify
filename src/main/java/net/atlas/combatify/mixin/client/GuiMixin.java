@@ -97,7 +97,7 @@ public abstract class GuiMixin {
 		if (shouldPick) {
 			guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 68, 94, 16, 16);
 		} else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) {
-			int l = (int)((attackStrengthScale - minIndicator) / 0.70000005F * 17.0F);
+			int l = (int)((attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F) * 17.0F);
 			guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 36, 94, 16, 4);
 			guiGraphics.blit(GUI_ICONS_LOCATION, k, j, 52, 94, l, 4);
 		}
@@ -136,7 +136,7 @@ public abstract class GuiMixin {
 		if (shouldPick) {
 			guiGraphics.blit(GUI_ICONS_LOCATION, o, n, 0, 130, 18, 18);
 		} else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) {
-			int var16 = (int) ((attackStrengthScale - minIndicator) / 0.70000005F * 19.0F);
+			int var16 = (int) ((attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F) * 19.0F);
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			guiGraphics.blit(GUI_ICONS_LOCATION, o, n, 0, 94, 18, 18);
 			guiGraphics.blit(GUI_ICONS_LOCATION, o, n + 18 - var16, 18, 112 - var16, 18, var16);
