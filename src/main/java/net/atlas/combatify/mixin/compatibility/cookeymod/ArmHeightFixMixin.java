@@ -3,7 +3,6 @@ package net.atlas.combatify.mixin.compatibility.cookeymod;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.rizecookey.cookeymod.CookeyMod;
-import net.rizecookey.cookeymod.config.category.HudRenderingCategory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -13,7 +12,7 @@ public class ArmHeightFixMixin {
 	public float modifyArmHeight(float strengthScale) {
 		strengthScale *= 0.5f;
 		strengthScale = strengthScale * strengthScale * strengthScale * 0.25F + 0.75F;
-		double offset = CookeyMod.getInstance().getConfig().getCategory(HudRenderingCategory.class).attackCooldownHandOffset.get();
+		double offset = CookeyMod.getInstance().getConfig().hudRendering().attackCooldownHandOffset().get();
 		return (float) (strengthScale * (1 - offset) + offset);
 	}
 }
