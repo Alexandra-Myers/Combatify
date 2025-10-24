@@ -6,11 +6,11 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.CombatifyClient;
-import net.atlas.defaulted.component.ToolMaterialWrapper;
+import net.atlas.combatify.client.ShieldMaterial;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.ShieldModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -22,7 +22,6 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -31,12 +30,12 @@ import org.joml.Vector3f;
 public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
 	private final MaterialSet materials;
 	private final ShieldModel model;
-	private final ToolMaterial tier;
+	private final ShieldMaterial shieldMaterial;
 
-	public TieredShieldSpecialRenderer(MaterialSet materialSet, ShieldModel shieldModel, ToolMaterial tier) {
+	public TieredShieldSpecialRenderer(MaterialSet materialSet, ShieldModel shieldModel, ShieldMaterial shieldMaterial) {
 		this.materials = materialSet;
 		this.model = shieldModel;
-		this.tier = tier;
+		this.shieldMaterial = shieldMaterial;
 	}
 
 	@Nullable
@@ -51,7 +50,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 		boolean hasBanner = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
 		poseStack.pushPose();
 		poseStack.scale(1.0F, -1.0F, -1.0F);
-		Material material = CombatifyClient.tieredShieldMaterials.get(tier).choose(hasBanner);
+		Material material = shieldMaterial.choose(hasBanner);
 		submitNodeCollector.submitModelPart(this.model.handle(), poseStack, this.model.renderType(material.atlasLocation()), i, j, this.materials.get(material));
 		if (hasBanner) {
 			BannerRenderer.submitPatterns(this.materials, poseStack, submitNodeCollector, i, j, this.model, Unit.INSTANCE, material, false, Objects.requireNonNullElse(dyeColor, DyeColor.WHITE), bannerPatternLayers, bl, null, k);
@@ -70,13 +69,13 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 	}
 
 	@Environment(EnvType.CLIENT)
-	public record Unbaked(ToolMaterial tier) implements SpecialModelRenderer.Unbaked {
+	public record Unbaked(ShieldMaterial material) implements SpecialModelRenderer.Unbaked {
 		public static final MapCodec<TieredShieldSpecialRenderer.Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(unbakedInstance ->
-			unbakedInstance.group(ToolMaterialWrapper.TOOL_MATERIAL_CODEC.optionalFieldOf("tier", ToolMaterial.WOOD).forGetter(Unbaked::tier)).apply(unbakedInstance, Unbaked::new));
+			unbakedInstance.group(ShieldMaterial.CODEC.forGetter(Unbaked::material)).apply(unbakedInstance, Unbaked::new));
 
 		@Override
 		public @Nullable SpecialModelRenderer<?> bake(BakingContext bakingContext) {
-			return new TieredShieldSpecialRenderer(bakingContext.materials(), new ShieldModel(bakingContext.entityModelSet().bakeLayer(CombatifyClient.tieredShieldModelLayers.get(tier))), tier);
+			return new TieredShieldSpecialRenderer(bakingContext.materials(), new ShieldModel(bakingContext.entityModelSet().bakeLayer(ModelLayers.SHIELD)), material);
 		}
 
 		@Override
