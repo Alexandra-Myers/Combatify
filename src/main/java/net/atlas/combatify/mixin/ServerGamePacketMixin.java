@@ -52,7 +52,9 @@ public abstract class ServerGamePacketMixin {
 		boolean result;
 		if (entity instanceof ServerPlayer target) result = CombatUtil.allowReach(player, target);
 		else result = original.call(instance, aabb, v);
-		if (Combatify.unmoddedPlayers.contains(player.getUUID()) && !result) player.combatify$attackAir();
+		if (Combatify.unmoddedPlayers.contains(player.getUUID()) && !result) {
+			player.combatify$attackAir();
+		}
 		return result;
 	}
 

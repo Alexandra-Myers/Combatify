@@ -18,12 +18,28 @@ public class LivingEntityWrapper<L extends LivingEntity> extends EntityWrapper<L
 		return MethodHandler.isItemOnCooldown(value, itemStackWrapper.value());
 	}
 
+	public final void resetAttackStrengthTicker(boolean hit) {
+		value.combatify$resetAttackStrengthTicker(hit);
+	}
+
+	public final void resetAttackStrengthTicker(boolean hit, boolean force) {
+		value.combatify$resetAttackStrengthTicker(hit, force);
+	}
+
+	public final void swingInHand(String hand) {
+		value.swing(InteractionHand.valueOf(hand.toUpperCase()));
+	}
+
+	public final void swingInHand(String hand, boolean force) {
+		value.swing(InteractionHand.valueOf(hand.toUpperCase()), force);
+	}
+
 	public final ItemStackWrapper getItemInHand(String hand) {
-		return new ItemStackWrapper(value.getItemInHand(InteractionHand.valueOf(hand)));
+		return new ItemStackWrapper(value.getItemInHand(InteractionHand.valueOf(hand.toUpperCase())));
 	}
 
 	public final ItemStackWrapper getItemInSlot(String slot) {
-		return new ItemStackWrapper(value.getItemBySlot(EquipmentSlot.valueOf(slot)));
+		return new ItemStackWrapper(value.getItemBySlot(EquipmentSlot.valueOf(slot.toUpperCase())));
 	}
 
 	public final FakeUseItemWrapper getBlockingItem() {

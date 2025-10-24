@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	public final E value;
@@ -31,6 +32,10 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 
 	public final boolean matchesTag(String tag) {
 		return value.getType().is(TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(tag)));
+	}
+
+	public final UUID getUUID() {
+		return value.getUUID();
 	}
 
 	public final String getType() {

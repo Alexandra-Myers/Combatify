@@ -7,6 +7,7 @@ import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
 import net.atlas.combatify.util.MethodHandler;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,10 +16,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -65,9 +68,16 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Inject(method = "tick", at = @At(value = "HEAD"))
 	public void hitreg(CallbackInfo ci) {
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
-		if (Combatify.unmoddedPlayers.contains(getUUID()) && this.player.combatify$isAttackAvailable(-1.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) && retainAttack) {
+		ItemStack stack;
+		if (Combatify.unmoddedPlayers.contains(getUUID()) && this.player.combatify$isAttackAvailable(-1.0F, (stack = this.player.getItemInHand(InteractionHand.MAIN_HAND))) && retainAttack) {
 			retainAttack = false;
 			combatify$customSwing(InteractionHand.MAIN_HAND);
+			if (stack.has(DataComponents.PIERCING_WEAPON)) {
+				PiercingWeapon piercingWeapon = stack.get(DataComponents.PIERCING_WEAPON);
+				assert piercingWeapon != null;
+				piercingWeapon.attack(this, EquipmentSlot.MAINHAND);
+				return;
+			}
 			Entity entity = getCamera();
 			Vec3 eyePos = entity.getEyePosition(1.0f);
 			Vec3 viewVector = entity.getViewVector(1.0f);
@@ -84,8 +94,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				hitResult = MethodHandler.redirectResult(player, hitResult);
 			if (hitResult.getType() == HitResult.Type.ENTITY)
 				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), isShiftKeyDown()));
-			else if (hitResult.getType() == HitResult.Type.MISS)
-				combatify$attackAir();
+			else if (hitResult.getType() == HitResult.Type.MISS) combatify$attackAir();
 		}
 	}
 	@Inject(method = "drop(Z)Z", at = @At("HEAD"))

@@ -34,6 +34,9 @@ public class JSImpl {
 		try {
 			reader = new BufferedReader(new FileReader(FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + "/" + fileName + ".js"));
 			readFileData = Kit.readReader(reader);
+			String defineVariables = readFileData.substring(0, readFileData.indexOf("function"));
+			readFileData = readFileData.substring(readFileData.indexOf("function"));
+			if (!defineVariables.isBlank()) CONTEXT.get().evaluateString(scope, defineVariables, "", 0, null);
 		} catch (IOException e) {
 			Combatify.JS_LOGGER.error("Error parsing JS File " + fileName + ". Exception: {}", e);
 			readFileData = "";

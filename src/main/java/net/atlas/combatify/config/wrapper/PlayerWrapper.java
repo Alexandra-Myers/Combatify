@@ -1,7 +1,9 @@
 package net.atlas.combatify.config.wrapper;
 
+import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 
 public class PlayerWrapper<P extends Player> extends LivingEntityWrapper<P> {
@@ -13,6 +15,18 @@ public class PlayerWrapper<P extends Player> extends LivingEntityWrapper<P> {
 		return new ItemStackWrapper(value.getInventory().getItem(slotID));
 	}
 
+	public final boolean isAttackAvailable(float baseTime) {
+		return value.combatify$isAttackAvailable(baseTime, value.getItemInHand(InteractionHand.MAIN_HAND));
+	}
+
+	public final boolean isAttackAvailable(float baseTime, ItemStackWrapper stack) {
+		return value.combatify$isAttackAvailable(baseTime, stack.unwrap());
+	}
+
+	public final boolean isChargeAttack(float baseTime) {
+		return value.getAttackStrengthScale(baseTime) > (Combatify.CONFIG.chargedAttacks() ? 1.95 : 0.9);
+	}
+
 	public final float getAttackStrengthScale(float baseTime) {
 		return value.getAttackStrengthScale(baseTime);
 	}
@@ -21,16 +35,19 @@ public class PlayerWrapper<P extends Player> extends LivingEntityWrapper<P> {
 		return MethodHandler.getCurrentAttackReach(value, baseTime);
 	}
 
-	public final void resetAttackStrengthTicker(boolean hit) {
-		value.combatify$resetAttackStrengthTicker(hit);
-	}
-
 	public final void attack(EntityWrapper<?> entityWrapper) {
 		value.attack(entityWrapper.value);
 	}
 
+	public final void stabAttack(String slot, EntityWrapper<?> entityWrapper, float damage, boolean dealDamage, boolean dealKnockback, boolean dismountTarget) {
+		value.stabAttack(EquipmentSlot.valueOf(slot.toUpperCase()), entityWrapper.value, damage, dealDamage, dealKnockback, dismountTarget);
+	}
+
 	public final void attackAir() {
-		value.swing(InteractionHand.MAIN_HAND);
 		value.combatify$attackAir();
+	}
+
+	public final void lungeForwardMaybe() {
+		value.lungeForwardMaybe();
 	}
 }

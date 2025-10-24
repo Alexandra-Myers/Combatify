@@ -95,13 +95,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public ItemCooldowns combatify$getFallbackCooldowns() {
 		return fallbackCooldowns;
 	}
+	@Inject(method = "onAttack", at = @At("HEAD"))
+	public void reset(CallbackInfo ci) {
+		if (!(thisEntity instanceof Player)) resetAttackStrengthTicker(false);
+	}
 	@Inject(method = "tick", at = @At(value = "RETURN"))
 	public void tickCooldowns(CallbackInfo ci) {
 		fallbackCooldowns.tick();
 		if (MethodHandler.canCrouchShield(thisEntity) != null) crouchBlockingTicks++;
 		else crouchBlockingTicks = 0;
-		if (!(LivingEntity.class.cast(this) instanceof Player))
-			attackStrengthTicker++;
+		if (!(thisEntity instanceof Player)) attackStrengthTicker++;
 	}
 
 	@Override
