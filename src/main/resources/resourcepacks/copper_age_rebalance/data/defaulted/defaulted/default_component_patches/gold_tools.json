@@ -10,6 +10,7 @@
             "attack_damage_bonus": 1,
             "mining_speed": 15.0,
             "weapon_level": 2,
+            "speed_level": 6,
             "incorrect_blocks": "minecraft:incorrect_for_iron_tool"
         },
         {

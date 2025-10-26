@@ -5,79 +5,29 @@
   "patch_generators": [
     {
       "generator": "defaulted:combat_test_weapon_stats",
-      "attack_speed": -0.75,
+      "attack_speed": {
+        "type": "lookup",
+        "values": [
+          {
+            "value": {
+              "type": "linear",
+              "base": 0.5,
+              "per_level_above_first": -0.25
+            },
+            "condition": {
+              "type": "clamped",
+              "min": 0,
+              "max": 5
+            }
+          },
+          {
+            "value": -0.25,
+            "condition": 6
+          }
+        ],
+        "fallback": -0.75
+      },
       "persist_previous": true
-    },
-    {
-      "generator": "defaulted:conditional",
-      "condition": "in_tag",
-      "tags": [
-        "defaulted:wooden_tools"
-      ],
-      "patch_generators": [
-        {
-          "generator": "defaulted:combat_test_weapon_stats",
-          "attack_speed": 0.5,
-          "persist_previous": true
-        }
-      ]
-    },
-    {
-      "generator": "defaulted:conditional",
-      "condition": "in_tag",
-      "tags": [
-        "defaulted:stone_tools"
-      ],
-      "patch_generators": [
-        {
-          "generator": "defaulted:combat_test_weapon_stats",
-          "attack_speed": 0.25,
-          "persist_previous": true
-        }
-      ]
-    },
-    {
-      "generator": "defaulted:conditional",
-      "condition": "in_tag",
-      "tags": [
-        "defaulted:copper_tools"
-      ],
-      "patch_generators": [
-        {
-          "generator": "defaulted:combat_test_weapon_stats",
-          "attack_speed": 0,
-          "persist_previous": true
-        }
-      ]
-    },
-    {
-      "generator": "defaulted:conditional",
-      "condition": "in_tag",
-      "tags": [
-        "defaulted:iron_tools",
-        "defaulted:golden_tools"
-      ],
-      "patch_generators": [
-        {
-          "generator": "defaulted:combat_test_weapon_stats",
-          "attack_speed": -0.25,
-          "persist_previous": true
-        }
-      ]
-    },
-    {
-      "generator": "defaulted:conditional",
-      "condition": "in_tag",
-      "tags": [
-        "defaulted:diamond_tools"
-      ],
-      "patch_generators": [
-        {
-          "generator": "defaulted:combat_test_weapon_stats",
-          "attack_speed": -0.5,
-          "persist_previous": true
-        }
-      ]
     }
   ],
   "patch": {
