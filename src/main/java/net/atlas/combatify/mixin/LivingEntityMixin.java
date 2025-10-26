@@ -99,7 +99,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		fallbackCooldowns.tick();
 		if (MethodHandler.canCrouchShield(thisEntity) != null) crouchBlockingTicks++;
 		else crouchBlockingTicks = 0;
-		if (!(LivingEntity.class.cast(this) instanceof Player))
+		if (!(thisEntity instanceof Player))
 			attackStrengthTicker++;
 	}
 

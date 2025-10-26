@@ -3,6 +3,7 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
+import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
@@ -46,6 +47,26 @@ import java.util.List;
 import java.util.Optional;
 
 public class MethodHandler {
+	public static boolean checkSweepAttack(Player player) {
+		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
+		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
+		boolean sweep = getAttackStrengthScale(player, 1) > charge && (player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) > 0.0F || sweepingItem);
+		if (!Combatify.CONFIG.sweepWithSweeping())
+			return sweepingItem && sweep;
+		return sweep;
+	}
+	public static void tryAirSweep(Player attacker) {
+		float attackDamage = (float) attacker.getAttributeValue(Attributes.ATTACK_DAMAGE);
+		if (attackDamage > 0.0F && checkSweepAttack(attacker) && Combatify.CONFIG.canSweepOnMiss()) {
+			float currentAttackReach = (float) MethodHandler.getCurrentAttackReach(attacker, 1.0F);
+			double dirX = -Mth.sin(attacker.getYRot() * (float) (Math.PI / 180.0)) * 2.0;
+			double dirZ = Mth.cos(attacker.getYRot() * (float) (Math.PI / 180.0)) * 2.0;
+			AABB sweepBox = attacker.getBoundingBox().inflate(1.0, 0.25, 1.0).move(dirX, 0.0, dirZ);
+			if (Combatify.CONFIG.enableDebugLogging())
+				Combatify.LOGGER.info("Swept");
+			sweepAttack(attacker, sweepBox, currentAttackReach, attackDamage, attacker::combatify$enchantedDamageForSweep, null);
+		}
+	}
 	public static int changeIFrames(int original, DamageSource source) {
 		Entity entity2 = source.getEntity();
 		int invulnerableTime = original - 10;

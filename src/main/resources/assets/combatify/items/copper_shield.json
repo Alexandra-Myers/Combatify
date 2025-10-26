@@ -6,7 +6,8 @@
       "base": "combatify:item/copper_shield",
       "model": {
         "type": "minecraft:tiered_shield",
-        "tier": "copper"
+        "base": "combatify/copper_shield_base",
+        "no_pattern": "combatify/copper_shield_base_nopattern"
       }
     },
     "on_true": {
@@ -14,7 +15,8 @@
       "base": "combatify:item/copper_shield_blocking",
       "model": {
         "type": "minecraft:tiered_shield",
-        "tier": "copper"
+        "base": "combatify/copper_shield_base",
+        "no_pattern": "combatify/copper_shield_base_nopattern"
       }
     },
     "property": "minecraft:using_item"

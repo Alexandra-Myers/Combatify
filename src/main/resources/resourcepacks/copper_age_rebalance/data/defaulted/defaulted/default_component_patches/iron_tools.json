@@ -6,6 +6,7 @@
         {
             "generator": "defaulted:tool_material",
             "weapon_level": 2,
+            "speed_level": 3,
             "base_tier": "iron",
             "uses": 710
         },

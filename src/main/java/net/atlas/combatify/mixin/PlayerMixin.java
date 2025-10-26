@@ -9,8 +9,6 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.component.CustomDataComponents;
-import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.wrapper.*;
 import net.atlas.combatify.extensions.PlayerExtensions;
@@ -253,16 +251,9 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		double d = this.getKnownMovement().horizontalDistanceSqr();
 		double e = (double)this.getSpeed() * 2.5;
 		boolean isSweepPossible = Combatify.CONFIG.sweepConditionsMatchMiss() || this.onGround();
-		if (!bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && checkSweepAttack()) {
+		if (!bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && MethodHandler.checkSweepAttack(player)) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, (livingEntity, damage, damageSource) -> {
-				float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
-				if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-					attackDamageBonus = (float) MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus);
-				if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-					attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
-				return damage + attackDamageBonus;
-			}, target);
+			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, player::combatify$enchantedDamageForSweep, target);
 			didSweep.set(true);
 		}
 	}
@@ -275,23 +266,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void combatify$attackAir() {
 		if (this.combatify$isAttackAvailable(baseValue)) {
 			combatify$customSwing(InteractionHand.MAIN_HAND);
-			float attackDamage = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-			if (attackDamage > 0.0F && this.checkSweepAttack() && Combatify.CONFIG.canSweepOnMiss()) {
-				float currentAttackReach = (float) MethodHandler.getCurrentAttackReach(player, 1.0F);
-				double dirX = -Mth.sin(getYRot() * (float) (Math.PI / 180.0)) * 2.0;
-				double dirZ = Mth.cos(getYRot() * (float) (Math.PI / 180.0)) * 2.0;
-				AABB sweepBox = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(dirX, 0.0, dirZ);
-				if (Combatify.CONFIG.enableDebugLogging())
-					Combatify.LOGGER.info("Swept");
-				sweepAttack(player, sweepBox, currentAttackReach, attackDamage, (livingEntity, damage, damageSource) -> {
-					float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
-					if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-						attackDamageBonus = (float) MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus);
-					if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-						attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
-					return damage + attackDamageBonus;
-				}, null);
-			}
+			MethodHandler.tryAirSweep(player);
 			this.combatify$resetAttackStrengthTicker(false);
 		}
 	}
@@ -364,16 +339,6 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		return true;
 	}
 
-	@Unique
-	protected boolean checkSweepAttack() {
-		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-		boolean sweepingItem = getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
-		boolean sweep = getAttackStrengthScale(baseValue) > charge && (getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) > 0.0F || sweepingItem);
-		if (!Combatify.CONFIG.sweepWithSweeping())
-			return sweepingItem && sweep;
-		return sweep;
-	}
-
 	@Override
 	public boolean combatify$getMissedAttackRecovery() {
 		return missedAttackRecovery;
@@ -382,5 +347,15 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	@ModifyReturnValue(method = "entityInteractionRange", at = @At(value = "RETURN"))
 	public double getCurrentAttackReach(double original) {
 		return MethodHandler.getCurrentAttackReach(player, 0.0F);
+	}
+
+	@Override
+	public float combatify$enchantedDamageForSweep(LivingEntity livingEntity, float damage, DamageSource damageSource) {
+		float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
+		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+			attackDamageBonus = (float) MethodHandler.calculateValueFromBase(getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus);
+		if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+			attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
+		return damage + attackDamageBonus;
 	}
 }
