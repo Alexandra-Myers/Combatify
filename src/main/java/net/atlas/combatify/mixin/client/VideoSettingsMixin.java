@@ -15,11 +15,11 @@ import java.util.Arrays;
 @SuppressWarnings("unused")
 @Mixin(VideoSettingsScreen.class)
 public class VideoSettingsMixin {
-	@ModifyReturnValue(method = "interfaceOptions", at = @At("RETURN"))
+	@ModifyReturnValue(method = "preferenceOptions", at = @At("RETURN"))
 	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0, argsOnly = true) Options options) {
 		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());
 
-		optionInstance.addAll(CombatifyClient.dualAttackIndicator,
+		optionInstance.addAll(optionInstance.indexOf(options.attackIndicator()) + 1, CombatifyClient.dualAttackIndicator,
 			CombatifyClient.shieldIndicator,
 			CombatifyClient.projectileChargeIndicator,
 			CombatifyClient.spearChargeIndicator,
