@@ -42,10 +42,6 @@ public class ForgeConfig {
 	public DoubleOption eggDamage;
 	public DoubleOption bowUncertainty;
 	public DoubleOption baseHandAttackSpeed;
-	public DoubleOption slowestToolAttackSpeed;
-	public DoubleOption slowToolAttackSpeed;
-	public DoubleOption fastToolAttackSpeed;
-	public DoubleOption fastestToolAttackSpeed;
 	public DoubleOption minHitboxSize;
 	public BiMap<String, SynchableOption<?>> options = HashBiMap.create();
 
@@ -117,14 +113,6 @@ public class ForgeConfig {
         bowUncertainty = defineDoubleRange(WrappableConfig.class, "bowUncertainty");
 
 		baseHandAttackSpeed = defineDoubleRange(WrappableConfig.class, "baseHandAttackSpeed");
-
-		slowestToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "slowestToolAttackSpeed");
-
-		slowToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "slowToolAttackSpeed");
-
-		fastToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "fastToolAttackSpeed");
-
-		fastestToolAttackSpeed = defineDoubleRange(WrappableConfig.class, "fastestToolAttackSpeed");
 
 		minHitboxSize = defineDoubleRange(WrappableConfig.class, "minHitboxSize");
     }
