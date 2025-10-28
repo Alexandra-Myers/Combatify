@@ -188,7 +188,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (!awaitingResponse && responseTimer > 0) {
 			int newPing = Mth.ceil(responseTimer * 0.5);
 			pastPings.add(0, newPing);
-			int removed = pastPings.removeLast();
+			int removed = pastPings.removeInt(pastPings.size() - 1);
 			responseTimer = 0;
 			currentAveragePing = currentAveragePing - (removed / 5) + (newPing / 5);
 		}
