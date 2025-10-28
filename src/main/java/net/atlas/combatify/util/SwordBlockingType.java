@@ -7,6 +7,7 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -85,5 +86,15 @@ public class SwordBlockingType extends BlockingType {
 	public boolean canUse(Level world, Player user, InteractionHand hand) {
 		ItemStack oppositeStack = user.getItemInHand(InteractionHand.OFF_HAND);
 		return hand != InteractionHand.OFF_HAND && oppositeStack.isEmpty() && Combatify.CONFIG.swordBlocking.get();
+	}
+
+	@Override
+	public Component getProtectionComponent() {
+		return Component.translatable("attribute.name.generic.damage_protection");
+	}
+
+	@Override
+	public Component getReductionComponent() {
+		return Component.translatable("attribute.name.generic.damage_reduction");
 	}
 }

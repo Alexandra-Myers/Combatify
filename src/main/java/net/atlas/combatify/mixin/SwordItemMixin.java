@@ -31,7 +31,7 @@ public class SwordItemMixin extends TieredItem implements ItemExtensions, Defaul
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+		this.setDefaultModifiers(output);
 	}
 
 	@Inject(method = "getDamage", at = @At(value = "RETURN"), cancellable = true)

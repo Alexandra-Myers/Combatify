@@ -2,9 +2,9 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.Objects;
 import java.util.function.Supplier;
 
 public class ServerboundMissPacket {
@@ -19,6 +19,9 @@ public class ServerboundMissPacket {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		((PlayerExtensions) Objects.requireNonNull(ctx.get().getSender())).attackAir();
+		ServerPlayer player = ctx.get().getSender();
+		if (player == null || !player.serverLevel().getWorldBorder().isWithinBounds(player.blockPosition()))
+			return;
+		((PlayerExtensions) player).combatify$attackAir();
 	}
 }

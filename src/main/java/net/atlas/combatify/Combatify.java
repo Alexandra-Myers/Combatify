@@ -1,5 +1,6 @@
 package net.atlas.combatify;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -21,9 +22,11 @@ import net.atlas.combatify.networking.PacketRegistration;
 import net.atlas.combatify.util.*;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -56,8 +59,7 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-
-import static net.atlas.combatify.item.WeaponType.BASE_ATTACK_SPEED_UUID;
+import java.util.function.Supplier;
 
 @Mod(Combatify.MOD_ID)
 @Mod.EventBusSubscriber(modid = Combatify.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -65,6 +67,7 @@ public class Combatify {
 	public static final String MOD_ID = "combatify";
 	public static ForgeConfig CONFIG;
 	public static ItemConfig ITEMS;
+	public static Supplier<CombatifyState> state = Suppliers.memoize(() -> CombatifyState.COMBATIFY);
 	public static final List<TieredShieldItem> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
@@ -80,9 +83,17 @@ public class Combatify {
 	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
-	public Combatify() {
+	public static void markState(Supplier<CombatifyState> state) {
+		Combatify.state = state;
+	}
+
+	public static CombatifyState getState() {
+		return Combatify.state.get();
+	}
+
+	public Combatify(FMLJavaModLoadingContext context) {
 		Combatify.initConfig();
-		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+		IEventBus bus = context.getModEventBus();
 		if(CONFIG.configOnlyWeapons.get()) {
 			ItemRegistry.registerWeapons(bus);
 		}
@@ -122,28 +133,24 @@ public class Combatify {
 		Combatify.LOGGER.info("Loaded items config.");
 	}
 	@SubscribeEvent
+	public void onAddToRegistry(RegisterEvent event) {
+		if (event.getRegistryKey().equals(Registries.ATTRIBUTE)) {
+			ForgeRegistry<?> fReg = (ForgeRegistry<?>) event.getForgeRegistry();
+			//noinspection removal
+			fReg.addAlias(new ResourceLocation("forge", "attack_range"), new ResourceLocation("attack_reach"));
+		}
+	}
+	@SubscribeEvent
 	public void playerAttackBlockEvent(PlayerInteractEvent.LeftClickBlock event) {
 		if (Combatify.unmoddedPlayers.contains(event.getEntity().getUUID()) && finalizingAttack.get(event.getEntity().getUUID()) && event.getEntity() instanceof ServerPlayer serverPlayer) {
-			Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
 			((ServerPlayerExtensions) serverPlayer).getPresentResult();
-			for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).getOldHitResults()) {
-				if(hitResultToChoose == null)
-					continue;
-				Float[] rotations = null;
-				if (hitResultToRotationMap.containsKey(hitResultToChoose))
-					rotations = hitResultToRotationMap.get(hitResultToChoose);
-				float xRot = serverPlayer.getXRot() % 360;
-				float yRot = serverPlayer.getYHeadRot() % 360;
-				if(rotations != null) {
-					float xDiff = Math.abs(xRot - rotations[1]);
-					float yDiff = Math.abs(yRot - rotations[0]);
-					if(xDiff > 20 || yDiff > 20)
-						continue;
-				}
-				if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
-					event.setCancellationResult(InteractionResult.FAIL);
-					event.setCanceled(true);
-				}
+			float xRot = serverPlayer.getXRot();
+			float yRot = serverPlayer.getYHeadRot();
+			HitResult hitResult = ((ServerPlayerExtensions) serverPlayer).getOldHitResults().stream().filter(hitResultRotEntry -> hitResultRotEntry.shouldAccept(xRot, yRot))
+				.min((firstResultRotEntry, secondResultRotEntry) -> firstResultRotEntry.compareTo(secondResultRotEntry, xRot, yRot)).map(HitResultRotationEntry::hitResult).orElse(null);
+			if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) {
+				event.setCancellationResult(InteractionResult.FAIL);
+				event.setCanceled(true);
 			}
 		}
 	}
@@ -211,16 +218,6 @@ public class Combatify {
 	@SubscribeEvent
 	public void attributeModifier(ItemAttributeModifierEvent event) {
 		EquipmentSlot equipmentSlot = event.getSlotType();
-		if(equipmentSlot == EquipmentSlot.MAINHAND) {
-			if(event.getModifiers().containsKey(Attributes.ATTACK_SPEED)) {
-				event.getModifiers().get(Attributes.ATTACK_SPEED).forEach(attributeModifier -> {
-					if(attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID){
-						event.removeModifier(Attributes.ATTACK_SPEED, attributeModifier);
-						event.addModifier(Attributes.ATTACK_SPEED, calculateSpeed(attributeModifier.getAmount()));
-					}
-				});
-			}
-		}
 		Item item = event.getItemStack().getItem();
 		if (ITEMS.configuredItems.containsKey(item) && equipmentSlot == EquipmentSlot.MAINHAND) {
 			ConfigurableItemData configurableItemData = ITEMS.configuredItems.get(item);
@@ -229,7 +226,7 @@ public class Combatify {
 					List<Integer> indexes = new ArrayList<>();
 					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_DAMAGE).stream().toList();
 					for (AttributeModifier modifier : modifiers)
-						if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+						if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID)
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
@@ -239,7 +236,7 @@ public class Combatify {
 					List<Integer> indexes = new ArrayList<>();
 					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_SPEED).stream().toList();
 					for (AttributeModifier modifier : modifiers)
-						if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+						if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_CTS_UUID)
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
@@ -264,26 +261,26 @@ public class Combatify {
 					List<Integer> indexes = new ArrayList<>();
 					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_DAMAGE).stream().toList();
 					for (AttributeModifier modifier : modifiers)
-						if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || modifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID)
+						if (modifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID)
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
 							event.removeModifier(Attributes.ATTACK_DAMAGE, modifiers.get(index));
 				}
-				event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(WeaponType.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
+				event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_UUID, "Config modifier", configurableItemData.damage - (CONFIG.fistDamage.get() ? 1 : 2), AttributeModifier.Operation.ADDITION));
 			}
 			if (configurableItemData.speed != null) {
 				if (event.getModifiers().containsKey(Attributes.ATTACK_SPEED)) {
 					List<Integer> indexes = new ArrayList<>();
 					List<AttributeModifier> modifiers = event.getModifiers().get(Attributes.ATTACK_SPEED).stream().toList();
 					for (AttributeModifier modifier : modifiers)
-						if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID)
+						if (modifier.getId() == Item.BASE_ATTACK_SPEED_UUID || modifier.getId() == WeaponType.BASE_ATTACK_SPEED_CTS_UUID)
 							indexes.add(modifiers.indexOf(modifier));
 					if (!indexes.isEmpty())
 						for (Integer index : indexes)
 							event.removeModifier(Attributes.ATTACK_SPEED, modifiers.get(index));
 				}
-				event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
+				event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(WeaponType.BASE_ATTACK_SPEED_CTS_UUID, "Config modifier", configurableItemData.speed - CONFIG.baseHandAttackSpeed.get(), AttributeModifier.Operation.ADDITION));
 			}
 			if (configurableItemData.reach != null) {
 				if (event.getModifiers().containsKey(ForgeMod.ENTITY_REACH.get())) {
@@ -307,24 +304,6 @@ public class Combatify {
 			changed |= event.addModifier(entry.getKey(), entry.getValue());
 		}
 		return changed;
-	}
-	public AttributeModifier calculateSpeed(double amount) {
-		if(amount >= 0) {
-			amount = Combatify.CONFIG.fastestToolAttackSpeed.get();
-		} else if(amount >= -1) {
-			amount = Combatify.CONFIG.fastToolAttackSpeed.get();
-		} else if(amount == -2) {
-			amount = 0.0;
-		} else if(amount >= -2.5) {
-			amount = Combatify.CONFIG.fastToolAttackSpeed.get();
-		} else if(amount > -3) {
-			amount = 0.0;
-		} else if (amount > -3.5) {
-			amount = Combatify.CONFIG.slowToolAttackSpeed.get();
-		} else {
-			amount = Combatify.CONFIG.slowestToolAttackSpeed.get();
-		}
-		return new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", amount, AttributeModifier.Operation.ADDITION);
 	}
 	public static void initConfig() {
 		CONFIG = new ForgeConfig();
@@ -354,6 +333,36 @@ public class Combatify {
 		return blockingType;
 	}
 	public static ResourceLocation id(String path) {
+		//noinspection removal
 		return new ResourceLocation(MOD_ID, path);
+	}
+	public enum CombatifyState implements StringRepresentable {
+		VANILLA("Vanilla", "vanilla"),
+		COMBATIFY("Combatify", "combatify"),
+		CTS_8C("CTS 8C", "combat_test");
+
+		public final String name;
+		public final String key;
+
+		CombatifyState(String name, String key) {
+			this.name = name;
+			this.key = key;
+		}
+
+		@Override
+		public @NotNull String getSerializedName() {
+			return key;
+		}
+
+		public Component getComponent() {
+			return Component.translatableWithFallback("options.combatify_state." + key, name);
+		}
+
+		@Override
+		public String toString() {
+			return "CombatifyState{" +
+				"name='" + name + '\'' +
+				'}';
+		}
 	}
 }

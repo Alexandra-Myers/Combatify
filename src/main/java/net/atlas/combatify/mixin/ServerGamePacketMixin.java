@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IServerGamePacketListener;
 import net.atlas.combatify.extensions.PlayerExtensions;
@@ -26,18 +28,18 @@ public abstract class ServerGamePacketMixin implements IServerGamePacketListener
 
 	@Inject(method = "handleInteract", at = @At(value = "HEAD"), cancellable = true)
 	public void injectPlayer(ServerboundInteractPacket packet, CallbackInfo ci) {
-		if (!(((PlayerExtensions) player).isAttackAvailable(1.0F)))
+		if (!(((PlayerExtensions) player).combatify$isAttackAvailable(1.0F)))
 			ci.cancel();
 		if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
 			if (((ServerPlayerExtensions)player).isRetainingAttack()) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
 				ci.cancel();
 			}
-			if (!((PlayerExtensions) player).isAttackAvailable(0.0F)) {
+			if (!((PlayerExtensions) player).combatify$isAttackAvailable(0.0F)) {
 				float var1 = player.getAttackStrengthScale(0.0F);
 				if (var1 < 0.8F) {
 					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, player.getSoundSource(), 1.0F, 1.0F);
-					((PlayerExtensions) player).resetAttackStrengthTicker(!((PlayerExtensions) player).getMissedAttackRecovery());
+					((PlayerExtensions) player).combatify$resetAttackStrengthTicker(!((PlayerExtensions) player).combatify$getMissedAttackRecovery());
 					ci.cancel();
 				}
 
@@ -49,16 +51,13 @@ public abstract class ServerGamePacketMixin implements IServerGamePacketListener
 		}
 	}
 
-	@Redirect(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;canReach(Lnet/minecraft/world/entity/Entity;D)Z"))
-	public boolean redirectCheck(ServerPlayer instance, Entity entity, double v) {
+	@WrapOperation(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;canReachRaw(Lnet/minecraft/world/entity/Entity;D)Z"))
+	public boolean redirectCheck(ServerPlayer instance, Entity entity, double v, Operation<Boolean> original) {
 		if (entity instanceof ServerPlayer target) {
 			return CombatUtil.allowReach(player, target);
 		}
 		double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 		d *= d;
-		if(!player.hasLineOfSight(entity)) {
-			d = 6.25;
-		}
 		// If target is not a player do vanilla code
 		Vec3 vec3 = player.getEyePosition();
 		return vec3.distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), vec3)) < d;

@@ -19,7 +19,6 @@
     "EntityMixin",
     "FishingHookMixin",
     "FoodDataMixin",
-    "ForgeModMixin",
     "ForgePlayerMixin",
     "HoeItemMixin",
     "ItemMixin",
@@ -38,7 +37,6 @@
     "ServerGamePacketListenerAccessor",
     "ServerGamePacketMixin",
     "ServerPlayerMixin",
-    "ShapedRecipeMixin",
     "ShieldDecorationRecipeMixin",
     "ShieldItemMixin",
     "ShovelItemMixin",
@@ -46,21 +44,26 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
-    "TridentItemMixin"
+    "TridentItemMixin",
+    "client.ClientAttackAnimMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "AccessibilityOptionsMixin",
-    "ControlsMixin",
-    "GuiMixin",
-    "ItemInHandMixin",
-    "LocalPlayerMixin",
-    "MinecraftMixin",
-    "MultiPlayerGameModeMixin",
-    "OptionsMixin",
-    "VideoSettingsMixin"
+    "client.AccessibilityOptionsMixin",
+    "client.ArmHeightMixin",
+    "client.ControlsMixin",
+    "client.GameRendererMixin",
+    "client.GuiMixin",
+    "client.ItemInHandMixin",
+    "client.ItemPropertiesMixin",
+    "client.LocalPlayerMixin",
+    "client.MinecraftMixin",
+    "client.MultiPlayerGameModeMixin",
+    "client.OptionsMixin",
+    "client.PlayerRendererMixin",
+    "client.VideoSettingsMixin"
   ],
   "mixinPriority": 1200
 }

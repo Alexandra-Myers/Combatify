@@ -1,8 +1,11 @@
 package net.atlas.combatify.mixin;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.CombatUtil;
+import net.atlas.combatify.util.HitResultRotationEntry;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPingPacket;
@@ -26,7 +29,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static net.atlas.combatify.Combatify.scheduleHitResult;
@@ -43,9 +45,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public abstract void swing(InteractionHand interactionHand);
 	@Shadow
 	public ServerGamePacketListenerImpl connection;
-	public CopyOnWriteArrayList<HitResult> oldHitResults = new CopyOnWriteArrayList<>();
-	public Map<HitResult, Float[]> hitResultToRotationMap = new ConcurrentHashMap<>();
-	public ArrayList<Integer> pastPings = new ArrayList<>();
+	public CopyOnWriteArrayList<HitResultRotationEntry> oldHitResults = new CopyOnWriteArrayList<>();
+	public IntList pastPings = new IntArrayList(5);
 	public boolean awaitingResponse = false;
 	public int responseTimer = 0;
 	public int tickTimer = 4;
@@ -65,11 +66,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	public void hitreg(CallbackInfo ci) {
 		CombatUtil.setPosition((ServerPlayer)(Object)this);
 		if (shouldInit && Combatify.unmoddedPlayers.contains(getUUID())) {
-			pastPings.add(0);
-			pastPings.add(0);
-			pastPings.add(0);
-			pastPings.add(0);
-			pastPings.add(0);
 			scheduleHitResult.get(getUUID()).schedule(new TimerTask() {
 				@Override
 				public void run() {
@@ -78,7 +74,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						adjustHitResults(MethodHandler.pickResult(player, camera));
 					}
 				}
-			}, 0, 1);
+			}, 0, 5);
 			shouldInit = false;
 		}
 		tickTimer++;
@@ -87,7 +83,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			connection.send(new ClientboundPingPacket(3492));
 			awaitingResponse = true;
 		}
-		if (((PlayerExtensions) this.player).isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
+		if (((PlayerExtensions) this.player).combatify$isAttackAvailable(-1.0F) && retainAttack && Combatify.unmoddedPlayers.contains(getUUID())) {
 			retainAttack = false;
 			swing(InteractionHand.MAIN_HAND);
 		}
@@ -97,30 +93,11 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		super.swing(hand);
 		if(Combatify.unmoddedPlayers.contains(getUUID())) {
 			if (Combatify.isPlayerAttacking.get(getUUID())) {
-				HitResult hitResult = null;
 				getPresentResult();
-				for (HitResult hitResultToChoose : oldHitResults) {
-					if(hitResultToChoose == null)
-						continue;
-					Float[] rotations = null;
-					if (hitResultToRotationMap.containsKey(hitResultToChoose))
-						rotations = hitResultToRotationMap.get(hitResultToChoose);
-					float xRot = getXRot() % 360;
-					float yRot = getYHeadRot() % 360;
-					if(rotations != null) {
-						float xDiff = Math.abs(xRot - rotations[1]);
-						float yDiff = Math.abs(yRot - rotations[0]);
-						if(xDiff > 20 || yDiff > 20)
-							continue;
-					}
-					if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
-						hitResult = hitResultToChoose;
-						break;
-					}
-					if (hitResultToChoose.getType() == HitResult.Type.MISS && hitResult == null) {
-						hitResult = hitResultToChoose;
-					}
-				}
+				float xRot = getXRot();
+				float yRot = getYHeadRot();
+				HitResult hitResult = oldHitResults.stream().filter(hitResultRotEntry -> hitResultRotEntry.shouldAccept(xRot, yRot))
+					.min((firstResultRotEntry, secondResultRotEntry) -> firstResultRotEntry.compareTo(secondResultRotEntry, xRot, yRot)).map(HitResultRotationEntry::hitResult).orElse(null);
 				if (hitResult != null) {
 					Combatify.finalizingAttack.put(getUUID(), false);
 					switch (hitResult.getType()) {
@@ -146,12 +123,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 				this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
 			return;
 		}
-		if (!isAttackAvailable(0.0F)) {
+		if (!combatify$isAttackAvailable(0.0F)) {
 			float var1 = this.player.getAttackStrengthScale(0.0F);
 			if (var1 < 0.8F) {
 				if(hit)
 					this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
-				resetAttackStrengthTicker(!getMissedAttackRecovery());
+				combatify$resetAttackStrengthTicker(!combatify$getMissedAttackRecovery());
 				return;
 			}
 
@@ -168,9 +145,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			}
 			double d = MethodHandler.getCurrentAttackReach(player, 1.0F) + 1;
 			d *= d;
-			if(!player.hasLineOfSight(entity)) {
-				d = 6.25;
-			}
 
 			AABB aABB = entity.getBoundingBox();
 			Vec3 eyePos = player.getEyePosition(0.0F);
@@ -194,7 +168,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 						Combatify.LOGGER.warn("Player " + player.getName().getString() + " tried to attack an invalid entity");
 					}
 				} else {
-					attackAir();
+					combatify$attackAir();
 				}
 			}
 		}
@@ -205,26 +179,19 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (awaitingResponse)
 			responseTimer++;
 		if (!awaitingResponse && responseTimer > 0) {
-			pastPings.add(0, Mth.ceil(responseTimer * 0.5));
-			pastPings.removeIf(pastPing -> pastPings.indexOf(pastPing) > 5);
+			int newPing = Mth.ceil(responseTimer * 0.5);
+			pastPings.add(0, newPing);
+			int removed = pastPings.removeLast();
 			responseTimer = 0;
-			Collections.sort(pastPings);
-			int averagePing = pastPings.get(2);
-			currentAveragePing = Mth.clamp(averagePing, 25, 200);
+			currentAveragePing = currentAveragePing - (removed / 5) + (newPing / 5);
 		}
+		HitResultRotationEntry newEntry = new HitResultRotationEntry(newValue, getXRot(), getYHeadRot());
 		if (oldHitResults.size() > 1)
-			oldHitResults.add(1, newValue);
+			oldHitResults.add(1, newEntry);
 		else
-			oldHitResults.add(newValue);
-		oldHitResults.removeIf(hitResult -> {
-			if(oldHitResults.indexOf(hitResult) > currentAveragePing + 1)
-				hitResultToRotationMap.remove(hitResult);
-			return oldHitResults.indexOf(hitResult) > currentAveragePing + 1;
-		});
-		Float[] rotations = new Float[2];
-		rotations[0] = getYHeadRot() % 360;
-		rotations[1] = getXRot() % 360;
-		hitResultToRotationMap.put(newValue, rotations);
+			oldHitResults.add(newEntry);
+		int currentPing = Mth.clamp(currentAveragePing + 1, 25, 200) / 5;
+		oldHitResults.removeIf(hitResult -> oldHitResults.indexOf(hitResult) >= currentPing);
 	}
 
 	@Override
@@ -238,7 +205,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 
 	@Override
-	public CopyOnWriteArrayList<HitResult> getOldHitResults() {
+	public CopyOnWriteArrayList<HitResultRotationEntry> getOldHitResults() {
 		return oldHitResults;
 	}
 
@@ -253,15 +220,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 
 	@Override
-	public Map<HitResult, Float[]> getHitResultToRotationMap() {
-		return hitResultToRotationMap;
-	}
-
-	@Override
 	public void getPresentResult() {
 		Entity camera = getCamera();
 		if (camera != null) {
-			oldHitResults.set(0, MethodHandler.pickResult(player, camera));
+			oldHitResults.set(0, new HitResultRotationEntry(MethodHandler.pickResult(player, camera), getXRot(), getYHeadRot()));
 		}
 	}
 }

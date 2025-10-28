@@ -1,8 +1,8 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.combatify.extensions.IOptions;
+import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.util.ArrayListExtensions;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -20,10 +20,8 @@ public class AccessibilityOptionsMixin {
 	private static OptionInstance<?>[] injectOptions(OptionInstance<?>[] original, @Local(ordinal = 0) Options options) {
 		var optionInstance = new ArrayListExtensions<>(Arrays.stream(original).toList());
 
-		optionInstance.addAll(((IOptions)options).autoAttack(),
-			((IOptions)options).shieldCrouch(),
-			((IOptions)options).attackIndicatorValue(),
-			((IOptions)options).fishingRodLegacy());
+		optionInstance.addAll(CombatifyClient.autoAttack,
+			CombatifyClient.shieldCrouch);
 
 		return optionInstance.toArray(new OptionInstance[0]);
 	}

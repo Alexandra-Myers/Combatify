@@ -2,6 +2,8 @@ package net.atlas.combatify.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.config.ConfigurableWeaponData;
@@ -35,16 +37,14 @@ public abstract class DiggerItemMixin extends TieredItem implements Vanishable, 
 		ImmutableMultimap.Builder<Attribute, AttributeModifier> var3 = ImmutableMultimap.builder();
 		getWeaponType().addCombatAttributes(getTier(), var3);
 		ImmutableMultimap<Attribute, AttributeModifier> output = var3.build();
-		((DefaultedItemExtensions)this).setDefaultModifiers(output);
+		this.setDefaultModifiers(output);
 	}
-	@Redirect(method = "hurtEnemy",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
-	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback) {
-		boolean bl = instance.getItem() instanceof AxeItem || instance.getItem() instanceof HoeItem;
-		if (bl) {
-			amount -= 1;
-		}
-		instance.hurtAndBreak(amount, entity, breakCallback);
+	@WrapOperation(method = "hurtEnemy",
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
+	public <T extends LivingEntity> void damage(ItemStack instance, int amount, T entity, Consumer<T> breakCallback, Operation<Void> original) {
+		boolean bl = instance.getItem() instanceof AxeItem;
+		if (bl) amount -= 1;
+		original.call(instance, amount, entity, breakCallback);
 	}
 
 	@Override

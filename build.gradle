@@ -1,16 +1,18 @@
 plugins {
-	id "dev.architectury.loom" version "1.1-SNAPSHOT"
-	id 'eclipse'
-	id 'idea'
+	id "dev.architectury.loom" version "1.11-SNAPSHOT"
 	id "maven-publish"
-	id 'com.github.johnrengelman.shadow' version "7.1.2" apply false
 }
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
+version = "$project.mod_version.$project.sub_version"
 group = project.maven_group
+
+base {
+	archivesName = "$project.archives_base_name-$project.minecraft_version-Forge"
+}
+
+configurations {
+	includeClasspath
+}
 
 loom {
 	// use this if you are using the official mojang mappings
@@ -22,7 +24,6 @@ loom {
 	// "forge" block to configure forge-specific features,
 	// such as the mixinConfigs array or datagen
 	forge {
-		convertAccessWideners = true
 		// specify the mixin configs used in this mod
 		// this will be added to the jar manifest as well!
 		mixinConfigs = [
@@ -77,9 +78,9 @@ dependencies {
 	// mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 
 	// your forge dependency, this is **required** when using Forge Loom in forge mode!
-	forge "net.neoforged:forge:${minecraft_version}-${neo_version}"
-	implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.2.0-rc.3"))
-	implementation(include("io.github.llamalad7:mixinextras-forge:0.2.0-rc.3"))
+	forge "net.minecraftforge:forge:${minecraft_version}-${neo_version}"
+	implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0"))
+	implementation(include("io.github.llamalad7:mixinextras-forge:0.5.0"))
 	modImplementation "maven.modrinth:midnightlib:${project.midnightlib_version}"
 
 	// additional dependencies can be specified using loom's regular format
@@ -122,13 +123,31 @@ tasks.withType(JavaCompile) {
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
+	// Still required by IDEs such as Eclipse and Visual Studio Code
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task if it is present.
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
+
+	// If this mod is going to be a library, then it should also generate Javadocs in order to aid with developement.
+	// Uncomment this line to generate them.
+	// withJavadocJar()
 }
 
+remapJar {
+	atAccessWideners.add('combatify.accesswidener')
+}
+
+// If you plan to use a different file for the license, don't forget to change the file name here!
 jar {
+	from("LICENSE") {
+		rename { "${it}_${project.base.archivesName.get()}" }
+	}
+	from {
+		configurations.includeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
 	// add some additional metadata to the jar manifest
 	manifest {
 		attributes([

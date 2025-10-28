@@ -1,9 +1,9 @@
 package net.atlas.combatify.mixin;
 
-import com.google.common.collect.Multimap;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.llamalad7.mixinextras.sugar.ref.LocalDoubleRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.extensions.ItemExtensions;
@@ -14,9 +14,7 @@ import net.minecraft.network.chat.*;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -49,115 +48,61 @@ public abstract class ItemStackMixin {
 	@Shadow
 	public abstract boolean is(Item arg);
 
+	@Shadow
+	private static boolean shouldShowInTooltip(int i, ItemStack.TooltipPart arg) {
+		return false;
+	}
+
+	@Shadow
+	protected abstract int getHideFlags();
+
 	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;hasTag()Z", ordinal = 0))
 	public void addHoverText(@Nullable Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> tooltip) {
 		ItemExtensions item = (ItemExtensions) getItem();
 		if (!item.getBlockingType().isEmpty()) {
 			if (!item.getBlockingType().requiresSwordBlocking() || Combatify.CONFIG.swordBlocking.get()) {
-				float f = item.getBlockingType().getShieldBlockDamageValue(ItemStack.class.cast(this));
-				double g = item.getBlockingType().getShieldKnockbackResistanceValue(ItemStack.class.cast(this));
-				if (!item.getBlockingType().isPercentage())
-					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(f), Component.translatable("attribute.name.generic.shield_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-				else
-					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format((double) f * 100), Component.translatable("attribute.name.generic.sword_block_strength"))).withStyle(ChatFormatting.DARK_GREEN));
-				if (g > 0.0) {
-					tooltip.add((Component.literal("")).append(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADDITION.toValue(), ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(g * 10.0), Component.translatable("attribute.name.generic.knockback_resistance"))).withStyle(ChatFormatting.DARK_GREEN));
-				}
+				item.getBlockingType().appendTooltips(ItemStack.class.cast(this), tooltip::add);
 			}
 		}
 	}
 
-	@ModifyExpressionValue(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Multimap;isEmpty()Z"))
-	public boolean preventOutcome(boolean original, @Local(ordinal = 0) Player player, @Local(ordinal = 0) List<Component> list, @Local(ordinal = 0) Multimap<Attribute, AttributeModifier> multimap, @Local(ordinal = 0) EquipmentSlot equipmentSlot) {
-		if (!original) {
-			boolean attackReach = Combatify.CONFIG.attackReach.get();
-			list.add(CommonComponents.EMPTY);
-			list.add(Component.translatable("item.modifiers." + equipmentSlot.getName()).withStyle(ChatFormatting.GRAY));
-
-			for (Map.Entry<Attribute, AttributeModifier> entry : multimap.entries()) {
-				AttributeModifier attributeModifier = entry.getValue();
-				double d = attributeModifier.getAmount();
-				boolean bl = false;
-				if (player != null) {
-					if (attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID) {
-						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getBaseValue();
-						d += EnchantmentHelper.getDamageBonus((ItemStack) (Object) this, player.getMobType());
-						bl = true;
-					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID) {
-						d += Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_SPEED)).getBaseValue() - 1.5;
-						bl = true;
-					} else if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID) {
-						d += Objects.requireNonNull(player.getAttribute(ForgeMod.ENTITY_REACH.get())).getBaseValue() + (attackReach ? 0 : 0.5);
-						bl = true;
-					} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
-						d += Objects.requireNonNull(player.getAttribute(Attributes.KNOCKBACK_RESISTANCE)).getBaseValue();
-					}
-				}
-
-				double e;
-				if (attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE
-						|| attributeModifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
-					e = d * 100.0;
-				} else if (entry.getKey().equals(Attributes.KNOCKBACK_RESISTANCE)) {
-					e = d * 10.0;
-				} else {
-					e = d;
-				}
-
-				if (attributeModifier.getId() == WeaponType.BASE_ATTACK_REACH_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == Item.BASE_ATTACK_SPEED_UUID || attributeModifier.getId() == WeaponType.BASE_ATTACK_DAMAGE_UUID || attributeModifier.getId() == Item.BASE_ATTACK_DAMAGE_UUID || bl) {
-					list.add(
-							Component.literal(" ")
-									.append(
-											Component.translatable(
-													"attribute.modifier.equals." + attributeModifier.getOperation().toValue(),
-													ATTRIBUTE_MODIFIER_FORMAT.format(e),
-													Component.translatable(entry.getKey().getDescriptionId())
-											)
-									)
-									.withStyle(ChatFormatting.DARK_GREEN)
-					);
-				} else if (d > 0.0) {
-					list.add(
-							Component.translatable(
-											"attribute.modifier.plus." + attributeModifier.getOperation().toValue(),
-											ATTRIBUTE_MODIFIER_FORMAT.format(e),
-											Component.translatable(entry.getKey().getDescriptionId())
-									)
-									.withStyle(ChatFormatting.BLUE)
-					);
-				} else if (d < 0.0) {
-					e *= -1.0;
-					list.add(
-							Component.translatable(
-											"attribute.modifier.take." + attributeModifier.getOperation().toValue(),
-											ATTRIBUTE_MODIFIER_FORMAT.format(e),
-											Component.translatable(entry.getKey().getDescriptionId())
-									)
-									.withStyle(ChatFormatting.RED)
-					);
-				}
+	@Inject(method = "getTooltipLines", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;getOperation()Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;", ordinal = 0))
+	public void addAttackReach(Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) AttributeModifier attributeModifier, @Local(ordinal = 0) LocalDoubleRef d, @Local(ordinal = 0) LocalBooleanRef bl) {
+		if (player != null) {
+			if (attributeModifier.getId().equals(WeaponType.BASE_ATTACK_SPEED_CTS_UUID)) {
+				d.set(d.get() + player.getAttributeBaseValue(Attributes.ATTACK_SPEED) - 1.5);
+				bl.set(true);
 			}
+			if (attributeModifier.getId().equals(WeaponType.BASE_ATTACK_REACH_UUID)) {
+				d.set(d.get() + player.getAttributeBaseValue(ForgeMod.ENTITY_REACH.get()) + (Combatify.CONFIG.attackReach.get() ? 0 : 0.5));
+				bl.set(true);
+			}
+		}
+	}
+	@Inject(method = "getTooltipLines", slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/world/item/ItemStack$TooltipPart;MODIFIERS : Lnet/minecraft/world/item/ItemStack$TooltipPart;")), at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;shouldShowInTooltip(ILnet/minecraft/world/item/ItemStack$TooltipPart;)Z", ordinal = 0))
+	public void addPiercing(Player player, TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local(ordinal = 0) List<Component> list) {
+		if (shouldShowInTooltip(getHideFlags(), ItemStack.TooltipPart.MODIFIERS)) {
 			double piercingLevel = 0;
-			if(Combatify.CONFIG.piercer.get()) {
+			if (Combatify.CONFIG.piercer.get())
 				piercingLevel = EnchantmentHelper.getItemEnchantmentLevel(PiercingEnchantment.PIERCER.get(), (ItemStack) (Object) this) * 0.1;
-			}
-			piercingLevel += ((ItemExtensions)getItem()).getPiercingLevel();
+			piercingLevel += ((ItemExtensions) getItem()).getPiercingLevel();
 			if (piercingLevel > 0) {
 				piercingLevel = Math.min(piercingLevel, 1);
+				list.add(CommonComponents.EMPTY);
+				list.add(Component.translatable("item.modifiers.mainhand").withStyle(ChatFormatting.GRAY));
 				list.add(
 					Component.literal(" ")
 						.append(
 							Component.translatable(
 								"attribute.modifier.equals." + AttributeModifier.Operation.MULTIPLY_TOTAL.toValue(),
 								ATTRIBUTE_MODIFIER_FORMAT.format(piercingLevel * 100),
-								Component.translatable("attribute.name.generic.longsword_piercing")
+								Component.translatable("attribute.name.generic.armor_piercing")
 							)
 						)
 						.withStyle(ChatFormatting.DARK_GREEN)
 				);
 			}
 		}
-		return true;
 	}
 	@ModifyReturnValue(method = "getUseDuration", at = @At(value = "RETURN"))
 	public int getUseDuration(int original) {

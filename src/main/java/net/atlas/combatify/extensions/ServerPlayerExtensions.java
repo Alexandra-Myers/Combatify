@@ -1,5 +1,6 @@
 package net.atlas.combatify.extensions;
 
+import net.atlas.combatify.util.HitResultRotationEntry;
 import net.minecraft.world.phys.HitResult;
 
 import java.util.Map;
@@ -13,13 +14,11 @@ public interface ServerPlayerExtensions {
 
 	boolean isAwaitingResponse();
 
-    CopyOnWriteArrayList<HitResult> getOldHitResults();
+    CopyOnWriteArrayList<HitResultRotationEntry> getOldHitResults();
 
 	boolean isRetainingAttack();
 
 	void setRetainAttack(boolean retain);
-
-    Map<HitResult, Float[]> getHitResultToRotationMap();
 
 	void getPresentResult();
 }

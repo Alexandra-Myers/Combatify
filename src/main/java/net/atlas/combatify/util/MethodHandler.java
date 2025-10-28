@@ -1,8 +1,10 @@
 package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
+import net.atlas.combatify.item.TieredShieldItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -22,6 +24,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -33,9 +36,10 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.ToolActions;
 import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class MethodHandler {
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
@@ -66,6 +70,59 @@ public class MethodHandler {
 
 		return attributeInstance.getAttribute().sanitizeValue(withDamageBonus);
 	}
+	public static void sweepAttack(Player player, AABB box, float reach, float damage, Entity entity) {
+		float sweepingDamageRatio = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * damage;
+		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
+		DamageSource damageSource = player.damageSources().playerAttack(player);
+
+		for (LivingEntity livingEntity : livingEntities) {
+			if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
+				continue;
+			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
+			livingEntity.hurt(damageSource, sweepingDamageRatio);
+			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach)) {
+				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+			}
+		}
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
+		player.sweepAttack();
+	}
+	public static void tryDisableShield(LivingEntity attacker, LivingEntity target) {
+		double x = target.getX() - attacker.getX();
+		double z = target.getZ() - attacker.getZ();
+		double x2 = attacker.getX() - target.getX();
+		double z2 = attacker.getZ() - target.getZ();
+		ItemStack blockingStack = MethodHandler.getBlockingItem(target).stack();
+		Item blockingItem = blockingStack.getItem();
+		double piercingLevel = 0;
+		Item item = attacker.getMainHandItem().getItem();
+		piercingLevel += ((ItemExtensions)item).getPiercingLevel();
+		if (Combatify.CONFIG.piercer.get())
+			piercingLevel += net.atlas.combatify.enchantment.CustomEnchantmentHelper.getPierce(attacker) * 0.1;
+		boolean bl = attacker.getMainHandItem().canDisableShield(blockingStack, target, attacker) || piercingLevel > 0;
+		ItemExtensions shieldItem = (ItemExtensions) blockingItem;
+		if (bl && shieldItem.getBlockingType().canBeDisabled()) {
+			if (piercingLevel > 0)
+				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
+			float damage = Combatify.CONFIG.shieldDisableTime.get().floatValue() + (float) net.atlas.combatify.enchantment.CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime.get().floatValue();
+			if(Combatify.CONFIG.defender.get())
+				damage -= (float) (CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction.get());
+			if(target instanceof Player player)
+				MethodHandler.disableShield(player, damage, blockingItem);
+		}
+		if(shieldItem.getBlockingType().isToolBlocker()) return;
+		MethodHandler.knockback(target, 0.5, x2, z2);
+		MethodHandler.knockback(attacker, 0.5, x, z);
+	}
+	public static void disableShield(Player player, float damage, Item item) {
+		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
+		if (item instanceof TieredShieldItem)
+			for (TieredShieldItem tieredShieldItem : Combatify.shields)
+				if (item != tieredShieldItem)
+					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
+		player.stopUsingItem();
+		player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
+	}
 	public static float getFatigueForTime(int f) {
 		if (f < 60) {
 			return 0.5F;
@@ -80,7 +137,7 @@ public class MethodHandler {
 			x = event.getRatioX();
 			z = event.getRatioZ();
 			double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack blockingItem = getBlockingItem(entity);
+			ItemStack blockingItem = getBlockingItem(entity).stack();
 			if (!blockingItem.isEmpty()) {
 				BlockingType blockingType = ((ItemExtensions) blockingItem.getItem()).getBlockingType();
 				if (!blockingType.defaultKbMechanics())
@@ -105,7 +162,7 @@ public class MethodHandler {
 			x = event.getRatioX();
 			z = event.getRatioZ();
 			double knockbackRes = entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-			ItemStack blockingItem = getBlockingItem(entity);
+			ItemStack blockingItem = getBlockingItem(entity).stack();
 			if (!blockingItem.isEmpty()) {
 				BlockingType blockingType = ((ItemExtensions) blockingItem.getItem()).getBlockingType();
 				if (!blockingType.defaultKbMechanics())
@@ -123,21 +180,20 @@ public class MethodHandler {
 			}
 		}
 	}
-	public static HitResult pickFromPos(Entity entity, double reach, double mod) {
-		reach = Math.max(reach - mod, 0);
+	public static HitResult pickCollisions(Entity entity, double reach) {
 		Vec3 viewVector = entity.getViewVector(1);
-		Vec3 pos = entity.getEyePosition(1).add(viewVector.scale(mod));
-		Vec3 endPos = pos.add(viewVector.x * reach, viewVector.y * reach, viewVector.z * reach);
-		return entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
+		Vec3 pos = entity.getEyePosition(1);
+		Vec3 endPos = pos.add(viewVector.scale(reach));
+		return entity.level().clip(new ClipContext(pos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
 	}
-	public static EntityHitResult rayTraceEntity(Player player, float partialTicks, double blockReachDistance) {
-		Vec3 from = player.getEyePosition(partialTicks);
-		Vec3 look = player.getViewVector(partialTicks);
+	public static EntityHitResult rayTraceEntity(Entity entity, float partialTicks, double blockReachDistance) {
+		Vec3 from = entity.getEyePosition(partialTicks);
+		Vec3 look = entity.getViewVector(partialTicks);
 		Vec3 to = from.add(look.x * blockReachDistance, look.y * blockReachDistance, look.z * blockReachDistance);
 
 		return ProjectileUtil.getEntityHitResult(
-			player.level(),
-			player,
+			entity.level(),
+			entity,
 			from,
 			to,
 			new AABB(from, to),
@@ -147,24 +203,19 @@ public class MethodHandler {
 		);
 	}
 	public static HitResult redirectResult(Player player, HitResult instance) {
-		if(instance.getType() == HitResult.Type.BLOCK) {
-			BlockHitResult blockHitResult = (BlockHitResult)instance;
-			BlockPos blockPos = blockHitResult.getBlockPos();
-			boolean bl = !player.level().getBlockState(blockPos).canOcclude() && !player.level().getBlockState(blockPos).getBlock().hasCollision;
-			EntityHitResult rayTraceResult = MethodHandler.rayTraceEntity(player, 1.0F, getCurrentAttackReach(player, 0.0F));
-			if (rayTraceResult != null && bl) {
-				double enemyDistance = player.distanceTo(rayTraceResult.getEntity());
-				double d = 0;
-				HitResult check;
-				while (d <= enemyDistance) {
-					check = pickFromPos(player, enemyDistance, d);
-					if (check.getType() == HitResult.Type.BLOCK) {
-						bl = !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).canOcclude() && !player.level().getBlockState(((BlockHitResult)check).getBlockPos()).getBlock().hasCollision;
-						if (!bl)
-							return instance;
-					}
-					d += 0.0002;
-				}
+		if (instance.getType() == HitResult.Type.BLOCK) {
+			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (!player.isCrouching() ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);
+			EntityHitResult rayTraceResult = rayTraceEntity(player, 1.0F, reach);
+			Entity entity = rayTraceResult != null ? rayTraceResult.getEntity() : null;
+			if (entity != null) {
+				double dist = player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition()));
+				reach *= reach;
+				if (dist > reach)
+					return instance;
+				double distanceTo = player.distanceTo(rayTraceResult.getEntity());
+				HitResult newResult = pickCollisions(player, distanceTo);
+				if (newResult.getType() != HitResult.Type.MISS)
+					return instance;
 				return rayTraceResult;
 			} else {
 				return instance;
@@ -172,38 +223,41 @@ public class MethodHandler {
 		}
 		return instance;
 	}
-	public static ItemStack getBlockingItem(LivingEntity entity) {
+
+	public static FakeUseItem getBlockingItem(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) {
-			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK || entity.getUseItem().canPerformAction(ToolActions.SHIELD_BLOCK)) {
-				return entity.getUseItem();
+			if (entity.getUseItem().getUseAnimation() == UseAnim.BLOCK) {
+				return new FakeUseItem(entity.getUseItem(), entity.getUsedItemHand(), true);
 			}
-		} else if ((entity.onGround() && entity.isCrouching() && ((LivingEntityExtensions) entity).hasEnabledShieldOnCrouch() || entity.isPassenger()) && ((LivingEntityExtensions)entity).hasEnabledShieldOnCrouch()) {
-			for(InteractionHand hand : InteractionHand.values()) {
-				ItemStack var1 = entity.getItemInHand(hand);
-				Item blockingItem = var1.getItem();
-				boolean canBlock = var1.getUseAnimation() == UseAnim.BLOCK || var1.canPerformAction(ToolActions.SHIELD_BLOCK);
-				boolean bl = Combatify.CONFIG.shieldOnlyWhenCharged.get() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) blockingItem).getBlockingType().requireFullCharge();
-				if (!var1.isEmpty() && canBlock && !isItemOnCooldown(entity, var1) && ((ItemExtensions)var1.getItem()).getBlockingType().canCrouchBlock() && !bl) {
-					return var1;
+		} else if (((entity.onGround() && entity.isCrouching()) || entity.isPassenger()) && (((LivingEntityExtensions)entity).combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))) {
+			for (InteractionHand hand : InteractionHand.values()) {
+				ItemStack stack = entity.getItemInHand(hand);
+				boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged.get() && entity instanceof Player player && player.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage.get() / 100F && ((ItemExtensions) stack.getItem()).getBlockingType().requireFullCharge();
+				boolean canUse = entity instanceof Player player && ((ItemExtensions) stack.getItem()).getBlockingType().canUse(player.level(), player, hand);
+				if (canUse && !stillRequiresCharge && !stack.isEmpty() && stack.getUseAnimation() == UseAnim.BLOCK && !isItemOnCooldown(entity, stack) && ((ItemExtensions) stack.getItem()).getBlockingType().canCrouchBlock()) {
+					return new FakeUseItem(stack, hand, false);
 				}
 			}
 		}
 
-		return ItemStack.EMPTY;
+		return new FakeUseItem(ItemStack.EMPTY, null, true);
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
 		return entity instanceof Player player && player.getCooldowns().isOnCooldown(var1.getItem());
 	}
+	public static double getChargedReach(ItemStack itemInHand) {
+		return ((ItemExtensions)itemInHand.getItem()).getChargedAttackBonus();
+	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
-		@Nullable final var attackRange = player.getAttribute(ForgeMod.ENTITY_REACH.get());
 		double chargedBonus = 0;
-		double baseAttackRange = Combatify.CONFIG.attackReach.get() ? 0 : 0.5;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
-		if (strengthScale > 1.95F && !player.isCrouching()) {
-			Item item = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
-			chargedBonus = ((ItemExtensions) item).getChargedAttackBonus();
-		}
-		return (attackRange != null) ? (baseAttackRange + attackRange.getValue() + chargedBonus) : baseAttackRange + chargedBonus;
+		if (strengthScale > 1.95F && !player.isCrouching()) chargedBonus = getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND));
+		return getCurrentAttackReachWithoutChargedReach(player) + chargedBonus;
+	}
+	public static double getCurrentAttackReachWithoutChargedReach(Player player) {
+		@Nullable final var attackRange = player.getAttribute(ForgeMod.ENTITY_REACH.get());
+		double baseAttackRange = Combatify.CONFIG.attackReach.get() ? 2.5 : 3;
+		return (attackRange != null) ? attackRange.getValue() : baseAttackRange;
 	}
 	public static double getSquaredCurrentAttackReach(Player player, float baseTime) {
 		final var attackRange = getCurrentAttackReach(player,baseTime);

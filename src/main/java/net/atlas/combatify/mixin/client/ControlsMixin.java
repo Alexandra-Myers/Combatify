@@ -1,6 +1,8 @@
-package net.atlas.combatify.mixin;
+package net.atlas.combatify.mixin.client;
 
-import net.atlas.combatify.extensions.IOptions;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.atlas.combatify.CombatifyClient;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.OptionsSubScreen;
@@ -23,12 +25,12 @@ public abstract class ControlsMixin extends OptionsSubScreen {
 	@Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 5), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void injectOptions(CallbackInfo ci, int i, int j, int k) {
 		k+=24;
-		addRenderableWidget(((IOptions)options).autoAttack().createButton(this.options, i, k, 150));
-		addRenderableWidget(((IOptions)options).shieldCrouch().createButton(this.options, j, k, 150));
+		addRenderableWidget(CombatifyClient.autoAttack.createButton(this.options, i, k, 150));
+		addRenderableWidget(CombatifyClient.shieldCrouch.createButton(this.options, j, k, 150));
 	}
-	@Redirect(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 6))
-	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener) {
+	@WrapOperation(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/controls/ControlsScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 6))
+	private GuiEventListener redirectDoneButton(ControlsScreen instance, GuiEventListener guiEventListener, Operation<GuiEventListener> original) {
 		assert this.minecraft != null;
-		return this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
+		return original.call(instance, Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
 	}
 }

@@ -30,7 +30,6 @@ import static net.atlas.combatify.Combatify.shields;
 public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtensions {
 	public final Tier tier;
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Combatify.MOD_ID);
-	public static final RegistryObject<Item> WOODEN_SHIELD = registerItem(id("wooden_shield"), () -> new TieredShieldItem(Tiers.WOOD, new Item.Properties().durability(Tiers.WOOD.getUses() * 6)));
 	public static final RegistryObject<Item> IRON_SHIELD = registerItem(id("iron_shield"), () -> new TieredShieldItem(Tiers.IRON, new Item.Properties().durability(Tiers.IRON.getUses() * 3)));
 	public static final RegistryObject<Item> GOLD_SHIELD = registerItem(id("golden_shield"), () -> new TieredShieldItem(Tiers.GOLD, new Item.Properties().durability(Tiers.GOLD.getUses() * 6)));
 	public static final RegistryObject<Item> DIAMOND_SHIELD = registerItem(id("diamond_shield"), () -> new TieredShieldItem(Tiers.DIAMOND, new Item.Properties().durability(Tiers.DIAMOND.getUses() * 2)));
@@ -44,8 +43,9 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 	}
 
 	private void registerModelPredicate() {
+		//noinspection removal
 		ItemProperties.register(this, new ResourceLocation("blocking"), (itemStack, clientWorld, livingEntity, i) ->
-			livingEntity != null && livingEntity.isUsingItem() && MethodHandler.getBlockingItem(livingEntity) == itemStack ? 1.0F : 0.0F);
+			livingEntity != null && livingEntity.isBlocking() && MethodHandler.getBlockingItem(livingEntity).stack() == itemStack ? 1.0F : 0.0F);
 	}
 
 

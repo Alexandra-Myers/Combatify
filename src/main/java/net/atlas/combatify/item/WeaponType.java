@@ -14,6 +14,8 @@ import net.minecraftforge.common.IExtensibleEnum;
 
 import java.util.UUID;
 
+import static net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_UUID;
+
 public enum WeaponType implements IExtensibleEnum {
 	EMPTY,
     SWORD,
@@ -25,9 +27,8 @@ public enum WeaponType implements IExtensibleEnum {
 	KNIFE,
     TRIDENT;
 
-    public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-    public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
-    public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
+	public static final UUID BASE_ATTACK_SPEED_CTS_UUID = UUID.fromString("FA233E1C-4110-4865-B01B-901007a318e1");
+	public static final UUID BASE_ATTACK_REACH_UUID = UUID.fromString("26cb07a3-209d-4110-8e10-1010243614c8");
 
     WeaponType() {
     }
@@ -39,7 +40,7 @@ public enum WeaponType implements IExtensibleEnum {
         double reach = this.getReach();
         attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
 		if (!Combatify.CONFIG.instaAttack.get())
-			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
+			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_CTS_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
         if (reach != 0.0F && Combatify.CONFIG.attackReach.get()) {
             attributeModifiers.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
         }
@@ -51,7 +52,7 @@ public enum WeaponType implements IExtensibleEnum {
 		double reach = this.getReach();
 		attributeModifiers.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
 		if (!Combatify.CONFIG.instaAttack.get())
-			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
+			attributeModifiers.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_CTS_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
 		if (reach != 0.0F && Combatify.CONFIG.attackReach.get()) {
 			attributeModifiers.put(ForgeMod.ENTITY_REACH.get(), new AttributeModifier(BASE_ATTACK_REACH_UUID, "Weapon modifier", reach, AttributeModifier.Operation.ADDITION));
 		}

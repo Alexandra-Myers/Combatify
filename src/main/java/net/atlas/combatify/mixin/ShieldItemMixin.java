@@ -48,7 +48,7 @@ public class ShieldItemMixin extends Item implements ItemExtensions {
 				}
 			}
 		}
-		return Combatify.registeredTypes.get("shield");
+		return Combatify.CONFIG.tieredShields.get() ? Combatify.registeredTypes.get("new_shield") : Combatify.registeredTypes.get("shield");
 	}
 
 	@Override

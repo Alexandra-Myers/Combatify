@@ -1,6 +1,19 @@
 {
+  "attribute.name.generic.armor_piercing": "Armor Piercing",
   "attribute.name.generic.attack_reach": "Attack Reach",
-  "attribute.name.generic.shield_strength": "Damage Protection",
-  "attribute.name.generic.sword_block_strength": "Damage Reduction",
-  "attribute.name.generic.longsword_piercing": "Armor Piercing"
+  "attribute.name.generic.damage_protection": "Damage Protection",
+  "attribute.name.generic.damage_reduction": "Damage Reduction",
+  "attribute.name.generic.shield_reduction": "Shield Damage Reduction",
+  "attribute.name.generic.shield_strength": "Shield Strength",
+  "enchantment.minecraft.cleaving" : "Cleaving",
+  "options.autoAttack" : "Auto-Attack",
+  "options.shieldCrouch" : "Use Shield on Crouch",
+  "options.attackIndicatorMaxValue": "Attack Indicator Max Value",
+  "options.attackIndicatorMaxValue.default": "Default",
+  "options.attackIndicatorMaxValue.tooltip": "Adjust this slider to change the value at which the Attack Indicator will finish charging to on screen. By default this is 2.0, to match CTS.",
+  "options.attackIndicatorMinValue": "Attack Indicator Min Value",
+  "options.attackIndicatorMinValue.default": "Default",
+  "options.attackIndicatorMinValue.tooltip": "Adjust this slider to change the value at which the Attack Indicator will start charging at on screen. By default this is 1.3, to match CTS.",
+  "options.rhythmicAttack" : "Rhythmic Attacks",
+  "options.shieldIndicator" : "Shield Indicator"
 }
