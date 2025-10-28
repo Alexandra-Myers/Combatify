@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.extensions.*;
-import net.atlas.combatify.util.ClientMethodHandler;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;

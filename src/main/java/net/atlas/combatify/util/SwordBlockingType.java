@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.DefendingEnchantment;
-import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.extensions.Tierable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
