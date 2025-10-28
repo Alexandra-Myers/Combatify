@@ -39,7 +39,7 @@ public class TieredShieldItem extends ShieldItem implements Tierable, ItemExtens
 		super(properties);
 		this.tier = tier;
 		shields.add(this);
-		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> this::registerModelPredicate);
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerModelPredicate);
 	}
 
 	private void registerModelPredicate() {
