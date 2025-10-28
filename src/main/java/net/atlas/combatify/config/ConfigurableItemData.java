@@ -13,14 +13,15 @@ public class ConfigurableItemData {
 	public final Boolean cooldownAfter;
 	public final WeaponType type;
 	public final BlockingType blockingType;
-	public final Double blockStrength;
+	public final Double blockBase;
+	public final Double blockFactor;
 	public final Double blockKbRes;
 	public final Integer enchantability;
 	public final Boolean isEnchantable;
 	public final Boolean hasSwordEnchants;
 	public final Integer useDuration;
 	public final Double piercingLevel;
-	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockStrength, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Integer useDuration, Double piercingLevel) {
+	ConfigurableItemData(Double attackDamage, Double attackSpeed, Double attackReach, Double chargedReach, Integer stackSize, Integer cooldown, Boolean cooldownAfter, WeaponType weaponType, BlockingType blockingType, Double blockBase, Double blockFactor, Double blockKbRes, Integer enchantability, Boolean isEnchantable, Boolean hasSwordEnchants, Integer useDuration, Double piercingLevel) {
 		damage = clamp(attackDamage, -10, 1000);
 		speed = clamp(attackSpeed, -1, 7.5);
 		reach = clamp(attackReach, 0, 1024);
@@ -30,7 +31,8 @@ public class ConfigurableItemData {
 		this.cooldownAfter = cooldownAfter;
 		type = weaponType;
 		this.blockingType = blockingType;
-		this.blockStrength = clamp(blockStrength, 0, 1000);
+		this.blockBase = clamp(blockBase, 0, 1000);
+		this.blockFactor = clamp(blockBase, 0, 100);
 		this.blockKbRes = clamp(blockKbRes, 0, 1);
 		this.enchantability = clamp(enchantability, 0, 1000);
 		this.isEnchantable = isEnchantable;

@@ -24,7 +24,12 @@ public class EmptyBlockingType extends BlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
+	public float getShieldBlockBase(ItemStack stack) {
+		return 0;
+	}
+
+	@Override
+	public float getShieldBlockFactor(ItemStack stack) {
 		return 0;
 	}
 

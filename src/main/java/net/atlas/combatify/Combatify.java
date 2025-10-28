@@ -46,6 +46,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -76,11 +77,11 @@ public class Combatify {
 	public static Map<String, BlockingType> registeredTypes = new HashMap<>();
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	@SuppressWarnings("unused")
-	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setPercentage(true).setSwordBlocking(true));
+	public static final BlockingType SWORD = registerBlockingType(new SwordBlockingType("sword").setToolBlocker(true).setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setSwordBlocking(true));
 	@SuppressWarnings("unused")
 	public static final BlockingType SHIELD = registerBlockingType(new ShieldBlockingType("shield"));
 	@SuppressWarnings("unused")
-	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false).setPercentage(true));
+	public static final BlockingType NEW_SHIELD = registerBlockingType(new NewShieldBlockingType("new_shield").setKbMechanics(false));
 	public static final BlockingType EMPTY = new EmptyBlockingType("empty").setDisablement(false).setCrouchable(false).setRequireFullCharge(false).setKbMechanics(false);
 
 	public static void markState(Supplier<CombatifyState> state) {
@@ -112,6 +113,7 @@ public class Combatify {
 
 		bus.addListener(this::commonSetup);
 		bus.addListener(this::interModEnqueue);
+		bus.addListener(EventPriority.LOW, this::onAddToRegistry);
 
 		MinecraftForge.EVENT_BUS.register(this);
 	}
@@ -132,12 +134,13 @@ public class Combatify {
 		MobEffects.WEAKNESS.addAttributeModifier(Attributes.ATTACK_DAMAGE, "22653B89-116E-49DC-9B6B-9971489B5BE5", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL);
 		Combatify.LOGGER.info("Loaded items config.");
 	}
-	@SubscribeEvent
+	@SuppressWarnings("removal")
 	public void onAddToRegistry(RegisterEvent event) {
 		if (event.getRegistryKey().equals(Registries.ATTRIBUTE)) {
 			ForgeRegistry<?> fReg = (ForgeRegistry<?>) event.getForgeRegistry();
-			//noinspection removal
-			fReg.addAlias(new ResourceLocation("forge", "attack_range"), new ResourceLocation("attack_reach"));
+			ResourceLocation src = new ResourceLocation("generic.attack_reach");
+			ResourceLocation dst = new ResourceLocation("forge", "entity_reach");
+			fReg.addAlias(src, dst);
 		}
 	}
 	@SubscribeEvent

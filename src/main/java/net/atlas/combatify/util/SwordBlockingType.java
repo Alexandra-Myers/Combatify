@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableItemData;
-import net.atlas.combatify.enchantment.DefendingEnchantment;
 import net.atlas.combatify.extensions.Tierable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
@@ -18,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,8 +30,9 @@ public class SwordBlockingType extends BlockingType {
 	public void block(LivingEntity instance, @Nullable Entity entity, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef f, LocalFloatRef g, LocalBooleanRef bl) {
 		if(instance.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
 			boolean blocked = !source.is(DamageTypeTags.IS_EXPLOSION) && !source.is(DamageTypeTags.IS_PROJECTILE);
-            float actualStrength = this.getShieldBlockDamageValue(blockingItem);
-            g.set(amount.get() * actualStrength);
+			float factor = this.getShieldBlockFactor(blockingItem);
+			float base = this.getShieldBlockBase(blockingItem);
+			g.set(Math.min(base + (amount.get() * factor), amount.get()));
 			entity = source.getDirectEntity();
 			if (blocked && entity instanceof LivingEntity)
 				instance.blockUsingShield((LivingEntity) entity);
@@ -43,22 +42,24 @@ public class SwordBlockingType extends BlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
-		if(Combatify.ITEMS != null && Combatify.ITEMS.configuredItems.containsKey(stack.getItem())) {
-			ConfigurableItemData configurableItemData = Combatify.ITEMS.configuredItems.get(stack.getItem());
-			if (configurableItemData.blockStrength != null) {
-				return (float) (configurableItemData.blockStrength / 100.0) + (EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), stack) * 0.1F);
-			}
-		}
+	public float getShieldBlockBase(ItemStack stack) {
+		Float configBase = getShieldBlockBaseConfig(stack);
+		if (configBase != null) return configBase;
+		int strengthIncrease = 0;
+		if (Combatify.CONFIG.defender.get()) strengthIncrease += getDefenderBonus(stack);
+		return strengthIncrease;
+	}
+
+	@Override
+	public float getShieldBlockFactor(ItemStack stack) {
+		Float configFactor = getShieldBlockFactorConfig(stack);
+		if (configFactor != null) return configFactor;
 		Tier var2 = stack.getItem() instanceof TieredItem tieredItem ? tieredItem.getTier() : Tiers.WOOD;
 		if (stack.getItem() instanceof Tierable tierable)
 			var2 = tierable.getTier();
 		float strengthIncrease = (var2.getAttackDamageBonus()) / 2F - 2F;
 		strengthIncrease += Combatify.CONFIG.swordProtectionEfficacy.get();
 		strengthIncrease = Math.max(strengthIncrease, -3);
-		if(Combatify.CONFIG.defender.get()) {
-			strengthIncrease += EnchantmentHelper.getItemEnchantmentLevel(DefendingEnchantment.DEFENDER.get(), stack);
-		}
 		return Math.min(0.3F + (strengthIncrease * 0.1F), 1);
 	}
 	@Override

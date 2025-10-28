@@ -44,8 +44,7 @@
     "SweepingEdgeEnchantmentMixin",
     "SwordItemMixin",
     "ThrownTridentMixin",
-    "TridentItemMixin",
-    "client.ClientAttackAnimMixin"
+    "TridentItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -53,6 +52,7 @@
   "client": [
     "client.AccessibilityOptionsMixin",
     "client.ArmHeightMixin",
+    "client.ClientAttackAnimMixin",
     "client.ControlsMixin",
     "client.GameRendererMixin",
     "client.GuiMixin",
