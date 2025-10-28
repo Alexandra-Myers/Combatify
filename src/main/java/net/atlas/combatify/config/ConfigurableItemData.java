@@ -32,7 +32,7 @@ public class ConfigurableItemData {
 		type = weaponType;
 		this.blockingType = blockingType;
 		this.blockBase = clamp(blockBase, 0, 1000);
-		this.blockFactor = clamp(blockBase, 0, 100);
+		this.blockFactor = clamp(blockFactor, 0, 100);
 		this.blockKbRes = clamp(blockKbRes, 0, 1);
 		this.enchantability = clamp(enchantability, 0, 1000);
 		this.isEnchantable = isEnchantable;
