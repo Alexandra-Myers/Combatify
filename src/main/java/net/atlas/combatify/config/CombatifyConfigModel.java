@@ -58,14 +58,6 @@ public class CombatifyConfigModel {
 	public float bowUncertainty = 0.25F;
 	@RangeConstraint(min = 2.5, max = 20)
 	public float baseHandAttackSpeed = 2.5F;
-	@RangeConstraint(min = -1, max = 17.5F)
-	public float slowestToolAttackSpeed = -1F;
-	@RangeConstraint(min = -1, max = 17.5F)
-	public float slowToolAttackSpeed = -0.5F;
-	@RangeConstraint(min = -1, max = 17.5F)
-	public float fastToolAttackSpeed = 0.5F;
-	@RangeConstraint(min = -1, max = 17.5F)
-	public float fastestToolAttackSpeed = 1F;
 	@RangeConstraint(min = 0, max = 5)
 	public float minHitboxSize = 0.9F;
 	public static class UseDurations {

@@ -76,33 +76,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Inject(method = "blockedByShield", at = @At(value="HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
-		double x = target.getX() - this.getX();
-		double z = target.getZ() - this.getZ();
-		double x2 = this.getX() - target.getX();
-		double z2 = this.getZ() - target.getZ();
-		Item blockingItem = MethodHandler.getBlockingItem(target).getItem();
-		double piercingLevel = 0;
-		Item item = thisEntity.getMainHandItem().getItem();
-		piercingLevel += ((ItemExtensions)item).getPiercingLevel();
-		if (Combatify.CONFIG.piercer())
-			piercingLevel += CustomEnchantmentHelper.getPierce((LivingEntity) (Object) this) * 0.1;
-		boolean bl = item instanceof AxeItem || piercingLevel > 0;
-		ItemExtensions shieldItem = (ItemExtensions) blockingItem;
-		if (bl && shieldItem.getBlockingType().canBeDisabled()) {
-			if (piercingLevel > 0)
-				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
-			float damage = Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(thisEntity) * Combatify.CONFIG.cleavingDisableTime();
-			if(Combatify.CONFIG.defender())
-				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction();
-			if(target instanceof PlayerExtensions player)
-				player.ctsShieldDisable(damage, blockingItem);
-		}
-		if(shieldItem.getBlockingType().isToolBlocker()) {
-			ci.cancel();
-			return;
-		}
-		MethodHandler.knockback(target, 0.5, x2, z2);
-		MethodHandler.knockback(thisEntity, 0.5, x, z);
+		MethodHandler.tryDisableShield(thisEntity, target);
 		ci.cancel();
 	}
 	@Override

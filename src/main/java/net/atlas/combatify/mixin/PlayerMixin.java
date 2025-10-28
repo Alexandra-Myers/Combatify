@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -11,15 +13,13 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.TieredShieldItem;
-import net.atlas.combatify.util.CustomEnchantmentHelper;
+import net.atlas.combatify.extensions.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.util.MethodHandler;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -42,8 +42,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import java.util.Iterator;
-import java.util.List;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -224,21 +223,21 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		MethodHandler.knockback(instance, d, e, f);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
-	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d) {
-		bl4.set(false);
-		if (!bl3 && !bl2 && this.onGround() && d < (double)this.getSpeed())
-			bl4.set(checkSweepAttack());
-		if(bl6) {
-			if(bl4.get()) {
+	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 5) final boolean bl6, @Local(ordinal = 0) final float attackDamage, @Local(ordinal = 0) final double d, @Share("wasSweep") LocalBooleanRef wasSweep) {
+		if (!bl3 && !bl2 && this.onGround() && d < (double)this.getSpeed() && checkSweepAttack()) {
+			if (bl6) {
 				AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
-				this.betterSweepAttack(box, currentAttackReach, attackDamage, target);
-				bl4.set(false);
+				MethodHandler.sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, target);
 			}
+			wasSweep.set(true);
 		}
 	}
-	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
-	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4) {
-		bl4.set(checkSweepAttack());
+	@Definition(id = "bl4", local = @Local(type = boolean.class, ordinal = 3))
+	@Expression("bl4 != false")
+	@ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
+	public boolean resweep(boolean original) {
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		return false;
 	}
 	@Override
 	public void combatify$attackAir() {
@@ -246,11 +245,11 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			combatify$customSwing(InteractionHand.MAIN_HAND);
 			float attackDamage = (float) Objects.requireNonNull(player.getAttribute(Attributes.ATTACK_DAMAGE)).getValue();
 			if (attackDamage > 0.0F && this.checkSweepAttack()) {
-				float var2 = (float) MethodHandler.getCurrentAttackReach(player, 1.0F);
+				float reach = (float) MethodHandler.getCurrentAttackReach(player,1.0F);
 				double var5 = (-Mth.sin(player.yBodyRot * 0.017453292F)) * 2.0;
 				double var7 = Mth.cos(player.yBodyRot * 0.017453292F) * 2.0;
-				AABB var9 = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
-				betterSweepAttack(var9, var2, attackDamage, null);
+				AABB box = player.getBoundingBox().inflate(1.0, 0.25, 1.0).move(var5, 0.0, var7);
+				MethodHandler.sweepAttack(player, box, reach, attackDamage, null);
 			}
 
 			this.combatify$resetAttackStrengthTicker(false);
@@ -322,43 +321,6 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	@Unique
 	protected boolean checkSweepAttack() {
 		return getAttackStrengthScale(baseValue) > 1.95F && EnchantmentHelper.getSweepingDamageRatio(player) > 0.0F;
-	}
-
-	@Unique
-	public void betterSweepAttack(AABB var1, float var2, float var3, Entity var4) {
-		float sweepingDamageRatio = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * var3;
-		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, var1);
-		Iterator<LivingEntity> livingEntityIterator = livingEntities.iterator();
-
-		while (true) {
-			LivingEntity var8;
-			do {
-				do {
-					do {
-						do {
-							if (!livingEntityIterator.hasNext()) {
-								player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
-								if (player.level() instanceof ServerLevel serverLevel) {
-									double var11 = -Mth.sin(player.getYRot() * 0.017453292F);
-									double var12 = Mth.cos(player.getYRot() * 0.017453292F);
-									serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, player.getX() + var11, player.getY() + player.getBbHeight() * 0.5, player.getZ() + var12, 0, var11, 0.0, var12, 0.0);
-								}
-
-								return;
-							}
-
-							var8 = livingEntityIterator.next();
-						} while (var8 == player);
-					} while (var8 == var4);
-				} while (player.isAlliedTo(var8));
-			} while (var8 instanceof ArmorStand armorStand && armorStand.isMarker());
-
-			float var9 = var2 + var8.getBbWidth() * 0.5F;
-			if (player.distanceToSqr(var8) < (var9 * var9)) {
-				MethodHandler.knockback(var8, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
-				var8.hurt(damageSources().playerAttack(player), sweepingDamageRatio);
-			}
-		}
 	}
 
 	@Override

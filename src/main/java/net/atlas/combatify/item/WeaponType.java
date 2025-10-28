@@ -168,7 +168,6 @@ public enum WeaponType {
 			}
 		}
 		return switch (this) {
-			case KNIFE -> 0.25;
 			case SWORD -> 0.5;
 			case LONGSWORD, HOE, TRIDENT -> 1;
 			default -> 0;

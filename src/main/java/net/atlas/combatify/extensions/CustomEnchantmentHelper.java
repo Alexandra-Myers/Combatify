@@ -1,4 +1,4 @@
-package net.atlas.combatify.util;
+package net.atlas.combatify.extensions;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;

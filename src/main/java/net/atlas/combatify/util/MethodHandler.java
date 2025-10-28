@@ -1,9 +1,11 @@
 package net.atlas.combatify.util;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.ItemExtensions;
 import net.atlas.combatify.extensions.LivingEntityExtensions;
 import net.atlas.combatify.item.NewAttributes;
+import net.atlas.combatify.item.TieredShieldItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -23,15 +25,20 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class MethodHandler {
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
@@ -40,6 +47,59 @@ public class MethodHandler {
 		double z = Mth.clamp(vec3.z, box.minZ, box.maxZ);
 
 		return new Vec3(x, y, z);
+	}
+	public static void sweepAttack(Player player, AABB box, float reach, float damage, Entity entity) {
+		float sweepingDamageRatio = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * damage;
+		List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
+		DamageSource damageSource = player.damageSources().playerAttack(player);
+
+		for (LivingEntity livingEntity : livingEntities) {
+			if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
+				continue;
+			float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
+			livingEntity.hurt(damageSource, sweepingDamageRatio);
+			if (player.distanceToSqr(livingEntity) < (correctReach * correctReach)) {
+				MethodHandler.knockback(livingEntity, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+			}
+		}
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0F, 1.0F);
+		player.sweepAttack();
+	}
+	public static void tryDisableShield(LivingEntity attacker, LivingEntity target) {
+		double x = target.getX() - attacker.getX();
+		double z = target.getZ() - attacker.getZ();
+		double x2 = attacker.getX() - target.getX();
+		double z2 = attacker.getZ() - target.getZ();
+		ItemStack blockingStack = MethodHandler.getBlockingItem(target).stack();
+		Item blockingItem = blockingStack.getItem();
+		double piercingLevel = 0;
+		Item item = attacker.getMainHandItem().getItem();
+		piercingLevel += ((ItemExtensions)item).getPiercingLevel();
+		if (Combatify.CONFIG.piercer())
+			piercingLevel += CustomEnchantmentHelper.getPierce(attacker) * 0.1;
+		boolean bl = item instanceof AxeItem || piercingLevel > 0;
+		ItemExtensions shieldItem = (ItemExtensions) blockingItem;
+		if (bl && shieldItem.getBlockingType().canBeDisabled()) {
+			if (piercingLevel > 0)
+				((LivingEntityExtensions) target).setPiercingNegation(piercingLevel);
+			float damage = Combatify.CONFIG.shieldDisableTime() + (float) CustomEnchantmentHelper.getChopping(attacker) * Combatify.CONFIG.cleavingDisableTime();
+			if(Combatify.CONFIG.defender())
+				damage -= CustomEnchantmentHelper.getDefense(target) * Combatify.CONFIG.defenderDisableReduction();
+			if(target instanceof Player player)
+				MethodHandler.disableShield(player, damage, blockingItem);
+		}
+		if(shieldItem.getBlockingType().isToolBlocker()) return;
+		MethodHandler.knockback(target, 0.5, x2, z2);
+		MethodHandler.knockback(attacker, 0.5, x, z);
+	}
+	public static void disableShield(Player player, float damage, Item item) {
+		player.getCooldowns().addCooldown(item, (int)(damage * 20.0F));
+		if (item instanceof TieredShieldItem)
+			for (TieredShieldItem tieredShieldItem : Combatify.shields)
+				if (item != tieredShieldItem)
+					player.getCooldowns().addCooldown(tieredShieldItem, (int)(damage * 20.0F));
+		player.stopUsingItem();
+		player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
 	}
 	public static double calculateValue(@Nullable AttributeInstance attributeInstance, float damageBonus) {
 		if(attributeInstance == null)

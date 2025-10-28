@@ -2,7 +2,6 @@ package net.atlas.combatify.util;
 
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import net.atlas.combatify.Combatify;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -25,7 +24,12 @@ public class EmptyBlockingType extends BlockingType {
 	}
 
 	@Override
-	public float getShieldBlockDamageValue(ItemStack stack) {
+	public float getShieldBlockBase(ItemStack stack) {
+		return 0;
+	}
+
+	@Override
+	public float getShieldBlockFactor(ItemStack stack) {
 		return 0;
 	}
 

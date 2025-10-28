@@ -8,6 +8,7 @@ import net.atlas.combatify.config.ItemConfig;
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.item.NewAttributes;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.HitResultRotationEntry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.ModifyItemAttributeModifiersCallback;
@@ -162,26 +163,12 @@ public class NetworkingHandler {
 		});
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
 			if (Combatify.unmoddedPlayers.contains(player.getUUID()) && finalizingAttack.get(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
-				Map<HitResult, Float[]> hitResultToRotationMap = ((ServerPlayerExtensions)serverPlayer).getHitResultToRotationMap();
 				((ServerPlayerExtensions) serverPlayer).getPresentResult();
-				for (HitResult hitResultToChoose : ((ServerPlayerExtensions)serverPlayer).getOldHitResults()) {
-					if(hitResultToChoose == null)
-						continue;
-					Float[] rotations = null;
-					if (hitResultToRotationMap.containsKey(hitResultToChoose))
-						rotations = hitResultToRotationMap.get(hitResultToChoose);
-					float xRot = serverPlayer.getXRot() % 360;
-					float yRot = serverPlayer.getYHeadRot() % 360;
-					if(rotations != null) {
-						float xDiff = Math.abs(xRot - rotations[1]);
-						float yDiff = Math.abs(yRot - rotations[0]);
-						if(xDiff > 20 || yDiff > 20)
-							continue;
-					}
-					if (hitResultToChoose.getType() == HitResult.Type.ENTITY) {
-						return InteractionResult.FAIL;
-					}
-				}
+				float xRot = serverPlayer.getXRot();
+				float yRot = serverPlayer.getYHeadRot();
+				HitResult hitResult = ((ServerPlayerExtensions) serverPlayer).getOldHitResults().stream().filter(hitResultRotEntry -> hitResultRotEntry.shouldAccept(xRot, yRot))
+					.min((firstResultRotEntry, secondResultRotEntry) -> firstResultRotEntry.compareTo(secondResultRotEntry, xRot, yRot)).map(HitResultRotationEntry::hitResult).orElse(null);
+				if (hitResult != null && hitResult.getType() == HitResult.Type.ENTITY) return InteractionResult.FAIL;
 			}
 			return InteractionResult.PASS;
 		});

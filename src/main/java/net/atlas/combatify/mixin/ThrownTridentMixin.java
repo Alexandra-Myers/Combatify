@@ -3,7 +3,7 @@ package net.atlas.combatify.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.combatify.util.CustomEnchantmentHelper;
+import net.atlas.combatify.extensions.CustomEnchantmentHelper;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractArrow;

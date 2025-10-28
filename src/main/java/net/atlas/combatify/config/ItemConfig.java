@@ -197,8 +197,6 @@ public class ItemConfig extends AtlasConfig {
 							blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
 						if (jsonObject.has("is_tool"))
 							blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
-						if (jsonObject.has("is_percentage"))
-							blockingType.setPercentage(getBoolean(jsonObject, "is_percentage"));
 						if (jsonObject.has("can_block_hit"))
 							blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
 						if (jsonObject.has("can_crouch_block"))
@@ -247,8 +245,6 @@ public class ItemConfig extends AtlasConfig {
 			blockingType.setRequireFullCharge(getBoolean(jsonObject, "require_full_charge"));
 		if (jsonObject.has("is_tool"))
 			blockingType.setToolBlocker(getBoolean(jsonObject, "is_tool"));
-		if (jsonObject.has("is_percentage"))
-			blockingType.setPercentage(getBoolean(jsonObject, "is_percentage"));
 		if (jsonObject.has("can_block_hit"))
 			blockingType.setBlockHit(getBoolean(jsonObject, "can_block_hit"));
 		if (jsonObject.has("can_crouch_block"))
@@ -274,7 +270,6 @@ public class ItemConfig extends AtlasConfig {
 					blockingType.setBlockHit(buf1.readBoolean());
 					blockingType.setCrouchable(buf1.readBoolean());
 					blockingType.setKbMechanics(buf1.readBoolean());
-					blockingType.setPercentage(buf1.readBoolean());
 					blockingType.setToolBlocker(buf1.readBoolean());
 					blockingType.setRequireFullCharge(buf1.readBoolean());
 					blockingType.setSwordBlocking(buf1.readBoolean());
@@ -306,7 +301,8 @@ public class ItemConfig extends AtlasConfig {
 			WeaponType type = null;
 			String blockingType = buf1.readUtf();
 			BlockingType bType = Combatify.registeredTypes.get(blockingType);
-			Double blockStrength = buf1.readDouble();
+			Double blockBase = buf1.readDouble();
+			Double blockFactor = buf1.readDouble();
 			Double blockKbRes = buf1.readDouble();
 			Integer enchantlevel = buf1.readInt();
 			int isEnchantableAsInt = buf1.readInt();
@@ -327,8 +323,10 @@ public class ItemConfig extends AtlasConfig {
 				stackSize = null;
 			if(cooldown == -10)
 				cooldown = null;
-			if(blockStrength == -10)
-				blockStrength = null;
+			if (blockBase == -10)
+				blockBase = null;
+			if (blockFactor == -10)
+				blockFactor = null;
 			if(blockKbRes == -10)
 				blockKbRes = null;
 			if(enchantlevel == -10)
@@ -344,7 +342,7 @@ public class ItemConfig extends AtlasConfig {
 			switch (weaponType) {
 				case "SWORD", "LONGSWORD", "AXE", "PICKAXE", "HOE", "SHOVEL", "KNIFE", "TRIDENT" -> type = WeaponType.fromID(weaponType);
 			}
-			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockStrength, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
+			return new ConfigurableItemData(damage, speed, reach, chargedReach, stackSize, cooldown, cooldownAfter, type, bType, blockBase, blockFactor, blockKbRes, enchantlevel, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
 		});
 		configuredWeapons = buf.readMap(buf1 -> WeaponType.fromID(buf1.readUtf()), buf1 -> {
 			Double damageOffset = buf1.readDouble();
@@ -383,7 +381,6 @@ public class ItemConfig extends AtlasConfig {
 			buf1.writeBoolean(blockingType.canBlockHit());
 			buf1.writeBoolean(blockingType.canCrouchBlock());
 			buf1.writeBoolean(blockingType.defaultKbMechanics());
-			buf1.writeBoolean(blockingType.isPercentage());
 			buf1.writeBoolean(blockingType.isToolBlocker());
 			buf1.writeBoolean(blockingType.requireFullCharge());
 			buf1.writeBoolean(blockingType.requiresSwordBlocking());
@@ -399,7 +396,8 @@ public class ItemConfig extends AtlasConfig {
 				buf12.writeBoolean(configurableItemData.cooldownAfter);
 			buf12.writeUtf(configurableItemData.type == null ? "empty" : configurableItemData.type.name());
 			buf12.writeUtf(configurableItemData.blockingType == null ? "blank" : configurableItemData.blockingType.getName());
-			buf12.writeDouble(configurableItemData.blockStrength == null ? -10 : configurableItemData.blockStrength);
+			buf12.writeDouble(configurableItemData.blockBase == null ? -10 : configurableItemData.blockBase);
+			buf12.writeDouble(configurableItemData.blockFactor == null ? -10 : configurableItemData.blockFactor);
 			buf12.writeDouble(configurableItemData.blockKbRes == null ? -10 : configurableItemData.blockKbRes);
 			buf12.writeInt(configurableItemData.enchantability == null ? -10 : configurableItemData.enchantability);
 			buf12.writeInt(configurableItemData.isEnchantable == null ? -10 : configurableItemData.isEnchantable ? 1 : 0);
@@ -446,7 +444,8 @@ public class ItemConfig extends AtlasConfig {
 		Boolean cooldownAfterUse = null;
 		WeaponType type = null;
 		BlockingType blockingType = null;
-		Double blockStrength = null;
+		Double blockBase = null;
+		Double blockFactor = null;
 		Double blockKbRes = null;
 		Integer enchantment_level = null;
 		Boolean isEnchantable = null;
@@ -464,7 +463,8 @@ public class ItemConfig extends AtlasConfig {
 			cooldownAfterUse = oldData.cooldownAfter;
 			type = oldData.type;
 			blockingType = oldData.blockingType;
-			blockStrength = oldData.blockStrength;
+			blockBase = oldData.blockBase;
+			blockFactor = oldData.blockFactor;
 			blockKbRes = oldData.blockKbRes;
 			enchantment_level = oldData.enchantability;
 			isEnchantable = oldData.isEnchantable;
@@ -516,8 +516,10 @@ public class ItemConfig extends AtlasConfig {
 				throw new ReportedException(CrashReport.forThrowable(new JsonSyntaxException("The JSON must contain the boolean 'cooldown_after' if a cooldown is defined!"), "Applying Item Cooldown"));
 			cooldownAfterUse = getBoolean(jsonObject, "cooldown_after");
 		}
-		if (jsonObject.has("damage_protection"))
-			blockStrength = getDouble(jsonObject, "damage_protection");
+		if (jsonObject.has("base_protection"))
+			blockBase = getDouble(jsonObject, "base_protection");
+		if (jsonObject.has("protection_factor"))
+			blockFactor = getDouble(jsonObject, "protection_factor");
 		if (jsonObject.has("block_knockback_resistance"))
 			blockKbRes = getDouble(jsonObject, "block_knockback_resistance");
 		if (jsonObject.has("enchantment_level"))
@@ -530,7 +532,7 @@ public class ItemConfig extends AtlasConfig {
 			useDuration = getInt(jsonObject, "use_duration");
 		if (jsonObject.has("armor_piercing"))
 			piercingLevel = getDouble(jsonObject, "armor_piercing");
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockStrength, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(damage, speed, reach, chargedReach, stack_size, cooldown, cooldownAfterUse, type, blockingType, blockBase, blockFactor, blockKbRes, enchantment_level, isEnchantable, hasSwordEnchants, useDuration, piercingLevel);
 		configuredItems.put(item, configurableItemData);
 	}
 }
