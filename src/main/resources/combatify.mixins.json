@@ -70,5 +70,7 @@
     "compatibility.cookeymod.DisableMissedAttackRecoveryMixin",
     "compatibility.cookeymod.MiscCategoryMixin"
   ],
-  "mixinPriority": 1200
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
 }
