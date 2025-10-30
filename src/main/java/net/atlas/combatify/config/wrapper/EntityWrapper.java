@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	public final E value;
@@ -34,6 +35,10 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 
 	public final String getType() {
 		return BuiltInRegistries.ENTITY_TYPE.getKey(value.getType()).toString();
+	}
+
+	public final UUID getUUID() {
+		return value.getUUID();
 	}
 
 	public final boolean isLivingEntity() {

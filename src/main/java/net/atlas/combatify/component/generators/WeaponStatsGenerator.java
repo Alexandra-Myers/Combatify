@@ -25,11 +25,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers.Entry;
 
-public record WeaponStatsGenerator(List<WeaponLevelBasedValue> damage, List<WeaponLevelBasedValue> speed, List<WeaponLevelBasedValue> reach, Optional<ResourceLocation> damageIdOverride, Optional<ResourceLocation> speedIdOverride, Optional<ResourceLocation> reachIdOverride, List<ItemAttributeModifiers.Entry> additionalModifiers, boolean tieredDamage, boolean persistPrevious) implements PatchGenerator {
+public record WeaponStatsGenerator(Optional<WeaponLevelBasedValue> damage, Optional<WeaponLevelBasedValue> speed, Optional<WeaponLevelBasedValue> reach, Optional<ResourceLocation> damageIdOverride, Optional<ResourceLocation> speedIdOverride, Optional<ResourceLocation> reachIdOverride, List<ItemAttributeModifiers.Entry> additionalModifiers, boolean tieredDamage, boolean persistPrevious) implements PatchGenerator {
 	public static final MapCodec<WeaponStatsGenerator> CODEC = RecordCodecBuilder.mapCodec(instance ->
-		instance.group(WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_damage", Collections.emptyList()).forGetter(WeaponStatsGenerator::damage),
-			WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_speed", Collections.emptyList()).forGetter(WeaponStatsGenerator::speed),
-			WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_reach", Collections.emptyList()).forGetter(WeaponStatsGenerator::reach),
+		instance.group(WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_damage").forGetter(WeaponStatsGenerator::damage),
+			WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_speed").forGetter(WeaponStatsGenerator::speed),
+			WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_reach").forGetter(WeaponStatsGenerator::reach),
 			ResourceLocation.CODEC.optionalFieldOf("damage_id_override").forGetter(WeaponStatsGenerator::damageIdOverride),
 			ResourceLocation.CODEC.optionalFieldOf("speed_id_override").forGetter(WeaponStatsGenerator::speedIdOverride),
 			ResourceLocation.CODEC.optionalFieldOf("reach_id_override").forGetter(WeaponStatsGenerator::reachIdOverride),
@@ -49,21 +49,21 @@ public record WeaponStatsGenerator(List<WeaponLevelBasedValue> damage, List<Weap
 		ResourceLocation reachID = reachIdOverride.orElse(WeaponType.BASE_ATTACK_REACH_ID);
 		AttributeModifier attackDamage = null;
 		boolean hasDamage = false;
-		if (!damage.isEmpty()) {
+		if (damage.isPresent()) {
 			hasDamage = true;
-			attackDamage = new AttributeModifier(damageID, getTierModifier(toolMaterialWrapper, true, damage) + damageModifier, AttributeModifier.Operation.ADD_VALUE);
+			attackDamage = new AttributeModifier(damageID, damage.get().getResult(toolMaterialWrapper.weaponLevel(), toolMaterialWrapper.attackDamageBonus(), tieredDamage) + damageModifier, AttributeModifier.Operation.ADD_VALUE);
 		}
 		AttributeModifier attackSpeed = null;
 		boolean hasSpeed = false;
-		if (!speed.isEmpty()) {
+		if (speed.isPresent()) {
 			hasSpeed = true;
-			attackSpeed = new AttributeModifier(speedID, getTierModifier(toolMaterialWrapper, false, speed), AttributeModifier.Operation.ADD_VALUE);
+			attackSpeed = new AttributeModifier(speedID, speed.get().getResult(toolMaterialWrapper.speedLevel(), true), AttributeModifier.Operation.ADD_VALUE);
 		}
 		AttributeModifier attackReach = null;
 		boolean hasReach = false;
-		if (!reach.isEmpty()) {
+		if (reach.isPresent()) {
 			hasReach = true;
-			attackReach = new AttributeModifier(reachID, getTierModifier(toolMaterialWrapper, false, reach), AttributeModifier.Operation.ADD_VALUE);
+			attackReach = new AttributeModifier(reachID, reach.get().getResult(toolMaterialWrapper.weaponLevel(), true), AttributeModifier.Operation.ADD_VALUE);
 		}
 		if (!(hasDamage || hasSpeed)) return;
 
@@ -88,22 +88,6 @@ public record WeaponStatsGenerator(List<WeaponLevelBasedValue> damage, List<Weap
 		if (speedID.equals(WeaponType.BASE_ATTACK_SPEED_CTS_ID)) baseRet |= entry.matches(Attributes.ATTACK_SPEED, Item.BASE_ATTACK_SPEED_ID);
 		return baseRet;
 	}
-
-	private double getTierModifier(ToolMaterialWrapper tier, boolean forDamage, List<WeaponLevelBasedValue> list) {
-        if (forDamage)
-            for (WeaponLevelBasedValue value : list) {
-                if (value instanceof WeaponLevelBasedValue.Unconditional unconditional) return unconditional.value() + (tieredDamage ? tier.attackDamageBonus() : 0);
-                else {
-                    Float res = value.getResult(tier.weaponLevel(), tieredDamage);
-                    if (res != null) return res;
-                }
-            }
-        else for (WeaponLevelBasedValue value : list) {
-            Float res = value.getResult(tier.weaponLevel(), true);
-            if (res != null) return res;
-        }
-        return 0;
-    }
 
     @Override
     public MapCodec<? extends PatchGenerator> codec() {
