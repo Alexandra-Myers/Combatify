@@ -266,6 +266,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		if (!bl3 && !bl2 && isSweepPossible && d < Mth.square(e) && MethodHandler.checkSweepAttack(player)) {
 			AABB box = target.getBoundingBox().inflate(1.0, 0.25, 1.0);
 			sweepAttack(player, box, (float) MethodHandler.getCurrentAttackReach(player, 1.0F), attackDamage, player::combatify$enchantedDamageForSweep, target);
+			didSweep.set(true);
 		}
 	}
 	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
