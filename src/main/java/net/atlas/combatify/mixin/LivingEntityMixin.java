@@ -75,7 +75,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@Inject(method = "tick", at = @At(value = "RETURN"))
 	public void tickCooldowns(CallbackInfo ci) {
 		fallbackCooldowns.tick();
-		if (!(LivingEntity.class.cast(this) instanceof Player))
+		if (!(thisEntity instanceof Player))
 			attackStrengthTicker++;
 	}
 
