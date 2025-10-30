@@ -1,6 +1,5 @@
 {
   "values": [
-    "minecraft:golden_spear",
     {
       "id": "combatify:golden_longsword",
       "required": false
