@@ -12,7 +12,7 @@
             "value": {
               "type": "constant",
               "value": 0,
-              "apply_additional": false
+              "applies_additional": false
             },
             "condition": {
               "type": "clamped",
@@ -24,7 +24,7 @@
             "value": {
               "type": "constant",
               "value": 1,
-              "apply_additional": false
+              "applies_additional": false
             },
             "condition": {
               "type": "clamped",
