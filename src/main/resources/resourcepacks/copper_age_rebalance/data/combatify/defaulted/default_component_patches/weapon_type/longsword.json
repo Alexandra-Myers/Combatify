@@ -9,7 +9,11 @@
         "type": "lookup",
         "values": [
           {
-            "value": 0,
+            "value": {
+              "type": "constant",
+              "value": 0,
+              "applies_additional": false
+            },
             "condition": {
               "type": "clamped",
               "min": 0,
@@ -17,7 +21,11 @@
             }
           },
           {
-            "value": 1,
+            "value": {
+              "type": "constant",
+              "value": 1,
+              "applies_additional": false
+            },
             "condition": {
               "type": "clamped",
               "min": 2,
