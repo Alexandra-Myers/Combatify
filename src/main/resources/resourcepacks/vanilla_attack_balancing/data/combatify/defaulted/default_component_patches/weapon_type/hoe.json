@@ -5,70 +5,56 @@
   "patch_generators": [
     {
       "generator": "defaulted:combat_test_weapon_stats",
-      "attack_damage": [
-        {
-          "type": "match_weapon_level",
-          "value": 0,
-          "condition": {
-            "min": 0,
-            "max": 1
+      "attack_damage": {
+        "type": "lookup",
+        "values": [
+          {
+            "value": {
+              "type": "constant",
+              "value": 0,
+              "apply_additional": false
+            },
+            "condition": {
+              "type": "clamped",
+              "min": 0,
+              "max": 1
+            }
+          },
+          {
+            "value": {
+              "type": "constant",
+              "value": 1,
+              "apply_additional": false
+            },
+            "condition": {
+              "type": "clamped",
+              "min": 2,
+              "max": 3
+            }
           }
-        },
-        {
-          "type": "match_weapon_level",
-          "value": 1,
-          "condition": {
-            "min": 2,
-            "max": 3
+        ],
+        "fallback": -1
+      },
+      "attack_speed": {
+        "type": "lookup",
+        "values": [
+          {
+            "value": -0.5,
+            "condition": 0
+          },
+          {
+            "value": 0,
+            "condition": 1
+          },
+          {
+            "value": 0.5,
+            "condition": 2
           }
-        },
-        {
-          "type": "match_weapon_level",
-          "value": 2,
-          "condition": 4
-        },
-        {
-          "type": "unconditional",
-          "value": -1
-        }
-      ],
-      "attack_speed": [
-        {
-          "type": "match_weapon_level",
-          "value": -0.5,
-          "condition": 0
-        },
-        {
-          "type": "match_weapon_level",
-          "value": 0,
-          "condition": 1
-        },
-        {
-          "type": "match_weapon_level",
-          "value": 0.5,
-          "condition": 2
-        },
-        {
-          "type": "unconditional",
-          "value": 1
-        }
-      ],
+        ],
+        "fallback": 1
+      },
       "attack_reach": 1,
       "persist_previous": true
-    },
-    {
-      "generator": "defaulted:conditional",
-      "condition": "in_tag",
-      "tags": [
-        "defaulted:golden_tools"
-      ],
-      "patch_generators": [
-        {
-          "generator": "defaulted:combat_test_weapon_stats",
-          "attack_speed": 1,
-          "persist_previous": true
-        }
-      ]
     }
   ],
   "patch": {}
