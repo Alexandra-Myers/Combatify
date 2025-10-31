@@ -45,7 +45,6 @@ repositories {
 		}
 	}
 	maven { url "https://maven.terraformersmc.com/releases/" }
-	maven { url 'https://maven.nucleoid.xyz' }
 	mavenCentral()
 	maven {
 		name = "ViaVersion"
