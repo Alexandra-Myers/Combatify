@@ -8,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("apply_effect");
+	public static final Identifier ID = Identifier.withDefaultNamespace("apply_effect");
 	public ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
 		this(toApply, duration, duration, amplifier, amplifier);
 	}
@@ -70,7 +70,7 @@ public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDurat
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 }

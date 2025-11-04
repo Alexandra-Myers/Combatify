@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,7 +13,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record KnockbackEntity(LevelBasedValue strength, boolean force, boolean inverseDirection) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("knockback_entity");
+	public static final Identifier ID = Identifier.withDefaultNamespace("knockback_entity");
 	public KnockbackEntity() {
 		this(LevelBasedValue.constant(0.5F), false, false);
 	}
@@ -44,7 +44,7 @@ public record KnockbackEntity(LevelBasedValue strength, boolean force, boolean i
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 }

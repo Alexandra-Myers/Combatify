@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ConfigurationTask;
@@ -69,7 +69,7 @@ public class NetworkingHandler {
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
 	}
 	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {
-		public static final Type<UpdateBridgingStatusPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("c", "update_status"));
+		public static final Type<UpdateBridgingStatusPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath("c", "update_status"));
 		public static final StreamCodec<FriendlyByteBuf, UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
 
 		public UpdateBridgingStatusPacket(FriendlyByteBuf buf) {

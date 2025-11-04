@@ -60,12 +60,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final OptionInstance<Combatify.CombatifyState> combatifyState = new OptionInstance<>(
 		"options.combatifyState",
 		OptionInstance.noTooltip(),
-		(component, state) -> state.getComponent(),
-		new OptionInstance.Enum<>(Arrays.asList(Combatify.CombatifyState.values()), Codec.INT.xmap(ordinal -> switch (Mth.positiveModulo(ordinal, 3)) {
-			case 0 -> Combatify.CombatifyState.VANILLA;
-			case 1 -> Combatify.CombatifyState.CTS_8C;
-			default -> Combatify.CombatifyState.COMBATIFY;
-		}, Combatify.CombatifyState::ordinal)),
+		(component, state) -> state.caption(),
+		new OptionInstance.Enum<>(Arrays.asList(Combatify.CombatifyState.values()), Combatify.CombatifyState.CODEC),
 		Combatify.CombatifyState.COMBATIFY,
 		value -> {
 
@@ -74,8 +70,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final OptionInstance<AttackIndicatorStatus> spearChargeIndicator = new OptionInstance<>(
 		"options.spearChargeIndicator",
 		OptionInstance.noTooltip(),
-		OptionInstance.forOptionEnum(),
-		new OptionInstance.Enum<>(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)),
+		(component, attackIndicatorStatus) -> attackIndicatorStatus.caption(),
+		new OptionInstance.Enum<>(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC),
 		AttackIndicatorStatus.OFF,
 		value -> {
 		}
@@ -83,8 +79,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final OptionInstance<AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
 		"options.projectileChargeIndicator",
 		OptionInstance.noTooltip(),
-		OptionInstance.forOptionEnum(),
-		new OptionInstance.Enum<>(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)),
+		(component, attackIndicatorStatus) -> attackIndicatorStatus.caption(),
+		new OptionInstance.Enum<>(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC),
 		AttackIndicatorStatus.OFF,
 		value -> {
 		}
@@ -92,8 +88,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final OptionInstance<DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
 		"options.dualAttackIndicator",
 		OptionInstance.noTooltip(),
-		OptionInstance.forOptionEnum(),
-		new OptionInstance.Enum<>(Arrays.asList(DualAttackIndicatorStatus.values()), Codec.INT.xmap(DualAttackIndicatorStatus::byId, DualAttackIndicatorStatus::getId)),
+		(component, dualAttackIndicatorStatus) -> dualAttackIndicatorStatus.caption(),
+		new OptionInstance.Enum<>(Arrays.asList(DualAttackIndicatorStatus.values()), DualAttackIndicatorStatus.LEGACY_CODEC),
 		DualAttackIndicatorStatus.OFF,
 		value -> {
 		}
@@ -123,8 +119,8 @@ public class CombatifyClient implements ClientModInitializer {
 	public static final OptionInstance<ShieldIndicatorStatus> shieldIndicator = new OptionInstance<>(
 			"options.shieldIndicator",
 			OptionInstance.noTooltip(),
-			OptionInstance.forOptionEnum(),
-			new OptionInstance.Enum<>(Arrays.asList(ShieldIndicatorStatus.values()), Codec.INT.xmap(ShieldIndicatorStatus::byId, ShieldIndicatorStatus::getId)),
+			(component, shieldIndicatorStatus) -> shieldIndicatorStatus.caption(),
+			new OptionInstance.Enum<>(Arrays.asList(ShieldIndicatorStatus.values()), ShieldIndicatorStatus.LEGACY_CODEC),
 			ShieldIndicatorStatus.OFF,
 			value -> {
 			}

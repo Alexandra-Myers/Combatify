@@ -6,10 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record ShieldMaterial(Material base, Material baseNoPattern) {
-	private static final Codec<Material> MATERIAL_CODEC = ResourceLocation.CODEC.xmap(resourceLocation -> new Material(TextureAtlas.LOCATION_BLOCKS, resourceLocation), Material::texture);
+	private static final Codec<Material> MATERIAL_CODEC = Identifier.CODEC.xmap(Identifier -> new Material(TextureAtlas.LOCATION_BLOCKS, Identifier), Material::texture);
 	public static final MapCodec<ShieldMaterial> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(MATERIAL_CODEC.optionalFieldOf("base", ModelBakery.SHIELD_BASE).forGetter(ShieldMaterial::base),
 				MATERIAL_CODEC.optionalFieldOf("no_pattern", ModelBakery.NO_PATTERN_SHIELD).forGetter(ShieldMaterial::baseNoPattern))

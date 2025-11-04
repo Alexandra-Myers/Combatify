@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -18,11 +18,11 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-public record RunFunction(ResourceLocation function) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("run_function");
+public record RunFunction(Identifier function) implements PostBlockEffect {
+	public static final Identifier ID = Identifier.withDefaultNamespace("run_function");
 	private static final Logger LOGGER = LogUtils.getLogger();
 	public static final MapCodec<RunFunction> MAP_CODEC = RecordCodecBuilder.mapCodec(
-		instance -> instance.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
+		instance -> instance.group(Identifier.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
 	);
 
 	@Override
@@ -50,7 +50,7 @@ public record RunFunction(ResourceLocation function) implements PostBlockEffect 
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 }

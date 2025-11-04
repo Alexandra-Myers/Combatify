@@ -190,7 +190,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.hasImpulse = true;
+			entity.needsSync = true;
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -206,7 +206,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.hasImpulse = true;
+			entity.needsSync = true;
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -222,7 +222,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.hasImpulse = true;
+			entity.needsSync = true;
 			Vec3 scaledDelta = entity.getDeltaMovement().scale(0.5);
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -238,7 +238,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.hasImpulse = true;
+			entity.needsSync = true;
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;

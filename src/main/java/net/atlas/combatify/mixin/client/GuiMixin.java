@@ -14,7 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -46,46 +46,46 @@ import static net.atlas.combatify.util.MethodHandler.getFatigueForTime;
 @Mixin(Gui.class)
 public abstract class GuiMixin {
 	@Unique
-	private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_LEFT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_left_indicator_background");
+	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_LEFT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_left_indicator_background");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_LEFT_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_left_indicator_progress");
+	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_LEFT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_left_indicator_progress");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_RIGHT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_right_indicator_background");
+	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_RIGHT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_right_indicator_background");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_RIGHT_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_right_indicator_progress");
+	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_RIGHT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_right_indicator_progress");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_SIDE_FULL_PICK_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_side_indicator_full_pick");
+	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_SIDE_FULL_PICK_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_side_indicator_full_pick");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_SIDE_CHARGED_PICK_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_side_indicator_charged_pick");
+	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_SIDE_CHARGED_PICK_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_side_indicator_charged_pick");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_shield_indicator_full");
+	private static final Identifier CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_shield_indicator_full");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_shield_indicator_disabled");
+	private static final Identifier CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_shield_indicator_disabled");
 	@Unique
-	private static final ResourceLocation CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_special_indicator_full");
+	private static final Identifier CROSSHAIR_SPECIAL_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_special_indicator_full");
 	@Unique
-	private static final ResourceLocation HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_special_indicator_full");
+	private static final Identifier HOTBAR_SPECIAL_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_special_indicator_full");
 	@Unique
-	private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_full");
+	private static final Identifier HOTBAR_ATTACK_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_attack_indicator_full");
 	@Unique
-	private static final ResourceLocation HOTBAR_SHIELD_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_shield_indicator_full");
+	private static final Identifier HOTBAR_SHIELD_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_shield_indicator_full");
 	@Unique
-	private static final ResourceLocation HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_shield_indicator_disabled");
+	private static final Identifier HOTBAR_SHIELD_INDICATOR_DISABLED_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_shield_indicator_disabled");
 	@Final
 	@Shadow
-	private static ResourceLocation CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE;
+	private static Identifier CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE;
 	@Final
 	@Shadow
-	private static ResourceLocation CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE;
+	private static Identifier CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE;
 	@Final
 	@Shadow
-	private static ResourceLocation CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE;
+	private static Identifier CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE;
 	@Final
 	@Shadow
-	private static ResourceLocation HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE;
+	private static Identifier HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE;
 	@Final
 	@Shadow
-	private static ResourceLocation HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE;
+	private static Identifier HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE;
 	@Shadow
 	@Final
 	private Minecraft minecraft;

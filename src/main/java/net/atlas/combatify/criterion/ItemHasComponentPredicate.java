@@ -1,4 +1,4 @@
-package net.atlas.combatify.critereon;
+package net.atlas.combatify.criterion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

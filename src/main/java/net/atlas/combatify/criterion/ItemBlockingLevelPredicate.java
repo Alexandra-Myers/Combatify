@@ -1,10 +1,10 @@
-package net.atlas.combatify.critereon;
+package net.atlas.combatify.criterion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.component.CustomDataComponents;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.SingleComponentItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.SingleComponentItemPredicate;
 import net.minecraft.core.component.DataComponentType;
 
 public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements SingleComponentItemPredicate<Integer> {

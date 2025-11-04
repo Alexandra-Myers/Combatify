@@ -2,12 +2,12 @@ package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 
 public class PostBlockEffects {
-	public static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends PostBlockEffect>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
-	public static final Codec<PostBlockEffect> CODEC = ID_MAPPER.codec(ResourceLocation.CODEC)
+	public static final ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends PostBlockEffect>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	public static final Codec<PostBlockEffect> CODEC = ID_MAPPER.codec(Identifier.CODEC)
 		.dispatch(PostBlockEffect::type, mapCodec -> mapCodec);
 
 	public static void bootstrap() {

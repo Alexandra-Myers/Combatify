@@ -1,7 +1,7 @@
 package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,7 +10,7 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
 import net.minecraft.world.phys.Vec3;
 
 public record EnchantmentEffect(EnchantmentEntityEffect enchantmentEntityEffect) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("enchantment_effect");
+	public static final Identifier ID = Identifier.withDefaultNamespace("enchantment_effect");
 	public static final MapCodec<EnchantmentEffect> MAP_CODEC = EnchantmentEntityEffect.CODEC.fieldOf("effect")
 		.xmap(EnchantmentEffect::new, EnchantmentEffect::enchantmentEntityEffect);
 
@@ -25,7 +25,7 @@ public record EnchantmentEffect(EnchantmentEntityEffect enchantmentEntityEffect)
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 }

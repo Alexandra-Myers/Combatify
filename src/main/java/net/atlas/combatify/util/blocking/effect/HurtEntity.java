@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -16,7 +16,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record HurtEntity(Holder<DamageType> damageType, LevelBasedValue minDamage, LevelBasedValue maxDamage) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("hurt_entity");
+	public static final Identifier ID = Identifier.withDefaultNamespace("hurt_entity");
 	public HurtEntity(Holder<DamageType> damageType, LevelBasedValue damage) {
 		this(damageType, damage, damage);
 	}
@@ -51,7 +51,7 @@ public record HurtEntity(Holder<DamageType> damageType, LevelBasedValue minDamag
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 }

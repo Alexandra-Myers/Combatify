@@ -24,7 +24,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -41,7 +41,7 @@ public class ItemConfig extends AtlasConfig {
 	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;
 	public TagHolder<List<RegistryConfigDataWrapper<Item, ConfigurableItemData>>> items;
 	public TagHolder<JSImpl> armourCalcs;
-	public static final StreamCodec<RegistryFriendlyByteBuf, ResourceLocation> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeResourceLocation, RegistryFriendlyByteBuf::readResourceLocation);
+	public static final StreamCodec<RegistryFriendlyByteBuf, Identifier> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeIdentifier, RegistryFriendlyByteBuf::readIdentifier);
 	public static final MapCodec<RegistryConfigDataWrapper<Item, ConfigurableItemData>> ITEMS_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ITEM,
 		holder -> holder.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air", holder) : DataResult.success(holder),
 		ConfigurableItemData.CODEC);

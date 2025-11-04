@@ -3,13 +3,13 @@ package net.atlas.combatify.util.blocking.condition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.critereon.DataComponentMatchers;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +25,7 @@ public record ItemMatches(ItemPredicate predicate, boolean invert) implements Bl
 			)
 			.apply(instance, (ints, dataComponentMatchers) -> new ItemPredicate(Optional.empty(), ints, dataComponentMatchers))
 	);
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("item_matches");
+	public static final Identifier ID = Identifier.withDefaultNamespace("item_matches");
 	public static final MapCodec<ItemMatches> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(ITEM_PREDICATE_CODEC_NO_ITEMS.fieldOf("predicate").forGetter(ItemMatches::predicate),
 				Codec.BOOL.optionalFieldOf("invert", false).forGetter(ItemMatches::invert))
@@ -55,11 +55,11 @@ public record ItemMatches(ItemPredicate predicate, boolean invert) implements Bl
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 
-	public static void mapStreamCodec(Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> map) {
+	public static void mapStreamCodec(Map<Identifier, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> map) {
 		map.put(ID, STREAM_CODEC.map(itemMatches -> itemMatches, blockingCondition -> (ItemMatches) blockingCondition));
 	}
 }

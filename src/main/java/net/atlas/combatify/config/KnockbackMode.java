@@ -5,6 +5,7 @@ import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.QuadConsumer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
 import org.jetbrains.annotations.Nullable;
@@ -32,5 +33,12 @@ public enum KnockbackMode {
 			case VANILLA -> vanillaCall.accept(target, strength, x, z);
 			case OLD -> MethodHandler.oldKnockback(target, strength, x, z);
 		}
+	}
+
+	public boolean usesKnockback(boolean original, Entity entity) {
+		return switch (this) {
+			case OLD, MIDAIR -> false;
+			default -> original;
+		};
 	}
 }

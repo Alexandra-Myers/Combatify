@@ -31,7 +31,7 @@
     "ProjectileMixin",
     "ProjectileWeaponItemMixin",
     "RamTargetMixin",
-    "ResourceLocationMixin",
+    "IdentifierMixin",
     "ServerChunkCacheMixin",
     "ServerConfigurationPacketMixin",
     "ServerEntityMixin",
@@ -92,5 +92,8 @@
     "compatibility.cookeymod.ArmHeightFixMixin",
     "compatibility.cookeymod.DisableMissedAttackRecoveryMixin"
   ],
-  "mixinPriority": 1200
+  "mixinPriority": 1200,
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
 }

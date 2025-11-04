@@ -79,9 +79,9 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 		connection.send(new ServerboundSwingPacket(interactionHand));
 	}
 
-	@WrapOperation(method = "hasEnoughFoodToSprint", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;hasEnoughFood()Z"))
-	public boolean modifyFoodRequirement(FoodData instance, Operation<Boolean> original) {
-		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original.call(instance) : instance.getFoodLevel() > (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(6.0F, "getMinimumSprintLevel(player)", new PlayerWrapper<>(thisPlayer));
+	@WrapOperation(method = "isSprintingPossible", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;hasEnoughFoodToDoExhaustiveManoeuvres()Z"))
+	public boolean modifyFoodRequirement(LocalPlayer instance, Operation<Boolean> original) {
+		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original.call(instance) : this.getAbilities().mayfly || instance.getFoodData().getFoodLevel() > (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(6.0F, "getMinimumSprintLevel(player)", new PlayerWrapper<>(thisPlayer));
 	}
     @Redirect(method = "hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {

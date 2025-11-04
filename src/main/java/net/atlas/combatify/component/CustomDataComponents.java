@@ -8,7 +8,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class CustomDataComponents {
-	public static final List<ResourceLocation> combatifyComponents = new ArrayList<>();
+	public static final List<Identifier> combatifyComponents = new ArrayList<>();
 	public static DataComponentType<ExtendedBlockingData> EXTENDED_BLOCKING_DATA = register(
 		"combatify:extended_blocking_data", builder -> builder.persistent(ExtendedBlockingData.CODEC).networkSynchronized(ExtendedBlockingData.STREAM_CODEC)
 	);
@@ -33,7 +33,7 @@ public class CustomDataComponents {
 		"combatify:charged_reach", builder -> builder.persistent(ExtraCodecs.NON_NEGATIVE_FLOAT).networkSynchronized(ByteBufCodecs.FLOAT)
 	);
 	private static <T> DataComponentType<T> register(String string, UnaryOperator<DataComponentType.Builder<T>> unaryOperator) {
-		combatifyComponents.add(ResourceLocation.parse(string));
+		combatifyComponents.add(Identifier.parse(string));
 		return Registry.register(
 			BuiltInRegistries.DATA_COMPONENT_TYPE, string, unaryOperator.apply(DataComponentType.builder()).build()
 		);

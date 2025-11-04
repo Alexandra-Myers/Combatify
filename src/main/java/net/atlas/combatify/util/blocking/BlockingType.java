@@ -9,12 +9,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.*;
 
-public record BlockingType(ResourceLocation name, BlockingTypeData data) {
-	public static final Codec<ResourceLocation> ID_CODEC = ResourceLocation.CODEC.validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
+public record BlockingType(Identifier name, BlockingTypeData data) {
+	public static final Codec<Identifier> ID_CODEC = Identifier.CODEC.validate(blocking_type -> blocking_type.equals(Identifier.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
 	public static final Codec<BlockingType> SIMPLE_CODEC = ID_CODEC.xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::name);
 	public static final Codec<BlockingType> MODIFY = RecordCodecBuilder.create(instance ->
 		instance.group(SIMPLE_CODEC.fieldOf("name").forGetter(blockingType -> blockingType),
@@ -26,11 +26,11 @@ public record BlockingType(ResourceLocation name, BlockingTypeData data) {
 				Codec.BOOL.optionalFieldOf("has_shield_delay").forGetter(blockingType -> Optional.of(blockingType.hasDelay())))
 			.apply(instance, (blockingType, canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay) -> blockingType.copy(canBeDisabled.orElse(null), canCrouchBlock.orElse(null), canBlockHit.orElse(null), requireFullCharge.orElse(null), defaultKbMechanics.orElse(null), hasDelay.orElse(null))));
 	public static final Codec<BlockingType> CREATE = RecordCodecBuilder.create(instance ->
-		instance.group(ResourceLocation.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(ResourceLocation.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::name),
+		instance.group(Identifier.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(Identifier.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::name),
 				BlockingTypeData.CREATE.forGetter(BlockingType::data))
 			.apply(instance, BlockingType::new));
 	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
-	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, BlockingType::name,
+	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, BlockingType::name,
 		BlockingTypeData.STREAM_CODEC, BlockingType::data,
 		BlockingType::new);
 	public static Builder builder() {
@@ -64,10 +64,10 @@ public record BlockingType(ResourceLocation name, BlockingTypeData data) {
 		return new BlockingType(this.name, newData);
 	}
 	public boolean isEmpty() {
-		return this.name.equals(ResourceLocation.withDefaultNamespace("empty"));
+		return this.name.equals(Identifier.withDefaultNamespace("empty"));
 	}
 
-	public ResourceLocation getName() {
+	public Identifier getName() {
 		return name;
 	}
 
@@ -115,9 +115,9 @@ public record BlockingType(ResourceLocation name, BlockingTypeData data) {
 			return this;
 		}
 		public BlockingType build(String name) {
-			return build(ResourceLocation.parse(name));
+			return build(Identifier.parse(name));
 		}
-		public BlockingType build(ResourceLocation name) {
+		public BlockingType build(Identifier name) {
 			return new BlockingType(name, new BlockingTypeData(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay));
 		}
 	}

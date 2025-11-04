@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public record AllOf(List<BlockingCondition> blockingConditions) implements BlockingCondition {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("all_of");
+	public static final Identifier ID = Identifier.withDefaultNamespace("all_of");
 	public static final MapCodec<AllOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(BlockingConditions.MAP_CODEC.codec().listOf().fieldOf("conditions").forGetter(AllOf::blockingConditions)).apply(instance, AllOf::new));
 	public static final StreamCodec<RegistryFriendlyByteBuf, AllOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AllOf::blockingConditions, AllOf::new);
@@ -48,11 +48,11 @@ public record AllOf(List<BlockingCondition> blockingConditions) implements Block
 	}
 
 	@Override
-	public ResourceLocation id() {
+	public Identifier id() {
 		return ID;
 	}
 
-	public static void mapStreamCodec(Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> map) {
+	public static void mapStreamCodec(Map<Identifier, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> map) {
 		map.put(ID, STREAM_CODEC.map(allOf -> allOf, blockingCondition -> (AllOf) blockingCondition));
 	}
 }

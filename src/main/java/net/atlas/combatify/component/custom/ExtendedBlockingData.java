@@ -19,7 +19,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -39,13 +39,13 @@ import java.util.function.Consumer;
 
 import org.apache.commons.lang3.mutable.MutableFloat;
 
-public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition, boolean hasBanner) {
-	public ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
+public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition, boolean hasBanner) {
+	public ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
 		this(tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, false);
 	}
-	public static final ExtendedBlockingData EMPTY = new ExtendedBlockingData(new Tooltip(Collections.emptyList(), Collections.emptyList()), ResourceLocation.withDefaultNamespace("empty"), PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
-	public static final ExtendedBlockingData VANILLA_SHIELD = new ExtendedBlockingData(new Tooltip(Collections.emptyList(), Collections.emptyList()), ResourceLocation.withDefaultNamespace("shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
-	public static final ExtendedBlockingData NEW_SHIELD = new ExtendedBlockingData(new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK)), ResourceLocation.withDefaultNamespace("new_shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final ExtendedBlockingData EMPTY = new ExtendedBlockingData(new Tooltip(Collections.emptyList(), Collections.emptyList()), Identifier.withDefaultNamespace("empty"), PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
+	public static final ExtendedBlockingData VANILLA_SHIELD = new ExtendedBlockingData(new Tooltip(Collections.emptyList(), Collections.emptyList()), Identifier.withDefaultNamespace("shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final ExtendedBlockingData NEW_SHIELD = new ExtendedBlockingData(new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK)), Identifier.withDefaultNamespace("new_shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
 	public static final Codec<ExtendedBlockingData> CODEC = RecordCodecBuilder.create(instance ->
 		instance.group(Tooltip.CODEC.forGetter(ExtendedBlockingData::tooltip),
 				BlockingType.ID_CODEC.fieldOf("type").forGetter(ExtendedBlockingData::blockingTypeLocation),
@@ -57,7 +57,7 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 	public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
 		ByteBufCodecs.fromCodecTrusted(Tooltip.CODEC.codec()),
 		ExtendedBlockingData::tooltip,
-		ResourceLocation.STREAM_CODEC,
+		Identifier.STREAM_CODEC,
 		ExtendedBlockingData::blockingTypeLocation,
 		ByteBufCodecs.fromCodecWithRegistriesTrusted(PostBlockEffectWrapper.CODEC.codec()),
 		ExtendedBlockingData::postBlockEffect,
@@ -77,7 +77,7 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 	}
 
 	public BlockingType blockingType() {
-		if (blockingTypeLocation.equals(ResourceLocation.withDefaultNamespace("empty"))) return BlockingTypeInit.EMPTY;
+		if (blockingTypeLocation.equals(Identifier.withDefaultNamespace("empty"))) return BlockingTypeInit.EMPTY;
 		return Combatify.registeredTypes.get(blockingTypeLocation);
 	}
 

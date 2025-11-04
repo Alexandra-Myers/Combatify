@@ -4,7 +4,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
@@ -29,11 +29,11 @@ public class ItemRegistry {
 	public static final Item NETHERITE_KNIFE = registerItem(id("netherite_knife"), properties -> new KnifeItem(ToolMaterial.NETHERITE, properties), new Item.Properties().fireResistant());
 	public static final Item NETHERITE_LONGSWORD = registerItem(id("netherite_longsword"), properties -> new LongSwordItem(ToolMaterial.NETHERITE, 4, properties), new Item.Properties().fireResistant());
 
-	public static Item registerItem(ResourceLocation resourceLocation, Function<Item.Properties, Item> function, Item.Properties properties) {
-		return registerItem(ResourceKey.create(Registries.ITEM, resourceLocation), function, properties);
+	public static Item registerItem(Identifier Identifier, Function<Item.Properties, Item> function, Item.Properties properties) {
+		return registerItem(ResourceKey.create(Registries.ITEM, Identifier), function, properties);
 	}
-	public static Item registerItem(ResourceLocation resourceLocation, Item.Properties properties) {
-		return registerItem(ResourceKey.create(Registries.ITEM, resourceLocation), Item::new, properties);
+	public static Item registerItem(Identifier Identifier, Item.Properties properties) {
+		return registerItem(ResourceKey.create(Registries.ITEM, Identifier), Item::new, properties);
 	}
 	public static Item registerItem(ResourceKey<Item> resourceKey, Function<Item.Properties, Item> function, Item.Properties properties) {
 		Item item = function.apply(properties.setId(resourceKey));

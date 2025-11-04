@@ -16,16 +16,16 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -119,7 +119,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		declareDefaultForMod("combatify");
 	}
 
-	public CombatifyGeneralConfig(ResourceLocation id) {
+	public CombatifyGeneralConfig(Identifier id) {
 		super(id);
 	}
 
@@ -362,11 +362,11 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 			case Boolean bool when tConfigValue.name().equals("percentageDamageEffects") -> {
 				if (isLoaded) {
 					if (bool) {
-						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 					} else {
-						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE);
-						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE);
+						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE);
+						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE);
 					}
 				}
 			}
@@ -632,7 +632,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		public static final ProjectileUncertainty DEFAULT = new ProjectileUncertainty(null, 0.25, 0.25);
 		public static final StreamCodec<RegistryFriendlyByteBuf, ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
             public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileUncertainty projectileUncertainty) {
-                registryFriendlyByteBuf.writeResourceLocation(projectileUncertainty.owner.heldValue.owner().name);
+                registryFriendlyByteBuf.writeIdentifier(projectileUncertainty.owner.heldValue.owner().name);
                 registryFriendlyByteBuf.writeUtf(projectileUncertainty.owner.heldValue.name());
                 registryFriendlyByteBuf.writeDouble(projectileUncertainty.bowUncertainty);
 				registryFriendlyByteBuf.writeDouble(projectileUncertainty.crossbowUncertainty);
@@ -641,7 +641,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
             @NotNull
 			@SuppressWarnings("unchecked")
             public ProjectileUncertainty decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-                AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readResourceLocation());
+                AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readIdentifier());
                 return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
             }
         };

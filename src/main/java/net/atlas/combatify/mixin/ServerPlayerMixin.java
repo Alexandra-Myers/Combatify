@@ -19,6 +19,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.PiercingWeapon;
@@ -97,8 +98,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			else if (hitResult.getType() == HitResult.Type.MISS) combatify$attackAir();
 		}
 	}
-	@Inject(method = "drop(Z)Z", at = @At("HEAD"))
-	public void disableOnDropItem(boolean bl, CallbackInfoReturnable<Boolean> cir) {
+	@Inject(method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;", at = @At("HEAD"))
+	public void disableOnDropItem(ItemStack itemStack, boolean bl, boolean bl2, CallbackInfoReturnable<ItemEntity> cir) {
 		if (Combatify.unmoddedPlayers.contains(getUUID()))
 			Combatify.isPlayerAttacking.put(getUUID(), false);
 	}

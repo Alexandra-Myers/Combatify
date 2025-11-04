@@ -1,44 +1,32 @@
 package net.atlas.combatify.config;
 
+import com.mojang.serialization.Codec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
-import net.minecraft.util.OptionEnum;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.ByIdMap;
 
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.function.IntFunction;
 
 @Environment(EnvType.CLIENT)
-public enum ShieldIndicatorStatus implements OptionEnum {
+public enum ShieldIndicatorStatus {
 	OFF(0, "options.off"),
 	CROSSHAIR(1, "options.attack.crosshair"),
 	HOTBAR(2, "options.attack.hotbar");
 
-	private static final ShieldIndicatorStatus[] BY_ID = Arrays.stream(values())
-		.sorted(Comparator.comparingInt(ShieldIndicatorStatus::getId))
-		.toArray(ShieldIndicatorStatus[]::new);
-	public static final Component[] AS_COMPONENTS = Arrays.stream(ShieldIndicatorStatus.values()).map(shieldIndicatorStatus -> Component.translatable(shieldIndicatorStatus.getKey())).toArray(Component[]::new);
+	private static final IntFunction<ShieldIndicatorStatus> BY_ID = ByIdMap.continuous((shieldIndicatorStatus) -> shieldIndicatorStatus.id, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+	public static final Codec<ShieldIndicatorStatus> LEGACY_CODEC = Codec.INT.xmap(BY_ID::apply, shieldIndicatorStatus -> shieldIndicatorStatus.id);
+	public static final Component[] AS_COMPONENTS = Arrays.stream(ShieldIndicatorStatus.values()).map(ShieldIndicatorStatus::caption).toArray(Component[]::new);
 	private final int id;
-	private final String key;
+	private final Component caption;
 
-	ShieldIndicatorStatus(int j, String string2) {
-		this.id = j;
-		this.key = string2;
+	ShieldIndicatorStatus(int id, String translationKey) {
+		this.id = id;
+		this.caption = Component.translatable(translationKey);
 	}
 
-	@Override
-	public int getId() {
-		return this.id;
-	}
-
-	@Override
-	public @NotNull String getKey() {
-		return this.key;
-	}
-
-	public static ShieldIndicatorStatus byId(int id) {
-		return BY_ID[Mth.positiveModulo(id, BY_ID.length)];
+	public Component caption() {
+		return caption;
 	}
 }
