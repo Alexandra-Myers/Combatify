@@ -20,7 +20,7 @@ public class ServerPlayerGameModeMixin {
 
 	@Inject(method = "handleBlockBreakAction", at = @At(value = "HEAD"))
 	public void addReset(BlockPos blockPos, ServerboundPlayerActionPacket.Action action, Direction direction, int i, int j, CallbackInfo ci) {
-		if (!this.player.canInteractWithBlock(blockPos, 1.0)) return;
+		if (!this.player.isWithinBlockInteractionRange(blockPos, 1.0)) return;
 		if (blockPos.getY() > i) return;
 		player.combatify$resetAttackStrengthTicker(false);
 	}

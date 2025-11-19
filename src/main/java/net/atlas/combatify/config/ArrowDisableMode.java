@@ -1,6 +1,6 @@
 package net.atlas.combatify.config;
 
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 
 public enum ArrowDisableMode {
 	NONE,

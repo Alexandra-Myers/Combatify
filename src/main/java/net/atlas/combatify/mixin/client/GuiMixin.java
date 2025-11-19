@@ -24,6 +24,7 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
@@ -140,18 +141,14 @@ public abstract class GuiMixin {
 			boolean shouldPick = false;
 			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && (CombatifyClient.dualAttackIndicator.get().equals(DualAttackIndicatorStatus.SIDE) ? this.minecraft.player.combatify$isAttackAvailable(0, this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND)) : attackStrengthScale >= 1.0)) {
-				shouldPick = this.minecraft.player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), this.minecraft.player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(this.minecraft.player, 0.0F);
-				shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
-			}
+			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && (CombatifyClient.dualAttackIndicator.get().equals(DualAttackIndicatorStatus.SIDE) ? this.minecraft.player.combatify$isAttackAvailable(0, this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND)) : attackStrengthScale >= 1.0)) shouldPick = shouldPick(this.minecraft.player);
 			if (CombatifyClient.dualAttackIndicator.get() == DualAttackIndicatorStatus.BOTTOM) {
 				if (attackStrengthScale < 2) {
 					if (shouldPick) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
 					else renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), attackStrengthScale);
 					renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), (attackStrengthScale - 1.3F) / (0.70000005F));
 				} else if (shouldPick) {
-					double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraft.player);
-					if (minecraft.player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), minecraft.player.getEyePosition())) < reachLimited * reachLimited)
+					if (inNonChargedReach(this.minecraft.player))
 						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
 					else renderCrosshairProgress(guiGraphics, xPos, mutableYPos.getAndAdd(8), 1);
 					guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
@@ -172,8 +169,7 @@ public abstract class GuiMixin {
 					renderSideCrosshairProgress(guiGraphics, humanoidArm, xPos, yPos, attackStrengthScale, chargeRatio, true);
 					renderSideCrosshairProgress(guiGraphics, humanoidArm, sideXPos, yPos, attackStrengthScale, chargeRatio, false);
 				} else if (shouldPick) {
-					double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraft.player);
-					if (minecraft.player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), minecraft.player.getEyePosition())) < reachLimited * reachLimited) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_SIDE_FULL_PICK_SPRITE, crosshairXPos, crosshairYPos, 15, 15);
+					if (inNonChargedReach(this.minecraft.player)) guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_SIDE_FULL_PICK_SPRITE, crosshairXPos, crosshairYPos, 15, 15);
 					else guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_SIDE_CHARGED_PICK_SPRITE, crosshairXPos, crosshairYPos, 15, 15);
 					renderSideCrosshairProgress(guiGraphics, humanoidArm, xPos, yPos, 1, 1, true);
 					renderSideCrosshairProgress(guiGraphics, humanoidArm, sideXPos, yPos, 1, 1, false);
@@ -193,10 +189,7 @@ public abstract class GuiMixin {
 		boolean shouldPick = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator) {
-			shouldPick = this.minecraft.player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), this.minecraft.player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(this.minecraft.player, 0.0F);
-			shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
-		}
+		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator) shouldPick = shouldPick(this.minecraft.player);
 		if (shouldPick)
 			guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, xPos, mutableYPos.getAndAdd(8), 16, 16);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator)
@@ -230,17 +223,13 @@ public abstract class GuiMixin {
 			boolean shouldPick = false;
 			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= 1.0) {
-				shouldPick = player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F);
-				shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
-			}
+			if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= 1.0) shouldPick = shouldPick(player);
 			if (attackStrengthScale < 2) {
 				if (shouldPick) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
 				else renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, attackStrengthScale);
 				renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, (attackStrengthScale - 1.3F) / 0.70000005F);
 			} else if (shouldPick) {
-				double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(player);
-				if (player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= reachLimited * reachLimited) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
+				if (inNonChargedReach(player)) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
 				else renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, 1);
 				guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
 			} else {
@@ -257,10 +246,7 @@ public abstract class GuiMixin {
 		boolean shouldPick = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 		minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
-		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator) {
-			shouldPick = player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F);
-			shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
-		}
+		if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && attackStrengthScale >= maxIndicator) shouldPick = shouldPick(player);
 		if (shouldPick) guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_FULL_SPRITE, mutableXPos.getAndAdd(offset), yPos, 18, 18);
 		else if (attackStrengthScale > minIndicator && attackStrengthScale < maxIndicator) renderHotbarProgress(guiGraphics, mutableXPos.getAndAdd(offset), yPos, (attackStrengthScale - minIndicator) / (maxIndicator - minIndicator + 0.00000005F));
 		else {
@@ -286,6 +272,18 @@ public abstract class GuiMixin {
 		MutableInt mutableXPos = new MutableInt(xPos);
 		if (!minecraft.options.attackIndicator().get().equals(AttackIndicatorStatus.HOTBAR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderProjectileChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
 		if (!minecraft.options.attackIndicator().get().equals(AttackIndicatorStatus.HOTBAR) && CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.HOTBAR)) renderSpearChargeOnHotbar(guiGraphics, player, mutableXPos, yPos, humanoidArm == HumanoidArm.RIGHT);
+	}
+	@Unique
+	private boolean inNonChargedReach(Player player) {
+		double reachLimited = MethodHandler.getCurrentAttackReachWithoutChargedReach(player);
+		return player.getActiveItem().has(DataComponents.ATTACK_RANGE) || player.getEyePosition().distanceToSqr(MethodHandler.getNearestPointTo(minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= reachLimited * reachLimited;
+	}
+	@Unique
+	private boolean shouldPick(Player player) {
+		AttackRange attackRange = player.getActiveItem().get(DataComponents.ATTACK_RANGE);
+		boolean shouldPick = attackRange == null ? player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(this.minecraft.crosshairPickEntity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F) : attackRange.isInRange(player, this.minecraft.hitResult.getLocation());
+		shouldPick &= this.minecraft.crosshairPickEntity.isAlive();
+		return shouldPick;
 	}
 	@Unique
 	private void renderProjectileChargeOnHotbar(GuiGraphics guiGraphics, Player player, MutableInt mutableXPos, int yPos, boolean right) {

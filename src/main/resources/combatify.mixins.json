@@ -70,7 +70,6 @@
     "client.AvatarRendererMixin",
     "client.ClientAttackAnimMixin",
     "client.ControlsMixin",
-    "client.GameRendererMixin",
     "client.GuiMixin",
     "client.IsUsingItemMixin",
     "client.ItemInHandMixin",

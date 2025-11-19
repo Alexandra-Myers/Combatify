@@ -30,8 +30,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.SpectralArrow;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.entity.projectile.arrow.SpectralArrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
@@ -235,7 +235,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return original || MethodHandler.getCooldowns(thisEntity).isOnCooldown(itemStack);
 	}
 
-	@ModifyExpressionValue(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;getPierceLevel()B"))
+	@ModifyExpressionValue(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;getPierceLevel()B"))
 	public byte ignorePiercing(byte original) {
 		return Combatify.CONFIG.arrowDisableMode().pierceArrowsBlocked() ? 0 : original;
 	}

@@ -2,12 +2,16 @@ package net.atlas.combatify.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.client.ClientMethodHandler;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
+import net.atlas.combatify.extensions.MinecraftExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
@@ -20,8 +24,12 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.food.FoodData;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -62,7 +70,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	@Inject(method = "tick", at = @At("RETURN"))
 	public void injectSneakShield(CallbackInfo ci) {
-		if (this.hasClientLoaded()) {
+		if (this.connection.hasClientLoaded()) {
 			boolean isBlocking = isBlocking();
 			if (isBlocking != wasShieldBlocking) {
 				wasShieldBlocking = isBlocking;
@@ -102,5 +110,32 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@Environment(EnvType.CLIENT)
 	public boolean combatify$hasEnabledShieldOnCrouch() {
 		return CombatifyClient.shieldCrouch.get();
+	}
+
+	@ModifyExpressionValue(method = "raycastHitResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
+	public HitResult addSwingThroughGrass(HitResult original) {
+		HitResult redirectedResult = ClientMethodHandler.redirectResult(original);
+		if (redirectedResult != null && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original = redirectedResult;
+		return original;
+	}
+
+	@ModifyReturnValue(method = "raycastHitResult", at = @At(value = "RETURN"))
+	public HitResult addBedrockBridging(HitResult original, @Local(ordinal = 0, argsOnly = true) Entity entity, @Local(ordinal = 0, argsOnly = true) float partialTicks) {
+		if ((original == null || original.getType() == HitResult.Type.MISS) && Combatify.CONFIG.bedrockBridging() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+			Vec3 viewVector = entity.getViewVector(1.0F);
+			if (entity.onGround() && viewVector.y < -0.7) {
+				Vec3 adjustedPos = entity.getPosition(partialTicks).add(0.0, -0.1, 0.0);
+				Vec3 adjustedVector = adjustedPos.add(viewVector.x, 0.0, viewVector.z);
+				BlockHitResult result = entity.level().clip(new ClipContext(adjustedVector, adjustedPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
+				result.combatify$setIsLedgeEdge();
+
+				original = result;
+			}
+		}
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || Combatify.CONFIG.aimAssistTicks() == 0)
+			((MinecraftExtensions)minecraft).combatify$setAimAssistHitResult(null);
+		else if (original.getType() == HitResult.Type.ENTITY)
+			((MinecraftExtensions)minecraft).combatify$setAimAssistHitResult(original);
+		return original;
 	}
 }

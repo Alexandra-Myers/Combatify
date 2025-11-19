@@ -1,8 +1,13 @@
 package net.atlas.combatify.mixin.client;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.extensions.MinecraftExtensions;
@@ -19,6 +24,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -131,9 +137,18 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 		return original.call(instance) && Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
-	public void addReachCheck(MultiPlayerGameMode instance, Player player, Entity entity, Operation<Void> original) {
-		if (player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F)) original.call(instance, player, entity);
+	public void addReachCheck(MultiPlayerGameMode instance, Player player, Entity entity, Operation<Void> original, @Share("overrodeReach") LocalBooleanRef overrodeReach) {
+		if (overrodeReach.get() || player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F)) original.call(instance, player, entity);
 		else instance.combatify$swingInAir(player);
+	}
+	@Definition(id = "attackRange", local = @Local(type = AttackRange.class))
+	@Expression("attackRange == null")
+	@WrapOperation(method = "startAttack", at = @At(value = "MIXINEXTRAS:EXPRESSION"))
+	public boolean addReachCheck(Object left, Object right, Operation<Boolean> original, @Share("overrodeReach") LocalBooleanRef overrodeReach) {
+		boolean overridesUsualReach = original.call(left, right);
+		overrodeReach.set(!overridesUsualReach);
+		if (!overridesUsualReach && left instanceof AttackRange attackRange && !attackRange.isInRange(this.player, this.hitResult.getLocation())) this.gameMode.combatify$swingInAir(this.player);
+		return overridesUsualReach;
 	}
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
