@@ -208,7 +208,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 
 	@ModifyExpressionValue(method = "isWithinMeleeAttackRange", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
 	public <T> T modReach(T original) {
-		if (Combatify.CONFIG.mobsUsePlayerAttributes() && original == null) return (T) new AttackRange(0, (float) getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.125F, 0.5F); // Ignore this cast, T is always AttackRange
+		if (Combatify.CONFIG.mobsUsePlayerAttributes() && original == null) return (T) new AttackRange(0, (float) getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0, (float) getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.125F, 0.5F); // Ignore this cast, T is always AttackRange
 		return original;
 	}
 
