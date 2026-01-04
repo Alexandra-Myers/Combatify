@@ -6,14 +6,13 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.CombatUtil;
 import net.atlas.combatify.util.MethodHandler;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -59,13 +58,43 @@ public abstract class ServerGamePacketMixin {
 		return result;
 	}
 
-	@Inject(method = "handlePlayerAction", at = @At("TAIL"))
+	@Inject(method = "tryPickItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/InventoryMenu;broadcastChanges()V", shift = At.Shift.AFTER))
+	public void tryPickItem(ItemStack itemStack, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handlePlayerAction", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isSpectator()Z", ordinal = 1)), at = @At("RETURN"))
 	public void handlePlayerAction(ServerboundPlayerActionPacket serverboundPlayerActionPacket, CallbackInfo ci) {
 		MethodHandler.forceUpdateItems(player, false);
 	}
 
-	@Inject(method = "handleSetCarriedItem", at = @At("TAIL"))
+	@Inject(method = "handleUseItemOn", at = @At("TAIL"))
+	public void handleUseItemOn(ServerboundUseItemOnPacket serverboundUseItemOnPacket, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handleSetCarriedItem", at = @At("RETURN"))
 	public void handleSetCarriedItem(ServerboundSetCarriedItemPacket packet, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handleInteract", at = @At("TAIL"))
+	public void handleInteract(ServerboundInteractPacket serverboundInteractPacket, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handleContainerClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;resumeRemoteUpdates()V", shift = At.Shift.AFTER))
+	public void handleContainerClick(ServerboundContainerClickPacket serverboundContainerClickPacket, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handleContainerButtonClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;clickMenuButton(Lnet/minecraft/world/entity/player/Player;I)Z", shift = At.Shift.AFTER))
+	public void handleContainerButtonClick(ServerboundContainerButtonClickPacket serverboundContainerButtonClickPacket, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handleSetCreativeModeSlot", at = @At("TAIL"))
+	public void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket serverboundSetCreativeModeSlotPacket, CallbackInfo ci) {
 		MethodHandler.forceUpdateItems(player, false);
 	}
 }
