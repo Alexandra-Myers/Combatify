@@ -180,7 +180,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@Inject(method = "attack", at = @At(value = "HEAD"), cancellable = true)
 	public void attack(Entity target, CallbackInfo ci) {
-		if (!combatify$isAttackAvailable(baseValue, getItemInHand(InteractionHand.MAIN_HAND))) ci.cancel();
+		if (!combatify$isAttackAvailable(baseValue, getWeaponItem())) ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "TAIL"))
 	public void resetTicker(Entity target, CallbackInfo ci) {
@@ -198,11 +198,16 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void stopReset(Player instance, Operation<Void> original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original.call(instance);
 	}
-	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;baseDamageScaleFactor()F"))
-	public void doThings(Entity target, CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef attackDamage, @Local(ordinal = 2) float attackDamageBonus) {
+
+	@Definition(id = "damage", local = @Local(type = float.class, ordinal = 0))
+	@Definition(id = "baseDamageScaleFactor", method = "Lnet/minecraft/world/entity/player/Player;baseDamageScaleFactor()F")
+	@Expression("damage = @(damage) * this.baseDamageScaleFactor()")
+	@ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
+	public float doThings(float original, @Local(ordinal = 2) float attackDamageBonus) {
 		attacked = true;
 		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
-			attackDamage.set((float) (this.isAutoSpinAttack() ? MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), this.autoSpinAttackDmg + attackDamageBonus) : MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus)));
+			original = (float) (this.isAutoSpinAttack() ? MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), this.autoSpinAttackDmg + attackDamageBonus) : MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus));
+		return original;
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheckInAttack(float original) {
@@ -249,7 +254,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		} else ci.cancel();
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;"))
-	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 1) float enchantDamage, @Local(ordinal = 2) float strengthScale, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
+	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 2) float enchantDamage, @Local(ordinal = 1) float strengthScale, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
 		if (Combatify.CONFIG.attackDecay()) {
 			enchantDamage /= strengthScale;
 			enchantDamage *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((strengthScale - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());

@@ -5,7 +5,10 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.CombatUtil;
+import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
@@ -56,4 +59,13 @@ public abstract class ServerGamePacketMixin {
 		return result;
 	}
 
+	@Inject(method = "handlePlayerAction", at = @At("TAIL"))
+	public void handlePlayerAction(ServerboundPlayerActionPacket serverboundPlayerActionPacket, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
+
+	@Inject(method = "handleSetCarriedItem", at = @At("TAIL"))
+	public void handleSetCarriedItem(ServerboundSetCarriedItemPacket packet, CallbackInfo ci) {
+		MethodHandler.forceUpdateItems(player, false);
+	}
 }

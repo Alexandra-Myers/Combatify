@@ -65,6 +65,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
 	private BooleanHolder delayedEntityUpdates;
+	private BooleanHolder attributeSwappingFix;
 	private BooleanHolder strengthAppliesToEnchants;
 	private BooleanHolder percentageDamageEffects;
 	private BooleanHolder tierDamageNerf;
@@ -273,6 +274,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		delayedEntityUpdates = createBoolean("delayedEntityUpdates", false);
 		delayedEntityUpdates.tieToCategory(extraB);
 		delayedEntityUpdates.setupTooltip(1);
+		attributeSwappingFix = createBoolean("attributeSwappingFix", false);
+		attributeSwappingFix.tieToCategory(extraB);
 		disableLoyaltyOnHitEntity = createBoolean("disableLoyaltyOnHitEntity", false);
 		disableLoyaltyOnHitEntity.tieToCategory(extraB);
 		fishingHookKB = createBoolean("fishingHookKB", false);
@@ -465,6 +468,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean delayedEntityUpdates() {
 		return delayedEntityUpdates.get();
+	}
+	public Boolean attributeSwappingFix() {
+		return attributeSwappingFix.get();
 	}
 	public Boolean strengthAppliesToEnchants() {
 		return strengthAppliesToEnchants.get();

@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin.client;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.DualAttackIndicatorStatus;
@@ -11,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -26,9 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.KineticWeapon;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -91,35 +89,19 @@ public abstract class GuiMixin {
 	@Final
 	private Minecraft minecraft;
 
-	@Shadow
-	protected abstract boolean canRenderCrosshairForSpectator(HitResult hitResult);
-	@Shadow
-	@Final
-	private DebugScreenOverlay debugOverlay;
-
-	@Inject(method = "renderCrosshair", at = @At(value = "HEAD"))
-	private void renderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-		Options options = this.minecraft.options;
-		if (options.getCameraType().isFirstPerson()) {
-			assert minecraft.gameMode != null;
-			assert minecraft.player != null;
-			if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
-				boolean bl = this.debugOverlay.showDebugScreen() && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)options.reducedDebugInfo().get();
-				if (!bl) {
-					int yPos = guiGraphics.guiHeight() / 2 - 7 + 16;
-					int xPos = guiGraphics.guiWidth() / 2 - 8;
-					boolean isShieldCooldown = isShieldOnCooldown();
-					boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && shieldNonDelayed();
-					if (shieldIndicatorEnabled && isShieldCooldown)
-						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, xPos, yPos, 16, 16);
-					else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
-						guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
-					MutableInt mutableYPos = new MutableInt(yPos);
-					if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
-					if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderSpearChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
-				}
-			}
-		}
+	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V", ordinal = 0))
+	private void renderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci, @Local(ordinal = 0) Options options) {
+		int yPos = guiGraphics.guiHeight() / 2 - 7 + 16;
+		int xPos = guiGraphics.guiWidth() / 2 - 8;
+		boolean isShieldCooldown = isShieldOnCooldown();
+		boolean shieldIndicatorEnabled = CombatifyClient.shieldIndicator.get() == ShieldIndicatorStatus.CROSSHAIR && shieldNonDelayed();
+		if (shieldIndicatorEnabled && isShieldCooldown)
+			guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SHIELD_INDICATOR_DISABLED_SPRITE, xPos, yPos, 16, 16);
+		else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking())
+			guiGraphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_SHIELD_INDICATOR_FULL_SPRITE, xPos, yPos, 16, 16);
+		MutableInt mutableYPos = new MutableInt(yPos);
+		if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.projectileChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderProjectileChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
+		if (!options.attackIndicator().get().equals(AttackIndicatorStatus.CROSSHAIR) && CombatifyClient.spearChargeIndicator.get().equals(AttackIndicatorStatus.CROSSHAIR)) renderSpearChargeOnCrosshair(guiGraphics, minecraft.player, xPos, mutableYPos);
 	}
 	@Inject(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"), cancellable = true)
 	public void renderCrosshair1(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
@@ -129,7 +111,7 @@ public abstract class GuiMixin {
 		if (shieldIndicatorEnabled && isShieldCooldown) {
 			ci.cancel();
 			return;
-		} else if(shieldIndicatorEnabled && this.minecraft.player.isBlocking()) {
+		} else if (shieldIndicatorEnabled && this.minecraft.player.isBlocking()) {
 			ci.cancel();
 			return;
 		}

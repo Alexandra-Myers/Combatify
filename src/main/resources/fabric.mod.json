@@ -21,6 +21,9 @@
     ],
 		"client": [
       "net.atlas.combatify.CombatifyClient"
+    ],
+    "sodium:config_api_user": [
+      "net.atlas.combatify.compat.CombatifySodiumConfig"
     ]
 	},
 	"mixins": [

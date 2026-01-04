@@ -9,6 +9,8 @@ import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
+import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
+import net.atlas.combatify.mixin.accessor.PlayerAccessor;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -48,6 +50,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class MethodHandler {
+	public static void forceUpdateItems(Player player, boolean force) {
+		if (!Combatify.CONFIG.attributeSwappingFix() && !force) return;
+		((LivingEntityAccessor) player).callDetectEquipmentUpdates();
+		if (!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
+			(Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))
+			player.combatify$resetAttackStrengthTicker(false, true);
+	}
 	public static boolean checkSweepAttack(Player player) {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
