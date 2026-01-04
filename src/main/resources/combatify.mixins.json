@@ -45,6 +45,7 @@
     "ToolMaterialMixin",
     "TridentItemMixin",
     "UseCooldownMixin",
+    "ZombieMixin",
     "accessor.CombatTrackerAccessor",
     "accessor.FleeSunGoalAccessor",
     "accessor.LivingEntityAccessor",
