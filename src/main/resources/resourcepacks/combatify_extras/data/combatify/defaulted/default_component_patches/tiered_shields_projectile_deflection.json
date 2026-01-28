@@ -1,6 +1,6 @@
 {
   "tags": [
-    "combatify:tiered_shields"
+    "combatify:defined_shields"
   ],
   "patch_generators": [
     {

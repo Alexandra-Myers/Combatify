@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "minecraft:shield",
     {
       "id": "combatify:golden_shield",
       "required": false

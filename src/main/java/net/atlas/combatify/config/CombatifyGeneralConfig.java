@@ -261,6 +261,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		attackSpeed = createBoolean("attackSpeed", true);
 		attackSpeed.tieToCategory(extraB);
 		attackSpeed.setupTooltip(1);
+		attributeSwappingFix = createBoolean("attributeSwappingFix", false);
+		attributeSwappingFix.tieToCategory(extraB);
 		canInteractWhenCrouchShield = createBoolean("canInteractWhenCrouchShield", true);
 		canInteractWhenCrouchShield.tieToCategory(extraB);
 		configOnlyWeapons = createBoolean("configOnlyWeapons", false);
@@ -274,8 +276,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		delayedEntityUpdates = createBoolean("delayedEntityUpdates", false);
 		delayedEntityUpdates.tieToCategory(extraB);
 		delayedEntityUpdates.setupTooltip(1);
-		attributeSwappingFix = createBoolean("attributeSwappingFix", false);
-		attributeSwappingFix.tieToCategory(extraB);
 		disableLoyaltyOnHitEntity = createBoolean("disableLoyaltyOnHitEntity", false);
 		disableLoyaltyOnHitEntity.tieToCategory(extraB);
 		fishingHookKB = createBoolean("fishingHookKB", false);
