@@ -97,6 +97,7 @@ public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocat
 	public boolean canUse(ItemStack itemStack, Level level, Player user, InteractionHand hand) {
 		boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && user.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && blockingType().requireFullCharge();
 		if (stillRequiresCharge) return false;
+		if (blockingType().isEmpty()) return true;
 		return blockingCondition.canUse(itemStack, level, user, hand);
 	}
 
