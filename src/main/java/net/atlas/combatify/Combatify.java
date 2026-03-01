@@ -12,6 +12,7 @@ import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.config.impl.crit.CritImpl;
 import net.atlas.combatify.config.impl.food.FoodImpl;
 import net.atlas.combatify.criterion.DataComponentPredicateInit;
 import net.atlas.combatify.item.CombatifyItemTags;
@@ -236,6 +237,7 @@ public class Combatify implements ModInitializer {
 
 	static {
 		FoodImpl.bootstrap();
+		CritImpl.bootstrap();
 		CONFIG = new CombatifyGeneralConfig();
 	}
 	public enum CombatifyState {
