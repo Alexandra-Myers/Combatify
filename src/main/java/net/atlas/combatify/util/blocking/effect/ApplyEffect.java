@@ -23,9 +23,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
+public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
 	public static final Identifier ID = Identifier.withDefaultNamespace("apply_effect");
-	public ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
+	public ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
 		this(toApply, duration, duration, amplifier, amplifier);
 	}
 	public static final MapCodec<ApplyEffect> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -52,7 +52,7 @@ public record ApplyEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDurat
         assert enchantedItemInUse.owner() != null;
         @NotNull LivingEntity target = enchantedItemInUse.owner();
 		RandomSource randomSource = target.getRandom();
-		Optional<Holder<MobEffect>> optional = this.toApply.getRandomElement(randomSource);
+		Optional<Holder<@NotNull MobEffect>> optional = this.toApply.getRandomElement(randomSource);
 		if (optional.isPresent()) {
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration.calculate(enchantmentLevel), this.maxDuration.calculate(enchantmentLevel)) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier.calculate(enchantmentLevel), this.maxAmplifier.calculate(enchantmentLevel))));

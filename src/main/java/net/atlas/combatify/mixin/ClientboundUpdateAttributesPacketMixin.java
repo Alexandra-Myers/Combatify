@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -61,7 +62,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 			}
 	}
 	@Unique
-	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Holder<Attribute> attribute) {
+	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Holder<@NotNull Attribute> attribute) {
 		double attributeInstanceBaseValue = baseValue;
 		List<AttributeModifier> additionList = modifiers
 			.stream()
@@ -75,7 +76,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		return calculateValueFromBase(attributeInstanceBaseValue, modifiers, attribute);
 	}
 	@Unique
-	public final double calculateValueFromBase(double attributeInstanceBaseValue, Collection<AttributeModifier> modifiers, Holder<Attribute> attribute) {
+	public final double calculateValueFromBase(double attributeInstanceBaseValue, Collection<AttributeModifier> modifiers, Holder<@NotNull Attribute> attribute) {
 		List<AttributeModifier> multiplyBaseList = modifiers
 			.stream()
 			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE)

@@ -15,6 +15,7 @@ import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,12 +30,12 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 
 	@Shadow
 	@Final
-	private static EntityDataAccessor<Byte> ID_LOYALTY;
+	private static EntityDataAccessor<@NotNull Byte> ID_LOYALTY;
 
 	@Shadow
 	private boolean dealtDamage;
 
-	protected ThrownTridentMixin(EntityType<? extends AbstractArrow> entityType, Level level) {
+	protected ThrownTridentMixin(EntityType<@NotNull ? extends AbstractArrow> entityType, Level level) {
 		super(entityType, level);
 	}
 

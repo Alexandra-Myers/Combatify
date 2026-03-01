@@ -37,6 +37,7 @@ import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -81,7 +82,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public abstract boolean isBlocking();
 
 	@Shadow
-	public abstract double getAttributeValue(Holder<Attribute> holder);
+	public abstract double getAttributeValue(Holder<@NotNull Attribute> holder);
 
 	@Shadow
 	public int attackStrengthTicker;
@@ -177,7 +178,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return result;
 	}
 	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/DamageSource;is(Lnet/minecraft/tags/TagKey;)Z"))
-	public boolean applyArrowDisable(DamageSource instance, TagKey<DamageType> tagKey, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel) {
+	public boolean applyArrowDisable(DamageSource instance, TagKey<@NotNull DamageType> tagKey, Operation<Boolean> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel) {
 		if (original.call(instance, tagKey)) {
 			switch (instance.getDirectEntity()) {
 				case Arrow arrow when Combatify.CONFIG.arrowDisableMode().satisfiesConditions(arrow) ->

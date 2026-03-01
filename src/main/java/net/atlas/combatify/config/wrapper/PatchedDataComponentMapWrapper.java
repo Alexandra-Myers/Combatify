@@ -13,10 +13,11 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
-public record PatchedDataComponentMapWrapper(RegistryOps<Tag> ops, ResourceKey<Registry<DataComponentType<?>>> reg, PatchedDataComponentMap value) implements DataComponentMapWrapper<PatchedDataComponentMap> {
+public record PatchedDataComponentMapWrapper(RegistryOps<@NotNull Tag> ops, ResourceKey<@NotNull Registry<@NotNull DataComponentType<?>>> reg, PatchedDataComponentMap value) implements DataComponentMapWrapper<PatchedDataComponentMap> {
 	public <T> void set(String type, String value) {
-		@SuppressWarnings("unchecked") DataComponentType<T> dataComponentType = (DataComponentType<T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
+		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
 		StringReader reader = new StringReader(value);
 		T val;
 		try {
@@ -29,7 +30,7 @@ public record PatchedDataComponentMapWrapper(RegistryOps<Tag> ops, ResourceKey<R
 		unwrap().set(dataComponentType, val);
 	}
 	public <T> void remove(String type) {
-		@SuppressWarnings("unchecked") DataComponentType<T> dataComponentType = (DataComponentType<T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
+		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
 		unwrap().remove(dataComponentType);
 	}
 	public void applyPatch(String patch) {

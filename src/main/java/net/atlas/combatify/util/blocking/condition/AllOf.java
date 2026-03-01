@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public record AllOf(List<BlockingCondition> blockingConditions) implements Block
 	public static final Identifier ID = Identifier.withDefaultNamespace("all_of");
 	public static final MapCodec<AllOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(BlockingConditions.MAP_CODEC.codec().listOf().fieldOf("conditions").forGetter(AllOf::blockingConditions)).apply(instance, AllOf::new));
-	public static final StreamCodec<RegistryFriendlyByteBuf, AllOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AllOf::blockingConditions, AllOf::new);
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AllOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AllOf::blockingConditions, AllOf::new);
 
 	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {
@@ -52,7 +53,7 @@ public record AllOf(List<BlockingCondition> blockingConditions) implements Block
 		return ID;
 	}
 
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> map) {
+	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
 		map.put(ID, STREAM_CODEC.map(allOf -> allOf, blockingCondition -> (AllOf) blockingCondition));
 	}
 }

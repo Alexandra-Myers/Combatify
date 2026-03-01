@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.mutable.MutableFloat;
+import org.jetbrains.annotations.NotNull;
 
 public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition, boolean hasBanner) {
 	public ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
@@ -54,7 +55,7 @@ public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocat
 				Codec.BOOL.optionalFieldOf("considers_banner", false).forGetter(ExtendedBlockingData::hasBanner))
 			.apply(instance, ExtendedBlockingData::new));
 
-	public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
 		ByteBufCodecs.fromCodecTrusted(Tooltip.CODEC.codec()),
 		ExtendedBlockingData::tooltip,
 		Identifier.STREAM_CODEC,

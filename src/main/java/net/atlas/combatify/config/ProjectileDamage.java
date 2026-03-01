@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 
 public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 	public static final ProjectileDamage DEFAULT = new ProjectileDamage(null, 0.0, 0.0, 1.0, 8.0);
-	public static final StreamCodec<RegistryFriendlyByteBuf, ProjectileDamage> STREAM_CODEC = new StreamCodec<>() {
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ProjectileDamage> STREAM_CODEC = new StreamCodec<>() {
         public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileDamage projectileDamage) {
             registryFriendlyByteBuf.writeIdentifier(projectileDamage.owner.heldValue.owner().name);
             registryFriendlyByteBuf.writeUtf(projectileDamage.owner.heldValue.name());

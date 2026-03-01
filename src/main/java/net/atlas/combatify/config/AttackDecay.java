@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 
 public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public static final AttackDecay DEFAULT = new AttackDecay(null, false, 0, 100, 20, 100, 0, 100);
-	public static final StreamCodec<RegistryFriendlyByteBuf, AttackDecay> STREAM_CODEC = new StreamCodec<>() {
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AttackDecay> STREAM_CODEC = new StreamCodec<>() {
         public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, AttackDecay projectileDamage) {
             registryFriendlyByteBuf.writeIdentifier(projectileDamage.owner.heldValue.owner().name);
             registryFriendlyByteBuf.writeUtf(projectileDamage.owner.heldValue.name());

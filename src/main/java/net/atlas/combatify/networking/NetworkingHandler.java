@@ -69,8 +69,8 @@ public class NetworkingHandler {
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
 	}
 	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {
-		public static final Type<UpdateBridgingStatusPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath("c", "update_status"));
-		public static final StreamCodec<FriendlyByteBuf, UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
+		public static final Type<@NotNull UpdateBridgingStatusPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath("c", "update_status"));
+		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
 
 		public UpdateBridgingStatusPacket(FriendlyByteBuf buf) {
 			this(buf.readBoolean());
@@ -86,8 +86,8 @@ public class NetworkingHandler {
 	}
 
 	public record ServerboundMissPacket() implements CustomPacketPayload {
-		public static final Type<ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));
-		public static final StreamCodec<FriendlyByteBuf, ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
+		public static final Type<@NotNull ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));
+		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
 
 		public ServerboundMissPacket(FriendlyByteBuf buf) {
 			this();
@@ -102,8 +102,8 @@ public class NetworkingHandler {
 		}
 	}
 	public record RemainingUseSyncPacket(int id, int ticks) implements CustomPacketPayload {
-		public static final Type<RemainingUseSyncPacket> TYPE = new Type<>(Combatify.id("remaining_use_ticks"));
-		public static final StreamCodec<FriendlyByteBuf, RemainingUseSyncPacket> CODEC = CustomPacketPayload.codec(RemainingUseSyncPacket::write, RemainingUseSyncPacket::new);
+		public static final Type<@NotNull RemainingUseSyncPacket> TYPE = new Type<>(Combatify.id("remaining_use_ticks"));
+		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull RemainingUseSyncPacket> CODEC = CustomPacketPayload.codec(RemainingUseSyncPacket::write, RemainingUseSyncPacket::new);
 
 		public RemainingUseSyncPacket(FriendlyByteBuf buf) {
 			this(buf.readVarInt(), buf.readInt());
@@ -143,8 +143,8 @@ public class NetworkingHandler {
 	}
 
 	public record ClientboundClientInformationRetrievalPacket() implements CustomPacketPayload {
-		public static final Type<ClientboundClientInformationRetrievalPacket> TYPE = new Type<>(Combatify.id("client_retrieval"));
-		public static final StreamCodec<FriendlyByteBuf, ClientboundClientInformationRetrievalPacket> CODEC = CustomPacketPayload.codec(ClientboundClientInformationRetrievalPacket::write, ClientboundClientInformationRetrievalPacket::new);
+		public static final Type<@NotNull ClientboundClientInformationRetrievalPacket> TYPE = new Type<>(Combatify.id("client_retrieval"));
+		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull ClientboundClientInformationRetrievalPacket> CODEC = CustomPacketPayload.codec(ClientboundClientInformationRetrievalPacket::write, ClientboundClientInformationRetrievalPacket::new);
 
 		public ClientboundClientInformationRetrievalPacket(FriendlyByteBuf buf) {
 			this();
@@ -169,8 +169,8 @@ public class NetworkingHandler {
 	}
 
 	public record ServerboundClientInformationExtensionPacket(boolean useShieldOnCrouch) implements CustomPacketPayload {
-		public static final Type<ServerboundClientInformationExtensionPacket> TYPE = new Type<>(Combatify.id("client_extras"));
-		public static final StreamCodec<FriendlyByteBuf, ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
+		public static final Type<@NotNull ServerboundClientInformationExtensionPacket> TYPE = new Type<>(Combatify.id("client_extras"));
+		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
 
 		public ServerboundClientInformationExtensionPacket(FriendlyByteBuf buf) {
 			this(buf.readBoolean());

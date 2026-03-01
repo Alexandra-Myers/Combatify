@@ -43,6 +43,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.function.TriFunction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -409,7 +410,7 @@ public class MethodHandler {
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		return (attackRange != null) ? calculateValueBlacklistChargedReachModifier(attackRange) : baseAttackRange;
 	}
-	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<Byte> ID_LOYALTY) {
+	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<@NotNull Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
 		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < trident.level().getMinY() && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {

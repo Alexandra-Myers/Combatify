@@ -18,6 +18,7 @@ import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.renderer.entity.state.*;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 public class ModelFixMixins {
 	@Mixin(AbstractZombieModel.class)
-	public static class AbstractZombieModelFixMixin<T extends ZombieRenderState> extends HumanoidModel<T> {
+	public static class AbstractZombieModelFixMixin<T extends ZombieRenderState> extends HumanoidModel<@NotNull T> {
 		public AbstractZombieModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
 		}
@@ -65,7 +66,7 @@ public class ModelFixMixins {
 		}
 	}
 	@Mixin(PiglinModel.class)
-	public static class PiglinModelFixMixin<T extends PiglinRenderState> extends AbstractPiglinModel<T> {
+	public static class PiglinModelFixMixin<T extends PiglinRenderState> extends AbstractPiglinModel<@NotNull T> {
 
 		public PiglinModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
@@ -88,7 +89,7 @@ public class ModelFixMixins {
 		}
 	}
 	@Mixin(ZombifiedPiglinModel.class)
-	public static class ZombifiedPiglinModelFixMixin<T extends ZombifiedPiglinRenderState> extends AbstractPiglinModel<T> {
+	public static class ZombifiedPiglinModelFixMixin<T extends ZombifiedPiglinRenderState> extends AbstractPiglinModel<@NotNull T> {
 		public ZombifiedPiglinModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
 		}
@@ -103,7 +104,7 @@ public class ModelFixMixins {
 		}
 	}
 	@Mixin(ZombieVillagerModel.class)
-	public static class ZombieVillagerModelFixMixin<T extends ZombieVillagerRenderState> extends HumanoidModel<T> {
+	public static class ZombieVillagerModelFixMixin<T extends ZombieVillagerRenderState> extends HumanoidModel<@NotNull T> {
 		public ZombieVillagerModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
 		}
@@ -118,7 +119,7 @@ public class ModelFixMixins {
 		}
 	}
 	@Mixin(SkeletonModel.class)
-	public static class SkeletonModelFixMixin<T extends SkeletonRenderState> extends HumanoidModel<T> {
+	public static class SkeletonModelFixMixin<T extends SkeletonRenderState> extends HumanoidModel<@NotNull T> {
 		public SkeletonModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
 		}

@@ -6,15 +6,16 @@ import net.atlas.combatify.component.CustomDataComponents;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.advancements.criterion.SingleComponentItemPredicate;
 import net.minecraft.core.component.DataComponentType;
+import org.jetbrains.annotations.NotNull;
 
-public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements SingleComponentItemPredicate<Integer> {
+public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements SingleComponentItemPredicate<@NotNull Integer> {
 	public static final Codec<ItemBlockingLevelPredicate> CODEC = RecordCodecBuilder.create(
 		instance -> instance.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("value", MinMaxBounds.Ints.ANY).forGetter(ItemBlockingLevelPredicate::value))
 			.apply(instance, ItemBlockingLevelPredicate::new)
 	);
 
 	@Override
-	public DataComponentType<Integer> componentType() {
+	public @NotNull DataComponentType<@NotNull Integer> componentType() {
 		return CustomDataComponents.BLOCKING_LEVEL;
 	}
 

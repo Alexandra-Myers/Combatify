@@ -8,6 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 
@@ -35,7 +36,7 @@ public class ItemRegistry {
 	public static Item registerItem(Identifier Identifier, Item.Properties properties) {
 		return registerItem(ResourceKey.create(Registries.ITEM, Identifier), Item::new, properties);
 	}
-	public static Item registerItem(ResourceKey<Item> resourceKey, Function<Item.Properties, Item> function, Item.Properties properties) {
+	public static Item registerItem(ResourceKey<@NotNull Item> resourceKey, Function<Item.Properties, Item> function, Item.Properties properties) {
 		Item item = function.apply(properties.setId(resourceKey));
 		if (item instanceof BlockItem blockItem) {
 			blockItem.registerBlocks(Item.BY_BLOCK, item);

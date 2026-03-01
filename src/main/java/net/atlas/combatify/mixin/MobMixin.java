@@ -29,6 +29,7 @@ import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,7 +49,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	private boolean overrideSprintLogic = false;
 	@Shadow
 	@Final
-	private static EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID;
+	private static EntityDataAccessor<@NotNull Byte> DATA_MOB_FLAGS_ID;
 
 	@Shadow
 	@Nullable
@@ -59,7 +60,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
-	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
+	protected MobMixin(EntityType<@NotNull ? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 

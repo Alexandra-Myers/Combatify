@@ -7,10 +7,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
+import org.jetbrains.annotations.NotNull;
 
 public class DataComponentPredicateInit {
-	public static final DataComponentPredicate.Type<ItemBlockingLevelPredicate> BLOCKING_LEVEL = register("blocking_level", ItemBlockingLevelPredicate.CODEC);
-	private static <T extends DataComponentPredicate> DataComponentPredicate.Type<T> register(String string, Codec<T> codec) {
+	public static final DataComponentPredicate.Type<@NotNull ItemBlockingLevelPredicate> BLOCKING_LEVEL = register("blocking_level", ItemBlockingLevelPredicate.CODEC);
+	private static <T extends DataComponentPredicate> DataComponentPredicate.Type<@NotNull T> register(String string, Codec<T> codec) {
 		return Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, Combatify.id(string), new DataComponentPredicate.ConcreteType<>(codec));
 	}
 	public static void init() {

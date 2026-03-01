@@ -10,6 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -30,7 +31,7 @@ public record BlockingType(Identifier name, BlockingTypeData data) {
 				BlockingTypeData.CREATE.forGetter(BlockingType::data))
 			.apply(instance, BlockingType::new));
 	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
-	public static final StreamCodec<RegistryFriendlyByteBuf, BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, BlockingType::name,
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, BlockingType::name,
 		BlockingTypeData.STREAM_CODEC, BlockingType::data,
 		BlockingType::new);
 	public static Builder builder() {
@@ -123,7 +124,7 @@ public record BlockingType(Identifier name, BlockingTypeData data) {
 	}
 	public record BlockingTypeData(boolean canBeDisabled, boolean canCrouchBlock, boolean canBlockHit,
 								   boolean requireFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		public static final StreamCodec<FriendlyByteBuf, BlockingTypeData> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, BlockingTypeData::canBeDisabled,
+		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull BlockingTypeData> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, BlockingTypeData::canBeDisabled,
 			ByteBufCodecs.BOOL, BlockingTypeData::canCrouchBlock,
 			ByteBufCodecs.BOOL, BlockingTypeData::canBlockHit,
 			ByteBufCodecs.BOOL, BlockingTypeData::requireFullCharge,

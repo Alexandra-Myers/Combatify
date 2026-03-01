@@ -4,9 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
+import org.jetbrains.annotations.NotNull;
 
 public class PostBlockEffects {
-	public static final ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends PostBlockEffect>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	public static final ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends PostBlockEffect>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
 	public static final Codec<PostBlockEffect> CODEC = ID_MAPPER.codec(Identifier.CODEC)
 		.dispatch(PostBlockEffect::type, mapCodec -> mapCodec);
 

@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public record ItemMatches(ItemPredicate predicate, boolean invert) implements Bl
 		instance.group(ITEM_PREDICATE_CODEC_NO_ITEMS.fieldOf("predicate").forGetter(ItemMatches::predicate),
 				Codec.BOOL.optionalFieldOf("invert", false).forGetter(ItemMatches::invert))
 			.apply(instance, ItemMatches::new));
-	public static final StreamCodec<RegistryFriendlyByteBuf, ItemMatches> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.fromCodecTrusted(ITEM_PREDICATE_CODEC_NO_ITEMS), ItemMatches::predicate,
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ItemMatches> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.fromCodecTrusted(ITEM_PREDICATE_CODEC_NO_ITEMS), ItemMatches::predicate,
 		ByteBufCodecs.BOOL, ItemMatches::invert,
 		ItemMatches::new);
 
@@ -59,7 +60,7 @@ public record ItemMatches(ItemPredicate predicate, boolean invert) implements Bl
 		return ID;
 	}
 
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> map) {
+	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
 		map.put(ID, STREAM_CODEC.map(itemMatches -> itemMatches, blockingCondition -> (ItemMatches) blockingCondition));
 	}
 }

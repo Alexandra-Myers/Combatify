@@ -23,11 +23,12 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3fc;
 
 @Environment(EnvType.CLIENT)
-public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
+public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NotNull DataComponentMap> {
 	private final MaterialSet materials;
 	private final ShieldModel model;
 	private final ShieldMaterial shieldMaterial;
@@ -44,7 +45,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 	}
 
 	@Override
-	public void submit(@Nullable DataComponentMap dataComponentMap, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int j, boolean bl, int k) {
+	public void submit(@Nullable DataComponentMap dataComponentMap, @NotNull ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int j, boolean bl, int k) {
 		BannerPatternLayers bannerPatternLayers = dataComponentMap != null ? dataComponentMap.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
 		DyeColor dyeColor = dataComponentMap != null ? dataComponentMap.get(DataComponents.BASE_COLOR) : null;
 		boolean hasBanner = !bannerPatternLayers.layers().isEmpty() || dyeColor != null;
@@ -62,7 +63,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 	}
 
 	@Override
-	public void getExtents(Consumer<Vector3fc> set) {
+	public void getExtents(@NotNull Consumer<Vector3fc> set) {
 		PoseStack poseStack = new PoseStack();
 		poseStack.scale(1.0F, -1.0F, -1.0F);
 		this.model.root().getExtentsForGui(poseStack, set);
@@ -74,12 +75,12 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<DataCom
 			unbakedInstance.group(ShieldMaterial.CODEC.forGetter(Unbaked::material)).apply(unbakedInstance, Unbaked::new));
 
 		@Override
-		public @Nullable SpecialModelRenderer<?> bake(BakingContext bakingContext) {
+		public @NotNull SpecialModelRenderer<?> bake(BakingContext bakingContext) {
 			return new TieredShieldSpecialRenderer(bakingContext.materials(), new ShieldModel(bakingContext.entityModelSet().bakeLayer(ModelLayers.SHIELD)), material);
 		}
 
 		@Override
-		public MapCodec<TieredShieldSpecialRenderer.Unbaked> type() {
+		public @NotNull MapCodec<TieredShieldSpecialRenderer.Unbaked> type() {
 			return MAP_CODEC;
 		}
 	}

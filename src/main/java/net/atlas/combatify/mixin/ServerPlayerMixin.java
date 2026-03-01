@@ -28,6 +28,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,7 +44,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	private boolean retainAttack;
 
 	@Shadow
-	public abstract void swing(InteractionHand interactionHand);
+	public abstract void swing(@NotNull InteractionHand interactionHand);
 
 	@Shadow
 	public ServerGamePacketListenerImpl connection;
@@ -57,7 +58,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
 
-	public ServerPlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
+	public ServerPlayerMixin(EntityType<@NotNull ? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 

@@ -8,9 +8,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 public interface BlockingCondition {
-	StreamCodec<RegistryFriendlyByteBuf, BlockingCondition> STREAM_CODEC = StreamCodec.of((buf, blockingCondition) -> {
+	StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition> STREAM_CODEC = StreamCodec.of((buf, blockingCondition) -> {
 		buf.writeIdentifier(blockingCondition.id());
 		BlockingConditions.STREAM_CODEC_MAP.get(blockingCondition.id()).encode(buf, blockingCondition);
 	}, buf -> BlockingConditions.STREAM_CODEC_MAP.get(buf.readIdentifier()).decode(buf));

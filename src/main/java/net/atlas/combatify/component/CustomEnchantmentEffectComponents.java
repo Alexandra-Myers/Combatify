@@ -11,21 +11,22 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.enchantment.TargetedConditionalEffect;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class CustomEnchantmentEffectComponents {
-	public static DataComponentType<List<TargetedConditionalEffect<PostBlockEffect>>> POST_BLOCK_EFFECTS = register(
+	public static DataComponentType<@NotNull List<TargetedConditionalEffect<@NotNull PostBlockEffect>>> POST_BLOCK_EFFECTS = register(
 		"combatify:post_block_effects", builder -> builder.persistent(TargetedConditionalEffect.codec(PostBlockEffects.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
 	);
-	public static DataComponentType<List<ProtectionBaseFactor>> SHIELD_EFFECTIVENESS = register(
+	public static DataComponentType<@NotNull List<ProtectionBaseFactor>> SHIELD_EFFECTIVENESS = register(
 		"combatify:shield_effectiveness", builder -> builder.persistent(ProtectionBaseFactor.CODEC.listOf())
 	);
-	public static DataComponentType<List<TargetedConditionalEffect<EnchantmentValueEffect>>> SHIELD_DISABLE = register(
+	public static DataComponentType<@NotNull List<TargetedConditionalEffect<@NotNull EnchantmentValueEffect>>> SHIELD_DISABLE = register(
 		"combatify:shield_disable_time", builder -> builder.persistent(TargetedConditionalEffect.equipmentDropsCodec(EnchantmentValueEffect.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
 	);
-	private static <T> DataComponentType<T> register(String string, UnaryOperator<DataComponentType.Builder<T>> unaryOperator) {
+	private static <T> DataComponentType<@NotNull T> register(String string, UnaryOperator<DataComponentType.Builder<@NotNull T>> unaryOperator) {
 		return Registry.register(
 			BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, string, unaryOperator.apply(DataComponentType.builder()).build()
 		);

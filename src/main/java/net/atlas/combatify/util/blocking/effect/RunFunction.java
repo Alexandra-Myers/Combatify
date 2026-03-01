@@ -14,6 +14,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.Optional;
@@ -29,7 +30,7 @@ public record RunFunction(Identifier function) implements PostBlockEffect {
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
 		MinecraftServer minecraftServer = serverLevel.getServer();
 		ServerFunctionManager serverFunctionManager = minecraftServer.getFunctions();
-		Optional<CommandFunction<CommandSourceStack>> optional = serverFunctionManager.get(this.function);
+		Optional<CommandFunction<@NotNull CommandSourceStack>> optional = serverFunctionManager.get(this.function);
 		if (optional.isPresent()) {
 			CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
 				.withPermission(LevelBasedPermissionSet.GAMEMASTER)

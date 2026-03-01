@@ -7,10 +7,11 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
+import org.jetbrains.annotations.NotNull;
 
 public class BlockingConditions {
-	public static final ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends BlockingCondition>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
-	public static final BiMap<Identifier, StreamCodec<RegistryFriendlyByteBuf, BlockingCondition>> STREAM_CODEC_MAP = HashBiMap.create();
+	public static final ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends BlockingCondition>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	public static final BiMap<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> STREAM_CODEC_MAP = HashBiMap.create();
 	public static final MapCodec<BlockingCondition> MAP_CODEC = ID_MAPPER.codec(Identifier.CODEC)
 		.dispatchMap("condition", BlockingCondition::type, mapCodec -> mapCodec);
 

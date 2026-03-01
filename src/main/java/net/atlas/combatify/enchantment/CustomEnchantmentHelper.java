@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.*;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
 import org.apache.commons.lang3.mutable.MutableFloat;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -54,7 +55,7 @@ public class CustomEnchantmentHelper {
 	public static float modifyDamage(ServerLevel serverLevel, ItemStack itemStack, Entity entity, DamageSource damageSource, float baseDamage, Operation<Float> original) {
 		label1: {
 			if (Combatify.CONFIG.bedrockImpaling() && entity.isInWaterOrRain()) {
-				Optional<HolderSet.Named<EntityType<?>>> sensitiveToImpaling = BuiltInRegistries.ENTITY_TYPE.get(EntityTypeTags.SENSITIVE_TO_IMPALING);
+				Optional<HolderSet.Named<@NotNull EntityType<?>>> sensitiveToImpaling = BuiltInRegistries.ENTITY_TYPE.get(EntityTypeTags.SENSITIVE_TO_IMPALING);
 				if (sensitiveToImpaling.isEmpty() || sensitiveToImpaling.get().size() <= 0)
 					break label1;
 				int i = 0;
@@ -78,8 +79,8 @@ public class CustomEnchantmentHelper {
 		if (target instanceof LivingEntity livingEntity) EnchantmentHelper.runIterationOnEquipment(livingEntity, (holder, enchantmentLevel, enchantedItemInUse) -> modifyDisableTime(EnchantmentTarget.VICTIM, holder, serverLevel, enchantmentLevel, target, damageSource, disableTime));
 		return disableTime.floatValue();
 	}
-	public static void modifyDisableTime(EnchantmentTarget enchantmentTarget, Holder<Enchantment> holder, ServerLevel serverLevel, int enchantmentLevel, Entity target, DamageSource damageSource, MutableFloat disableTime) {
-		for (TargetedConditionalEffect<EnchantmentValueEffect> effect : holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_DISABLE)) {
+	public static void modifyDisableTime(EnchantmentTarget enchantmentTarget, Holder<@NotNull Enchantment> holder, ServerLevel serverLevel, int enchantmentLevel, Entity target, DamageSource damageSource, MutableFloat disableTime) {
+		for (TargetedConditionalEffect<@NotNull EnchantmentValueEffect> effect : holder.value().getEffects(CustomEnchantmentEffectComponents.SHIELD_DISABLE)) {
 			if (effect.enchanted() == enchantmentTarget && effect.matches(Enchantment.damageContext(serverLevel, enchantmentLevel, target, damageSource))) disableTime.setValue(effect.effect().process(enchantmentLevel, target.getRandom(), disableTime.floatValue()));
 		}
 	}
