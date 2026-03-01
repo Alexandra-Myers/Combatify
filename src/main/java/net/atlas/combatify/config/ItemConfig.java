@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,6 +30,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
@@ -41,7 +43,7 @@ public class ItemConfig extends AtlasConfig {
 	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;
 	public TagHolder<List<RegistryConfigDataWrapper<Item, ConfigurableItemData>>> items;
 	public TagHolder<JSImpl> armourCalcs;
-	public static final StreamCodec<RegistryFriendlyByteBuf, Identifier> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeIdentifier, RegistryFriendlyByteBuf::readIdentifier);
+	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull Identifier> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeIdentifier, RegistryFriendlyByteBuf::readIdentifier);
 	public static final MapCodec<RegistryConfigDataWrapper<Item, ConfigurableItemData>> ITEMS_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ITEM,
 		holder -> holder.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air", holder) : DataResult.success(holder),
 		ConfigurableItemData.CODEC);
@@ -132,11 +134,11 @@ public class ItemConfig extends AtlasConfig {
 		return result;
 	}
 
-	public static <B extends FriendlyByteBuf, K, V> Map<K, V> readMap(B buf, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
+	public static <B extends FriendlyByteBuf, K, V> Map<K, V> readMap(B buf, StreamCodec<@NotNull B, @NotNull K> keyCodec, StreamCodec<@NotNull B, @NotNull V> valueCodec) {
 		return readMap(buf, Maps::newHashMapWithExpectedSize, keyCodec, valueCodec);
 	}
 
-	public static <B extends FriendlyByteBuf, K, V, M extends Map<K, V>> M readMap(B buf, IntFunction<M> intFunction, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
+	public static <B extends FriendlyByteBuf, K, V, M extends Map<K, V>> M readMap(B buf, IntFunction<M> intFunction, StreamCodec<@NotNull B, @NotNull K> keyCodec, StreamCodec<@NotNull B, @NotNull V> valueCodec) {
 		int size = buf.readVarInt();
 		M map = intFunction.apply(size);
 
@@ -149,7 +151,7 @@ public class ItemConfig extends AtlasConfig {
 		return map;
 	}
 
-	public static <B extends FriendlyByteBuf, K, V> void writeMap(B buf, Map<K, V> map, StreamCodec<B, K> keyCodec, StreamCodec<B, V> valueCodec) {
+	public static <B extends FriendlyByteBuf, K, V> void writeMap(B buf, Map<K, V> map, StreamCodec<@NotNull B, @NotNull K> keyCodec, StreamCodec<@NotNull B, @NotNull V> valueCodec) {
 		buf.writeVarInt(map.size());
 		map.forEach((key, value) -> {
 			keyCodec.encode(buf, key);
@@ -186,7 +188,7 @@ public class ItemConfig extends AtlasConfig {
 						mapCodec.forGetter(RawConfigDataWrapper::configurableData))
 					.apply(instance, RawConfigDataWrapper::new));
 		}
-		public static <T, U> StreamCodec<RegistryFriendlyByteBuf, RawConfigDataWrapper<T, U>> streamCodec(StreamCodec<RegistryFriendlyByteBuf, T> inputCodec, StreamCodec<RegistryFriendlyByteBuf, U> dataCodec) {
+		public static <T, U> StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull RawConfigDataWrapper<T, U>> streamCodec(StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull T> inputCodec, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull U> dataCodec) {
 			return StreamCodec.composite(ByteBufCodecs.collection(ArrayList::new, inputCodec), RawConfigDataWrapper::objects,
 				dataCodec, RawConfigDataWrapper::configurableData,
 				RawConfigDataWrapper::new);
@@ -209,27 +211,27 @@ public class ItemConfig extends AtlasConfig {
 		}
 
 		@Override
-		public String toString() {
+		public @NotNull String toString() {
 			return "RawConfigDataWrapper{" +
 				"objects=" + objects +
 				", configurableData=" + configurableData +
 				'}';
 		}
 	}
-	public record RegistryConfigDataWrapper<T, U>(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) implements ConfigDataWrapper<Holder<T>, U> {
+	public record RegistryConfigDataWrapper<T, U>(HolderSet.Direct<@NotNull T> holders, List<TagKey<@NotNull T>> tagKeys, U configurableData) implements ConfigDataWrapper<Holder<@NotNull T>, U> {
 		public static final RegistryConfigDataWrapper<Item, ConfigurableItemData> EMPTY_ITEM = new RegistryConfigDataWrapper<>(HolderSet.direct(), Collections.emptyList(), ConfigurableItemData.EMPTY);
 
-        public boolean matches(Holder<T> test) {
+        public boolean matches(Holder<@NotNull T> test) {
 			return holders.contains(test) || tagKeys.stream().anyMatch(test::is);
 		}
-		public static <T, U> RegistryConfigDataWrapper<T, U> build(HolderSet.Direct<T> holders, List<TagKey<T>> tagKeys, U configurableData) {
+		public static <T, U> RegistryConfigDataWrapper<T, U> build(HolderSet.Direct<@NotNull T> holders, List<TagKey<@NotNull T>> tagKeys, U configurableData) {
 			RegistryConfigDataWrapper<T, U> result = new RegistryConfigDataWrapper<>(holders, tagKeys, configurableData);
 			if (holders.size() == 0 && tagKeys.isEmpty()) noNamePresent(result, "Configuring Registry");
 			return result;
 		}
-		public static <T, U> MapCodec<RegistryConfigDataWrapper<T, U>> mapCodec(Registry<T> registry, Function<Holder<T>, DataResult<Holder<T>>> validator, MapCodec<U> mapCodec) {
-			Codec<Holder<T>> holderCodec = registry.holderByNameCodec().validate(validator);
-			Codec<TagKey<T>> tagKeyCodec = Codec.withAlternative(TagKey.codec(registry.key()), TagKey.hashedCodec(registry.key()));
+		public static <T, U> MapCodec<RegistryConfigDataWrapper<T, U>> mapCodec(Registry<@NotNull T> registry, Function<Holder<@NotNull T>, DataResult<Holder<@NotNull T>>> validator, MapCodec<U> mapCodec) {
+			Codec<Holder<@NotNull T>> holderCodec = registry.holderByNameCodec().validate(validator);
+			Codec<TagKey<@NotNull T>> tagKeyCodec = Codec.withAlternative(TagKey.codec(registry.key()), TagKey.hashedCodec(registry.key()));
 			return RecordCodecBuilder.mapCodec(instance ->
 				instance.group(Codec.withAlternative(holderCodec.listOf(), holderCodec, Collections::singletonList)
 							.xmap(HolderSet::direct, holders -> holders.stream().toList()).optionalFieldOf("name", HolderSet.direct())
@@ -239,8 +241,8 @@ public class ItemConfig extends AtlasConfig {
 						mapCodec.forGetter(RegistryConfigDataWrapper::configurableData))
 					.apply(instance, RegistryConfigDataWrapper::build));
 		}
-		public static <T, U> StreamCodec<RegistryFriendlyByteBuf, RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<? extends Registry<T>> registry, StreamCodec<? super ByteBuf, U> streamCodec) {
-			return StreamCodec.composite(ByteBufCodecs.holderSet(registry).map(holders -> (HolderSet.Direct<T>) holders, holders -> holders), RegistryConfigDataWrapper::holders,
+		public static <T, U> StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<@NotNull ? extends Registry<@NotNull T>> registry, StreamCodec<? super ByteBuf, @NotNull U> streamCodec) {
+			return StreamCodec.composite(ByteBufCodecs.holderSet(registry).map(holders -> (HolderSet.Direct<@NotNull T>) holders, holders -> holders), RegistryConfigDataWrapper::holders,
 			ByteBufCodecs.collection(ArrayList::new, TagKey.streamCodec(registry)), RegistryConfigDataWrapper::tagKeys,
 				streamCodec, RegistryConfigDataWrapper::configurableData,
 				RegistryConfigDataWrapper::build);
@@ -258,7 +260,7 @@ public class ItemConfig extends AtlasConfig {
 		}
 
 		@Override
-		public String toString() {
+		public @NotNull String toString() {
 			return "RegistryConfigDataWrapper{" +
 				"holders=" + holders +
 				", tagKeys=" + tagKeys +

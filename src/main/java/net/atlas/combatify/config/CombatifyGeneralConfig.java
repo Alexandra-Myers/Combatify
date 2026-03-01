@@ -12,6 +12,10 @@ import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.atlascore.util.Codecs;
 import net.atlas.atlascore.util.ConfigRepresentable;
+import net.atlas.combatify.config.impl.crit.CTSCritImpl;
+import net.atlas.combatify.config.impl.crit.CritImpl;
+import net.atlas.combatify.config.impl.food.CTSFoodImpl;
+import net.atlas.combatify.config.impl.food.FoodImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -103,8 +107,8 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private ObjectHolder<AttackDecay> attackDecay;
 	private ObjectHolder<ProjectileUncertainty> projectileUncertainty;
 	private ObjectHolder<ProjectileDamage> projectileDamage;
-	private TagHolder<JSImpl> critImpl;
-	private TagHolder<JSImpl> foodImpl;
+	private TagHolder<CritImpl> critImpl;
+	private TagHolder<FoodImpl> foodImpl;
 	private Category ctsB;
 	private Category ctsI;
 	private Category ctsD;
@@ -242,7 +246,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		minHitboxSize.tieToCategory(ctsD);
 		minHitboxSize.setupTooltip(1);
 
-		critImpl = createCodecBacked("critImpl", new JSImpl("cts_crit_impl"), JSImpl.CODEC);
+		critImpl = createCodecBacked("critImpl", new CTSCritImpl(true, -1, 1.5F), CritImpl.CODEC);
 		critImpl.tieToCategory(ctsE);
 		critImpl.setupTooltip(1);
 		eatingInterruptionMode = createEnum("eatingInterruptionMode", EatingInterruptionMode.FULL_RESET, EatingInterruptionMode.class, EatingInterruptionMode.values(), e -> Component.translatable("text.config.combatify-general.option.eatingInterruptionMode." + e.name().toLowerCase(Locale.ROOT)));
@@ -251,7 +255,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		knockbackMode = createEnum("knockbackMode", KnockbackMode.CTS_8C, KnockbackMode.class, KnockbackMode.values(), e -> Component.translatable("text.config.combatify-general.option.knockbackMode." + e.name().toLowerCase(Locale.ROOT)));
 		knockbackMode.tieToCategory(ctsE);
 		knockbackMode.setupTooltip(6);
-		foodImpl = createCodecBacked("foodImpl", new JSImpl("cts_food_impl"), JSImpl.CODEC);
+		foodImpl = createCodecBacked("foodImpl", new CTSFoodImpl(true, true, 6, 7, 21, 0.5F, 2.0F, 2.0F), FoodImpl.CODEC);
 		foodImpl.tieToCategory(ctsE);
 		foodImpl.setupTooltip(1);
 
@@ -616,10 +620,10 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	public KnockbackMode knockbackMode() {
 		return knockbackMode.get();
 	}
-	public JSImpl getCritImpl() {
+	public CritImpl getCritImpl() {
 		return critImpl.get();
 	}
-	public JSImpl getFoodImpl() {
+	public FoodImpl getFoodImpl() {
 		return foodImpl.get();
 	}
 	public ArrowDisableMode arrowDisableMode() {
@@ -636,7 +640,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	public static class ProjectileUncertainty implements ConfigRepresentable<ProjectileUncertainty> {
 		public static final ProjectileUncertainty DEFAULT = new ProjectileUncertainty(null, 0.25, 0.25);
-		public static final StreamCodec<RegistryFriendlyByteBuf, ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
+		public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
             public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileUncertainty projectileUncertainty) {
                 registryFriendlyByteBuf.writeIdentifier(projectileUncertainty.owner.heldValue.owner().name);
                 registryFriendlyByteBuf.writeUtf(projectileUncertainty.owner.heldValue.name());

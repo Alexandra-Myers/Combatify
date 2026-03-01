@@ -12,6 +12,7 @@ import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.config.impl.food.FoodImpl;
 import net.atlas.combatify.criterion.DataComponentPredicateInit;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
@@ -74,7 +75,7 @@ public class Combatify implements ModInitializer {
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
 	public static final Cleaner CLEANER = Cleaner.create();
-	public static CombatifyGeneralConfig CONFIG = new CombatifyGeneralConfig();
+	public static CombatifyGeneralConfig CONFIG;
 	public static ItemConfig ITEMS;
 	public static Identifier modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
@@ -84,13 +85,13 @@ public class Combatify implements ModInitializer {
 	public static final List<Item> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
-	public static final Map<Holder<Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
+	public static final Map<Holder<@NotNull Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<Identifier, BlockingType> defaultTypes = new HashMap<>();
 	public static Map<Identifier, BlockingType> registeredTypes = new HashMap<>();
 	public static final Identifier CHARGED_REACH_ID = id("charged_reach");
-	public static final TagKey<EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
+	public static final TagKey<@NotNull EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
 
 	public static void markState(Supplier<CombatifyState> state) {
 		Combatify.state = state;
@@ -175,13 +176,13 @@ public class Combatify implements ModInitializer {
 		});
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
-			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
+			Event<ItemGroupEvents.@NotNull ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(NETHERITE_SWORD, ItemRegistry.WOODEN_KNIFE, ItemRegistry.STONE_KNIFE, ItemRegistry.COPPER_KNIFE, ItemRegistry.IRON_KNIFE, ItemRegistry.GOLD_KNIFE, ItemRegistry.DIAMOND_KNIFE, ItemRegistry.NETHERITE_KNIFE, ItemRegistry.WOODEN_LONGSWORD, ItemRegistry.STONE_LONGSWORD, ItemRegistry.COPPER_LONGSWORD, ItemRegistry.IRON_LONGSWORD, ItemRegistry.GOLD_LONGSWORD, ItemRegistry.DIAMOND_LONGSWORD, ItemRegistry.NETHERITE_LONGSWORD));
 		}
 		if (CONFIG.tieredShields()) {
 			TieredShieldItem.init();
 			shields.add(Items.SHIELD);
-			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
+			Event<ItemGroupEvents.@NotNull ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.COPPER_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
 
@@ -231,6 +232,11 @@ public class Combatify implements ModInitializer {
 		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached();
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
+	}
+
+	static {
+		FoodImpl.bootstrap();
+		CONFIG = new CombatifyGeneralConfig();
 	}
 	public enum CombatifyState {
 		VANILLA(0, "Vanilla", "vanilla"),

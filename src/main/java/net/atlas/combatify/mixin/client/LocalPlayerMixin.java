@@ -10,7 +10,6 @@ import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.client.ClientMethodHandler;
-import net.atlas.combatify.config.wrapper.PlayerWrapper;
 import net.atlas.combatify.extensions.MinecraftExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
@@ -89,7 +88,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@WrapOperation(method = "isSprintingPossible", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;hasEnoughFoodToDoExhaustiveManoeuvres()Z"))
 	public boolean modifyFoodRequirement(LocalPlayer instance, Operation<Boolean> original) {
-		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original.call(instance) : this.getAbilities().mayfly || instance.getFoodData().getFoodLevel() > (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(6.0F, "getMinimumSprintLevel(player)", new PlayerWrapper<>(thisPlayer));
+		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original.call(instance) : this.getAbilities().mayfly || instance.getFoodData().getFoodLevel() > Combatify.CONFIG.getFoodImpl().getMinimumSprintLevel(6.0F, instance);
 	}
     @Redirect(method = "hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {

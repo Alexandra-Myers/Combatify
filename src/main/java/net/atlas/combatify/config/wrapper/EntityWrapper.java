@@ -15,8 +15,10 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +30,14 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 
 	public EntityWrapper(E value) {
 		this.value = value;
+	}
+
+	public static <E extends Entity> EntityWrapper<?> of(E target) {
+		return switch (target) {
+			case Player p -> new PlayerWrapper<>(p);
+			case LivingEntity l -> new LivingEntityWrapper<>(l);
+			default -> new EntityWrapper<>(target);
+		};
 	}
 
 	public final boolean matchesTag(String tag) {
@@ -270,7 +280,7 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 		if (value.level() instanceof ServerLevel serverLevel) {
 			MinecraftServer minecraftServer = serverLevel.getServer();
 			ServerFunctionManager serverFunctionManager = minecraftServer.getFunctions();
-			Optional<CommandFunction<CommandSourceStack>> optional = serverFunctionManager.get(function);
+			Optional<CommandFunction<@NotNull CommandSourceStack>> optional = serverFunctionManager.get(function);
 			if (optional.isPresent()) {
 				CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
 					.withPermission(LevelBasedPermissionSet.GAMEMASTER)

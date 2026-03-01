@@ -13,10 +13,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
-import net.atlas.combatify.config.wrapper.EntityWrapper;
-import net.atlas.combatify.config.wrapper.GenericAPIWrapper;
-import net.atlas.combatify.config.wrapper.LivingEntityWrapper;
-import net.atlas.combatify.config.wrapper.PlayerWrapper;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
@@ -62,7 +58,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	 */
 	@SuppressWarnings("WrongEntityDataParameterClass")
 	@Unique
-	private static final EntityDataAccessor<Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+	private static final EntityDataAccessor<@NotNull Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
 	@Inject(method = "defineSynchedData", at = @At("TAIL"))
 	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
 		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
@@ -77,7 +73,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
 		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
 	}
-	public PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
+	public PlayerMixin(EntityType<@NotNull ? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
@@ -263,18 +259,14 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		boolean strengthAppliesToEnchants = Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 		if (strengthAppliesToEnchants)
 			combinedDamage.set(attackDamage);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || !Combatify.CONFIG.getCritImpl().execFunc("overrideCrit()"))
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || !Combatify.CONFIG.getCritImpl().overrideCrit())
 			return;
 		if (bl3.get()) {
 			if (strengthAppliesToEnchants) combinedDamage.set(combinedDamage.get() / 1.5F);
 			else attackDamage /= 1.5F;
 		}
-		GenericAPIWrapper<?> wrapper;
-		if (target instanceof Player p) wrapper = new PlayerWrapper<>(p);
-		else if (target instanceof LivingEntity l) wrapper = new LivingEntityWrapper<>(l);
-		else wrapper = new EntityWrapper<>(target);
 		final MutableFloat finalAttackDamage = new MutableFloat(attackDamage);
-		bl3.set(Combatify.CONFIG.getCritImpl().execFunc("runCrit(player, target, combinedDamage)", new PlayerWrapper<>(player), wrapper, (strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
+		bl3.set(Combatify.CONFIG.getCritImpl().runCrit(player, target, (strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
 			@Override
 			public float get() {
 				return finalAttackDamage.getValue();
