@@ -1,0 +1,49 @@
+{
+  "anvil_cost": 3,
+  "description": {
+    "translate": "enchantment.minecraft.cleaving",
+    "fallback": "Cleaving"
+  },
+  "effects": {
+    "combatify:shield_disable_time": [
+      {
+        "effect": {
+          "type": "minecraft:add",
+          "value": {
+            "type": "minecraft:linear",
+            "base": 0.75,
+            "per_level_above_first": 0.75
+          }
+        },
+        "enchanted": "attacker"
+      }
+    ],
+    "minecraft:damage": [
+      {
+        "effect": {
+          "type": "minecraft:add",
+          "value": {
+            "type": "minecraft:linear",
+            "base": 2.0,
+            "per_level_above_first": 0.5
+          }
+        }
+      }
+    ]
+  },
+  "exclusive_set": "#minecraft:exclusive_set/damage",
+  "max_cost": {
+    "base": 25,
+    "per_level_above_first": 20
+  },
+  "max_level": 3,
+  "min_cost": {
+    "base": 5,
+    "per_level_above_first": 20
+  },
+  "slots": [
+    "mainhand"
+  ],
+  "supported_items": "#minecraft:enchantable/axe",
+  "weight": 2
+}

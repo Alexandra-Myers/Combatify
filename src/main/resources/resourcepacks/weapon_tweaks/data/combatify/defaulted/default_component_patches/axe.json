@@ -1,0 +1,12 @@
+{
+  "tags": [
+    "combatify:weapon_type/axe"
+  ],
+  "patch": {
+    "minecraft:weapon": {
+      "item_damage_per_attack": 1,
+      "disable_blocking_for_seconds": 2
+    }
+  },
+  "priority": 1100
+}

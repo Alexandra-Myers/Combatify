@@ -201,6 +201,7 @@ public class Combatify implements ModInitializer {
 		ResourceManagerHelper.registerBuiltinResourcePack(id("shield_no_banner"), modContainer, Component.translatable("pack.combatify.shield_no_banner"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("sword_blocking"), modContainer, Component.translatable("pack.combatify.sword_blocking"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("vanilla_attack_balancing"), modContainer, Component.translatable("pack.combatify.vanilla_attack_balancing"), ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("weapon_tweaks"), modContainer, Component.translatable("pack.combatify.weapon_tweaks"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("weapon_types"), modContainer, Component.translatable("pack.combatify.weapon_types"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), modContainer, Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.DEFAULT_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {
