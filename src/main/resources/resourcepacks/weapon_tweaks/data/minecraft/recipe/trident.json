@@ -12,10 +12,13 @@
   "pattern": [
     " xx",
     " #x",
-    "#"
+    "#  "
   ],
   "result": {
     "count": 1,
-    "id": "minecraft:trident"
+    "id": "minecraft:trident",
+    "components": {
+      "minecraft:rarity": "uncommon"
+    }
   }
 }
