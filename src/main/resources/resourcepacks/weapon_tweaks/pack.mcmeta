@@ -1,7 +1,7 @@
 {
     "pack": {
-        "description": "Read the name doofus ~Peri",
-        "min_format": [88, 0],
-        "max_format": [88, 0]
+        "description": "Adds a trident recipe, tweaks base cleaving for axes, and changes attack speed for spears and maces.",
+      "min_format": 82,
+      "max_format": 94.1
     }
 }
