@@ -45,6 +45,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -171,9 +172,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		float result = original.call(instance, damageSource, amount, angle);
 		BannerPatternLayers bannerPatternLayers = blockingItem.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
 		DyeColor dyeColor = blockingItem.get(DataComponents.BASE_COLOR);
-		if (MethodHandler.getBlocking(blockingItem).hasBanner() && (!bannerPatternLayers.layers().isEmpty() || dyeColor != null)) {
-			BlocksAttacks.DamageReduction bannerBoost = new BlocksAttacks.DamageReduction(instance.damageReductions().getFirst().horizontalBlockingAngle(), Optional.empty(), 5, 1);
-			result = Mth.clamp(result + bannerBoost.resolve(damageSource, amount, angle), 0, amount);
+		List<BlocksAttacks.DamageReduction> bannerReductions = MethodHandler.getBlocking(blockingItem).bannerReductions();
+		if (!bannerReductions.isEmpty() && (!bannerPatternLayers.layers().isEmpty() || dyeColor != null)) {
+			float[] extra = {0};
+			bannerReductions.forEach(damageReduction -> extra[0] += damageReduction.resolve(damageSource, amount, angle));
+			result = Mth.clamp(result + extra[0], 0, amount);
 		}
 		return result;
 	}

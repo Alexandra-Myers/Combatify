@@ -153,7 +153,13 @@
       "effect": {
         "type": "knockback_entity"
       },
-      "considers_banner": true
+      "banner_damage_reductions": [
+        {
+          "base": 5,
+          "factor": 0,
+          "horizontal_blocking_angle": 73.8723797
+        }
+      ]
     }
   }
 }
