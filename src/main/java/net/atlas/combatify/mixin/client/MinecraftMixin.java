@@ -121,19 +121,6 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	}
 	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
-		if (missTime <= 0 && hitResult != null) {
-			assert player != null;
-			if (!player.combatify$isAttackAvailable(0.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) && hitResult.getType() != HitResult.Type.BLOCK) {
-				float var1 = this.player.getAttackStrengthScale(0.0F);
-				if (var1 < 0.8F)
-					return false;
-
-				if (var1 < 1.0F) {
-					this.retainAttack = true;
-					return false;
-				}
-			}
-		}
 		return original.call(instance) && Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
@@ -150,9 +137,29 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 		if (!overridesUsualReach && left instanceof AttackRange attackRange && !attackRange.isInRange(this.player, this.hitResult.getLocation())) this.gameMode.combatify$swingInAir(this.player);
 		return overridesUsualReach;
 	}
-	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
+	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
-		this.retainAttack = false;
+		if (missTime <= 0 && hitResult != null) {
+			assert player != null;
+			if (!player.combatify$isAttackAvailable(0.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) && hitResult.getType() != HitResult.Type.BLOCK) {
+				float strengthScale = this.player.getAttackStrengthScale(0.0F);
+				if (strengthScale < 0.8F)
+					cir.setReturnValue(false);
+
+				if (strengthScale < 1.0F) {
+					this.retainAttack = true;
+					cir.setReturnValue(false);
+				}
+				return;
+			}
+			this.retainAttack = false;
+		}
+	}
+	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;cannotAttackWithItem(Lnet/minecraft/world/item/ItemStack;I)Z"))
+	public boolean makeAbleToAttack(boolean original) {
+		if (!original) return false;
+		assert hitResult != null;
+		return hitResult.getType() != HitResult.Type.BLOCK || Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 	}
 	@ModifyExpressionValue(method = "startAttack", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;")), at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;"))
 	public HitResult modifyHitResult(HitResult original) {
