@@ -58,14 +58,6 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
-	@Shadow
-	@Final
-	private static double DEFAULT_ATTACK_REACH;
-
-	@Shadow
-	@Nullable
-	private LivingEntity target;
-
 	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
@@ -78,7 +70,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 
 	@ModifyReturnValue(method = "createMobAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(Attributes.ENTITY_INTERACTION_RANGE, DEFAULT_ATTACK_REACH).add(Attributes.ATTACK_SPEED, 1);
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, 2.5).add(Attributes.ATTACK_SPEED, 1);
 	}
 
 	@Inject(method = "baseTick", at = @At("HEAD"))
@@ -141,9 +133,12 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 							}
 						}
 						if (livingEntity instanceof Player player) {
-							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox(), player.getEyePosition())));
+							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox().inflate(0.1), player.getEyePosition())));
 							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) : 0);
-							if (distanceToAttacker <= reach) isInHittingRange = true;
+							if (distanceToAttacker <= reach) {
+								isInHittingRange = true;
+								break;
+							}
 						} else if (livingEntity instanceof Mob mob && mob.isWithinMeleeAttackRange(this)) {
 							isInHittingRange = true;
 							break;

@@ -1,0 +1,29 @@
+{
+  "tags": [
+    "c:tools/shield"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:conditional",
+      "condition": "invert",
+      "inverted": {
+        "condition": "in_tag",
+        "tags": [
+          "combatify:tiered_shields"
+        ]
+      },
+      "patch": {
+        "combatify:extended_blocking_data": {
+          "type": "shield",
+          "protection_modifiers": [],
+          "knockback_modifiers": [],
+          "effect": {
+            "type": "knockback_entity"
+          }
+        }
+      }
+    }
+  ],
+  "patch": {},
+  "priority": 1200
+}

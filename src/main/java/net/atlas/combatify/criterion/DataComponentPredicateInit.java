@@ -1,4 +1,4 @@
-package net.atlas.combatify.critereon;
+package net.atlas.combatify.criterion;
 
 import com.mojang.serialization.Codec;
 import eu.pb4.polymer.rsm.api.RegistrySyncUtils;

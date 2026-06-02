@@ -1,6 +1,7 @@
 package net.atlas.combatify;
 
 import com.google.common.base.Suppliers;
+import com.mojang.serialization.Codec;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
@@ -11,7 +12,9 @@ import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
-import net.atlas.combatify.critereon.DataComponentPredicateInit;
+import net.atlas.combatify.config.impl.crit.CritImpl;
+import net.atlas.combatify.config.impl.food.FoodImpl;
+import net.atlas.combatify.criterion.DataComponentPredicateInit;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
@@ -44,7 +47,7 @@ import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -73,7 +76,7 @@ public class Combatify implements ModInitializer {
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
 	public static final Cleaner CLEANER = Cleaner.create();
-	public static CombatifyGeneralConfig CONFIG = new CombatifyGeneralConfig();
+	public static CombatifyGeneralConfig CONFIG;
 	public static ItemConfig ITEMS;
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public NetworkingHandler networkingHandler;
@@ -83,13 +86,13 @@ public class Combatify implements ModInitializer {
 	public static final List<Item> shields = new ArrayListExtensions<>();
 	public static final List<UUID> unmoddedPlayers = new ArrayListExtensions<>();
 	public static final List<UUID> moddedPlayers = new ArrayListExtensions<>();
-	public static final Map<Holder<Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
+	public static final Map<Holder<@NotNull Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
-	public static final TagKey<EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
+	public static final TagKey<@NotNull EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
 
 	public static void markState(Supplier<CombatifyState> state) {
 		Combatify.state = state;
@@ -174,13 +177,13 @@ public class Combatify implements ModInitializer {
 		});
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
-			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
+			Event<ItemGroupEvents.@NotNull ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(NETHERITE_SWORD, ItemRegistry.WOODEN_KNIFE, ItemRegistry.STONE_KNIFE, ItemRegistry.COPPER_KNIFE, ItemRegistry.IRON_KNIFE, ItemRegistry.GOLD_KNIFE, ItemRegistry.DIAMOND_KNIFE, ItemRegistry.NETHERITE_KNIFE, ItemRegistry.WOODEN_LONGSWORD, ItemRegistry.STONE_LONGSWORD, ItemRegistry.COPPER_LONGSWORD, ItemRegistry.IRON_LONGSWORD, ItemRegistry.GOLD_LONGSWORD, ItemRegistry.DIAMOND_LONGSWORD, ItemRegistry.NETHERITE_LONGSWORD));
 		}
 		if (CONFIG.tieredShields()) {
 			TieredShieldItem.init();
 			shields.add(Items.SHIELD);
-			Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
+			Event<ItemGroupEvents.@NotNull ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT);
 			event.register(entries -> entries.addAfter(Items.SHIELD, TieredShieldItem.IRON_SHIELD, TieredShieldItem.GOLD_SHIELD, TieredShieldItem.COPPER_SHIELD, TieredShieldItem.DIAMOND_SHIELD, TieredShieldItem.NETHERITE_SHIELD));
 		}
 
@@ -198,6 +201,7 @@ public class Combatify implements ModInitializer {
 		ResourceManagerHelper.registerBuiltinResourcePack(id("shield_no_banner"), modContainer, Component.translatable("pack.combatify.shield_no_banner"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("sword_blocking"), modContainer, Component.translatable("pack.combatify.sword_blocking"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("vanilla_attack_balancing"), modContainer, Component.translatable("pack.combatify.vanilla_attack_balancing"), ResourcePackActivationType.NORMAL);
+		ResourceManagerHelper.registerBuiltinResourcePack(id("weapon_tweaks"), modContainer, Component.translatable("pack.combatify.weapon_tweaks"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("weapon_types"), modContainer, Component.translatable("pack.combatify.weapon_types"), ResourcePackActivationType.DEFAULT_ENABLED);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("wooden_shield_recipe"), modContainer, Component.translatable("pack.combatify.wooden_shield_recipe"), CONFIG.tieredShields() ? ResourcePackActivationType.DEFAULT_ENABLED : ResourcePackActivationType.NORMAL);
 		if (Combatify.CONFIG.percentageDamageEffects()) {
@@ -231,31 +235,44 @@ public class Combatify implements ModInitializer {
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
-	public enum CombatifyState implements StringRepresentable {
-		VANILLA("Vanilla", "vanilla"),
-		COMBATIFY("Combatify", "combatify"),
-		CTS_8C("CTS 8C", "combat_test");
+	static {
+		FoodImpl.bootstrap();
+		CritImpl.bootstrap();
+		CONFIG = new CombatifyGeneralConfig();
+	}
+	public enum CombatifyState {
+		VANILLA(0, "Vanilla", "vanilla"),
+		CTS_8C(1, "CTS 8C", "combat_test"),
+		COMBATIFY(2, "Combatify", "combatify");
 
+		public static final Codec<CombatifyState> CODEC = Codec.INT.xmap(id -> switch (Mth.positiveModulo(id, 3)) {
+			case 0 -> Combatify.CombatifyState.VANILLA;
+			case 1 -> Combatify.CombatifyState.CTS_8C;
+			default -> Combatify.CombatifyState.COMBATIFY;
+		}, Combatify.CombatifyState::id);
+
+		public final int id;
 		public final String name;
-		public final String key;
+		public final Component caption;
 
-		CombatifyState(String name, String key) {
+		CombatifyState(int id, String name, String key) {
+			this.id = id;
 			this.name = name;
-			this.key = key;
+			this.caption = Component.translatableWithFallback("options.combatify_state." + key, name);
 		}
 
-		@Override
-		public @NotNull String getSerializedName() {
-			return key;
+		public int id() {
+			return id;
 		}
 
-		public Component getComponent() {
-			return Component.translatableWithFallback("options.combatify_state." + key, name);
+		public Component caption() {
+			return caption;
 		}
 
 		@Override
 		public String toString() {
 			return "CombatifyState{" +
+				"id=" + id + '\n' +
 				"name='" + name + '\'' +
 				'}';
 		}
