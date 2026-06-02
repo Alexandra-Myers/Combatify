@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.14-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -57,18 +57,17 @@ repositories {
 // See https://docs.gradle.org/current/userguide/platforms.html for information on how version catalogs work.
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "maven.modrinth:sodium:${project.sodium_version}"
-	modImplementation "maven.modrinth:atlas-core:${project.atlas_core_version}"
-	modImplementation "maven.modrinth:defaulted:${project.defaulted_version}"
-	modImplementation "com.viaversion:viafabricplus:${project.viafabricplus_version}"
-	modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
-	modApi "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-	modImplementation "maven.modrinth:cookeymod:${project.cookeymod_version}"
-	modImplementation "eu.pb4:polymer-core:${project.polymer_version}"
-	modImplementation "squeek.appleskin:appleskin-fabric:${project.appleskin_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "maven.modrinth:sodium:${project.sodium_version}"
+	implementation "maven.modrinth:atlas-core:${project.atlas_core_version}"
+	implementation "maven.modrinth:defaulted:${project.defaulted_version}"
+	// implementation "com.viaversion:viafabricplus:${project.viafabricplus_version}"
+	api "com.terraformersmc:modmenu:${project.modmenu_version}"
+	api "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+	// implementation "maven.modrinth:cookeymod:${project.cookeymod_version}"
+	// implementation "eu.pb4:polymer-core:${project.polymer_version}"
+	implementation "squeek.appleskin:appleskin-fabric:${project.appleskin_version}"
 	include implementation("org.mozilla:rhino-all:${project.rhino_version}")
 
 	implementation "com.fasterxml.jackson.core:jackson-core:${project.jackson_version}"
@@ -82,7 +81,7 @@ configurations.configureEach {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/combatify.accesswidener")
+	accessWidenerPath = file("src/main/resources/combatify.classtweaker")
 }
 
 processResources {
@@ -95,14 +94,14 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	// Minecraft 1.20.5 (24w14a) upwards uses Java 21.
-	it.options.release = 21
+	// Minecraft 26.1 upwards uses Java 25
+	it.options.release = 25
 }
 
 java {
 	// Still required by IDEs such as Eclipse and Visual Studio Code
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task if it is present.
 	// If you remove this line, sources will not be generated.

@@ -29,14 +29,14 @@
 	"mixins": [
 		"combatify.mixins.json"
 	],
-  "accessWidener": "combatify.accesswidener",
+  "accessWidener": "combatify.classtweaker",
 	"depends": {
-    "fabric-api": ">=0.133.7+1.21.9",
+    "fabric-api": ">=0.150.0+26.1.2",
     "atlas-core": ">=1.1.2",
-    "defaulted": ">=1.1.5",
+    "defaulted": ">=1.2.2",
 		"fabricloader": ">=0.17.2",
-		"minecraft": ">=1.21.9-beta.1 <1.22",
-		"java": ">=21"
+		"minecraft": ">=26.1.2 <26.2",
+		"java": ">=25"
 	},
   "suggests": {
     "modmenu": "*",
@@ -45,17 +45,17 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_10426": ["net/atlas/combatify/extensions/ArmedEntityRenderStateExtensions"],
-      "net/minecraft/class_3965": ["net/atlas/combatify/extensions/BlockHitResultExtensions"],
-      "net/minecraft/class_8610": ["net/atlas/combatify/extensions/ClientInformationHolder"],
-      "net/minecraft/class_1309": ["net/atlas/combatify/extensions/LivingEntityExtensions"],
-      "net/minecraft/class_1657": ["net/atlas/combatify/extensions/PlayerExtensions"],
-      "net/minecraft/class_3222": ["net/atlas/combatify/extensions/ServerPlayerExtensions"],
-      "net/minecraft/class_1308": ["net/atlas/combatify/extensions/MobExtensions"],
-      "net/minecraft/class_2781": ["net/atlas/combatify/extensions/IUpdateAttributesPacket"],
-      "net/minecraft/class_636": ["net/atlas/combatify/extensions/IPlayerGameMode"],
-      "net/minecraft/class_1282": ["net/atlas/combatify/extensions/DamageSourceExtension"],
-      "net/minecraft/class_1702": ["net/atlas/combatify/extensions/FoodDataExtensions"]
+      "net/minecraft/client/renderer/entity/state/ArmedEntityRenderState": ["net/atlas/combatify/extensions/ArmedEntityRenderStateExtensions"],
+      "net/minecraft/world/phys/BlockHitResult": ["net/atlas/combatify/extensions/BlockHitResultExtensions"],
+      "net/minecraft/server/network/ServerConfigurationPacketListenerImpl": ["net/atlas/combatify/extensions/ClientInformationHolder"],
+      "net/minecraft/world/entity/LivingEntity": ["net/atlas/combatify/extensions/LivingEntityExtensions"],
+      "net/minecraft/world/entity/player/Player": ["net/atlas/combatify/extensions/PlayerExtensions"],
+      "net/minecraft/server/level/ServerPlayer": ["net/atlas/combatify/extensions/ServerPlayerExtensions"],
+      "net/minecraft/world/entity/Mob": ["net/atlas/combatify/extensions/MobExtensions"],
+      "net/minecraft/network/protocol/game/ClientboundUpdateAttributesPacket": ["net/atlas/combatify/extensions/IUpdateAttributesPacket"],
+      "net/minecraft/client/multiplayer/MultiPlayerGameMode": ["net/atlas/combatify/extensions/IPlayerGameMode"],
+      "net/minecraft/world/damagesource/DamageSource": ["net/atlas/combatify/extensions/DamageSourceExtension"],
+      "net/minecraft/world/food/FoodData": ["net/atlas/combatify/extensions/FoodDataExtensions"]
     }
   }
 }
