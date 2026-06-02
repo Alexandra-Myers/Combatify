@@ -1,6 +1,6 @@
 {
-  "items": [
-    "minecraft:shield"
+  "tags": [
+    "combatify:base_shields"
   ],
   "patch": {
     "minecraft:blocks_attacks": {
@@ -79,11 +79,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "predicates": {
-                    "combatify:has_component": {
-                      "components": [
-                        "minecraft:base_color"
-                      ]
-                    }
+                    "minecraft:base_color": {}
                   }
                 }
               },
@@ -137,11 +133,7 @@
                 "condition": "minecraft:item_matches",
                 "predicate": {
                   "predicates": {
-                    "combatify:has_component": {
-                      "components": [
-                        "minecraft:base_color"
-                      ]
-                    }
+                    "minecraft:base_color": {}
                   }
                 }
               },
@@ -161,7 +153,13 @@
       "effect": {
         "type": "knockback_entity"
       },
-      "considers_banner": true
+      "banner_damage_reductions": [
+        {
+          "base": 5,
+          "factor": 0,
+          "horizontal_blocking_angle": 73.8723797
+        }
+      ]
     }
   }
 }

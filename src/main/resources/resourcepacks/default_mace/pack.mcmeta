@@ -1,6 +1,7 @@
 {
   "pack": {
-    "pack_format": 48,
-    "description": "Default builtin combatify version of the mace."
+    "description": "Default builtin combatify version of the mace.",
+    "min_format": 82,
+    "max_format": 94.1
   }
 }

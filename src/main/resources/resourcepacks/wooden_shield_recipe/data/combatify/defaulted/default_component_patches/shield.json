@@ -1,6 +1,6 @@
 {
-  "items": [
-    "minecraft:shield"
+  "tags": [
+    "combatify:base_shields"
   ],
   "patch_generators": [
     {

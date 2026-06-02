@@ -1,6 +1,7 @@
 {
   "pack": {
-    "pack_format": 48,
-    "description": "Data for Custom Weapons and Tiered Shields config options."
+    "description": "Data for Custom Weapons and Tiered Shields config options.",
+    "min_format": 82,
+    "max_format": 94.1
   }
 }
