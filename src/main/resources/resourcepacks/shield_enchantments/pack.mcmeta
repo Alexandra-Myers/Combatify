@@ -1,6 +1,7 @@
 {
   "pack": {
-    "pack_format": 48,
-    "description": "Data for the custom shield enchantments in Combatify."
+    "description": "Data for the custom shield enchantments in Combatify.",
+    "min_format": 82,
+    "max_format": 94.1
   }
 }

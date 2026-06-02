@@ -17,6 +17,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -63,7 +64,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 	public void removeReset(LocalPlayer instance, Operation<Void> original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original.call(instance);
 	}
-	@Inject(method = "continueDestroyBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyDelay:I", ordinal = 0))
+	@Inject(method = "continueDestroyBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyDelay:I", opcode = Opcodes.GETFIELD, ordinal = 0))
 	public void addReset0(BlockPos blockPos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
 		if (destroyDelay > 0) return;

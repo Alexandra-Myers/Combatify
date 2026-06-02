@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -113,19 +114,6 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	}
 	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
-		if (missTime <= 0 && hitResult != null) {
-			assert player != null;
-			if (!player.combatify$isAttackAvailable(0.0F) && hitResult.getType() != HitResult.Type.BLOCK) {
-				float var1 = this.player.getAttackStrengthScale(0.0F);
-				if (var1 < 0.8F)
-					return false;
-
-				if (var1 < 1.0F) {
-					this.retainAttack = true;
-					return false;
-				}
-			}
-		}
 		return original.call(instance) && Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
@@ -133,11 +121,25 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 		if (player.getEyePosition().distanceTo(MethodHandler.getNearestPointTo(entity.getBoundingBox(), player.getEyePosition())) <= MethodHandler.getCurrentAttackReach(player, 0.0F)) original.call(instance, player, entity);
 		else instance.combatify$swingInAir(player);
 	}
-	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
+	@Inject(method = "startAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void startAttack(CallbackInfoReturnable<Boolean> cir) {
-		this.retainAttack = false;
+		if (missTime <= 0 && hitResult != null) {
+			assert player != null;
+			if (!player.combatify$isAttackAvailable(0.0F) && hitResult.getType() != HitResult.Type.BLOCK) {
+				float strengthScale = this.player.getAttackStrengthScale(0.0F);
+				if (strengthScale < 0.8F)
+					cir.setReturnValue(false);
+
+				if (strengthScale < 1.0F) {
+					this.retainAttack = true;
+					cir.setReturnValue(false);
+				}
+				return;
+			}
+			this.retainAttack = false;
+		}
 	}
-	@ModifyExpressionValue(method = "startAttack", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;")), at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;"))
+	@ModifyExpressionValue(method = "startAttack", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;")), at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;", opcode = Opcodes.GETFIELD))
 	public HitResult modifyHitResult(HitResult original) {
 		if (this.aimAssistHitResult != null && original.getType() != HitResult.Type.ENTITY) original = this.aimAssistHitResult;
 		return original;

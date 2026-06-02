@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
-import net.atlas.combatify.config.wrapper.PlayerWrapper;
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -74,7 +73,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@ModifyExpressionValue(method = "hasEnoughFoodToSprint", at = @At(value = "CONSTANT", args = "floatValue=6.0F"))
 	public float modifyFoodRequirement(float original) {
-		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original : (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumSprintLevel(player)", new PlayerWrapper<>(thisPlayer));
+		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original : Combatify.CONFIG.getFoodImpl().getMinimumSprintLevel(original, thisPlayer);
 	}
     @Redirect(method = "hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {

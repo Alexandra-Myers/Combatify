@@ -1,0 +1,9 @@
+{
+  "values": [
+    "minecraft:shield",
+    {
+      "id": "#lolmsv:shields",
+      "required": false
+    }
+  ]
+}

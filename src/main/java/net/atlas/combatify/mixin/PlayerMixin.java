@@ -1,5 +1,7 @@
 package net.atlas.combatify.mixin;
 
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -212,7 +215,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;"))
 	public void injectCrit(Entity target, CallbackInfo ci, @Local(ordinal = 0) float attackDamage, @Local(ordinal = 1) float enchantDamage, @Local(ordinal = 2) float strengthScale, @Local(ordinal = 3) LocalFloatRef combinedDamage, @Local(ordinal = 2) LocalBooleanRef bl3) {
-		if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.CONFIG.attackDecay()) {
 			enchantDamage /= strengthScale;
 			float originalAttackDamage;
 			if (Combatify.CONFIG.strengthAppliesToEnchants()) originalAttackDamage = (float) (this.isAutoSpinAttack() ? MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), this.autoSpinAttackDmg + enchantDamage) : MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), enchantDamage));
@@ -228,18 +231,14 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		boolean strengthAppliesToEnchants = Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
 		if (strengthAppliesToEnchants)
 			combinedDamage.set(attackDamage);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || !Combatify.CONFIG.getCritImpl().execFunc("overrideCrit()"))
+		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || !Combatify.CONFIG.getCritImpl().overrideCrit())
 			return;
 		if (bl3.get()) {
 			if (strengthAppliesToEnchants) combinedDamage.set(combinedDamage.get() / 1.5F);
 			else attackDamage /= 1.5F;
 		}
-		GenericAPIWrapper<?> wrapper;
-		if (target instanceof Player p) wrapper = new PlayerWrapper<>(p);
-		else if (target instanceof LivingEntity l) wrapper = new LivingEntityWrapper<>(l);
-		else wrapper = new EntityWrapper<>(target);
 		final MutableFloat finalAttackDamage = new MutableFloat(attackDamage);
-		bl3.set(Combatify.CONFIG.getCritImpl().execFunc("runCrit(player, target, combinedDamage)", new PlayerWrapper<>(player), wrapper, (strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
+		bl3.set(Combatify.CONFIG.getCritImpl().runCrit(player, target, (strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
 			@Override
 			public float get() {
 				return finalAttackDamage.getValue();
@@ -252,9 +251,17 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 		})));
 		if (!strengthAppliesToEnchants) combinedDamage.set(finalAttackDamage.getValue() + enchantDamage);
 	}
+
 	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0) DamageSource damageSource) {
 		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call);
+	}
+	@Definition(id = "target", local = @Local(ordinal = 0, argsOnly = true, type = Entity.class))
+	@Definition(id = "LivingEntity", type = LivingEntity.class)
+	@Expression("target instanceof LivingEntity")
+	@ModifyExpressionValue(method = "attack", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 2))
+	public boolean markNonLivingForOld(boolean original, @Local(ordinal = 0, argsOnly = true) Entity entity) {
+		return Combatify.CONFIG.knockbackMode().usesKnockback(original, entity);
 	}
 	@Inject(method = "attack", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
 	public void createSweep(Entity target, CallbackInfo ci, @Local(ordinal = 1) final boolean bl2, @Local(ordinal = 2) final boolean bl3, @Local(ordinal = 3) LocalBooleanRef bl4, @Local(ordinal = 0) final float attackDamage, @Share("didSweep") LocalBooleanRef didSweep) {
@@ -269,7 +276,7 @@ public abstract class PlayerMixin extends LivingEntity implements PlayerExtensio
 			didSweep.set(true);
 		}
 	}
-	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0))
+	@Inject(method = "attack", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;hurtMarked:Z", shift = At.Shift.BEFORE, ordinal = 0, opcode = Opcodes.GETFIELD))
 	public void resweep(Entity target, CallbackInfo ci, @Local(ordinal = 3) LocalBooleanRef bl4, @Share("didSweep") LocalBooleanRef didSweep) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
 		bl4.set(didSweep.get());

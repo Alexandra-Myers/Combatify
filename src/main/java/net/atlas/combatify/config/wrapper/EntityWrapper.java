@@ -14,6 +14,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,6 +28,14 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 
 	public EntityWrapper(E value) {
 		this.value = value;
+	}
+
+	public static <E extends Entity> EntityWrapper<?> of(E target) {
+		return switch (target) {
+			case Player p -> new PlayerWrapper<>(p);
+			case LivingEntity l -> new LivingEntityWrapper<>(l);
+			default -> new EntityWrapper<>(target);
+		};
 	}
 
 	public final boolean matchesTag(String tag) {

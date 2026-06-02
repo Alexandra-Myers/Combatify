@@ -1,4 +1,4 @@
-package net.atlas.combatify.config;
+package net.atlas.combatify.config.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -57,12 +57,6 @@ public class JSImpl {
 		return fileName;
 	}
 	static {
-		initIncluded("vanilla_food_impl");
-		initIncluded("cts_food_impl");
-		initIncluded("combatify_food_impl");
-		initIncluded("vanilla_crit_impl");
-		initIncluded("cts_crit_impl");
-		initIncluded("combatify_crit_impl");
 		initIncluded("armor_calculations");
 	}
 	public static void initIncluded(String fileName) {

@@ -28,6 +28,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
@@ -39,9 +40,9 @@ import java.util.function.Consumer;
 
 import org.apache.commons.lang3.mutable.MutableFloat;
 
-public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition, boolean hasBanner) {
+public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition, List<BlocksAttacks.DamageReduction> bannerReductions) {
 	public ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
-		this(tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, false);
+		this(tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, Collections.emptyList());
 	}
 	public static final ExtendedBlockingData EMPTY = new ExtendedBlockingData(new Tooltip(Collections.emptyList(), Collections.emptyList()), ResourceLocation.withDefaultNamespace("empty"), PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
 	public static final ExtendedBlockingData VANILLA_SHIELD = new ExtendedBlockingData(new Tooltip(Collections.emptyList(), Collections.emptyList()), ResourceLocation.withDefaultNamespace("shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
@@ -51,7 +52,7 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 				BlockingType.ID_CODEC.fieldOf("type").forGetter(ExtendedBlockingData::blockingTypeLocation),
 				PostBlockEffectWrapper.CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(ExtendedBlockingData::postBlockEffect),
 				BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(ExtendedBlockingData::blockingCondition),
-				Codec.BOOL.optionalFieldOf("considers_banner", false).forGetter(ExtendedBlockingData::hasBanner))
+				BlocksAttacks.DamageReduction.CODEC.listOf().optionalFieldOf("banner_damage_reductions", Collections.emptyList()).forGetter(ExtendedBlockingData::bannerReductions))
 			.apply(instance, ExtendedBlockingData::new));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
@@ -63,8 +64,8 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 		ExtendedBlockingData::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		ExtendedBlockingData::blockingCondition,
-		ByteBufCodecs.BOOL,
-		ExtendedBlockingData::hasBanner,
+		BlocksAttacks.DamageReduction.STREAM_CODEC.apply(ByteBufCodecs.list()),
+		ExtendedBlockingData::bannerReductions,
 		ExtendedBlockingData::new
 	);
 
@@ -97,6 +98,7 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 	public boolean canUse(ItemStack itemStack, Level level, Player user, InteractionHand hand) {
 		boolean stillRequiresCharge = Combatify.CONFIG.shieldOnlyWhenCharged() && user.getAttackStrengthScale(1.0F) < Combatify.CONFIG.shieldChargePercentage() / 100F && blockingType().requireFullCharge();
 		if (stillRequiresCharge) return false;
+		if (blockingType().isEmpty()) return true;
 		return blockingCondition.canUse(itemStack, level, user, hand);
 	}
 
@@ -126,8 +128,8 @@ public record ExtendedBlockingData(Tooltip tooltip, ResourceLocation blockingTyp
 		public float getShieldKnockbackResistanceValue(ItemStack itemStack, RandomSource randomSource) {
 			int blockingLevel = itemStack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
 			MutableFloat knockbackResistance = new MutableFloat(0);
-			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.getValue(), blockingLevel, randomSource)));
-			return knockbackResistance.getValue();
+			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.floatValue(), blockingLevel, randomSource)));
+			return knockbackResistance.floatValue();
 		}
 	}
 }

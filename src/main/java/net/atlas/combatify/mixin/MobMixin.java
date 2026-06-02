@@ -58,10 +58,6 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
-	@Shadow
-	@Final
-	private static double DEFAULT_ATTACK_REACH;
-
 	protected MobMixin(EntityType<? extends LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
@@ -74,7 +70,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 
 	@ModifyReturnValue(method = "createMobAttributes", at = @At(value = "RETURN"))
 	private static AttributeSupplier.Builder createAttributes(AttributeSupplier.Builder original) {
-		return original.add(Attributes.ENTITY_INTERACTION_RANGE, DEFAULT_ATTACK_REACH).add(Attributes.ATTACK_SPEED, 1);
+		return original.add(Attributes.ENTITY_INTERACTION_RANGE, 2.5).add(Attributes.ATTACK_SPEED, 1);
 	}
 
 	@Inject(method = "baseTick", at = @At("HEAD"))
@@ -91,7 +87,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 			setDeltaMovement(getDeltaMovement().multiply(0.4, 1.0, 0.4));
 			setSprinting(false);
 		}
-		if (!this.level().isClientSide) {
+		if (!this.level().isClientSide()) {
 			Entity target = getTarget();
 			double targetDistO;
 			if (!overrideSprintLogic) {
@@ -137,9 +133,12 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 							}
 						}
 						if (livingEntity instanceof Player player) {
-							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox(), player.getEyePosition())));
+							double distanceToAttacker = Math.sqrt(player.distanceToSqr(MethodHandler.getNearestPointTo(this.getBoundingBox().inflate(0.1), player.getEyePosition())));
 							double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(player) + (Combatify.CONFIG.chargedReach() ? getChargedReach(player.getItemInHand(InteractionHand.MAIN_HAND)) : 0);
-							if (distanceToAttacker <= reach) isInHittingRange = true;
+							if (distanceToAttacker <= reach) {
+								isInHittingRange = true;
+								break;
+							}
 						} else if (livingEntity instanceof Mob mob && mob.isWithinMeleeAttackRange(this)) {
 							isInHittingRange = true;
 							break;
@@ -151,13 +150,6 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 				else if (canGuard() && shouldGuard && !combatify$isGuarding()) startGuarding();
 			}
 		}
-	}
-
-	@WrapOperation(method = "getAttackBoundingBox", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;inflate(DDD)Lnet/minecraft/world/phys/AABB;"))
-	public AABB modReach(AABB instance, double d, double e, double f, Operation<AABB> original) {
-		var attackReach = getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.CONFIG.mobsUsePlayerAttributes() && attackReach != null) return original.call(instance, attackReach.getValue(), e, attackReach.getValue());
-		return original.call(instance, d, e, f);
 	}
 
 	@WrapOperation(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"))
@@ -206,6 +198,13 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Override
 	public boolean combatify$isGuarding() {
 		return (this.entityData.get(DATA_MOB_FLAGS_ID) & 8) != 0;
+	}
+
+	@WrapOperation(method = "getAttackBoundingBox", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;inflate(DDD)Lnet/minecraft/world/phys/AABB;"))
+	public AABB modReach(AABB instance, double d, double e, double f, Operation<AABB> original) {
+		var attackReach = getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.CONFIG.mobsUsePlayerAttributes() && attackReach != null) return original.call(instance, attackReach.getValue(), e, attackReach.getValue());
+		return original.call(instance, d, e, f);
 	}
 
 	@ModifyExpressionValue(method = "doHurtTarget", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;getKnockback(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)F"))
