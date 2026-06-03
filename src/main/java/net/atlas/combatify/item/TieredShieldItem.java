@@ -23,7 +23,7 @@ import java.util.Optional;
 public class TieredShieldItem extends ShieldItem {
 	public final ToolMaterial tier;
 	public static final BlocksAttacks.ItemDamageFunction SHIELD_DAMAGE_FUNCTION = new BlocksAttacks.ItemDamageFunction(3.0F, 0.0F, 1.0F);
-	public static final BlocksAttacks.ItemDamageFunction GOLDEN_SHIELD_DAMAGE_FUNCTION = new BlocksAttacks.ItemDamageFunction(2.0F, 0.0F, 0.5F);
+	public static final BlocksAttacks.ItemDamageFunction GOLDEN_SHIELD_DAMAGE_FUNCTION = new BlocksAttacks.ItemDamageFunction(4.0F, 0.0F, 0.5F);
 	public static final Item IRON_SHIELD = registerItem(id("iron_shield"), properties -> new TieredShieldItem(ToolMaterial.IRON, properties, 0, 0.5F, 3, 3, ExtendedBlockingData.NEW_SHIELD, SHIELD_DAMAGE_FUNCTION), new Item.Properties());
 	public static final Item GOLD_SHIELD = registerItem(id("golden_shield"), properties -> new TieredShieldItem(ToolMaterial.GOLD, properties, -0.2F, 0.5F, 1, 4, ExtendedBlockingData.NEW_SHIELD, GOLDEN_SHIELD_DAMAGE_FUNCTION), new Item.Properties());
 	public static final Item DIAMOND_SHIELD = registerItem(id("diamond_shield"), properties -> new TieredShieldItem(ToolMaterial.DIAMOND, properties, 0, 0.5F, 5, 2, ExtendedBlockingData.NEW_SHIELD, SHIELD_DAMAGE_FUNCTION),new Item.Properties());
