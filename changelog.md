@@ -1,42 +1,23 @@
 #### Changes:
 ***
-- Updated to Atlas Core 1.1.3.
-- Added builtin datapack `combatify:weapon_tweaks`, provides a Trident recipe, changes Cleaving to match Sharpness's damage in exchange for better disable time, buffs base disable time for the axe, makes spear work more like a normal cts weapon, and adjusts the mace to have less base damage.
-- Removed builtin JS food & crit impls.
-- Resorted config categories away from file type to instead properly categorise them.
-  - This will not affect existing configs, as the new Atlas Core update allows for this to be an easy transition.
+- Tiered Shields have been redesigned, with some notable changes:
+  - Iron, Gold, and Diamond Shields now take Blocks of Coal, Blackstone, and Obsidian respectively to craft
+  - Iron, Gold, and Diamond Shields now provide 0.5 Shield Strength
+  - Copper Shields now take 1.1x disable time
+  - Iron, Gold, and Copper Shields now have higher base durability
+  - Golden Shields now take half the durability and have 0.8x disable time
+- `combatify:extended_blocking_data` component had its field `considers_banner` replaced with `banner_damage_reductions`
+  - Has the same format as the damage reductions on `minecraft:blocks_attacks`, however will be applied in addition when the shield has a banner
+- On 1.21.1, `combatify:blocker` has been altered to suit the new necessary functionalities for the tiered shields
+  - Added the field `item_damage`, matching the equivalent on the `minecraft:blocks_attacks` component in vanilla
+  - Added the field `disable_cooldown_scale`, scales the amount of disable time this blocking item will take
 ***
 #### Config Changes:
 ***
-- `foodImpl`'s format has been changed, now being an object with multiple fields.
-  - `type`: One of `minecraft:combat_test_8c`, `combatify:combat_test_9a`, and `minecraft:javascript`.
-  - For `minecraft:combat_test_8c` only:
-    - `cts_saturation_cap`: boolean
-    - `cts_healing`: boolean
-  - For `minecraft:combat_test_8c` and `combatify:combat_test_9a`:
-    - `minimum_sprint_level`: int range 0-20
-    - `minimum_healing_level`: int range 0-20
-    - `minimum_fast_healing_level`: int range 0-21, 21 will be interpreted as no fast healing
-    - `fast_heal_seconds`: non-negative float
-    - `heal_seconds`: non-negative float
-    - `starvation_seconds`: non-negative float
-  - For `minecraft:javascript` only:
-    - `script`: string filename (no extension)
-- `critImpl`'s format has been changed, now being an object with multiple fields.
-  - `type`: One of `minecraft:combat_test_8c`, `combatify:charged_crits`, and `minecraft:javascript`.
-  - For `minecraft:combat_test_8c` and `combatify:charged_crits`:
-    - `allows_sprint`: boolean
-  - For `minecraft:combat_test_8c` only:
-    - `minimum_charge`: float range -1-2, if negative will be inferred as not applicable
-    - `crit_multiplier`: non-negative float
-  - For `combatify:charged_crits` only:
-    - `minimum_base_charge`: float range -1-2, if negative will be inferred as not applicable
-    - `minimum_full_charge`: float range -1-2, if negative will be inferred as not applicable
-    - `crit_multiplier`: non-negative float
-    - `charged_crit_multiplier`: non-negative float
-  - For `minecraft:javascript` only:
-    - `script`: string filename (no extension)
+- Nothing to see here
 ***
 #### Fixes:
 ***
-- Nothing to see here.
+- Fixed pack format for built-in datapacks (no longer shows unsupported)
+- Fixed creative block breaking being slow on 1.21.11
+- Fixed durability taken by shields having an improper threshold
