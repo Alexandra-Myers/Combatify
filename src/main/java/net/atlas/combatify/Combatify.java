@@ -26,7 +26,6 @@ import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.atlas.defaulted.fabric.FabricDefaultComponentPatchesManager;
-import net.atlas.defaulted.fabric.component.ItemPatches;
 import net.atlas.defaulted.fabric.component.DefaultedRegistries;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
