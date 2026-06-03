@@ -11,7 +11,12 @@
           "horizontal_blocking_angle": 73.8723797
         }
       ],
-      "block_sound": "minecraft:entity.player.hurt"
+      "block_sound": "minecraft:entity.player.hurt",
+      "item_damage": {
+        "threshold": 0,
+        "base": 0,
+        "factor": 0
+      }
     },
     "combatify:extended_blocking_data": {
       "type": "sword",
