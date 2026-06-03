@@ -25,8 +25,8 @@ import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
-import net.atlas.defaulted.fabric.FabricDefaultComponentPatchesManager;
-import net.atlas.defaulted.fabric.component.DefaultedRegistries;
+import net.atlas.defaulted.DefaultComponentPatchesManager;
+import net.atlas.defaulted.component.DefaultedRegistries;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.*;
@@ -233,7 +233,7 @@ public class Combatify implements ModInitializer {
 	}
 
 	public static boolean isPatched(Item item) {
-		List<ItemPatches> patches = FabricDefaultComponentPatchesManager.getCached();
+		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached();
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
