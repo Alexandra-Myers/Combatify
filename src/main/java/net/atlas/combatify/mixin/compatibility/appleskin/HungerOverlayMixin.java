@@ -23,6 +23,6 @@ public class HungerOverlayMixin {
 			original.call(event, player, hunger, alpha, useRottenTextures, guiTicks);
 			return;
 		}
-		original.call(event, player, (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(hunger, "estimateGainedFoodLevel(foodData, player, foodProperties)", new FoodDataWrapper(foodData), new PlayerWrapper<>(player), new FoodPropertiesWrapper(foodResult.modifiedFoodProperties)), alpha, useRottenTextures, guiTicks);
+		original.call(event, player, Combatify.CONFIG.getFoodImpl().estimateGainedFoodLevel(hunger, foodData, player, foodResult.modifiedFoodProperties), alpha, useRottenTextures, guiTicks);
 	}
 }

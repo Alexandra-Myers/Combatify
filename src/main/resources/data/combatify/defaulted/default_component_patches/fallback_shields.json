@@ -1,0 +1,40 @@
+{
+  "tags": [
+    "c:tools/shield"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:conditional",
+      "condition": "invert",
+      "inverted": {
+        "condition": "in_tag",
+        "tags": [
+          "combatify:tiered_shields"
+        ]
+      },
+      "patch": {
+        "combatify:blocker": {
+          "type": "shield",
+          "damage_parsers": [
+            {
+              "type": "nullify"
+            }
+          ],
+          "protection_modifiers": [],
+          "knockback_modifiers": [],
+          "effect": {
+            "type": "knockback_entity"
+          },
+          "mark_blocked": true,
+          "item_damage": {
+            "threshold": 3,
+            "base": 0,
+            "factor": 1
+          }
+        }
+      }
+    }
+  ],
+  "patch": {},
+  "priority": 1200
+}

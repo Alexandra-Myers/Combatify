@@ -48,9 +48,11 @@
     "ThrownTridentMixin",
     "TiersMixin",
     "TridentItemMixin",
+    "ZombieMixin",
     "accessor.CombatTrackerAccessor",
     "accessor.FleeSunGoalAccessor",
     "accessor.LivingEntityAccessor",
+    "accessor.PlayerAccessor",
     "compatibility.AtlasCoreMixin",
     "compatibility.ConfigCommandMixin",
     "compatibility.polymer.PolymerComponentMixin",
@@ -94,5 +96,8 @@
     "compatibility.cookeymod.DisableMissedAttackRecoveryMixin",
     "compatibility.sodium.SodiumGameOptionPagesMixin"
   ],
-  "mixinPriority": 1200
+  "mixinPriority": 1200,
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
 }

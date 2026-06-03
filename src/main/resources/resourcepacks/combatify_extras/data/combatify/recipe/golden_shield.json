@@ -2,13 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X#X",
+    "A#A",
     "XXX",
     " X "
   ],
   "key": {
     "X": {
       "tag": "c:ingots/gold"
+    },
+    "A": {
+      "item": "minecraft:blackstone"
     },
     "#": {
       "tag": "c:storage_blocks/gold"

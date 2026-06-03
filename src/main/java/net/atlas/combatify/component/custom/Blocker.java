@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
@@ -27,6 +28,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -51,17 +53,21 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
-public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, ResourceLocation blockingTypeLocation, float useSeconds, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
-	public static final Blocker EMPTY = new Blocker(Collections.emptyList(), new Tooltip(Collections.emptyList(), Collections.emptyList(), false), ResourceLocation.withDefaultNamespace("empty"), 0, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
-	public static final Blocker VANILLA_SHIELD = new Blocker(Collections.singletonList(Nullify.NULLIFY_ALL), new Tooltip(Collections.emptyList(), Collections.emptyList(), true), ResourceLocation.withDefaultNamespace("shield"), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
-	public static final Blocker NEW_SHIELD = new Blocker(List.of(PercentageBase.IGNORE_EXPLOSIONS_AND_PROJECTILES, Nullify.NULLIFY_EXPLOSIONS_AND_PROJECTILES), new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK), true), ResourceLocation.withDefaultNamespace("new_shield"), 3600, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, ResourceLocation blockingTypeLocation, float useSeconds,
+					  float disableCooldownScale, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition,
+					  ItemDamageFunction itemDamage) {
+	public static final Blocker EMPTY = new Blocker(Collections.emptyList(), new Tooltip(Collections.emptyList(), Collections.emptyList(), false), ResourceLocation.withDefaultNamespace("empty"), 0, 1, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()), ItemDamageFunction.DEFAULT);
+	public static final Blocker VANILLA_SHIELD = new Blocker(Collections.singletonList(Nullify.NULLIFY_ALL), new Tooltip(Collections.emptyList(), Collections.emptyList(), true), ResourceLocation.withDefaultNamespace("shield"), 3600, 1, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE, new ItemDamageFunction(3, 0, 1));
+	public static final Blocker NEW_SHIELD = new Blocker(List.of(PercentageBase.IGNORE_EXPLOSIONS_AND_PROJECTILES, Nullify.NULLIFY_EXPLOSIONS_AND_PROJECTILES), new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK), true), ResourceLocation.withDefaultNamespace("new_shield"), 3600, 1, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE, ItemDamageFunction.DEFAULT);
 	public static final Codec<Blocker> CODEC = RecordCodecBuilder.create(instance ->
 	instance.group(DamageParser.CODEC.listOf().fieldOf("damage_parsers").forGetter(Blocker::damageParsers),
 			Tooltip.CODEC.forGetter(Blocker::tooltip),
 			BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
 			Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
+			Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("disable_cooldown_scale", 1.0F).forGetter(Blocker::disableCooldownScale),
 			PostBlockEffectWrapper.CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(Blocker::postBlockEffect),
-			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(Blocker::blockingCondition))
+			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(Blocker::blockingCondition),
+			ItemDamageFunction.CODEC.optionalFieldOf("item_damage", ItemDamageFunction.DEFAULT).forGetter(Blocker::itemDamage))
 		.apply(instance, Blocker::new));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, Blocker> STREAM_CODEC = StreamCodec.composite(
@@ -77,15 +83,23 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 		Blocker::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
 		Blocker::blockingCondition,
-		Blocker::new
+		(damageParsers1, tooltip1, blockingTypeLocation1, useSeconds1, postBlockEffect1, blockingCondition1) -> new Blocker(damageParsers1, tooltip1, blockingTypeLocation1, useSeconds1, 1, postBlockEffect1, blockingCondition1, ItemDamageFunction.DEFAULT)
 	);
 
 	public Blocker withProtection(List<CombinedModifier> protection) {
-		return new Blocker(damageParsers, new Tooltip(protection, tooltip.knockbackModifiers, tooltip.markBlocked), blockingTypeLocation, useSeconds, postBlockEffect, blockingCondition);
+		return new Blocker(damageParsers, new Tooltip(protection, tooltip.knockbackModifiers, tooltip.markBlocked), blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
 	}
 
 	public Blocker withKnockback(List<ComponentModifier> knockback) {
-		return new Blocker(damageParsers, new Tooltip(tooltip.protectionModifiers, knockback, tooltip.markBlocked), blockingTypeLocation, useSeconds, postBlockEffect, blockingCondition);
+		return new Blocker(damageParsers, new Tooltip(tooltip.protectionModifiers, knockback, tooltip.markBlocked), blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
+	}
+
+	public Blocker withDisableCooldownScale(float disableCooldownScale) {
+		return new Blocker(damageParsers, tooltip, blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
+	}
+
+	public Blocker withItemDamageFunction(Blocker.ItemDamageFunction itemDamage) {
+		return new Blocker(damageParsers, tooltip, blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
 	}
 
 	public BlockingType blockingType() {
@@ -102,7 +116,7 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			postBlockEffect.effect().doEffect(serverLevel, new EnchantedItemInUse(blockingItem, equipmentSlot, target), attacker, damageSource, 1, applicable, applicable.position());
 		}
 		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, target, attacker, damageSource);
-		MethodHandler.disableShield(attacker, target, damageSource, blockingItem);
+		MethodHandler.disableShield(attacker, target, damageSource, blockingItem, disableCooldownScale);
 	}
 
 	public int useTicks() {
@@ -114,7 +128,7 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			if (getBlockingType(itemStack).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(instance) - instance.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay()) {
 				if (Combatify.CONFIG.disableDuringShieldDelay())
 					if (source.getDirectEntity() instanceof LivingEntity attacker)
-						MethodHandler.disableShield(attacker, instance, source, itemStack);
+						MethodHandler.disableShield(attacker, instance, source, itemStack, disableCooldownScale);
 				return;
 			}
 			completeBlock(serverLevel, instance, itemStack, source, amount, protectedDamage, blocked);
@@ -126,11 +140,12 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 		List<CombinedModifier> intermediaryProtection = tooltip.protectionModifiers().stream().filter(combinedModifier -> combinedModifier.matches(blockingItem)).toList();
 		if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombineVal(intermediaryProtection, blockingLevel, instance.getRandom());
 		final DataSet endProtection = CustomEnchantmentHelper.modifyShieldEffectiveness(blockingItem, instance.getRandom(), protection);
+		float oldAmount = amount.get();
 		damageParsers.forEach(damageParserConditionalEffect -> {
 			protectedDamage.set(damageParserConditionalEffect.parse(amount.get(), endProtection, source.typeHolder()));
 			amount.set(Math.max(amount.get() - protectedDamage.get(), 0));
 		});
-		MethodHandler.hurtCurrentlyUsedShield(instance, protectedDamage.get());
+		MethodHandler.hurtCurrentlyUsedShield(instance, oldAmount - amount.get(), itemDamage);
 		if (source.getDirectEntity() instanceof LivingEntity livingEntity)
 			MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
 		switch (source.getDirectEntity()) {
@@ -190,6 +205,29 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			MutableFloat knockbackResistance = new MutableFloat(0);
 			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.getValue(), blockingLevel, randomSource)));
 			return knockbackResistance.getValue();
+		}
+	}
+
+	public record ItemDamageFunction(float threshold, float base, float factor) {
+		public static final Codec<ItemDamageFunction> CODEC = RecordCodecBuilder.create(
+			i -> i.group(Codec.floatRange(0, Float.MAX_VALUE).fieldOf("threshold").forGetter(ItemDamageFunction::threshold),
+				 Codec.FLOAT.fieldOf("base").forGetter(ItemDamageFunction::base),
+				 Codec.FLOAT.fieldOf("factor").forGetter(ItemDamageFunction::factor))
+			 .apply(i, ItemDamageFunction::new)
+		);
+		public static final StreamCodec<ByteBuf, ItemDamageFunction> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.FLOAT,
+			ItemDamageFunction::threshold,
+			ByteBufCodecs.FLOAT,
+			ItemDamageFunction::base,
+			ByteBufCodecs.FLOAT,
+			ItemDamageFunction::factor,
+			ItemDamageFunction::new
+		);
+		public static final ItemDamageFunction DEFAULT = new ItemDamageFunction(1.0F, 0.0F, 1.0F);
+
+		public int apply(final float dealtDamage) {
+			return dealtDamage < this.threshold ? 0 : Mth.floor(this.base + this.factor * dealtDamage);
 		}
 	}
 }

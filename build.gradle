@@ -33,17 +33,6 @@ repositories {
 	}
 	allprojects { repositories { maven { url 'https://jitpack.io' } } }
 	maven { url "https://maven.shedaniel.me/" }
-	exclusiveContent {
-		forRepository {
-			maven {
-				name = "Modrinth"
-				url = "https://api.modrinth.com/maven"
-			}
-		}
-		filter {
-			includeGroup "maven.modrinth"
-		}
-	}
 	maven { url "https://maven.terraformersmc.com/releases/" }
 	mavenCentral()
 	maven {
@@ -59,6 +48,17 @@ repositories {
 		url = "https://repo.opencollab.dev/maven-snapshots/"
 	}
 	maven { url "https://maven.ryanliptak.com/" }
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = "Modrinth"
+				url = "https://api.modrinth.com/maven"
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
 }
 
 loom {

@@ -23,6 +23,6 @@ public class SaturationOverlayMixin {
 			original.call(event, player, saturationGained, alpha, guiTicks);
 			return;
 		}
-		original.call(event, player, (float) Combatify.CONFIG.getFoodImpl().execGetterFunc(saturationGained, "estimateGainedSaturationLevel(foodData, player, foodProperties)", new FoodDataWrapper(foodData), new PlayerWrapper<>(player), new FoodPropertiesWrapper(foodResult.modifiedFoodProperties)), alpha, guiTicks);
+		original.call(event, player, Combatify.CONFIG.getFoodImpl().estimateGainedSaturationLevel(saturationGained, foodData, player, foodResult.modifiedFoodProperties), alpha, guiTicks);
 	}
 }

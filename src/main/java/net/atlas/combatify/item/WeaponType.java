@@ -2,7 +2,6 @@ package net.atlas.combatify.item;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.custom.Blocker;
-import net.atlas.combatify.component.custom.CanSweep;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;

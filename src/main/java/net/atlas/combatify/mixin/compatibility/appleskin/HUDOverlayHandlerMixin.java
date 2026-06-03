@@ -11,6 +11,6 @@ public abstract class HUDOverlayHandlerMixin {
 	@ModifyExpressionValue(method = "shouldShowEstimatedHealth", at = @At(value = "CONSTANT", args = "intValue=18"))
 	private static int modifyMinHunger(int original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
-		return (int) Combatify.CONFIG.getFoodImpl().execGetterFunc(original, "getMinimumHealingLevel()");
+		return Combatify.CONFIG.getFoodImpl().getMinimumHealingLevel(original);
 	}
 }

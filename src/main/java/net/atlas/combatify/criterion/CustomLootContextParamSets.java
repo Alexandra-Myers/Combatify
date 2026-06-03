@@ -1,4 +1,4 @@
-package net.atlas.combatify.critereon;
+package net.atlas.combatify.criterion;
 
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;

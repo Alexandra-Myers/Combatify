@@ -1,4 +1,4 @@
-package net.atlas.combatify.critereon;
+package net.atlas.combatify.criterion;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.advancements.critereon.ItemSubPredicate;

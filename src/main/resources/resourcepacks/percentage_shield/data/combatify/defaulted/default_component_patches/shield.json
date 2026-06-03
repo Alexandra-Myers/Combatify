@@ -1,6 +1,6 @@
 {
-  "items": [
-    "minecraft:shield"
+  "tags": [
+    "combatify:base_shields"
   ],
   "patch": {
     "combatify:blocker": {
@@ -84,7 +84,12 @@
       "effect": {
         "type": "knockback_entity"
       },
-      "mark_blocked": true
+      "mark_blocked": true,
+      "item_damage": {
+        "threshold": 3,
+        "base": 0,
+        "factor": 1
+      }
     }
   }
 }

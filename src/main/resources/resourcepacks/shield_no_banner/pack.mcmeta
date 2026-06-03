@@ -1,6 +1,6 @@
 {
   "pack": {
-    "pack_format": 48,
-    "description": "8B's shield protection, ignoring banners."
+    "description": "8B's shield protection, ignoring banners.",
+    "pack_format": 48
   }
 }
