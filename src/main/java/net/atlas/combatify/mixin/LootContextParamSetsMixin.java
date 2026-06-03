@@ -1,6 +1,6 @@
 package net.atlas.combatify.mixin;
 
-import net.atlas.combatify.critereon.CustomLootContextParamSets;
+import net.atlas.combatify.criterion.CustomLootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "description": "Adds a trident recipe, tweaks base cleaving for axes, and changes attack speed for spears and maces.",
+    "pack_format": 48
+  }
+}

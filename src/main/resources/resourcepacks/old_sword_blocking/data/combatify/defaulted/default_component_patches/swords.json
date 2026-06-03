@@ -47,7 +47,12 @@
       },
       "condition": "requires_empty_hand",
       "hand": "off_hand",
-      "mark_blocked": false
+      "mark_blocked": false,
+      "item_damage": {
+        "threshold": 0,
+        "base": 0,
+        "factor": 0
+      }
     }
   }
 }

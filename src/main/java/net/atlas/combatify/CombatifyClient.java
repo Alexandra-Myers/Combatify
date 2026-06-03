@@ -11,6 +11,7 @@ import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -19,9 +20,9 @@ import static net.minecraft.client.Options.genericValueLabel;
 import static net.minecraft.client.Options.percentValueLabel;
 
 public class CombatifyClient implements ClientModInitializer {
-	public static final OptionInstance<Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
-	public static final OptionInstance<Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
-	public static final OptionInstance<TriState> rhythmicAttacks = new OptionInstance<>(
+	public static final OptionInstance<@NotNull Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
+	public static final OptionInstance<@NotNull Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
+	public static final OptionInstance<@NotNull TriState> rhythmicAttacks = new OptionInstance<>(
 		"options.rhythmicAttack",
 		OptionInstance.noTooltip(),
 		(component, object) -> switch (object) {
@@ -39,7 +40,7 @@ public class CombatifyClient implements ClientModInitializer {
 
 		}
 	);
-	public static final OptionInstance<TriState> augmentedArmHeight = new OptionInstance<>(
+	public static final OptionInstance<@NotNull TriState> augmentedArmHeight = new OptionInstance<>(
 		"options.augmentedArmHeight",
 		OptionInstance.noTooltip(),
 		(component, object) -> switch (object) {
@@ -57,21 +58,17 @@ public class CombatifyClient implements ClientModInitializer {
 
 		}
 	);
-	public static final OptionInstance<Combatify.CombatifyState> combatifyState = new OptionInstance<>(
+	public static final OptionInstance<Combatify.@NotNull CombatifyState> combatifyState = new OptionInstance<>(
 		"options.combatifyState",
 		OptionInstance.noTooltip(),
-		(component, state) -> state.getComponent(),
-		new OptionInstance.Enum<>(Arrays.asList(Combatify.CombatifyState.values()), Codec.INT.xmap(ordinal -> switch (Mth.positiveModulo(ordinal, 3)) {
-			case 0 -> Combatify.CombatifyState.VANILLA;
-			case 1 -> Combatify.CombatifyState.CTS_8C;
-			default -> Combatify.CombatifyState.COMBATIFY;
-		}, Combatify.CombatifyState::ordinal)),
+		(component, state) -> state.caption(),
+		new OptionInstance.Enum<>(Arrays.asList(Combatify.CombatifyState.values()), Combatify.CombatifyState.CODEC),
 		Combatify.CombatifyState.COMBATIFY,
 		value -> {
 
 		}
 	);
-	public static final OptionInstance<AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NotNull AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
 		"options.projectileChargeIndicator",
 		OptionInstance.noTooltip(),
 		OptionInstance.forOptionEnum(),
@@ -80,7 +77,7 @@ public class CombatifyClient implements ClientModInitializer {
 		value -> {
 		}
 	);
-	public static final OptionInstance<DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NotNull DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
 		"options.dualAttackIndicator",
 		OptionInstance.noTooltip(),
 		OptionInstance.forOptionEnum(),
@@ -89,7 +86,7 @@ public class CombatifyClient implements ClientModInitializer {
 		value -> {
 		}
 	);
-	public static final OptionInstance<Double> attackIndicatorMaxValue = new OptionInstance<>(
+	public static final OptionInstance<@NotNull Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),
 		(optionText, value) -> value == 2.0 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMaxValue.default"))) : percentValueLabel(optionText, value),
@@ -100,7 +97,7 @@ public class CombatifyClient implements ClientModInitializer {
 
 		}
 	);
-	public static final OptionInstance<Double> attackIndicatorMinValue = new OptionInstance<>(
+	public static final OptionInstance<@NotNull Double> attackIndicatorMinValue = new OptionInstance<>(
 		"options.attackIndicatorMinValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMinValue.tooltip")),
 		(optionText, value) -> value == 1.3 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMinValue.default"))) : percentValueLabel(optionText, value),
@@ -111,7 +108,7 @@ public class CombatifyClient implements ClientModInitializer {
 
 		}
 	);
-	public static final OptionInstance<ShieldIndicatorStatus> shieldIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NotNull ShieldIndicatorStatus> shieldIndicator = new OptionInstance<>(
 			"options.shieldIndicator",
 			OptionInstance.noTooltip(),
 			OptionInstance.forOptionEnum(),

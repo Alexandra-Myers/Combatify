@@ -1,0 +1,108 @@
+{
+  "tags": [
+    "c:tools/shield"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:conditional",
+      "condition": "invert",
+      "inverted": {
+        "condition": "in_tag",
+        "tags": [
+          "combatify:defined_shields"
+        ]
+      },
+      "patch": {
+        "combatify:blocker": {
+          "type": "shield",
+          "damage_parsers": [
+            {
+              "type": "percentage_base",
+              "damage_types": [
+                {
+                  "id": "minecraft:is_projectile",
+                  "expected": false
+                },
+                {
+                  "id": "minecraft:is_explosion",
+                  "expected": false
+                }
+              ]
+            },
+            {
+              "type": "nullify",
+              "damage_types": [
+                {
+                  "id": "minecraft:is_projectile",
+                  "expected": true
+                },
+                {
+                  "id": "minecraft:is_explosion",
+                  "expected": true
+                }
+              ],
+              "enforce_all": false
+            }
+          ],
+          "protection_modifiers": [
+            {
+              "base": {
+                "tooltip": {
+                  "translate": "attribute.modifier.equals.0",
+                  "with": [
+                    {
+                      "translate": "attribute.name.shield_strength",
+                      "fallback": "Shield Strength"
+                    }
+                  ]
+                },
+                "modifier": {
+                  "type": "add",
+                  "value": {
+                    "type": "linear",
+                    "base": 5,
+                    "per_level_above_first": 1
+                  }
+                }
+              },
+              "factor": {
+                "modifier": {
+                  "type": "add",
+                  "value": 0
+                }
+              }
+            }
+          ],
+          "knockback_modifiers": [
+            {
+              "tooltip": {
+                "translate": "attribute.modifier.equals.0",
+                "with": [
+                  {
+                    "translate": "attribute.name.generic.knockback_resistance"
+                  }
+                ]
+              },
+              "modifier": {
+                "type": "add",
+                "value": 0.5
+              },
+              "tooltip_value_factor": 10
+            }
+          ],
+          "effect": {
+            "type": "knockback_entity"
+          },
+          "mark_blocked": true,
+          "item_damage": {
+            "threshold": 3,
+            "base": 0,
+            "factor": 1
+          }
+        }
+      }
+    }
+  ],
+  "patch": {},
+  "priority": 1200
+}

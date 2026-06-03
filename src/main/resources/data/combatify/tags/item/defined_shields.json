@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#combatify:base_shields",
+      "required": false
+    },
+    {
+      "id": "#combatify:tiered_shields",
+      "required": false
+    }
+  ]
+}

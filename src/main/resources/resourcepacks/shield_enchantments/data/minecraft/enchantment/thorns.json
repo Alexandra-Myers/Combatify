@@ -21,7 +21,7 @@
               }
             },
             {
-              "type": "minecraft:change_item_damage",
+              "type": "minecraft:damage_item",
               "amount": 1
             }
           ]

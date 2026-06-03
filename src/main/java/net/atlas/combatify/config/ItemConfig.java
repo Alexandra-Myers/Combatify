@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.item.CombatifyItemTags;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.fabricmc.api.EnvType;

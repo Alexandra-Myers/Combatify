@@ -1,6 +1,6 @@
 {
   "pack": {
-    "pack_format": 48,
-    "description": "Datapack that enables sword blocking."
+    "description": "Datapack that enables sword blocking.",
+    "pack_format": 48
   }
 }

@@ -29,9 +29,9 @@
   "accessWidener": "combatify.accesswidener",
 	"depends": {
     "fabric-api": ">=0.102.1+1.21.1",
-    "atlas-core": ">=1.1.2",
-    "defaulted": ">=1.1.0",
-		"fabricloader": ">=0.16.10",
+    "atlas-core": ">=1.1.3",
+    "defaulted": ">=1.2.0",
+		"fabricloader": ">=0.17.2",
 		"minecraft": ">=1.21.1 <1.21.2",
 		"java": ">=21"
 	},

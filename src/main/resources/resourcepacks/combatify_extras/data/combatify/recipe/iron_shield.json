@@ -2,13 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "pattern": [
-    "X#X",
+    "A#A",
     "XXX",
     " X "
   ],
   "key": {
     "X": {
       "tag": "c:ingots/iron"
+    },
+    "A": {
+      "tag": "c:storage_blocks/coal"
     },
     "#": {
       "tag": "c:storage_blocks/iron"

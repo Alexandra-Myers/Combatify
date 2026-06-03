@@ -10,6 +10,7 @@ import net.atlas.combatify.config.ConfigurableItemData;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
+import net.atlas.combatify.mixin.accessor.PlayerAccessor;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
@@ -48,6 +49,13 @@ import java.util.Optional;
 import static net.minecraft.world.entity.LivingEntity.getSlotForHand;
 
 public class MethodHandler {
+	public static void forceUpdateItems(Player player, boolean force) {
+		if (!Combatify.CONFIG.attributeSwappingFix() && !force) return;
+		((LivingEntityAccessor) player).callDetectEquipmentUpdates();
+		if (!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
+			(Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))
+			player.combatify$resetAttackStrengthTicker(false, true);
+	}
 	public static boolean checkSweepAttack(Player player) {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
 		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
@@ -282,7 +290,7 @@ public class MethodHandler {
 		}
 		return instance;
 	}
-	public static void hurtCurrentlyUsedShield(LivingEntity livingEntity, float f) {
+	public static void hurtCurrentlyUsedShield(LivingEntity livingEntity, float damage, Blocker.ItemDamageFunction damageFunction) {
 		if (!(livingEntity instanceof Player player)) return;
 		FakeUseItem fakeUseItem = getBlockingItem(player);
 		ItemStack blockingItem = fakeUseItem.stack();
@@ -291,22 +299,19 @@ public class MethodHandler {
 				player.awardStat(Stats.ITEM_USED.get(blockingItem.getItem()));
 			}
 
-			if (f >= 3.0F) {
-				int i = 1 + Mth.floor(f);
-				InteractionHand interactionHand = fakeUseItem.useHand();
-				blockingItem.hurtAndBreak(i, player, getSlotForHand(interactionHand));
-				fakeUseItem = getBlockingItem(player);
-				if (fakeUseItem.stack().isEmpty()) {
-					if (interactionHand == InteractionHand.MAIN_HAND) player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-					else player.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+			InteractionHand interactionHand = fakeUseItem.useHand();
+			blockingItem.hurtAndBreak(damageFunction.apply(damage), player, getSlotForHand(interactionHand));
+			fakeUseItem = getBlockingItem(player);
+			if (fakeUseItem.stack().isEmpty()) {
+				if (interactionHand == InteractionHand.MAIN_HAND) player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+				else player.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
 
-					if (fakeUseItem.isReal()) ((LivingEntityAccessor)player).setUseItem(ItemStack.EMPTY);
-					player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
-				}
+				if (fakeUseItem.isReal()) ((LivingEntityAccessor)player).setUseItem(ItemStack.EMPTY);
+				player.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + player.level().random.nextFloat() * 0.4F);
 			}
 		}
 	}
-	public static void disableShield(LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem) {
+	public static void disableShield(LivingEntity attacker, LivingEntity target, DamageSource damageSource, ItemStack blockingItem, float disableCooldownScale) {
 		ItemStack attackingItem = attacker.getMainHandItem();
 		double piercingLevel = getPiercingLevel(attackingItem);
 		if (!(target.level() instanceof ServerLevel serverLevel)) piercingLevel += CustomEnchantmentHelper.getBreach(attackingItem, attacker.getRandom());
@@ -333,6 +338,7 @@ public class MethodHandler {
 				}
 			}
 		}
+		damage *= disableCooldownScale;
 		if (canDisable && damage > 0 && getBlockingType(blockingItem).canBeDisabled()) {
 			if (piercingLevel > 0)
 				attacker.combatify$setPiercingNegation(piercingLevel);

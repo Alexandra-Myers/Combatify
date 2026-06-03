@@ -43,7 +43,7 @@ public interface DamageParser {
 		return enforce;
 	}
 
-	public static <D extends DamageParser> MapCodec<D> mapCodec(BiFunction<List<TagPredicate<DamageType>>, Boolean, D> creator) {
+	static <D extends DamageParser> MapCodec<D> mapCodec(BiFunction<List<TagPredicate<DamageType>>, Boolean, D> creator) {
 		return RecordCodecBuilder.mapCodec(instance ->
 			instance.group(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("damage_types", Collections.emptyList()).forGetter(DamageParser::requirements),
 				Codec.BOOL.optionalFieldOf("enforce_all", true).forGetter(DamageParser::enforceAll))

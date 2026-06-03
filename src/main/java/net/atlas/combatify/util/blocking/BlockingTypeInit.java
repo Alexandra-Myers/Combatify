@@ -2,8 +2,8 @@ package net.atlas.combatify.util.blocking;
 
 import com.mojang.serialization.MapCodec;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.critereon.ItemHasComponentPredicate;
-import net.atlas.combatify.critereon.ItemSubPredicateInit;
+import net.atlas.combatify.criterion.ItemHasComponentPredicate;
+import net.atlas.combatify.criterion.ItemSubPredicateInit;
 import net.atlas.combatify.util.blocking.ComponentModifier.CombinedModifier;
 import net.atlas.combatify.util.blocking.condition.AnyOf;
 import net.atlas.combatify.util.blocking.condition.ItemMatches;
@@ -38,8 +38,9 @@ public class BlockingTypeInit {
 				Optional.empty(), 1),
 			Optional.of(new AnyOf(new ItemMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicateInit.HAS_COMPONENT, new ItemHasComponentPredicate(List.of(DataComponents.BASE_COLOR), true)).build(), false),
 				new ItemMatches(ItemPredicate.Builder.item().hasComponents(DataComponentPredicate.builder().expect(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).build()).build(), true)))));
-	public static final CombinedModifier NETHERITE_SHIELD_PROTECTION = CombinedModifier.createBaseOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")), new AddValue(LevelBasedValue.constant(1F)), 1), Optional.empty());
-	public static final CombinedModifier NEW_SHIELD_PROTECTION = CombinedModifier.createFactorOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatableWithFallback("attribute.name.shield_reduction", "Shield Damage Reduction")), new AddValue(LevelBasedValue.perLevel(0.3F, 0.05F)), 100), Optional.empty());
+	public static final ComponentModifier NEW_SHIELD_FACTOR = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL.id(), Component.translatableWithFallback("attribute.name.shield_reduction", "Shield Damage Reduction")), new AddValue(LevelBasedValue.perLevel(0.3F, 0.05F)), 100);
+	public static final CombinedModifier NETHERITE_SHIELD_PROTECTION = new CombinedModifier(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")), new AddValue(LevelBasedValue.constant(1F)), 1), NEW_SHIELD_FACTOR, Optional.empty());
+	public static final CombinedModifier NEW_SHIELD_PROTECTION = new CombinedModifier(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")), new AddValue(LevelBasedValue.constant(0.5F)), 1), NEW_SHIELD_FACTOR, Optional.empty());
 	public static final ComponentModifier SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.generic.knockback_resistance")), new AddValue(LevelBasedValue.constant(0.5F)), 10);
 	public static final ComponentModifier BANNER_SHIELD_KNOCKBACK = new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatable("attribute.name.generic.knockback_resistance")),
 		new AddValue(LevelBasedValue.constant(0.3F)),

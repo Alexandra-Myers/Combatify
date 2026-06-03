@@ -45,9 +45,11 @@
     "ThrownTridentMixin",
     "TiersMixin",
     "TridentItemMixin",
+    "ZombieMixin",
     "accessor.CombatTrackerAccessor",
     "accessor.FleeSunGoalAccessor",
     "accessor.LivingEntityAccessor",
+    "accessor.PlayerAccessor",
     "compatibility.AtlasCoreMixin",
     "compatibility.ConfigCommandMixin",
     "compatibility.InvulnerabilityMixin",
@@ -90,5 +92,8 @@
     "compatibility.cookeymod.ArmHeightFixMixin",
     "compatibility.cookeymod.DisableMissedAttackRecoveryMixin"
   ],
-  "mixinPriority": 1200
+  "mixinPriority": 1200,
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  }
 }
