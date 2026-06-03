@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin;
 
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -12,12 +13,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Zombie.class)
 public abstract class ZombieMixin extends Monster {
+	@Deprecated
 	protected ZombieMixin(EntityType<? extends @NotNull Monster> entityType, Level level) {
 		super(entityType, level);
 	}
 
+	// Bug has been fixed in 26.1
+	/*
 	@Inject(method = "handleAttributes", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/zombie/Zombie;setCanBreakDoors(Z)V"))
-	public void actuallyBoostHealth(float specialDifficulty, CallbackInfo ci) {
+	public void actuallyBoostHealth(float difficultyModifier, EntitySpawnReason spawnReason, CallbackInfo ci) {
 		setHealth(getMaxHealth());
 	}
+
+	 */
 }
