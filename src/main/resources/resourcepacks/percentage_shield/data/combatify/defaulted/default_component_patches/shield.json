@@ -18,7 +18,12 @@
         }
       ],
       "block_sound": "minecraft:item.shield.block",
-      "disabled_sound": "minecraft:item.shield.break"
+      "disabled_sound": "minecraft:item.shield.break",
+      "item_damage": {
+        "threshold": 3,
+        "base": 0,
+        "factor": 1
+      }
     },
     "combatify:extended_blocking_data": {
       "type": "new_shield",
