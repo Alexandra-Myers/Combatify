@@ -82,7 +82,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	@Final
 	public MouseHandler mouseHandler;
 
-	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(F)V"))
+	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;pick(F)V"))
 	public void injectAimAssistDecrement(CallbackInfo ci) {
 		if (--aimAssistTicks <= 0) this.aimAssistHitResult = null;
 	}

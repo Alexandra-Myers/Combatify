@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 @Mixin(Arrow.class)
 public abstract class ArrowMixin extends AbstractArrow {
-	protected ArrowMixin(EntityType<@NotNull ? extends AbstractArrow> entityType, Level level) {
+	protected ArrowMixin(EntityType<? extends @NotNull AbstractArrow> entityType, Level level) {
 		super(entityType, level);
 	}
 

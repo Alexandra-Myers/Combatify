@@ -196,7 +196,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		return false;
 	}
 	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getUsedItemHand()Lnet/minecraft/world/InteractionHand;"))
-	public InteractionHand spoofUsedHand(LivingEntity instance, Operation<InteractionHand> original, @Local(ordinal = 0, argsOnly = true) ServerLevel serverLevel) {
+	public InteractionHand spoofUsedHand(LivingEntity instance, Operation<InteractionHand> original) {
 		InteractionHand interactionHand = original.call(instance);
 		if (MethodHandler.getBlockingItem(instance).useHand() != null) return MethodHandler.getBlockingItem(instance).useHand();
 		return interactionHand;

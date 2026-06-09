@@ -26,7 +26,7 @@ public class MeleeAttackGoalMixin {
 	@WrapMethod(method = "isTimeToAttack")
 	public boolean modResult(Operation<Boolean> original) {
 		var attackSpeed = mob.getAttribute(Attributes.ATTACK_SPEED);
-		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.getType().is(Combatify.HAS_BOOSTED_SPEED);
+		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.is(Combatify.HAS_BOOSTED_SPEED);
 		if (Combatify.CONFIG.mobsUsePlayerAttributes() && shouldOverrideDefaultAttackInterval) return mob.combatify$isAttackAvailable(0, mob.getItemInHand(InteractionHand.MAIN_HAND));
 		return original.call();
 	}
@@ -34,7 +34,7 @@ public class MeleeAttackGoalMixin {
 	@ModifyExpressionValue(method = "canUse", at = @At(value = "CONSTANT", args = "longValue=20"))
 	public long replaceConstWithConfig(long original) {
 		var attackSpeed = mob.getAttribute(Attributes.ATTACK_SPEED);
-		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.getType().is(Combatify.HAS_BOOSTED_SPEED);
+		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.is(Combatify.HAS_BOOSTED_SPEED);
 		if (Combatify.CONFIG.mobsUsePlayerAttributes() && shouldOverrideDefaultAttackInterval) return MethodHandler.getCurrentItemAttackStrengthDelay(mob);
 		ConfigurableEntityData configurableEntityData = MethodHandler.forEntity(mob);
 		if (configurableEntityData != null && configurableEntityData.attackInterval() != null)
@@ -58,7 +58,7 @@ public class MeleeAttackGoalMixin {
 	@ModifyExpressionValue(method = "getAttackInterval", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int replaceConstWithConfig2(int original) {
 		var attackSpeed = mob.getAttribute(Attributes.ATTACK_SPEED);
-		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.getType().is(Combatify.HAS_BOOSTED_SPEED);
+		boolean shouldOverrideDefaultAttackInterval = (attackSpeed != null && attackSpeed.getValue() == attackSpeed.getBaseValue()) || mob.is(Combatify.HAS_BOOSTED_SPEED);
 		if (Combatify.CONFIG.mobsUsePlayerAttributes() && shouldOverrideDefaultAttackInterval) return MethodHandler.getCurrentItemAttackStrengthDelay(mob);
 		ConfigurableEntityData configurableEntityData = MethodHandler.forEntity(mob);
 		if (configurableEntityData != null && configurableEntityData.attackInterval() != null)

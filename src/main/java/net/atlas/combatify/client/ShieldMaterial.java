@@ -3,18 +3,18 @@ package net.atlas.combatify.client;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 
-public record ShieldMaterial(Material base, Material baseNoPattern) {
-	private static final Codec<Material> MATERIAL_CODEC = Identifier.CODEC.xmap(Identifier -> new Material(TextureAtlas.LOCATION_BLOCKS, Identifier), Material::texture);
+public record ShieldMaterial(SpriteId base, SpriteId baseNoPattern) {
+	private static final Codec<SpriteId> SPRITE_ID_CODEC = Identifier.CODEC.xmap(Identifier -> new SpriteId(TextureAtlas.LOCATION_BLOCKS, Identifier), SpriteId::texture);
 	public static final MapCodec<ShieldMaterial> CODEC = RecordCodecBuilder.mapCodec(instance ->
-		instance.group(MATERIAL_CODEC.optionalFieldOf("base", ModelBakery.SHIELD_BASE).forGetter(ShieldMaterial::base),
-				MATERIAL_CODEC.optionalFieldOf("no_pattern", ModelBakery.NO_PATTERN_SHIELD).forGetter(ShieldMaterial::baseNoPattern))
+		instance.group(SPRITE_ID_CODEC.optionalFieldOf("base", Sheets.SHIELD_BASE).forGetter(ShieldMaterial::base),
+				SPRITE_ID_CODEC.optionalFieldOf("no_pattern", Sheets.SHIELD_BASE_NO_PATTERN).forGetter(ShieldMaterial::baseNoPattern))
 			.apply(instance, ShieldMaterial::new));
-	public Material choose(boolean hasBanner) {
+	public SpriteId choose(boolean hasBanner) {
 		return hasBanner ? base : baseNoPattern;
 	}
 }

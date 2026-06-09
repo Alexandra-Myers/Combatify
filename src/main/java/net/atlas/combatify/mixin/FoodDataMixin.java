@@ -38,7 +38,7 @@ public class FoodDataMixin implements FoodDataExtensions {
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=18"))
-	public int changeConst(int original, @Local(ordinal = 0, argsOnly = true) ServerPlayer player) {
+	public int changeConst(int original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.getFoodImpl().getMinimumHealingLevel(original);
 	}
@@ -50,19 +50,19 @@ public class FoodDataMixin implements FoodDataExtensions {
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=10", ordinal = 0))
-	public int redirectTickTimer(int original, @Local(ordinal = 0, argsOnly = true) ServerPlayer player) {
+	public int redirectTickTimer(int original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.getFoodImpl().getFastHealTicks(original);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=80", ordinal = 0))
-	public int redirectTickTimer1(int original, @Local(ordinal = 0, argsOnly = true) ServerPlayer player) {
+	public int redirectTickTimer1(int original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.getFoodImpl().getHealTicks(original);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=80", ordinal = 1))
-	public int redirectTickTimer2(int original, @Local(ordinal = 0, argsOnly = true) ServerPlayer player) {
+	public int redirectTickTimer2(int original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
 		return Combatify.CONFIG.getFoodImpl().getStarvationTicks(original);
 	}

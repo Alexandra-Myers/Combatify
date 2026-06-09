@@ -1,5 +1,6 @@
 package net.atlas.combatify.mixin.compatibility.viafabricplus;
 
+import com.viaversion.viaaprilfools.protocol.scombattest8ctov1_16_2.ProtocolCombatTest8cTo1_16_2;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.annotation.mixin.ModSpecific;
 import net.fabricmc.api.EnvType;
@@ -8,11 +9,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-@Mixin(targets = {"com.viaversion.viaaprilfools.protocol.scombattest8ctov1_16_2.ProtocolCombatTest8cTo1_16_2$1"})
+@Mixin(ProtocolCombatTest8cTo1_16_2.class)
 @ModSpecific("viafabricplus")
 public class ProtocolCombatTest8cTo1_16_2PacketHandlersMixin {
-	@ModifyArg(method = "register", at = @At(value = "INVOKE", target = "Lcom/viaversion/viaaprilfools/protocol/scombattest8ctov1_16_2/ProtocolCombatTest8cTo1_16_2$1;create(Lcom/viaversion/viaversion/api/type/Type;Ljava/lang/Object;)V"), index = 1, remap = false)
-	public Object writeUseShieldOnCrouch(Object value) {
+	@ModifyArg(method = "lambda$registerPackets$0", at = @At(value = "INVOKE", target = "Lcom/viaversion/viaversion/api/protocol/packet/PacketWrapper;write(Lcom/viaversion/viaversion/api/type/Type;Ljava/lang/Object;)V"), index = 1, remap = false)
+	private static Object writeUseShieldOnCrouch(Object value) {
 		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
 			return CombatifyClient.shieldCrouch.get();
 		return value;

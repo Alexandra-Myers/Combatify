@@ -8,7 +8,7 @@ import net.atlas.combatify.extensions.ServerPlayerExtensions;
 import net.atlas.combatify.util.CombatUtil;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -52,13 +52,10 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Shadow
 	public abstract Entity getCamera();
 
-	@Shadow
-	public abstract void attack(Entity entity);
-
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
 
-	public ServerPlayerMixin(EntityType<@NotNull ? extends LivingEntity> entityType, Level level) {
+	public ServerPlayerMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
@@ -95,7 +92,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 			else
 				hitResult = MethodHandler.redirectResult(player, hitResult);
 			if (hitResult.getType() == HitResult.Type.ENTITY)
-				connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), isShiftKeyDown()));
+				connection.handleAttack(new ServerboundAttackPacket(((EntityHitResult) hitResult).getEntity().getId()));
 			else if (hitResult.getType() == HitResult.Type.MISS) combatify$attackAir();
 		}
 	}

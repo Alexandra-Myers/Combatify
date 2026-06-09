@@ -47,7 +47,7 @@ public class PlayerWrapper<P extends Player> extends LivingEntityWrapper<P> {
 		value.combatify$attackAir();
 	}
 
-	public final void lungeForwardMaybe() {
-		value.lungeForwardMaybe();
+	public final void postPiercingAttack() {
+		value.postPiercingAttack();
 	}
 }

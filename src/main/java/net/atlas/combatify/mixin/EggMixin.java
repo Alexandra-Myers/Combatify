@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(ThrownEgg.class)
 public abstract class EggMixin extends ThrowableItemProjectile {
 
-	public EggMixin(EntityType<@NotNull ? extends ThrowableItemProjectile> entityType, Level level) {
+	public EggMixin(EntityType<? extends @NotNull ThrowableItemProjectile> entityType, Level level) {
 		super(entityType, level);
 	}
 

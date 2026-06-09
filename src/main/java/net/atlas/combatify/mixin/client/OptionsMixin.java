@@ -21,7 +21,7 @@ public abstract class OptionsMixin {
 	public void broadcastExtras(CallbackInfo ci) {
 		if (this.minecraft.player != null) {
 			CustomPacketPayload payload = new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get());
-			this.minecraft.player.connection.send(ClientPlayNetworking.createC2SPacket(payload));
+			this.minecraft.player.connection.send(ClientPlayNetworking.createServerboundPacket(payload));
 		}
 	}
 

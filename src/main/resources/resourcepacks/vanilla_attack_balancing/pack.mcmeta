@@ -2,6 +2,6 @@
   "pack": {
     "description": "Datapack that uses vanilla attack damage for the vanilla weapon types.",
     "min_format": 82,
-    "max_format": 94.1
+    "max_format": 101.1
   }
 }

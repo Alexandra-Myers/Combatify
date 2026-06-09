@@ -1,5 +1,6 @@
 package net.atlas.combatify.component;
 
+import com.mojang.serialization.Codec;
 import eu.pb4.polymer.core.api.other.PolymerComponent;
 import net.atlas.combatify.component.custom.ProtectionBaseFactor;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
@@ -8,8 +9,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.item.enchantment.TargetedConditionalEffect;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,18 +21,22 @@ import java.util.function.UnaryOperator;
 
 public class CustomEnchantmentEffectComponents {
 	public static DataComponentType<@NotNull List<TargetedConditionalEffect<@NotNull PostBlockEffect>>> POST_BLOCK_EFFECTS = register(
-		"combatify:post_block_effects", builder -> builder.persistent(TargetedConditionalEffect.codec(PostBlockEffects.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
+		"combatify:post_block_effects", builder -> builder.persistent(validatedListCodec(TargetedConditionalEffect.codec(PostBlockEffects.CODEC), LootContextParamSets.ENCHANTED_DAMAGE))
 	);
 	public static DataComponentType<@NotNull List<ProtectionBaseFactor>> SHIELD_EFFECTIVENESS = register(
 		"combatify:shield_effectiveness", builder -> builder.persistent(ProtectionBaseFactor.CODEC.listOf())
 	);
 	public static DataComponentType<@NotNull List<TargetedConditionalEffect<@NotNull EnchantmentValueEffect>>> SHIELD_DISABLE = register(
-		"combatify:shield_disable_time", builder -> builder.persistent(TargetedConditionalEffect.equipmentDropsCodec(EnchantmentValueEffect.CODEC, LootContextParamSets.ENCHANTED_DAMAGE).listOf())
+		"combatify:shield_disable_time", builder -> builder.persistent(validatedListCodec(TargetedConditionalEffect.equipmentDropsCodec(EnchantmentValueEffect.CODEC), LootContextParamSets.ENCHANTED_DAMAGE))
 	);
 	private static <T> DataComponentType<@NotNull T> register(String string, UnaryOperator<DataComponentType.Builder<@NotNull T>> unaryOperator) {
 		return Registry.register(
 			BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, string, unaryOperator.apply(DataComponentType.builder()).build()
 		);
+	}
+
+	private static <T extends Validatable> Codec<List<T>> validatedListCodec(final Codec<T> elementCodec, final ContextKeySet paramSet) {
+		return elementCodec.listOf().validate(Validatable.listValidatorForContext(paramSet));
 	}
 	public static void registerEnchantmentEffectComponents() {
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
