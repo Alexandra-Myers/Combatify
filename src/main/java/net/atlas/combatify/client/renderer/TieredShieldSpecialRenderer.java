@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.NonNull;
 
 @Environment(EnvType.CLIENT)
 public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NotNull DataComponentMap> {
@@ -46,7 +47,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NotNul
 	}
 
 	@Override
-	public void submit(final @org.jspecify.annotations.Nullable DataComponentMap components, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+	public void submit(final @org.jspecify.annotations.Nullable DataComponentMap components, final @NonNull PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
 		BannerPatternLayers patterns = components != null ? components.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
 		DyeColor baseColor = components != null ? components.get(DataComponents.BASE_COLOR) : null;
 		boolean hasPatterns = !patterns.layers().isEmpty() || baseColor != null;

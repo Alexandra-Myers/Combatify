@@ -60,14 +60,14 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
-	protected MobMixin(EntityType<@NotNull ? extends LivingEntity> entityType, Level level) {
+	protected MobMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	public void readAdditionalSaveData(ValueInput valueInput, CallbackInfo ci) {
 		var attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
-		if (attackSpeed != null && getType().is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
+		if (attackSpeed != null && is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
 	}
 
 	@ModifyReturnValue(method = "createMobAttributes", at = @At(value = "RETURN"))
@@ -79,7 +79,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	public void addReachUpdate(CallbackInfo ci) {
 		if (firstTick) {
 			var attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
-			if (attackSpeed != null && getType().is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
+			if (attackSpeed != null && is(Combatify.HAS_BOOSTED_SPEED)) attackSpeed.setBaseValue(Combatify.CONFIG.baseHandAttackSpeed() - 0.5);
 		}
 	}
 

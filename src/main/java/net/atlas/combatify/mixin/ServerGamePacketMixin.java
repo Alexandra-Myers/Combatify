@@ -49,11 +49,11 @@ public abstract class ServerGamePacketMixin {
 		}
 	}
 
-	@WrapOperation(method = "handleInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ServerboundInteractPacket;isWithinRange(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/phys/AABB;D)Z"))
-	public boolean redirectCheck(ServerboundInteractPacket instance, ServerPlayer serverPlayer, AABB aABB, double d, Operation<Boolean> original, @Local(ordinal = 0) Entity entity) {
+	@WrapOperation(method = "handleAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isWithinAttackRange(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/AABB;D)Z"))
+	public boolean redirectCheck(ServerPlayer instance, ItemStack itemStack, AABB aabb, double v, Operation<Boolean> original, @Local(ordinal = 0) Entity entity) {
 		boolean result;
-		if (entity instanceof ServerPlayer target) result = CombatUtil.allowReach(player, target, instance::isWithinRange);
-		else result = original.call(instance, serverPlayer, aABB, d);
+		if (entity instanceof ServerPlayer target) result = CombatUtil.allowReach(player, target, itemStack, instance::isWithinAttackRange);
+		else result = original.call(instance, itemStack, aabb, v);
 		if (Combatify.unmoddedPlayers.contains(player.getUUID()) && !result) player.combatify$attackAir();
 		return result;
 	}

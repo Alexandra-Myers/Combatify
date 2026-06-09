@@ -241,7 +241,7 @@ public class ItemConfig extends AtlasConfig {
 						mapCodec.forGetter(RegistryConfigDataWrapper::configurableData))
 					.apply(instance, RegistryConfigDataWrapper::build));
 		}
-		public static <T, U> StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<@NotNull ? extends Registry<@NotNull T>> registry, StreamCodec<? super ByteBuf, @NotNull U> streamCodec) {
+		public static <T, U> StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<? extends @NotNull Registry<@NotNull T>> registry, StreamCodec<? super ByteBuf, @NotNull U> streamCodec) {
 			return StreamCodec.composite(ByteBufCodecs.holderSet(registry).map(holders -> (HolderSet.Direct<@NotNull T>) holders, holders -> holders), RegistryConfigDataWrapper::holders,
 			ByteBufCodecs.collection(ArrayList::new, TagKey.streamCodec(registry)), RegistryConfigDataWrapper::tagKeys,
 				streamCodec, RegistryConfigDataWrapper::configurableData,

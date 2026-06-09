@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_special_shielddecoration",
+  "banner": "#minecraft:banners",
+  "result": {
+    "id": "combatify:netherite_shield"
+  },
+  "target": "combatify:netherite_shield"
+}

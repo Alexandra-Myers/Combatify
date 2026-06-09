@@ -12,7 +12,6 @@ import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.gui.options.control.ControlValueFormatterImpls;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -20,14 +19,12 @@ import net.minecraft.util.TriState;
 
 public class CombatifySodiumConfig implements ConfigEntryPoint {
 	private static final Identifier COMBATIFY_ICON = Identifier.fromNamespaceAndPath("combatify", "textures/gui/config_icon.png");
-	private final Options vanillaOpts;
 	private final StorageEventHandler vanillaStorage;
 
 	public CombatifySodiumConfig() {
 		Minecraft minecraft = Minecraft.getInstance();
-		this.vanillaOpts = minecraft.options;
 		this.vanillaStorage = () -> {
-			this.vanillaOpts.save();
+			minecraft.options.save();
 			SodiumClientMod.logger().info("Flushed changes to Minecraft configuration");
 		};
 	}

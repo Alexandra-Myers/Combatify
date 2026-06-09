@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_special_shielddecoration",
+  "banner": "#minecraft:banners",
+  "result": {
+    "id": "combatify:golden_shield"
+  },
+  "target": "combatify:golden_shield"
+}

@@ -1,6 +1,7 @@
 package net.atlas.combatify.util;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.function.TriFunction;
 
@@ -22,15 +23,15 @@ public class CombatUtil {
     /**
      * If target is not in reach (possibly due to ping) check if target's previous locations are in reach
      */
-    public static boolean allowReach(ServerPlayer attacker, ServerPlayer target, TriFunction<ServerPlayer, AABB, Double, Boolean> reachCheck) {
+    public static boolean allowReach(ServerPlayer attacker, ServerPlayer target, ItemStack itemStack, TriFunction<ItemStack, AABB, Double, Boolean> reachCheck) {
         MethodHandler.getCurrentAttackReach(attacker, 1F); // Force reach update
 
-        if (reachCheck.apply(attacker, target.getBoundingBox(), 0.75)) return true;
+        if (reachCheck.apply(itemStack, target.getBoundingBox(), 0.75)) return true;
 
         PlayerData victimData = PlayerData.get(target);
         for (AABB boundingBox : victimData.previousPositions) {
             if (boundingBox == null) continue;
-            if (reachCheck.apply(attacker, boundingBox, 0.75)) return true;
+            if (reachCheck.apply(itemStack, boundingBox, 0.75)) return true;
         }
 
         return false;

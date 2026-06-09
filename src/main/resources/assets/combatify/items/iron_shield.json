@@ -19,6 +19,30 @@
         "no_pattern": "combatify/iron_shield_base_nopattern"
       }
     },
-    "property": "minecraft:using_item"
+    "property": "minecraft:using_item",
+    "transformation": {
+      "left_rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "right_rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        1.0,
+        -1.0,
+        -1.0
+      ],
+      "translation": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
   }
 }

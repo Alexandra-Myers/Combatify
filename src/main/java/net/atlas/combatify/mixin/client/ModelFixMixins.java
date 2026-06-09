@@ -66,7 +66,7 @@ public class ModelFixMixins {
 		}
 	}
 	@Mixin(PiglinModel.class)
-	public static class PiglinModelFixMixin<T extends PiglinRenderState> extends AbstractPiglinModel<@NotNull T> {
+	public static abstract class PiglinModelFixMixin<T extends PiglinRenderState> extends AbstractPiglinModel<@NotNull T> {
 
 		public PiglinModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
@@ -89,7 +89,7 @@ public class ModelFixMixins {
 		}
 	}
 	@Mixin(ZombifiedPiglinModel.class)
-	public static class ZombifiedPiglinModelFixMixin<T extends ZombifiedPiglinRenderState> extends AbstractPiglinModel<@NotNull T> {
+	public static abstract class ZombifiedPiglinModelFixMixin<T extends ZombifiedPiglinRenderState> extends AbstractPiglinModel<@NotNull T> {
 		public ZombifiedPiglinModelFixMixin(ModelPart modelPart) {
 			super(modelPart);
 		}

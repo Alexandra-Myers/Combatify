@@ -35,7 +35,7 @@ public abstract class ThrownTridentMixin extends AbstractArrow {
 	@Shadow
 	private boolean dealtDamage;
 
-	protected ThrownTridentMixin(EntityType<@NotNull ? extends AbstractArrow> entityType, Level level) {
+	protected ThrownTridentMixin(EntityType<? extends @NotNull AbstractArrow> entityType, Level level) {
 		super(entityType, level);
 	}
 

@@ -157,6 +157,7 @@ public class Combatify implements ModInitializer {
 				|| itemStack.get(CustomDataComponents.PIERCING_LEVEL) != null
 				|| itemStack.get(CustomDataComponents.CHARGED_REACH) != null);
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, packetContext) -> {
+				if (packetContext == null) return itemStack1;
 				ServerPlayer player = packetContext.get(PacketContext.SERVER_INSTANCE).getPlayerList().getPlayer(packetContext.get(PacketContext.GAME_PROFILE).id());
 				if (player == null || moddedPlayers.contains(player.getUUID())) {
 					if (itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA)) itemStack1.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA));

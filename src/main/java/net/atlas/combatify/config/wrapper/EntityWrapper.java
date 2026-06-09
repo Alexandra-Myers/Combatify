@@ -41,7 +41,7 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	}
 
 	public final boolean matchesTag(String tag) {
-		return value.getType().is(TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tag)));
+		return value.is(TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tag)));
 	}
 
 	public final UUID getUUID() {

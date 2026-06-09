@@ -73,7 +73,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
 		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
 	}
-	public PlayerMixin(EntityType<@NotNull ? extends LivingEntity> entityType, Level level) {
+	public PlayerMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
@@ -113,9 +113,6 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@Shadow
 	public abstract void resetOnlyAttackStrengthTicker();
-
-	@Shadow
-	public abstract void lungeForwardMaybe();
 
 	@Shadow
 	protected abstract float baseDamageScaleFactor();
@@ -269,7 +266,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		bl3.set(Combatify.CONFIG.getCritImpl().runCrit(player, target, (strengthAppliesToEnchants ? (combinedDamage) : new LocalFloatRef() {
 			@Override
 			public float get() {
-				return finalAttackDamage.getValue();
+				return finalAttackDamage.floatValue();
 			}
 
 			@Override
@@ -277,7 +274,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 				finalAttackDamage.setValue(v);
 			}
 		})));
-		if (!strengthAppliesToEnchants) combinedDamage.set(finalAttackDamage.getValue() + enchantDamage);
+		if (!strengthAppliesToEnchants) combinedDamage.set(finalAttackDamage.floatValue() + enchantDamage);
 	}
 
 	@WrapOperation(method = "onAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetOnlyAttackStrengthTicker()V"))
@@ -334,7 +331,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 			combatify$customSwing(InteractionHand.MAIN_HAND);
 			MethodHandler.tryAirSweep(player);
 			this.combatify$resetAttackStrengthTicker(false);
-			lungeForwardMaybe();
+			postPiercingAttack();
 		}
 	}
 	@Override

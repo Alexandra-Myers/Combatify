@@ -2,10 +2,8 @@ package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.item.enchantment.ConditionalEffect;
 import net.minecraft.world.item.enchantment.EnchantmentTarget;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.Optional;
@@ -17,7 +15,7 @@ public record PostBlockEffectWrapper(EnchantmentTarget affected, PostBlockEffect
 		instance -> instance.group(
 				EnchantmentTarget.CODEC.optionalFieldOf("affected", EnchantmentTarget.ATTACKER).forGetter(PostBlockEffectWrapper::affected),
 				PostBlockEffects.CODEC.fieldOf("effect").forGetter(PostBlockEffectWrapper::effect),
-				ConditionalEffect.conditionCodec(LootContextParamSets.ENCHANTED_DAMAGE).optionalFieldOf("requirements").forGetter(PostBlockEffectWrapper::requirements)
+				LootItemCondition.DIRECT_CODEC.optionalFieldOf("requirements").forGetter(PostBlockEffectWrapper::requirements)
 			)
 			.apply(instance, PostBlockEffectWrapper::new)
 	);
