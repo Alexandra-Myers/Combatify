@@ -24,7 +24,7 @@ public class ClientNetworkingHandler {
 				livingEntity.combatify$setUseItemRemaining(packet.ticks());
 		});
 		ClientConfigurationNetworking.registerGlobalReceiver(NetworkingHandler.ClientboundClientInformationRetrievalPacket.TYPE, (packet, sender) -> {
-			sender.responseSender().sendPacket(ClientPlayNetworking.createC2SPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));
+			sender.responseSender().sendPacket(ClientPlayNetworking.createServerboundPacket(new NetworkingHandler.ServerboundClientInformationExtensionPacket(CombatifyClient.shieldCrouch.get())));
 			connectionState = ConnectionState.CONFIGURATION;
 		});
 		ClientPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel, (handler, sender, client) -> {

@@ -334,7 +334,7 @@ public class MethodHandler {
 						getCooldowns(target).addCooldown(new ItemStack(shield), ticks);
 
 			target.stopUsingItem();
-			blocksAttacks.disableSound().ifPresent((holder) -> serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(), holder, target.getSoundSource(), 0.8F, 0.8F + serverLevel.random.nextFloat() * 0.4F));
+			blocksAttacks.disableSound().ifPresent((holder) -> serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(), holder, target.getSoundSource(), 0.8F, 0.8F + serverLevel.getRandom().nextFloat() * 0.4F));
 		}
 	}
 	public static FakeUseItem getBlockingItem(LivingEntity entity) {

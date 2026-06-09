@@ -87,7 +87,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public abstract float getCurrentItemAttackStrengthDelay();
 
 	@Shadow
-	public abstract void attack(Entity entity);
+	public abstract void attack(Entity entity); // Only place where this is implemented now btw
 
 	@Shadow
 	public abstract double entityInteractionRange();

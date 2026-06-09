@@ -22,12 +22,12 @@ import static net.atlas.combatify.Combatify.*;
 public class NetworkingHandler {
 
 	public NetworkingHandler() {
-		PayloadTypeRegistry.playC2S().register(ServerboundMissPacket.TYPE, ServerboundMissPacket.CODEC);
-		PayloadTypeRegistry.playC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
-		PayloadTypeRegistry.configurationC2S().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
-		PayloadTypeRegistry.playS2C().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
-		PayloadTypeRegistry.playS2C().register(UpdateBridgingStatusPacket.TYPE, UpdateBridgingStatusPacket.CODEC);
-		PayloadTypeRegistry.configurationS2C().register(ClientboundClientInformationRetrievalPacket.TYPE, ClientboundClientInformationRetrievalPacket.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(ServerboundMissPacket.TYPE, ServerboundMissPacket.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
+		PayloadTypeRegistry.serverboundConfiguration().register(ServerboundClientInformationExtensionPacket.TYPE, ServerboundClientInformationExtensionPacket.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(RemainingUseSyncPacket.TYPE, RemainingUseSyncPacket.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(UpdateBridgingStatusPacket.TYPE, UpdateBridgingStatusPacket.CODEC);
+		PayloadTypeRegistry.clientboundConfiguration().register(ClientboundClientInformationRetrievalPacket.TYPE, ClientboundClientInformationRetrievalPacket.CODEC);
 		ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
 			if (ServerConfigurationNetworking.canSend(handler, ClientboundClientInformationRetrievalPacket.TYPE))
 				handler.addTask(new ClientRetrievalTask());
@@ -48,8 +48,8 @@ public class NetworkingHandler {
 			player.combatify$attackAir();
 		});
 		ServerConfigurationNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> {
-			context.networkHandler().combatify$setShieldOnCrouch(payload.useShieldOnCrouch);
-			context.networkHandler().completeTask(ClientRetrievalTask.TYPE);
+			context.packetListener().combatify$setShieldOnCrouch(payload.useShieldOnCrouch);
+			context.packetListener().completeTask(ClientRetrievalTask.TYPE);
 		});
 		ServerPlayNetworking.registerGlobalReceiver(ServerboundClientInformationExtensionPacket.TYPE, (payload, context) -> context.player().connection.getPlayer().combatify$setShieldOnCrouch(payload.useShieldOnCrouch));
 		ServerPlayConnectionEvents.JOIN.register(modDetectionNetworkChannel,(handler, sender, server) -> {
@@ -133,8 +133,9 @@ public class NetworkingHandler {
 
 		@Override
 		public void start(Consumer<Packet<?>> sender) {
-			sender.accept(ServerConfigurationNetworking.createS2CPacket(new ClientboundClientInformationRetrievalPacket()));
+			sender.accept(ServerConfigurationNetworking.createClientboundPacket(new ClientboundClientInformationRetrievalPacket()));
 		}
+
 
 		@Override
 		public @NotNull Type type() {
