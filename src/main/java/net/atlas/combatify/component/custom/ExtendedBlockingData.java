@@ -5,22 +5,16 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.util.MethodHandler;
-import net.atlas.combatify.util.blocking.BlockingType;
-import net.atlas.combatify.util.blocking.BlockingTypeInit;
-import net.atlas.combatify.util.blocking.ComponentModifier;
+import net.atlas.combatify.util.blocking.*;
 import net.atlas.combatify.util.blocking.ComponentModifier.CombinedModifier;
-import net.atlas.combatify.util.blocking.ComponentModifier.DataSet;
 import net.atlas.combatify.util.blocking.condition.*;
-import net.atlas.combatify.util.blocking.damage_parsers.DamageParser;
-import net.atlas.combatify.util.blocking.damage_parsers.PercentageBase;
-import net.atlas.combatify.util.blocking.damage_parsers.Nullify;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffectWrapper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -28,7 +22,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -38,6 +31,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -48,58 +42,72 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
 import static net.atlas.combatify.util.MethodHandler.arrowDisable;
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 
-public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, ResourceLocation blockingTypeLocation, float useSeconds,
-					  float disableCooldownScale, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition,
-					  ItemDamageFunction itemDamage) {
-	public static final Blocker EMPTY = new Blocker(Collections.emptyList(), new Tooltip(Collections.emptyList(), Collections.emptyList(), false), ResourceLocation.withDefaultNamespace("empty"), 0, 1, PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()), ItemDamageFunction.DEFAULT);
-	public static final Blocker VANILLA_SHIELD = new Blocker(Collections.singletonList(Nullify.NULLIFY_ALL), new Tooltip(Collections.emptyList(), Collections.emptyList(), true), ResourceLocation.withDefaultNamespace("shield"), 3600, 1, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE, new ItemDamageFunction(3, 0, 1));
-	public static final Blocker NEW_SHIELD = new Blocker(List.of(PercentageBase.IGNORE_EXPLOSIONS_AND_PROJECTILES, Nullify.NULLIFY_EXPLOSIONS_AND_PROJECTILES), new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK), true), ResourceLocation.withDefaultNamespace("new_shield"), 3600, 1, PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE, ItemDamageFunction.DEFAULT);
-	public static final Codec<Blocker> CODEC = RecordCodecBuilder.create(instance ->
-	instance.group(DamageParser.CODEC.listOf().fieldOf("damage_parsers").forGetter(Blocker::damageParsers),
-			Tooltip.CODEC.forGetter(Blocker::tooltip),
-			BlockingType.ID_CODEC.fieldOf("type").forGetter(Blocker::blockingTypeLocation),
-			Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("seconds", 3600F).forGetter(Blocker::useSeconds),
-			Codec.floatRange(0, Float.MAX_VALUE).optionalFieldOf("disable_cooldown_scale", 1.0F).forGetter(Blocker::disableCooldownScale),
-			PostBlockEffectWrapper.CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(Blocker::postBlockEffect),
-			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(Blocker::blockingCondition),
-			ItemDamageFunction.CODEC.optionalFieldOf("item_damage", ItemDamageFunction.DEFAULT).forGetter(Blocker::itemDamage))
-		.apply(instance, Blocker::new));
+public record ExtendedBlockingData(BaseBlocksAttacks baseBlocksAttacks,
+								   Tooltip tooltip,
+								   ResourceLocation blockingTypeLocation,
+								   PostBlockEffectWrapper postBlockEffect,
+								   BlockingCondition blockingCondition,
+								   List<DamageReduction> bannerReductions) {
+	public ExtendedBlockingData(BaseBlocksAttacks baseBlocksAttacks, Tooltip tooltip, ResourceLocation blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
+		this(baseBlocksAttacks, tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, Collections.emptyList());
+	}
+	public static final ExtendedBlockingData EMPTY = new ExtendedBlockingData(new BaseBlocksAttacks(Collections.emptyList(), 0, 1, ItemDamageFunction.DEFAULT), new Tooltip(Collections.emptyList(), Collections.emptyList()), ResourceLocation.withDefaultNamespace("empty"), PostBlockEffectWrapper.DEFAULT, new AnyOf(Collections.emptyList()));
+	public static final ExtendedBlockingData VANILLA_SHIELD = new ExtendedBlockingData(new BaseBlocksAttacks(Collections.singletonList(DamageReduction.DEFAULT), 3600, 1, new ItemDamageFunction(3, 0, 1)), new Tooltip(Collections.emptyList(), Collections.emptyList()), ResourceLocation.withDefaultNamespace("shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final ExtendedBlockingData NEW_SHIELD = new ExtendedBlockingData(new BaseBlocksAttacks(Collections.emptyList(), 3600, 1, ItemDamageFunction.DEFAULT), new Tooltip(Collections.singletonList(BlockingTypeInit.NEW_SHIELD_PROTECTION), Collections.singletonList(BlockingTypeInit.NEW_SHIELD_KNOCKBACK)), ResourceLocation.withDefaultNamespace("new_shield"), PostBlockEffectWrapper.KNOCKBACK, Unconditional.INSTANCE);
+	public static final Codec<ExtendedBlockingData> CODEC = RecordCodecBuilder.create(instance ->
+	instance.group(BaseBlocksAttacks.CODEC.forGetter(ExtendedBlockingData::baseBlocksAttacks),
+			Tooltip.CODEC.forGetter(ExtendedBlockingData::tooltip),
+			BlockingType.ID_CODEC.fieldOf("type").forGetter(ExtendedBlockingData::blockingTypeLocation),
+			PostBlockEffectWrapper.CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(ExtendedBlockingData::postBlockEffect),
+			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(ExtendedBlockingData::blockingCondition),
+			DamageReduction.CODEC.listOf().fieldOf("banner_damage_reductions").forGetter(ExtendedBlockingData::bannerReductions))
+		.apply(instance, ExtendedBlockingData::new));
 
-	public static final StreamCodec<RegistryFriendlyByteBuf, Blocker> STREAM_CODEC = StreamCodec.composite(
-		ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.fromCodecTrusted(DamageParser.CODEC)),
-		Blocker::damageParsers,
+	public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
+		BaseBlocksAttacks.STREAM_CODEC,
+		ExtendedBlockingData::baseBlocksAttacks,
 		ByteBufCodecs.fromCodecTrusted(Tooltip.CODEC.codec()),
-		Blocker::tooltip,
+		ExtendedBlockingData::tooltip,
 		ResourceLocation.STREAM_CODEC,
-		Blocker::blockingTypeLocation,
-		ByteBufCodecs.FLOAT,
-		Blocker::useSeconds,
+		ExtendedBlockingData::blockingTypeLocation,
 		ByteBufCodecs.fromCodecWithRegistriesTrusted(PostBlockEffectWrapper.CODEC.codec()),
-		Blocker::postBlockEffect,
+		ExtendedBlockingData::postBlockEffect,
 		BlockingCondition.STREAM_CODEC,
-		Blocker::blockingCondition,
-		(damageParsers1, tooltip1, blockingTypeLocation1, useSeconds1, postBlockEffect1, blockingCondition1) -> new Blocker(damageParsers1, tooltip1, blockingTypeLocation1, useSeconds1, 1, postBlockEffect1, blockingCondition1, ItemDamageFunction.DEFAULT)
+		ExtendedBlockingData::blockingCondition,
+		DamageReduction.STREAM_CODEC.apply(ByteBufCodecs.list()),
+		ExtendedBlockingData::bannerReductions,
+		ExtendedBlockingData::new
 	);
 
-	public Blocker withProtection(List<CombinedModifier> protection) {
-		return new Blocker(damageParsers, new Tooltip(protection, tooltip.knockbackModifiers, tooltip.markBlocked), blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
+	public ExtendedBlockingData withProtection(List<CombinedModifier> protection) {
+		return new ExtendedBlockingData(baseBlocksAttacks, new Tooltip(protection, tooltip.knockbackModifiers), blockingTypeLocation, postBlockEffect, blockingCondition, bannerReductions);
 	}
 
-	public Blocker withKnockback(List<ComponentModifier> knockback) {
-		return new Blocker(damageParsers, new Tooltip(tooltip.protectionModifiers, knockback, tooltip.markBlocked), blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
+	public ExtendedBlockingData withKnockback(List<ComponentModifier> knockback) {
+		return new ExtendedBlockingData(baseBlocksAttacks, new Tooltip(tooltip.protectionModifiers, knockback), blockingTypeLocation, postBlockEffect, blockingCondition, bannerReductions);
 	}
 
-	public Blocker withDisableCooldownScale(float disableCooldownScale) {
-		return new Blocker(damageParsers, tooltip, blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
+	public ExtendedBlockingData withDisableCooldownScale(float disableCooldownScale) {
+		return new ExtendedBlockingData(new BaseBlocksAttacks(baseBlocksAttacks.damageReductions(), baseBlocksAttacks.useSeconds(), disableCooldownScale, baseBlocksAttacks.itemDamage()), tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, bannerReductions);
 	}
 
-	public Blocker withItemDamageFunction(Blocker.ItemDamageFunction itemDamage) {
-		return new Blocker(damageParsers, tooltip, blockingTypeLocation, useSeconds, disableCooldownScale, postBlockEffect, blockingCondition, itemDamage);
+	public ExtendedBlockingData withItemDamageFunction(ItemDamageFunction itemDamage) {
+		return new ExtendedBlockingData(new BaseBlocksAttacks(baseBlocksAttacks.damageReductions(), baseBlocksAttacks.useSeconds(), baseBlocksAttacks.disableCooldownScale(), itemDamage), tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, bannerReductions);
+	}
+
+	public ExtendedBlockingData withDamageReductions(List<DamageReduction> reductions) {
+		return new ExtendedBlockingData(new BaseBlocksAttacks(reductions, baseBlocksAttacks.useSeconds(), baseBlocksAttacks.disableCooldownScale(), baseBlocksAttacks.itemDamage()), tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, bannerReductions);
+	}
+
+	public ExtendedBlockingData withBlocksAttacks(Float blockDelaySeconds, Float disableCooldownScale, List<DamageReduction> damageReductions, ItemDamageFunction itemDamage) {
+		return new ExtendedBlockingData(new BaseBlocksAttacks(damageReductions, blockDelaySeconds, disableCooldownScale, itemDamage), tooltip, blockingTypeLocation, postBlockEffect, blockingCondition, bannerReductions);
 	}
 
 	public BlockingType blockingType() {
@@ -116,11 +124,11 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			postBlockEffect.effect().doEffect(serverLevel, new EnchantedItemInUse(blockingItem, equipmentSlot, target), attacker, damageSource, 1, applicable, applicable.position());
 		}
 		CustomEnchantmentHelper.applyPostBlockedEffects(serverLevel, target, attacker, damageSource);
-		MethodHandler.disableShield(attacker, target, damageSource, blockingItem, disableCooldownScale);
+		MethodHandler.disableShield(attacker, target, damageSource, blockingItem, baseBlocksAttacks.disableCooldownScale());
 	}
 
 	public int useTicks() {
-		return (int) (useSeconds * 20.0F);
+		return (int) (baseBlocksAttacks.useSeconds() * 20.0F);
 	}
 
 	public void block(ServerLevel serverLevel, LivingEntity instance, DamageSource source, ItemStack itemStack, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef blocked) {
@@ -128,24 +136,31 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			if (getBlockingType(itemStack).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && itemStack.getUseDuration(instance) - instance.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay()) {
 				if (Combatify.CONFIG.disableDuringShieldDelay())
 					if (source.getDirectEntity() instanceof LivingEntity attacker)
-						MethodHandler.disableShield(attacker, instance, source, itemStack, disableCooldownScale);
+						MethodHandler.disableShield(attacker, instance, source, itemStack, baseBlocksAttacks.disableCooldownScale());
 				return;
 			}
 			completeBlock(serverLevel, instance, itemStack, source, amount, protectedDamage, blocked);
 		}
 	}
+
 	public void completeBlock(ServerLevel serverLevel, LivingEntity instance, ItemStack blockingItem, DamageSource source, LocalFloatRef amount, LocalFloatRef protectedDamage, LocalBooleanRef wasBlocked) {
-		int blockingLevel = blockingItem.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
-		DataSet protection = new DataSet(0, 0);
-		List<CombinedModifier> intermediaryProtection = tooltip.protectionModifiers().stream().filter(combinedModifier -> combinedModifier.matches(blockingItem)).toList();
-		if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombineVal(intermediaryProtection, blockingLevel, instance.getRandom());
-		final DataSet endProtection = CustomEnchantmentHelper.modifyShieldEffectiveness(blockingItem, instance.getRandom(), protection);
+		double angle;
+		Vec3 sourcePosition = source.getSourcePosition();
+		if (sourcePosition != null) {
+			Vec3 viewVector = instance.calculateViewVector(0.0F, instance.getYHeadRot());
+			Vec3 dirToAttacked = sourcePosition.vectorTo(instance.position());
+			dirToAttacked = new Vec3(dirToAttacked.x, 0.0F, dirToAttacked.z).normalize();
+			angle = Math.acos(dirToAttacked.dot(viewVector));
+		} else angle = 0;
 		float oldAmount = amount.get();
-		damageParsers.forEach(damageParserConditionalEffect -> {
-			protectedDamage.set(damageParserConditionalEffect.parse(amount.get(), endProtection, source.typeHolder()));
-			amount.set(Math.max(amount.get() - protectedDamage.get(), 0));
-		});
-		MethodHandler.hurtCurrentlyUsedShield(instance, oldAmount - amount.get(), itemDamage);
+		baseBlocksAttacks().damageReductions().forEach(damageReduction ->
+			amount.set(Math.max(amount.get() - damageReduction.resolve(source, amount.get(), angle), 0)));
+		BannerPatternLayers bannerPatternLayers = blockingItem.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+		DyeColor dyeColor = blockingItem.get(DataComponents.BASE_COLOR);
+		if (!bannerReductions.isEmpty() && (!bannerPatternLayers.layers().isEmpty() || dyeColor != null))
+			bannerReductions.forEach(damageReduction ->
+				amount.set(Math.max(amount.get() - damageReduction.resolve(source, amount.get(), angle), 0)));
+		MethodHandler.hurtCurrentlyUsedShield(instance, oldAmount - amount.get(), baseBlocksAttacks().itemDamage());
 		if (source.getDirectEntity() instanceof LivingEntity livingEntity)
 			MethodHandler.blockedByShield(serverLevel, instance, livingEntity, source);
 		switch (source.getDirectEntity()) {
@@ -157,7 +172,8 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 				// Do nothing
 			}
 		}
-		wasBlocked.set(tooltip.markBlocked);
+		protectedDamage.set(oldAmount - amount.get());
+		wasBlocked.set(amount.get() <= 0);
 	}
 
 	public InteractionResult use(ItemStack itemStack, Level level, Player user, InteractionHand hand, InteractionResult original) {
@@ -180,11 +196,11 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 	public boolean canOverrideUseDurationAndAnimation(ItemStack itemStack) {
 		return blockingCondition.overridesUseDurationAndAnimation(itemStack);
 	}
-	public record Tooltip(List<CombinedModifier> protectionModifiers, List<ComponentModifier> knockbackModifiers, boolean markBlocked) {
+
+	public record Tooltip(List<CombinedModifier> protectionModifiers, List<ComponentModifier> knockbackModifiers) {
 		public static MapCodec<Tooltip> CODEC = RecordCodecBuilder.mapCodec(instance ->
 			instance.group(CombinedModifier.CODEC.listOf().fieldOf("protection_modifiers").forGetter(Tooltip::protectionModifiers),
-				ComponentModifier.CODEC.listOf().optionalFieldOf("knockback_modifiers", Collections.emptyList()).forGetter(Tooltip::knockbackModifiers),
-				Codec.BOOL.fieldOf("mark_blocked").forGetter(Tooltip::markBlocked))
+				ComponentModifier.CODEC.listOf().optionalFieldOf("knockback_modifiers", Collections.emptyList()).forGetter(Tooltip::knockbackModifiers))
 			.apply(instance, Tooltip::new));
 		public void appendTooltipInfo(Consumer<Component> writer, Player player, ItemStack stack) {
 			List<Component> protection = Collections.emptyList();
@@ -205,29 +221,6 @@ public record Blocker(List<DamageParser> damageParsers, Tooltip tooltip, Resourc
 			MutableFloat knockbackResistance = new MutableFloat(0);
 			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.getValue(), blockingLevel, randomSource)));
 			return knockbackResistance.getValue();
-		}
-	}
-
-	public record ItemDamageFunction(float threshold, float base, float factor) {
-		public static final Codec<ItemDamageFunction> CODEC = RecordCodecBuilder.create(
-			i -> i.group(Codec.floatRange(0, Float.MAX_VALUE).fieldOf("threshold").forGetter(ItemDamageFunction::threshold),
-				 Codec.FLOAT.fieldOf("base").forGetter(ItemDamageFunction::base),
-				 Codec.FLOAT.fieldOf("factor").forGetter(ItemDamageFunction::factor))
-			 .apply(i, ItemDamageFunction::new)
-		);
-		public static final StreamCodec<ByteBuf, ItemDamageFunction> STREAM_CODEC = StreamCodec.composite(
-			ByteBufCodecs.FLOAT,
-			ItemDamageFunction::threshold,
-			ByteBufCodecs.FLOAT,
-			ItemDamageFunction::base,
-			ByteBufCodecs.FLOAT,
-			ItemDamageFunction::factor,
-			ItemDamageFunction::new
-		);
-		public static final ItemDamageFunction DEFAULT = new ItemDamageFunction(1.0F, 0.0F, 1.0F);
-
-		public int apply(final float dealtDamage) {
-			return dealtDamage < this.threshold ? 0 : Mth.floor(this.base + this.factor * dealtDamage);
 		}
 	}
 }

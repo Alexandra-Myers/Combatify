@@ -13,11 +13,13 @@
         ]
       },
       "patch": {
-        "combatify:blocker": {
+        "combatify:extended_blocking_data": {
           "type": "shield",
-          "damage_parsers": [
+          "damage_reductions": [
             {
-              "type": "nullify"
+              "base": 0,
+              "factor": 1,
+              "horizontal_blocking_angle": 90
             }
           ],
           "protection_modifiers": [],

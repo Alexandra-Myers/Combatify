@@ -8,7 +8,8 @@ import net.atlas.atlascore.util.ArrayListExtensions;
 import net.atlas.atlascore.util.PrefixLogger;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.CustomEnchantmentEffectComponents;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
+import net.atlas.combatify.component.generators.BlocksAttacksGenerator;
 import net.atlas.combatify.component.generators.WeaponStatsGenerator;
 import net.atlas.combatify.config.CombatifyGeneralConfig;
 import net.atlas.combatify.config.ItemConfig;
@@ -150,10 +151,10 @@ public class Combatify implements ModInitializer {
 		ItemSubPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.BLOCKER) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
+			PolymerItemUtils.ITEM_CHECK.register(itemStack -> isPatched(itemStack.getItem()) || itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA) || itemStack.has(CustomDataComponents.CAN_SWEEP) || itemStack.has(CustomDataComponents.BLOCKING_LEVEL) || itemStack.has(CustomDataComponents.PIERCING_LEVEL) || itemStack.has(CustomDataComponents.CHARGED_REACH));
 			PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack, itemStack1, player) -> {
 				if (player == null || moddedPlayers.contains(player.getUUID())) {
-					if (itemStack.has(CustomDataComponents.BLOCKER)) itemStack1.set(CustomDataComponents.BLOCKER, itemStack.get(CustomDataComponents.BLOCKER));
+					if (itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA)) itemStack1.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA));
 					if (itemStack.has(CustomDataComponents.CAN_SWEEP)) itemStack1.set(CustomDataComponents.CAN_SWEEP, itemStack.get(CustomDataComponents.CAN_SWEEP));
 					if (itemStack.has(CustomDataComponents.BLOCKING_LEVEL)) itemStack1.set(CustomDataComponents.BLOCKING_LEVEL, itemStack.get(CustomDataComponents.BLOCKING_LEVEL));
 					if (itemStack.has(CustomDataComponents.PIERCING_LEVEL)) itemStack1.set(CustomDataComponents.PIERCING_LEVEL, itemStack.get(CustomDataComponents.PIERCING_LEVEL));
@@ -172,7 +173,7 @@ public class Combatify implements ModInitializer {
 			modifyContext.modify(Items.IRON_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 3));
 			modifyContext.modify(Items.DIAMOND_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 4));
 			modifyContext.modify(Items.NETHERITE_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 5));
-			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.BLOCKER, Blocker.VANILLA_SHIELD));
+			modifyContext.modify(Items.SHIELD, builder -> builder.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, ExtendedBlockingData.VANILLA_SHIELD));
 		});
 		if (CONFIG.configOnlyWeapons()) {
 			ItemRegistry.registerWeapons();
@@ -187,6 +188,7 @@ public class Combatify implements ModInitializer {
 		}
 
 		DefaultedRegistries.registerPatchGenerator("combat_test_weapon_stats", WeaponStatsGenerator.CODEC);
+		DefaultedRegistries.registerPatchGenerator("modify_extended_blocking_data", BlocksAttacksGenerator.CODEC);
 		ModContainer modContainer = FabricLoader.getInstance().getModContainer("combatify").get();
 		ResourceManagerHelper.registerBuiltinResourcePack(id("alternate_mace"), modContainer, Component.translatable("pack.combatify.alternate_mace"), ResourcePackActivationType.NORMAL);
 		ResourceManagerHelper.registerBuiltinResourcePack(id("combatify_extras"), modContainer, Component.translatable("pack.combatify.combatify_extras"), CONFIG.configOnlyWeapons() || CONFIG.tieredShields() ? ResourcePackActivationType.ALWAYS_ENABLED : ResourcePackActivationType.NORMAL);

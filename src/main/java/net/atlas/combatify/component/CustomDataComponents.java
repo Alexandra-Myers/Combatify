@@ -2,7 +2,7 @@ package net.atlas.combatify.component;
 
 import com.mojang.serialization.Codec;
 import eu.pb4.polymer.core.api.other.PolymerComponent;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.custom.CanSweep;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
@@ -18,8 +18,8 @@ import java.util.function.UnaryOperator;
 
 public class CustomDataComponents {
 	public static final List<ResourceLocation> combatifyComponents = new ArrayList<>();
-	public static DataComponentType<Blocker> BLOCKER = register(
-		"combatify:blocker", builder -> builder.persistent(Blocker.CODEC).networkSynchronized(Blocker.STREAM_CODEC)
+	public static DataComponentType<ExtendedBlockingData> EXTENDED_BLOCKING_DATA = register(
+		"combatify:extended_blocking_data", builder -> builder.persistent(ExtendedBlockingData.CODEC).networkSynchronized(ExtendedBlockingData.STREAM_CODEC)
 	);
 	public static DataComponentType<CanSweep> CAN_SWEEP = register(
 		"combatify:can_sweep", builder -> builder.persistent(CanSweep.CODEC).networkSynchronized(CanSweep.STREAM_CODEC)
@@ -41,7 +41,7 @@ public class CustomDataComponents {
 	}
 	public static void registerDataComponents() {
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerComponent.registerDataComponent(BLOCKER);
+			PolymerComponent.registerDataComponent(EXTENDED_BLOCKING_DATA);
 			PolymerComponent.registerDataComponent(CAN_SWEEP);
 			PolymerComponent.registerDataComponent(BLOCKING_LEVEL);
 			PolymerComponent.registerDataComponent(PIERCING_LEVEL);

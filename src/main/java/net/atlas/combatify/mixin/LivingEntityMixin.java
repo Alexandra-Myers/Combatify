@@ -183,19 +183,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	@ModifyReturnValue(method = "isDamageSourceBlocked", at = @At(value = "RETURN", ordinal = 0))
 	public boolean isDamageSourceBlocked(boolean original) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 180D || original;
-	}
-
-	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D"))
-	public double modifyDotResultToGetRadians(double original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
-        return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.acos(original) / -1;
-	}
-
-	@ModifyExpressionValue(method = "isDamageSourceBlocked", at = @At(value = "CONSTANT", args = "doubleValue=0.0", ordinal = 1))
-	public double modifyCompareValue(double original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
-		return Combatify.CONFIG.shieldProtectionArc() == 90D ? original : Math.toRadians(Combatify.CONFIG.shieldProtectionArc()) / -1;
+		return !MethodHandler.getBlocking(MethodHandler.getBlockingItem(thisEntity).stack()).blockingType().isEmpty() || original;
 	}
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {

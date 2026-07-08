@@ -1,20 +1,14 @@
 package net.atlas.combatify.util.blocking;
 
-import com.mojang.serialization.MapCodec;
-import net.atlas.combatify.Combatify;
 import net.atlas.combatify.criterion.ItemHasComponentPredicate;
 import net.atlas.combatify.criterion.ItemSubPredicateInit;
 import net.atlas.combatify.util.blocking.ComponentModifier.CombinedModifier;
 import net.atlas.combatify.util.blocking.condition.AnyOf;
 import net.atlas.combatify.util.blocking.condition.ItemMatches;
-import net.atlas.combatify.util.blocking.damage_parsers.*;
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.item.enchantment.effects.AddValue;
@@ -24,13 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static net.atlas.combatify.Combatify.defineDefaultBlockingType;
-import static net.minecraft.resources.ResourceKey.createRegistryKey;
 
 public class BlockingTypeInit {
-	public static final ResourceKey<Registry<MapCodec<? extends DamageParser>>> DAMAGE_PARSER_TYPE = createRegistryKey(Combatify.id("damage_parser"));
-	public static final Registry<MapCodec<? extends DamageParser>> DAMAGE_PARSER_TYPE_REG = FabricRegistryBuilder.createSimple(
-		DAMAGE_PARSER_TYPE
-	).buildAndRegister();
 	public static final CombinedModifier SHIELD_PROTECTION_WITHOUT_BANNER = CombinedModifier.createBaseOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")), new AddValue(LevelBasedValue.perLevel(5, 1)), 1), Optional.empty());
 	public static final List<CombinedModifier> SHIELD_PROTECTION = List.of(SHIELD_PROTECTION_WITHOUT_BANNER,
 		CombinedModifier.createBaseOnly(new ComponentModifier(Component.translatable("attribute.modifier.equals." + AttributeModifier.Operation.ADD_VALUE.id(), Component.translatableWithFallback("attribute.name.shield_strength", "Shield Strength")),
@@ -50,7 +39,6 @@ public class BlockingTypeInit {
 
 	public static final BlockingType EMPTY = BlockingType.builder().build("empty");
 	public static void init() {
-		DamageParser.bootstrap(DAMAGE_PARSER_TYPE_REG);
 		defineDefaultBlockingType(BlockingType.builder().setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("sword"));
 		defineDefaultBlockingType(BlockingType.builder().build("shield"));
 		defineDefaultBlockingType(BlockingType.builder().setKbMechanics(false).build("new_shield"));
