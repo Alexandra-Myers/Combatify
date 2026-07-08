@@ -155,7 +155,14 @@ public class MethodHandler {
 		if (player.level() instanceof ServerLevel serverLevel) {
 			float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
 			List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
-			DamageSource damageSource = player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player));
+			DamageSource damageSource =
+				player.getWeaponItem().getDamageSource(
+					player
+					// Default damage source param removed in 26.2
+					//? <26.2 {
+					/*, () -> player.damageSources().playerAttack(player)
+					*///?}
+				);
 
 			for (LivingEntity livingEntity : livingEntities) {
 				if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
@@ -170,7 +177,8 @@ public class MethodHandler {
 					continue;
 				float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
 				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
-					Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback);
+					// TODO: please check if damage is correct to pass here (i.e. should I reference enchantment effects?) Thanks
+					Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback, damage);
 					EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
 				}
 			}

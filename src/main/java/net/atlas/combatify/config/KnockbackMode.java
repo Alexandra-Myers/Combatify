@@ -1,8 +1,8 @@
 package net.atlas.combatify.config;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.SeptaConsumer;
 import net.atlas.combatify.util.MethodHandler;
-import net.atlas.combatify.util.QuadConsumer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +16,20 @@ public enum KnockbackMode {
 	CTS_8C,
 	CTS_5,
 	MIDAIR;
-	public void runKnockback(LivingEntity target, @Nullable DamageSource source, double strength, double x, double z, QuadConsumer<LivingEntity, Double, Double, Double> vanillaCall) {
+	public void runKnockback(
+		LivingEntity target,
+		@Nullable DamageSource source,
+		double strength,
+		double x,
+		double z
+		//? <26.2 {
+		/*, QuadConsumer<LivingEntity, Double, Double, Double> vanillaCall
+		*///?} >=26.2 {
+		, SeptaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
+		float damage,
+		boolean fromEffect
+		//?}
+	) {
 		boolean applyNonProjectileKB = false;
 		if (this == MIDAIR && source == null) applyNonProjectileKB = true;
 		else if (source != null) applyNonProjectileKB = (Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook);
@@ -30,10 +43,32 @@ public enum KnockbackMode {
 				else MethodHandler.knockback(target, strength, x, z);
 			}
 			case CTS_5 -> MethodHandler.combatTest5Knockback(target, strength, x, z);
-			case VANILLA -> vanillaCall.accept(target, strength, x, z);
+			//? <26.2 {
+			/*case VANILLA -> vanillaCall.accept(target, strength, x, z);
+			*///?} >=26.2 {
+			case VANILLA -> vanillaCall.accept(target, strength, x, z, source, damage, fromEffect);
+			//?}
 			case OLD -> MethodHandler.oldKnockback(target, strength, x, z);
 		}
 	}
+
+	//? >=26.2 {
+	public void runKnockback(
+		LivingEntity target,
+		@Nullable DamageSource source,
+		double strength,
+		double x,
+		double z
+		//? <26.2 {
+		/*, QuadConsumer<LivingEntity, Double, Double, Double> vanillaCall
+		 *///?} >=26.2 {
+		, SeptaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
+		float damage
+		//?}
+	) {
+		runKnockback(target, source, strength, x, z, vanillaCall, damage, false);
+	}
+	//?}
 
 	public boolean usesKnockback(boolean original, Entity entity) {
 		return switch (this) {
