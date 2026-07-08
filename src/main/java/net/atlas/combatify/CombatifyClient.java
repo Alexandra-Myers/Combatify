@@ -19,7 +19,7 @@ import java.util.Objects;
 import static net.minecraft.client.Options.genericValueLabel;
 import static net.minecraft.client.Options.percentValueLabel;
 
-public class CombatifyClient implements ClientModInitializer {
+public class CombatifyClient {
 	public static final OptionInstance<@NotNull Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
 	public static final OptionInstance<@NotNull Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
 	public static final OptionInstance<@NotNull TriState> rhythmicAttacks = new OptionInstance<>(
@@ -127,8 +127,7 @@ public class CombatifyClient implements ClientModInitializer {
 			}
 	);
 
-	@Override
-	public void onInitializeClient() {
+	public static void init() {
 		Combatify.LOGGER.info("Client init started.");
 		ClientNetworkingHandler.init();
 		Combatify.markState(combatifyState::get);

@@ -28,7 +28,6 @@ import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
 import net.atlas.defaulted.DefaultComponentPatchesManager;
 import net.atlas.defaulted.component.ItemPatches;
 import net.atlas.defaulted.fabric.component.DefaultedRegistries;
-import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
@@ -44,7 +43,11 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
+//? >= 1.21.11 {
 import net.minecraft.resources.Identifier;
+//?} <1.21.11 {
+/*import net.minecraft.resources.ResourceLocation;
+*///?}
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -72,15 +75,14 @@ import java.util.function.Supplier;
 import static net.minecraft.world.item.Items.NETHERITE_SWORD;
 
 @SuppressWarnings("unused")
-public class Combatify implements ModInitializer {
+public class Combatify {
 	public static final String MOD_ID = "combatify";
 	public static final PrefixLogger LOGGER = new PrefixLogger(LogManager.getLogger("Combatify"));
 	public static final PrefixLogger JS_LOGGER = new PrefixLogger(LogManager.getLogger("Combatify|JavaScript"));
 	public static final Cleaner CLEANER = Cleaner.create();
 	public static CombatifyGeneralConfig CONFIG;
 	public static ItemConfig ITEMS;
-	public static Identifier modDetectionNetworkChannel = id("networking");
-	public NetworkingHandler networkingHandler;
+	public static NetworkingHandler networkingHandler;
 	private static Supplier<CombatifyState> state = Suppliers.memoize(() -> CombatifyState.COMBATIFY);
 	public static boolean isLoaded = false;
 	public static boolean mobConfigIsDirty = true;
@@ -90,9 +92,20 @@ public class Combatify implements ModInitializer {
 	public static final Map<Holder<@NotNull Item>, ItemAttributeModifiers> originalModifiers = Util.make(new Object2ObjectOpenHashMap<>(), object2ObjectOpenHashMap -> object2ObjectOpenHashMap.defaultReturnValue(ItemAttributeModifiers.EMPTY));
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
+
+	// The Identifier Section
+	//? >= 1.21.11 {
+	public static Identifier modDetectionNetworkChannel = id("networking");
 	public static final Map<Identifier, BlockingType> defaultTypes = new HashMap<>();
 	public static Map<Identifier, BlockingType> registeredTypes = new HashMap<>();
 	public static final Identifier CHARGED_REACH_ID = id("charged_reach");
+	//?} < 1.21.11 {
+	/*public static ResourceLocation modDetectionNetworkChannel = id("networking");
+	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
+	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
+	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
+	*///?}
+
 	public static final TagKey<@NotNull EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
 
 	public static void markState(Supplier<CombatifyState> state) {
@@ -103,9 +116,7 @@ public class Combatify implements ModInitializer {
 		return Combatify.state.get();
 	}
 
-	@Override
-	public void onInitialize() {
-		Combatify.CLEANER.register(this, Context::exit);
+	public static void init() {
 		isLoaded = true;
 		BlockingConditions.bootstrap();
 		PostBlockEffects.bootstrap();
@@ -117,7 +128,7 @@ public class Combatify implements ModInitializer {
 			return InteractionResult.PASS;
 		});
 		AttackBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, pos, direction) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID())) {
+			if (Combatify.unmoddedPlayers.contains(player.getUUID())) {
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 				HitResult hitResult = new BlockHitResult(Vec3.atCenterOf(pos), direction, pos, false);
 				hitResult = MethodHandler.redirectResult(player, hitResult);
@@ -129,22 +140,23 @@ public class Combatify implements ModInitializer {
 			return InteractionResult.PASS;
 		});
 		UseBlockCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, hitResult) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+			if (Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResult.PASS;
 		});
 		UseEntityCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand, entity, hitResult) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+			if (Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResult.PASS;
 		});
 		UseItemCallback.EVENT.register(modDetectionNetworkChannel, (player, world, hand) -> {
-			if(Combatify.unmoddedPlayers.contains(player.getUUID()))
+			if (Combatify.unmoddedPlayers.contains(player.getUUID()))
 				Combatify.isPlayerAttacking.put(player.getUUID(), false);
 			return InteractionResult.PASS;
 		});
 
 		LOGGER.info("Init started.");
+		//? fabric {
 		CustomDataComponents.registerDataComponents();
 		CustomEnchantmentEffectComponents.registerEnchantmentEffectComponents();
 		DataComponentPredicateInit.init();
@@ -160,18 +172,23 @@ public class Combatify implements ModInitializer {
 				if (packetContext == null) return itemStack1;
 				ServerPlayer player = packetContext.get(PacketContext.SERVER_INSTANCE).getPlayerList().getPlayer(packetContext.get(PacketContext.GAME_PROFILE).id());
 				if (player == null || moddedPlayers.contains(player.getUUID())) {
-					if (itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA)) itemStack1.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA));
-					if (itemStack.has(CustomDataComponents.CAN_SWEEP)) itemStack1.set(CustomDataComponents.CAN_SWEEP, itemStack.get(CustomDataComponents.CAN_SWEEP));
-					if (itemStack.has(CustomDataComponents.BLOCKING_LEVEL)) itemStack1.set(CustomDataComponents.BLOCKING_LEVEL, itemStack.get(CustomDataComponents.BLOCKING_LEVEL));
-					if (itemStack.has(CustomDataComponents.PIERCING_LEVEL)) itemStack1.set(CustomDataComponents.PIERCING_LEVEL, itemStack.get(CustomDataComponents.PIERCING_LEVEL));
-					if (itemStack.has(CustomDataComponents.CHARGED_REACH)) itemStack1.set(CustomDataComponents.CHARGED_REACH, itemStack.get(CustomDataComponents.CHARGED_REACH));
+					if (itemStack.has(CustomDataComponents.EXTENDED_BLOCKING_DATA))
+						itemStack1.set(CustomDataComponents.EXTENDED_BLOCKING_DATA, itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA));
+					if (itemStack.has(CustomDataComponents.CAN_SWEEP))
+						itemStack1.set(CustomDataComponents.CAN_SWEEP, itemStack.get(CustomDataComponents.CAN_SWEEP));
+					if (itemStack.has(CustomDataComponents.BLOCKING_LEVEL))
+						itemStack1.set(CustomDataComponents.BLOCKING_LEVEL, itemStack.get(CustomDataComponents.BLOCKING_LEVEL));
+					if (itemStack.has(CustomDataComponents.PIERCING_LEVEL))
+						itemStack1.set(CustomDataComponents.PIERCING_LEVEL, itemStack.get(CustomDataComponents.PIERCING_LEVEL));
+					if (itemStack.has(CustomDataComponents.CHARGED_REACH))
+						itemStack1.set(CustomDataComponents.CHARGED_REACH, itemStack.get(CustomDataComponents.CHARGED_REACH));
 				}
 				return itemStack1;
 			});
 		}
 		CombatifyItemTags.init();
 		if (CONFIG.dispensableTridents())
- 			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
+			DispenserBlock.registerProjectileBehavior(Items.TRIDENT);
 		DefaultItemComponentEvents.MODIFY.register(modDetectionNetworkChannel, (modifyContext) -> {
 			modifyContext.modify(Items.WOODEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 1));
 			modifyContext.modify(Items.GOLDEN_SWORD, builder -> builder.set(CustomDataComponents.BLOCKING_LEVEL, 1));
@@ -215,6 +232,7 @@ public class Combatify implements ModInitializer {
 			MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 			MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 		}
+		//?}
 	}
 
 	public static void setDurability(DataComponentPatch.Builder builder, @NotNull Item item, int value) {
@@ -222,13 +240,21 @@ public class Combatify implements ModInitializer {
 		builder.set(DataComponents.MAX_DAMAGE, value);
 		builder.set(DataComponents.MAX_STACK_SIZE, 1);
 	}
+
 	public static BlockingType registerBlockingType(BlockingType blockingType) {
 		Combatify.registeredTypes.put(blockingType.name(), blockingType);
 		return blockingType;
 	}
+
+	// Oh yeah baby
+	//? >=1.21.11 {
 	public static Identifier id(String path) {
 		return Identifier.fromNamespaceAndPath(MOD_ID, path);
 	}
+	//?} < 1.21.11 {
+	/*public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(MOD_ID, path); }
+	*///?}
+
 	public static void defineDefaultWeaponType(WeaponType type) {
 		defaultWeaponTypes.put(type.name(), type);
 	}
