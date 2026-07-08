@@ -56,10 +56,17 @@ public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue
 		if (optional.isPresent()) {
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration.calculate(enchantmentLevel), this.maxDuration.calculate(enchantmentLevel)) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier.calculate(enchantmentLevel), this.maxAmplifier.calculate(enchantmentLevel))));
-			if (optional.get().value().isInstantenous()) {
+			//? <26.2 {
+			/*if (optional.get().value().isInstantenous()) {
 				optional.get().value().applyInstantenousEffect(serverLevel, target, target, toApply, amp, 1);
 				return;
 			}
+			*///?} >=26.2 {
+			if (optional.get().value().isInstantaneous()) {
+				optional.get().value().applyInstantaneousEffect(serverLevel, target, target, toApply, amp, 1);
+				return;
+			}
+			//?}
 			toApply.addEffect(new MobEffectInstance(optional.get(), duration, amp));
 		}
 	}
