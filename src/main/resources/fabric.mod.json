@@ -17,10 +17,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-      "net.atlas.combatify.Combatify"
+      "net.atlas.combatify.fabric.CombatifyFabric"
     ],
 		"client": [
-      "net.atlas.combatify.CombatifyClient"
+      "net.atlas.combatify.fabric.client.CombatifyFabricClient"
     ],
     "sodium:config_api_user": [
       "net.atlas.combatify.compat.CombatifySodiumConfig"
