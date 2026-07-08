@@ -1,9 +1,8 @@
 package net.atlas.combatify.config;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.util.HeptaConsumer;
+import net.atlas.combatify.util.SeptaConsumer;
 import net.atlas.combatify.util.MethodHandler;
-import net.atlas.combatify.util.QuadConsumer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -26,7 +25,7 @@ public enum KnockbackMode {
 		//? <26.2 {
 		/*, QuadConsumer<LivingEntity, Double, Double, Double> vanillaCall
 		*///?} >=26.2 {
-		, HeptaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
+		, SeptaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
 		float damage
 		//?}
 	) {
