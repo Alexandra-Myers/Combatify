@@ -78,7 +78,6 @@
           "effect": {
             "type": "knockback_entity"
           },
-          "mark_blocked": true,
           "item_damage": {
             "threshold": 3,
             "base": 0,

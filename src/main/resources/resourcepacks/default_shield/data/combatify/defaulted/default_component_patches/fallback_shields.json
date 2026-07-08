@@ -169,7 +169,6 @@
             "type": "knockback_entity",
             "inverse_direction": true
           },
-          "mark_blocked": true,
           "item_damage": {
             "threshold": 3,
             "base": 0,
