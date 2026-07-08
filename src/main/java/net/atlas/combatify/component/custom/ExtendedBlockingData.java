@@ -67,7 +67,7 @@ public record ExtendedBlockingData(BaseBlocksAttacks baseBlocksAttacks,
 			BlockingType.ID_CODEC.fieldOf("type").forGetter(ExtendedBlockingData::blockingTypeLocation),
 			PostBlockEffectWrapper.CODEC.orElse(PostBlockEffectWrapper.KNOCKBACK).forGetter(ExtendedBlockingData::postBlockEffect),
 			BlockingConditions.MAP_CODEC.orElse(Unconditional.INSTANCE).forGetter(ExtendedBlockingData::blockingCondition),
-			DamageReduction.CODEC.listOf().fieldOf("banner_damage_reductions").forGetter(ExtendedBlockingData::bannerReductions))
+			DamageReduction.CODEC.listOf().optionalFieldOf("banner_damage_reductions", Collections.emptyList()).forGetter(ExtendedBlockingData::bannerReductions))
 		.apply(instance, ExtendedBlockingData::new));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
@@ -148,10 +148,10 @@ public record ExtendedBlockingData(BaseBlocksAttacks baseBlocksAttacks,
 		Vec3 sourcePosition = source.getSourcePosition();
 		if (sourcePosition != null) {
 			Vec3 viewVector = instance.calculateViewVector(0.0F, instance.getYHeadRot());
-			Vec3 dirToAttacked = sourcePosition.vectorTo(instance.position());
-			dirToAttacked = new Vec3(dirToAttacked.x, 0.0F, dirToAttacked.z).normalize();
-			angle = Math.acos(dirToAttacked.dot(viewVector));
-		} else angle = 0;
+			Vec3 vectorTo = sourcePosition.subtract(instance.position());
+			vectorTo = new Vec3(vectorTo.x, 0.0F, vectorTo.z).normalize();
+			angle = Math.acos(vectorTo.dot(viewVector));
+		} else angle = Math.PI;
 		float oldAmount = amount.get();
 		baseBlocksAttacks().damageReductions().forEach(damageReduction ->
 			amount.set(Math.max(amount.get() - damageReduction.resolve(source, amount.get(), angle), 0)));
