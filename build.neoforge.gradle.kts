@@ -196,6 +196,13 @@ dependencies {
     if (hasProperty("deps.forgified-fabric-loader")) compileOnly("org.sinytra:forgified-fabric-loader:${property("deps.forgified-fabric-loader")}")
     implementation("org.sinytra.forgified-fabric-api:forgified-fabric-api:${property("deps.forgified-fabric-api")}")
     api("me.shedaniel.cloth:cloth-config-neoforge:${property("deps.cloth-config")}")
+
+    implementation("maven.modrinth:sodium:${property("deps.sodium")}")
+    implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}")
+    implementation("maven.modrinth:defaulted:${property("deps.defaulted")}")
+    implementation("eu.pb4:polymer-core:${property("deps.polymer")}")
+    implementation("squeek.appleskin:appleskin-fabric:${property("deps.appleskin")}")
+    implementation("org.mozilla:rhino-all:${property("deps.rhino")}")
 }
 
 
