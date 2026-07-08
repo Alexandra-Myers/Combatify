@@ -27,10 +27,17 @@ public abstract class ArrowMixin extends AbstractArrow {
 	public void applyInstantaneousEffect(PotionContents instance, Consumer<MobEffectInstance> consumer, float f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) LivingEntity livingEntity) {
 		Arrow arrow = Arrow.class.cast(this);
 		original.call(instance, (Consumer<MobEffectInstance>) effectInstance -> {
-			if (effectInstance.getEffect().value().isInstantenous() && livingEntity.level() instanceof ServerLevel serverLevel) {
+			//? <26.2 {
+			/*if (effectInstance.getEffect().value().isInstantenous() && livingEntity.level() instanceof ServerLevel serverLevel) {
 				effectInstance.getEffect().value().applyInstantenousEffect(serverLevel, arrow, getEffectSource(), livingEntity, effectInstance.getAmplifier(), f);
 				return;
 			}
+			*///?} >=26.2 {
+			if (effectInstance.getEffect().value().isInstantaneous() && livingEntity.level() instanceof ServerLevel serverLevel) {
+				effectInstance.getEffect().value().applyInstantaneousEffect(serverLevel, arrow, getEffectSource(), livingEntity, effectInstance.getAmplifier(), f);
+				return;
+			}
+			//?}
 			consumer.accept(effectInstance);
 		}, f);
 	}
