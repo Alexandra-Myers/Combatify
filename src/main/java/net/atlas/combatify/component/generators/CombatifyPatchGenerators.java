@@ -10,6 +10,7 @@ public class CombatifyPatchGenerators {
 	private static final DeferredRegister<MapCodec<? extends PatchGenerator>> PATCH_GENERATOR_TYPES = DeferredRegister.create(Defaulted.PATCH_GENERATOR_TYPE, "defaulted");
 	public static void init(IEventBus eventBus) {
 		PATCH_GENERATOR_TYPES.register("combat_test_weapon_stats", () -> WeaponStatsGenerator.CODEC);
+		PATCH_GENERATOR_TYPES.register("modify_extended_blocking_data", () -> BlocksAttacksGenerator.CODEC);
 		PATCH_GENERATOR_TYPES.register(eventBus);
 	}
 }

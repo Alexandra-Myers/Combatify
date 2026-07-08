@@ -2,7 +2,7 @@ package net.atlas.combatify.component;
 
 import com.mojang.serialization.Codec;
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.custom.CanSweep;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -20,8 +20,8 @@ import java.util.function.UnaryOperator;
 public class CustomDataComponents {
 	private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, "combatify");
 	public static final List<ResourceLocation> combatifyComponents = new ArrayList<>();
-	public static DeferredHolder<DataComponentType<?>, DataComponentType<Blocker>> BLOCKER = register(
-		"blocker", builder -> builder.persistent(Blocker.CODEC).networkSynchronized(Blocker.STREAM_CODEC)
+	public static DeferredHolder<DataComponentType<?>, DataComponentType<ExtendedBlockingData>> EXTENDED_BLOCKING_DATA = register(
+		"extended_blocking_data", builder -> builder.persistent(ExtendedBlockingData.CODEC).networkSynchronized(ExtendedBlockingData.STREAM_CODEC)
 	);
 	public static DeferredHolder<DataComponentType<?>, DataComponentType<CanSweep>> CAN_SWEEP = register(
 		"can_sweep", builder -> builder.persistent(CanSweep.CODEC).networkSynchronized(CanSweep.STREAM_CODEC)

@@ -4,11 +4,13 @@
   ],
   "patch": {
     "!combatify:blocking_level": {},
-    "combatify:blocker": {
+    "combatify:extended_blocking_data": {
       "type": "sword",
-      "damage_parsers": [
+      "damage_reductions": [
         {
-          "type": "percentage_limit"
+          "base": -1,
+          "factor": 0.5,
+          "horizontal_blocking_angle": 73.8723797
         }
       ],
       "protection_modifiers": [

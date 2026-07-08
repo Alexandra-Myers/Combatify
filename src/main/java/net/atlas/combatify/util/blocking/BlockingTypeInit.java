@@ -1,11 +1,6 @@
 package net.atlas.combatify.util.blocking;
 
-import com.mojang.serialization.MapCodec;
-import net.atlas.combatify.Combatify;
-import net.atlas.combatify.criterion.ItemHasComponentPredicate;
-import net.atlas.combatify.criterion.ItemSubPredicateInit;
 import net.atlas.combatify.util.blocking.ComponentModifier.CombinedModifier;
-import net.atlas.combatify.util.blocking.damage_parsers.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
@@ -25,7 +20,6 @@ public class BlockingTypeInit {
 
 	public static final BlockingType EMPTY = BlockingType.builder().build("empty");
 	public static void init() {
-		DamageParser.bootstrap();
 		defineDefaultBlockingType(BlockingType.builder().setDisablement(false).setCrouchable(false).setBlockHit(true).setRequireFullCharge(false).setDelay(false).build("sword"));
 		defineDefaultBlockingType(BlockingType.builder().build("shield"));
 		defineDefaultBlockingType(BlockingType.builder().setKbMechanics(false).build("new_shield"));

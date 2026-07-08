@@ -103,7 +103,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private DoubleHolder fistDamage;
 	private DoubleHolder instantTippedArrowEffectMultiplier;
 	private DoubleHolder shieldDisableTime;
-	private DoubleHolder shieldProtectionArc;
 	private DoubleHolder baseHandAttackSpeed;
 	private DoubleHolder minHitboxSize;
 	private EnumHolder<EatingInterruptionMode> eatingInterruptionMode;
@@ -289,10 +288,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		shieldDisableTime.tieToCategory(defense);
 		shieldDisableTime.setupTooltip(1);
 		shieldDisableTime.getFixer().addOldCategory("cts_doubles");
-		shieldProtectionArc = createInRange("shieldProtectionArc", 73.8723797, 0, 180);
-		shieldProtectionArc.tieToCategory(defense);
-		shieldProtectionArc.setupTooltip(1);
-		shieldProtectionArc.getFixer().addOldCategory("cts_doubles");
 		minHitboxSize = createInRange("minHitboxSize", 0.9, 0, 5);
 		minHitboxSize.tieToCategory(mob);
 		minHitboxSize.setupTooltip(1);
@@ -683,9 +678,6 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Double shieldDisableTime() {
 		return shieldDisableTime.get();
-	}
-	public Double shieldProtectionArc() {
-		return shieldProtectionArc.get();
 	}
 	public Double snowballDamage() {
 		return projectileDamage.get().snowballDamage;

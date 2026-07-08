@@ -3,7 +3,7 @@ package net.atlas.combatify.util;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.CustomDataComponents;
-import net.atlas.combatify.component.custom.Blocker;
+import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
@@ -12,6 +12,7 @@ import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
 import net.atlas.combatify.mixin.accessor.PlayerAccessor;
 import net.atlas.combatify.util.blocking.BlockingType;
+import net.atlas.combatify.util.blocking.ItemDamageFunction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -178,11 +179,11 @@ public class MethodHandler {
 		ItemStack blockingItem = getBlockingItem(entity).stack();
 		boolean delay = getBlockingType(blockingItem).hasDelay() && Combatify.CONFIG.shieldDelay() > 0 && blockingItem.getUseDuration(entity) - entity.getUseItemRemainingTicks() < Combatify.CONFIG.shieldDelay();
 		if (!blockingItem.isEmpty() && !delay) {
-			Blocker blocker = getBlocking(blockingItem);
-			if (!blocker.blockingType().defaultKbMechanics())
-				knockbackRes = Math.max(knockbackRes, blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
+			ExtendedBlockingData extendedBlockingData = getBlocking(blockingItem);
+			if (!extendedBlockingData.blockingType().defaultKbMechanics())
+				knockbackRes = Math.max(knockbackRes, extendedBlockingData.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 			else
-				knockbackRes = Math.min(1.0, knockbackRes + blocker.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
+				knockbackRes = Math.min(1.0, knockbackRes + extendedBlockingData.tooltip().getShieldKnockbackResistanceValue(blockingItem, entity.getRandom()));
 		}
 		return knockbackRes;
 	}
@@ -290,7 +291,7 @@ public class MethodHandler {
 		}
 		return instance;
 	}
-	public static void hurtCurrentlyUsedShield(LivingEntity livingEntity, float damage, Blocker.ItemDamageFunction damageFunction) {
+	public static void hurtCurrentlyUsedShield(LivingEntity livingEntity, float damage, ItemDamageFunction damageFunction) {
 		if (!(livingEntity instanceof Player player)) return;
 		FakeUseItem fakeUseItem = getBlockingItem(player);
 		ItemStack blockingItem = fakeUseItem.stack();
@@ -572,7 +573,7 @@ public class MethodHandler {
 		return getBlocking(itemStack).blockingType();
 	}
 
-	public static Blocker getBlocking(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.BLOCKER, Blocker.EMPTY);
+	public static ExtendedBlockingData getBlocking(ItemStack itemStack) {
+		return itemStack.getOrDefault(CustomDataComponents.EXTENDED_BLOCKING_DATA, ExtendedBlockingData.EMPTY);
 	}
 }
