@@ -80,20 +80,6 @@ public enum KnockbackMode {
 		runKnockback(target, source, strength, x, z, vanillaCall.above(), damage, false);
 	}
 	//?}
-	public void runKnockback(
-		LivingEntity target,
-		@Nullable DamageSource source,
-		double strength,
-		double x,
-		double z,
-		//? <26.2 {
-		/*TetraConsumer<LivingEntity, Double, Double, Double> vanillaCall
-		*///?} >=26.2 {
-		HexaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float> vanillaCall
-		//?}
-	) {
-		runKnockback(target, source, strength, x, z, vanillaCall, -1.0F);
-	}
 
 	public boolean usesKnockback(boolean original, Entity entity) {
 		return switch (this) {
