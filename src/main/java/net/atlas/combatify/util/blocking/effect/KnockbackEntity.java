@@ -31,7 +31,7 @@ public record KnockbackEntity(LevelBasedValue strength, LevelBasedValue imagined
         double x = targetPosition.x() - attackerPosition.x();
 		double z = targetPosition.z() - attackerPosition.z();
 		if (force) toApply.hurtMarked = true;
-		Combatify.CONFIG.knockbackMode().runKnockback(toApply, null, this.strength().calculate(enchantmentLevel), x, z, LivingEntity::knockback, imaginedDamage.calculate(enchantmentLevel));
+		Combatify.CONFIG.knockbackMode().runKnockback(toApply, null, this.strength().calculate(enchantmentLevel), x, z, LivingEntity::knockback, this.imaginedDamage().calculate(enchantmentLevel));
 	}
 
 	private Vec3 getPosition(EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, LivingEntity toApply, Vec3 position, boolean inverse) {
