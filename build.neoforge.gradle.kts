@@ -201,7 +201,7 @@ dependencies {
     implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}")
     implementation("maven.modrinth:defaulted:${property("deps.defaulted")}")
     implementation("eu.pb4:polymer-core:${property("deps.polymer")}")
-    implementation("squeek.appleskin:appleskin-fabric:${property("deps.appleskin")}")
+    implementation("squeek.appleskin:appleskin-neoforge:${property("deps.appleskin")}")
     implementation("org.mozilla:rhino-all:${property("deps.rhino")}")
 }
 
