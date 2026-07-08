@@ -192,7 +192,7 @@ dependencies {
     api("me.shedaniel.cloth:cloth-config-fabric:${property("deps.cloth-config")}")
 
     implementation("maven.modrinth:sodium:${property("deps.sodium")}")
-    implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}")
+    implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}-Fabric")
     implementation("maven.modrinth:defaulted:${property("deps.defaulted")}")
     implementation("com.viaversion:viafabricplus:${property("deps.viafabricplus")}")
     api("com.terraformersmc:modmenu:${property("deps.modmenu")}")

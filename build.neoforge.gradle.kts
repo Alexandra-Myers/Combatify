@@ -198,7 +198,7 @@ dependencies {
     api("me.shedaniel.cloth:cloth-config-neoforge:${property("deps.cloth-config")}")
 
     implementation("maven.modrinth:sodium:${property("deps.sodium")}")
-    implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}")
+    implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}-NeoForge")
     implementation("maven.modrinth:defaulted:${property("deps.defaulted")}")
     implementation("eu.pb4:polymer-core:${property("deps.polymer")}")
     implementation("squeek.appleskin:appleskin-neoforge:${property("deps.appleskin")}")
