@@ -3,11 +3,11 @@ plugins {
 	id 'maven-publish'
 }
 
-version = "$project.mod_version.$project.sub_version"
-group = project.maven_group
+version = "$project.'mod.version'.$project.'mod.sub_version'"
+group = project.'mod.group'
 
 base {
-	archivesName = "$project.archives_base_name-$project.minecraft_version-Fabric"
+	archivesName = "$project.'mod.archives_base'-$project.minecraft_version-Fabric"
 }
 
 configurations {
@@ -19,9 +19,7 @@ loom {
 }
 
 repositories {
-	flatDir {
-		dirs 'libs'
-	}
+
 	allprojects { repositories { maven { url 'https://jitpack.io' } } }
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/releases/" }
@@ -57,7 +55,7 @@ repositories {
 // See https://docs.gradle.org/current/userguide/platforms.html for information on how version catalogs work.
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.'deps.fabric_loader'}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	implementation "maven.modrinth:sodium:${project.sodium_version}"
 	implementation "maven.modrinth:atlas-core:${project.atlas_core_version}"
@@ -68,15 +66,15 @@ dependencies {
 	implementation "maven.modrinth:cookeymod:${project.cookeymod_version}"
 	implementation "eu.pb4:polymer-core:${project.polymer_version}"
 	implementation "squeek.appleskin:appleskin-fabric:${project.appleskin_version}"
-	include implementation("org.mozilla:rhino-all:${project.rhino_version}")
+	include implementation("org.mozilla:rhino-all:${project.'deps.rhino_version'}")
 
-	implementation "com.fasterxml.jackson.core:jackson-core:${project.jackson_version}"
-	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:${project.jackson_version}"
+	implementation "com.fasterxml.jackson.core:jackson-core:${project.'deps.jackson_version'}"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:${project.'deps.jackson_version'}"
 }
 
 configurations.configureEach {
 	resolutionStrategy {
-		force("net.fabricmc:fabric-loader:${project.loader_version}")
+		force("net.fabricmc:fabric-loader:${project.'deps.fabric_loader'}")
 	}
 }
 
@@ -85,10 +83,10 @@ loom {
 }
 
 processResources {
-	inputs.property "version", project.mod_version
+	inputs.property "version", project.'mod.version'
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.mod_version
+		expand "version": project.'mod.version'
 	}
 }
 
