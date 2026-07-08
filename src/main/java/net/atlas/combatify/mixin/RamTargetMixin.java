@@ -20,10 +20,4 @@ public class RamTargetMixin {
 	//?}
 		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call, amount);
 	}
-	*///?} >=26.2 {
-	@WrapOperation(method = "tick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/goat/Goat;J)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;F)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, DamageSource damageSource, float v, Operation<Void> original) {
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, damageSource, d, e, f, original::call, v);
-	}
-	//?}
 }
