@@ -24,6 +24,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -288,10 +289,17 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public boolean markNonLivingForOld(boolean original, @Local(ordinal = 0, argsOnly = true) Entity entity) {
 		return Combatify.CONFIG.knockbackMode().usesKnockback(original, entity);
 	}
-	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	//? <26.2 {
+	/*@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
 		Combatify.CONFIG.knockbackMode().runKnockback(instance, player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player)), d, e, f, original::call);
 	}
+	*///?} >=26.2 {
+	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V"))
+	public void knockback(LivingEntity instance, double d, double e, double f, DamageSource damageSource, float v, boolean b, Operation<Void> original) {
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, player.getWeaponItem().getDamageSource(player), d, e, f, original::call, v);
+	}
+	//?}
 	@WrapMethod(method = "isSweepAttack")
 	public boolean editSweepConditions(boolean isStrong, boolean isCrit, boolean isSprintHit, Operation<Boolean> original) {
 		double d = this.getKnownMovement().horizontalDistanceSqr();

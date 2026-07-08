@@ -140,7 +140,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	@SuppressWarnings("unused")
-	@ModifyReturnValue(method = "isBlocking", at = @At(value="RETURN"))
 	public boolean isBlocking(boolean original) {
 		return !MethodHandler.getBlockingItem(thisEntity).stack().isEmpty();
 	}

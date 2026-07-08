@@ -26,7 +26,8 @@ public enum KnockbackMode {
 		/*, QuadConsumer<LivingEntity, Double, Double, Double> vanillaCall
 		*///?} >=26.2 {
 		, SeptaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
-		float damage
+		float damage,
+		boolean fromEffect
 		//?}
 	) {
 		boolean applyNonProjectileKB = false;
@@ -45,11 +46,29 @@ public enum KnockbackMode {
 			//? <26.2 {
 			/*case VANILLA -> vanillaCall.accept(target, strength, x, z);
 			*///?} >=26.2 {
-			case VANILLA -> vanillaCall.accept(target, strength, x, z, source, damage, false);
+			case VANILLA -> vanillaCall.accept(target, strength, x, z, source, damage, fromEffect);
 			//?}
 			case OLD -> MethodHandler.oldKnockback(target, strength, x, z);
 		}
 	}
+
+	//? >=26.2 {
+	public void runKnockback(
+		LivingEntity target,
+		@Nullable DamageSource source,
+		double strength,
+		double x,
+		double z
+		//? <26.2 {
+		/*, QuadConsumer<LivingEntity, Double, Double, Double> vanillaCall
+		 *///?} >=26.2 {
+		, SeptaConsumer<LivingEntity, Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
+		float damage
+		//?}
+	) {
+		runKnockback(target, source, strength, x, z, vanillaCall, damage, false);
+	}
+	//?}
 
 	public boolean usesKnockback(boolean original, Entity entity) {
 		return switch (this) {
