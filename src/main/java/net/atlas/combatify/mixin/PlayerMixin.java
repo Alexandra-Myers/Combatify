@@ -296,8 +296,8 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	}
 	*///?} >=26.2 {
 	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, DamageSource damageSource, float v, boolean b, Operation<Void> original) {
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, player.getWeaponItem().getDamageSource(player), d, e, f, original::call, v);
+	public void knockback(LivingEntity instance, double strength, double x, double z, DamageSource source, float amount, boolean comesFromEffect, Operation<Void> original) {
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call, amount, comesFromEffect);
 	}
 	//?}
 	@WrapMethod(method = "isSweepAttack")

@@ -176,9 +176,9 @@ public class MethodHandler {
 					|| livingEntity.isPassengerOfSameVehicle(player)))
 					continue;
 				float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
-				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
-					// TODO: please check if damage is correct to pass here (i.e. should I reference enchantment effects?) Thanks
-					Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback, damage);
+				float enchantedDamage = enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource);
+				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)) {
+					Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback, enchantedDamage);
 					EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
 				}
 			}

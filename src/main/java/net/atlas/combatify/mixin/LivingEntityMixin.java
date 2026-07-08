@@ -246,22 +246,18 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"
 	))
-	public void modifyKB(LivingEntity instance, double d, double e, double f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
-		if (bl.get() && amount > 0)
-			indicateDamage(e, f);
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, d, e, f, original::call, amount);
-	}
+	public void modifyKB(LivingEntity instance, double strength, double x, double z, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
 	*///?} >=26.2 {
 	@WrapOperation(method = "dealDefaultKnockback", at = @At(
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;F)V"
 	))
-	public void modifyKB(LivingEntity instance, double d, double e, double f, DamageSource damageSource, float v, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Share("blocked") LocalBooleanRef bl) {
-		if (bl.get() && amount > 0)
-			indicateDamage(e, f);
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, d, e, f, original::call, amount);
-	}
+	public void modifyKB(LivingEntity instance, double strength, double x, double z, DamageSource source, float amount, Operation<Void> original, @Share("blocked") LocalBooleanRef bl) {
 	//?}
+		if (bl.get() && amount > 0)
+			indicateDamage(x, z);
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call, amount);
+	}
 
 	@ModifyReceiver(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
 	public ItemStack modifyBlockingItem(ItemStack instance, DataComponentType dataComponentType) {
@@ -285,31 +281,31 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	//? <26.2 {
 	/*@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
+	public void knockback(LivingEntity instance, double strength, double x, double z, Operation<Void> original) {
+		float amount = -1;
 		ItemStack itemStack = this.getWeaponItem();
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, itemStack.getDamageSource(thisEntity, () -> this.damageSources().mobAttack(thisEntity)), d, e, f, original::call);
-	}
-	@Inject(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
-	public void resetSprint(Entity entity, float f, Vec3 vec3, CallbackInfo ci) {
-		if (isSprinting()) setSprinting(false);
-	}
+		DamageSource source = itemStack.getDamageSource(thisEntity, () -> this.damageSources().mobAttack(thisEntity));
 	*///?} >=26.2 {
 	@WrapOperation(method = "causeExtraKnockback", at = @At(
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V"
 	))
-	public void knockback(LivingEntity instance, double d, double e, double f, DamageSource damageSource, float v, boolean b, Operation<Void> original) {
-		ItemStack itemStack = this.getWeaponItem();
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, itemStack.getDamageSource(thisEntity), d, e, f, original::call, v, b);
+	public void knockback(LivingEntity instance, double strength, double x, double z, DamageSource source, float amount, boolean comesFromEffect, Operation<Void> original) {
+	//?}
+		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call, amount, comesFromEffect);
 	}
+	//? <26.2 {
+	/*@Inject(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
+	public void resetSprint(Entity entity, float f, Vec3 vec3, CallbackInfo ci) {
+	*///?} >=26.2 {
 	@Inject(method = "causeExtraKnockback", at = @At(
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"
 	))
 	public void resetSprint(Entity target, float knockback, Vec3 oldMovement, DamageSource damageSource, float damage, boolean comesFromEffect, CallbackInfo ci) {
+	//?}
 		if (isSprinting()) setSprinting(false);
 	}
-	//?}
 
 	@Override
 	public boolean combatify$hasEnabledShieldOnCrouch() {
