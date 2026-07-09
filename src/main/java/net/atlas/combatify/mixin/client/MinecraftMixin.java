@@ -15,6 +15,7 @@ import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -74,9 +75,18 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	@Shadow
 	public int missTime;
 
-	@Shadow
+	//? <26.2 {
+	/*@Shadow
 	@Nullable
 	public Screen screen;
+	*///?} >=26.1.2 {
+	@Shadow
+	@Nullable
+	public Gui gui;
+	@Nullable
+	public Screen screen = gui.screen();
+	//?}
+	// I probably could've written this differently
 
 	@Shadow
 	@Final

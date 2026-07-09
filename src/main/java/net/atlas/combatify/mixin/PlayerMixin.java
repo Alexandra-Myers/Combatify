@@ -168,7 +168,11 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	}
 
 	@Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getItemBlockingWith()Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
-	public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
+	//? <26.2 {
+	/*public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
+	*///?} >=26.2 {
+	public void blockUsingShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, CallbackInfo ci) {
+	//?}
 		ci.cancel();
 	}
 
