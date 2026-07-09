@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+/*
 @Mixin(AtlasCore.class)
 public class AtlasCoreMixin {
 	@WrapOperation(method = "lambda$onInitialize$0", at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/networking/v1/ServerPlayNetworking;send(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"))
@@ -27,3 +28,7 @@ public class AtlasCoreMixin {
 		original.call(player, payload);
 	}
 }
+*/
+
+
+// This class does not exist....

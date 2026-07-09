@@ -12,6 +12,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+//? >=26.2 {
+import net.minecraft.client.gui.Hud;
+//?}
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -42,7 +45,11 @@ import java.util.Arrays;
 import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 import static net.atlas.combatify.util.MethodHandler.getFatigueForTime;
 
-@Mixin(Gui.class)
+//? <26.2 {
+/* @Mixin(Gui.class)
+*///?} >=26.2 {
+@Mixin(Hud.class)
+//?}
 public abstract class GuiMixin {
 	@Unique
 	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_LEFT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_left_indicator_background");
