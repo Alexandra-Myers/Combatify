@@ -3,7 +3,11 @@ package net.atlas.combatify.config.impl.crit;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;

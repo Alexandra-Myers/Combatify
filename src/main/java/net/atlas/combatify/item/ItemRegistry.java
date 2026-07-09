@@ -4,7 +4,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;

@@ -4,6 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.caffeinemc.mods.sodium.api.config.ConfigEntryPoint;
 import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
 import net.caffeinemc.mods.sodium.api.config.structure.ConfigBuilder;
@@ -14,11 +15,15 @@ import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.TriState;
 
 public class CombatifySodiumConfig implements ConfigEntryPoint {
-	private static final Identifier COMBATIFY_ICON = Identifier.fromNamespaceAndPath("combatify", "textures/gui/config_icon.png");
+	private static final Identifier COMBATIFY_ICON = IdentifierUtils.fromNamespaceAndPath("combatify", "textures/gui/config_icon.png");
 	private final StorageEventHandler vanillaStorage;
 
 	public CombatifySodiumConfig() {

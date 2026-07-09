@@ -2,10 +2,10 @@ package net.atlas.combatify.util.blocking.condition;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -14,14 +14,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public record AnyOf(List<BlockingCondition> blockingConditions) implements BlockingCondition {
 	public AnyOf(BlockingCondition... conditions) {
 		this(Arrays.asList(conditions));
 	}
-	public static final Identifier ID = Identifier.withDefaultNamespace("any_of");
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("any_of");
 	public static final MapCodec<AnyOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(BlockingConditions.MAP_CODEC.codec().listOf().fieldOf("conditions").forGetter(AnyOf::blockingConditions)).apply(instance, AnyOf::new));
 	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AnyOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AnyOf::blockingConditions, AnyOf::new);
@@ -50,15 +49,6 @@ public record AnyOf(List<BlockingCondition> blockingConditions) implements Block
 	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
-	}
-
-	@Override
-	public Identifier id() {
-		return ID;
-	}
-
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
-		map.put(ID, STREAM_CODEC.map(anyOf -> anyOf, blockingCondition -> (AnyOf) blockingCondition));
 	}
 }
 

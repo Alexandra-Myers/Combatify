@@ -1,7 +1,10 @@
 package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+//?}
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,5 +16,4 @@ public interface PostBlockEffect {
 
 	MapCodec<? extends PostBlockEffect> type();
 
-	Identifier id();
 }

@@ -10,6 +10,11 @@ import net.atlas.atlascore.AtlasCore;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.impl.JSImpl;
+//? <=1.21.1 {
+import net.atlas.combatify.item.CombatifyItemTags;
+//?}
+import net.atlas.combatify.util.CommonUtils;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -25,7 +30,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+//?}
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -39,11 +47,19 @@ import java.util.function.IntFunction;
 import static net.atlas.combatify.Combatify.*;
 
 public class ItemConfig extends AtlasConfig {
+	public static final List<RegistryConfigDataWrapper<Item, ConfigurableItemData>> DEFAULT_ITEMS;
+	static {
+		//? >1.21.1 {
+		/*DEFAULT_ITEMS = new ArrayList<>();
+		*///?} <=1.21.1 {
+		DEFAULT_ITEMS = List.of(new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.PROJECTILES_WITH_COOLDOWNS), new ConfigurableItemData(null, 0.2)),
+			new RegistryConfigDataWrapper<>(HolderSet.direct(), List.of(CombatifyItemTags.FAST_DRINKABLES), new ConfigurableItemData(1.0, null)));
+		//?}
+	}
 	public boolean isModifying = false;
 	public TagHolder<List<RegistryConfigDataWrapper<EntityType<?>, ConfigurableEntityData>>> entities;
 	public TagHolder<List<RegistryConfigDataWrapper<Item, ConfigurableItemData>>> items;
 	public TagHolder<JSImpl> armourCalcs;
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull Identifier> RESOURCE_NAME_STREAM_CODEC = StreamCodec.of(RegistryFriendlyByteBuf::writeIdentifier, RegistryFriendlyByteBuf::readIdentifier);
 	public static final MapCodec<RegistryConfigDataWrapper<Item, ConfigurableItemData>> ITEMS_CODEC = RegistryConfigDataWrapper.mapCodec(BuiltInRegistries.ITEM,
 		holder -> holder.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air", holder) : DataResult.success(holder),
 		ConfigurableItemData.CODEC);
@@ -85,7 +101,7 @@ public class ItemConfig extends AtlasConfig {
 
 	@Override
 	public void defineConfigHolders() {
-		items = createCodecBacked("items", new ArrayList<>(), ITEMS_CODEC.codec().listOf());
+		items = createCodecBacked("items", DEFAULT_ITEMS, ITEMS_CODEC.codec().listOf());
 		entities = createCodecBacked("entities", new ArrayList<>(), ENTITIES_CODEC.codec().listOf());
 		armourCalcs = createCodecBacked("armor_calculation", new JSImpl("armor_calculations"), JSImpl.CODEC);
 	}
@@ -108,19 +124,19 @@ public class ItemConfig extends AtlasConfig {
 	@Override
 	public AtlasConfig readClientConfigInformation(RegistryFriendlyByteBuf buf) {
 		super.readClientConfigInformation(buf);
-		readMap(buf, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		readMap(buf, IdentifierUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
 		return this;
 	}
 
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
-		registeredTypes = readMap(buf, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		registeredTypes = readMap(buf, IdentifierUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
 		return this;
 	}
 
 	public void saveToNetwork(RegistryFriendlyByteBuf buf) {
 		super.saveToNetwork(buf);
-		writeMap(buf, Combatify.registeredTypes, RESOURCE_NAME_STREAM_CODEC, BlockingType.FULL_STREAM_CODEC);
+		writeMap(buf, Combatify.registeredTypes, IdentifierUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
 	}
 
 	@Override
@@ -243,7 +259,7 @@ public class ItemConfig extends AtlasConfig {
 		}
 		public static <T, U> StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull RegistryConfigDataWrapper<T, U>> streamCodec(ResourceKey<? extends @NotNull Registry<@NotNull T>> registry, StreamCodec<? super ByteBuf, @NotNull U> streamCodec) {
 			return StreamCodec.composite(ByteBufCodecs.holderSet(registry).map(holders -> (HolderSet.Direct<@NotNull T>) holders, holders -> holders), RegistryConfigDataWrapper::holders,
-			ByteBufCodecs.collection(ArrayList::new, TagKey.streamCodec(registry)), RegistryConfigDataWrapper::tagKeys,
+			ByteBufCodecs.collection(ArrayList::new, CommonUtils.tagKeyStreamCodec(registry)), RegistryConfigDataWrapper::tagKeys,
 				streamCodec, RegistryConfigDataWrapper::configurableData,
 				RegistryConfigDataWrapper::build);
 		}

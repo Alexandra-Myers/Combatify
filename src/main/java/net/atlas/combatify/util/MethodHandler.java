@@ -8,8 +8,8 @@ import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
 //? <26.2 {
-/*import net.atlas.combatify.config.KnockbackMode;
-*///?}
+import net.atlas.combatify.config.KnockbackMode;
+//?}
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
@@ -163,8 +163,8 @@ public class MethodHandler {
 					player
 					// Default damage source param removed in 26.2
 					//? <26.2 {
-					/*, () -> player.damageSources().playerAttack(player)
-					*///?}
+					, () -> player.damageSources().playerAttack(player)
+					//?}
 				);
 
 			for (LivingEntity livingEntity : livingEntities) {
@@ -182,11 +182,11 @@ public class MethodHandler {
 				float enchantedDamage = enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource);
 				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)) {
 					//? <26.2 {
-					/*KnockbackMode.extractContext(livingEntity, damageSource);
+					KnockbackMode.extractContext(livingEntity, damageSource);
 					livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
-					*///?} >=26.2 {
-					livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), -Mth.cos(player.getYRot() * 0.017453292F), damageSource, enchantedDamage);
-					//?}
+					//?} >=26.2 {
+					/*livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), -Mth.cos(player.getYRot() * 0.017453292F), damageSource, enchantedDamage);
+					*///?}
 					EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
 				}
 			}
@@ -528,10 +528,20 @@ public class MethodHandler {
 				if (result != null) results.add(result);
 			});
 			Double useSeconds = null;
+			//? <=1.21.1 {
+			Double cooldownSeconds = null;
+			//?}
 			for (ConfigurableItemData configurableItemData : results) {
 				useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
+				//? <=1.21.1 {
+				cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
+				//?}
 			}
-			ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
+			//? >1.21.1 {
+			/*ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
+			*///? <=1.21.1 {
+			ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
+			//?}
 			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
 			return configurableItemData;
 		}

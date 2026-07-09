@@ -1,4 +1,4 @@
-#### Changes:
+### Changes:
 ***
 - Tiered Shields have been redesigned, with some notable changes:
   - Iron, Gold, and Diamond Shields now take Blocks of Coal, Blackstone, and Obsidian respectively to craft

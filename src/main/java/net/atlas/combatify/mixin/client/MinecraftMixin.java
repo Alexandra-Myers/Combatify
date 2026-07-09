@@ -16,8 +16,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
 //? >=26.2 {
-import net.minecraft.client.gui.Gui;
-//?}
+/*import net.minecraft.client.gui.Gui;
+*///?}
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -78,15 +78,15 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	public int missTime;
 
 	//? <26.2 {
-	/*@Shadow
+	@Shadow
 	@Nullable
 	public Screen screen;
-	*///?} >=26.2 {
-	@Shadow
+	//?} >=26.2 {
+	/*@Shadow
 	@Final
 	@Nullable
 	public Gui gui;
-	//?}
+	*///?}
 
 	@Shadow
 	@Final
@@ -239,9 +239,9 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	@Nullable
 	public Screen combatify$screen() {
 		//? < 26.2 {
-		/*return this.screen;
-		*///?} >= 26.2 {
-		return this.gui != null ? this.gui.screen() : null;
-		//?}
+		return this.screen;
+		//?} >= 26.2 {
+		/*return this.gui != null ? this.gui.screen() : null;
+		*///?}
 	}
 }

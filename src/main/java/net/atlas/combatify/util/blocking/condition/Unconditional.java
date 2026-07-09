@@ -1,19 +1,17 @@
 package net.atlas.combatify.util.blocking.condition;
 
 import com.mojang.serialization.MapCodec;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 public record Unconditional() implements BlockingCondition {
-	public static final Identifier ID = Identifier.withDefaultNamespace("unconditional");
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("unconditional");
 	public static final Unconditional INSTANCE = new Unconditional();
 	public static final MapCodec<Unconditional> MAP_CODEC = MapCodec.unit(INSTANCE);
 	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition> STREAM_CODEC = StreamCodec.unit(INSTANCE);
@@ -36,14 +34,5 @@ public record Unconditional() implements BlockingCondition {
 	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
-	}
-
-	@Override
-	public Identifier id() {
-		return ID;
-	}
-
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
-		map.put(ID, STREAM_CODEC);
 	}
 }

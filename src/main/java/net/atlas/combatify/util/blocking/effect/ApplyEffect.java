@@ -4,11 +4,11 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
-	public static final Identifier ID = Identifier.withDefaultNamespace("apply_effect");
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("apply_effect");
 	public ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
 		this(toApply, duration, duration, amplifier, amplifier);
 	}
@@ -57,16 +57,16 @@ public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration.calculate(enchantmentLevel), this.maxDuration.calculate(enchantmentLevel)) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier.calculate(enchantmentLevel), this.maxAmplifier.calculate(enchantmentLevel))));
 			//? <26.2 {
-			/*if (optional.get().value().isInstantenous()) {
+			if (optional.get().value().isInstantenous()) {
 				optional.get().value().applyInstantenousEffect(serverLevel, target, target, toApply, amp, 1);
 				return;
 			}
-			*///?} >=26.2 {
-			if (optional.get().value().isInstantaneous()) {
+			//?} >=26.2 {
+			/*if (optional.get().value().isInstantaneous()) {
 				optional.get().value().applyInstantaneousEffect(serverLevel, target, target, toApply, amp, 1);
 				return;
 			}
-			//?}
+			*///?}
 			toApply.addEffect(new MobEffectInstance(optional.get(), duration, amp));
 		}
 	}
@@ -76,8 +76,4 @@ public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

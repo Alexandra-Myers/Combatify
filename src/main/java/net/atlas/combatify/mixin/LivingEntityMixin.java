@@ -10,8 +10,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.EatingInterruptionMode;
 //? <26.2 {
-/*import net.atlas.combatify.config.KnockbackMode;
-*///?}
+import net.atlas.combatify.config.KnockbackMode;
+//?}
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
@@ -150,16 +150,16 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	//? <26.2 {
-	/*@Inject(method = "blockedByItem", at = @At(value = "HEAD"), cancellable = true)
+	@Inject(method = "blockedByItem", at = @At(value = "HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity target, CallbackInfo ci) {
 		ci.cancel();
 	}
-	*///?} >=26.2 {
-	@Inject(method = "blockedByItem", at = @At(value = "HEAD"), cancellable = true)
+	//?} >=26.2 {
+	/*@Inject(method = "blockedByItem", at = @At(value = "HEAD"), cancellable = true)
 	public void blockedByShield(LivingEntity defender, DamageSource source, float damage, CallbackInfo ci) {
 		ci.cancel();
 	}
-	//?}
+	*///?}
 
 	@Override
 	public void combatify$setPiercingNegation(double negation) {
@@ -177,12 +177,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	//? <26.2 {
-	/*@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;blockUsingItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V"))
+	@WrapOperation(method = "applyItemBlocking", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;blockUsingItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V"))
 	public void applyBlockEffects(LivingEntity instance, ServerLevel serverLevel, LivingEntity attacker, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) DamageSource source) {
 		original.call(instance, serverLevel, attacker);
 		MethodHandler.blockedByShield(serverLevel, instance, attacker, source);
 	}
-	*///?} >=26.2 {
+	//?} >=26.2 {
 
 	//?}
 
@@ -244,26 +244,26 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	//? <26.2 {
-	/*@WrapOperation(method = "hurtServer", at = @At(
+	@WrapOperation(method = "hurtServer", at = @At(
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"
 	))
 	public void modifyKB(LivingEntity instance, double strength, double x, double z, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) final DamageSource source, @Local(argsOnly = true) float amount, @Local(ordinal = 0) boolean blocked) {
-	*///?} >=26.2 {
-	@WrapOperation(method = "dealDefaultKnockback", at = @At(
+	//?} >=26.2 {
+	/*@WrapOperation(method = "dealDefaultKnockback", at = @At(
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;F)V"
 	))
 	public void modifyKB(LivingEntity instance, double strength, double x, double z, DamageSource source, float amount, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) boolean blocked) {
-	//?}
+	*///?}
 		if (blocked && amount > 0)
 			indicateDamage(x, z);
 		//? <26.2 {
-		/*KnockbackMode.extractContext(instance, source);
+		KnockbackMode.extractContext(instance, source);
 		original.call(instance, strength, x, z);
-		*///?} >=26.2 {
-		original.call(instance, strength, x, z, source, amount);
-		//?}
+		//?} >=26.2 {
+		/*original.call(instance, strength, x, z, source, amount);
+		*///?}
 	}
 
 	@ModifyReceiver(method = "hurtServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
@@ -287,7 +287,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	}
 
 	//? <26.2 {
-	/*@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double strength, double x, double z, Operation<Void> original) {
 		ItemStack itemStack = this.getWeaponItem();
 		DamageSource source = itemStack.getDamageSource(thisEntity, () -> this.damageSources().mobAttack(thisEntity));
@@ -298,22 +298,22 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void knockback(double power, double xd, double zd, Operation<Void> original) {
 		Combatify.CONFIG.knockbackMode().runKnockback(thisEntity, power, xd, zd, original::call);
 	}
-	*///?} >=26.2 {
-	@WrapMethod(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V")
+	//?} >=26.2 {
+	/*@WrapMethod(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V")
 	public void knockback(double power, double xd, double zd, DamageSource source, float damage, boolean comesFromEffect, Operation<Void> original) {
 		Combatify.CONFIG.knockbackMode().runKnockback(thisEntity, power, xd, zd, source, damage, comesFromEffect, original::call);
 	}
-	//?}
+	*///?}
 	//? <26.2 {
-	/*@Inject(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
+	@Inject(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
 	public void resetSprint(Entity entity, float f, Vec3 vec3, CallbackInfo ci) {
-	*///?} >=26.2 {
-	@Inject(method = "causeExtraKnockback", at = @At(
+	//?} >=26.2 {
+	/*@Inject(method = "causeExtraKnockback", at = @At(
 		value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/LivingEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"
 	))
 	public void resetSprint(Entity target, float knockback, Vec3 oldMovement, DamageSource damageSource, float damage, boolean comesFromEffect, CallbackInfo ci) {
-	//?}
+	*///?}
 		if (isSprinting()) setSprinting(false);
 	}
 

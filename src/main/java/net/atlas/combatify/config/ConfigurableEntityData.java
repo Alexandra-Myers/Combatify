@@ -4,12 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 import java.util.Optional;
 
 import static net.atlas.combatify.config.ConfigurableItemData.clamp;
@@ -20,9 +14,6 @@ public record ConfigurableEntityData(Optional<Integer> optionalAttackInterval, O
 		instance.group(Codec.INT.optionalFieldOf("attack_interval").forGetter(ConfigurableEntityData::optionalAttackInterval),
 			Codec.BOOL.optionalFieldOf("is_misc_entity").forGetter(ConfigurableEntityData::optionalIsMiscEntity))
 			.apply(instance, ConfigurableEntityData::new));
-	public static final StreamCodec<? super ByteBuf, @NotNull ConfigurableEntityData> ENTITY_DATA_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.optional(ByteBufCodecs.VAR_INT), ConfigurableEntityData::optionalAttackInterval,
-		ByteBufCodecs.optional(ByteBufCodecs.BOOL), ConfigurableEntityData::optionalIsMiscEntity,
-		ConfigurableEntityData::new);
 
 	public ConfigurableEntityData(Optional<Integer> optionalAttackInterval, Optional<Boolean> optionalIsMiscEntity) {
 		this.optionalAttackInterval = clamp(optionalAttackInterval, 0, 1000);
@@ -35,17 +26,5 @@ public record ConfigurableEntityData(Optional<Integer> optionalAttackInterval, O
 
 	public Boolean isMiscEntity() {
 		return optionalIsMiscEntity.orElse(null);
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof ConfigurableEntityData that)) return false;
-        return Objects.equals(optionalAttackInterval, that.optionalAttackInterval) && Objects.equals(optionalIsMiscEntity, that.optionalIsMiscEntity);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(optionalAttackInterval, optionalIsMiscEntity);
 	}
 }

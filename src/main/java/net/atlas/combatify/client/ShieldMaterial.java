@@ -6,7 +6,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.sprite.SpriteId;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 
 public record ShieldMaterial(SpriteId base, SpriteId baseNoPattern) {
 	private static final Codec<SpriteId> SPRITE_ID_CODEC = Identifier.CODEC.xmap(Identifier -> new SpriteId(TextureAtlas.LOCATION_BLOCKS, Identifier), SpriteId::texture);

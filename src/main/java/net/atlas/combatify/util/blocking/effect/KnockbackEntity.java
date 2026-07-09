@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 //? <26.2 {
-/*import net.atlas.combatify.config.KnockbackMode;
-*///?}
-import net.minecraft.resources.Identifier;
+import net.atlas.combatify.config.KnockbackMode;
+//?}
+import net.atlas.combatify.util.IdentifierUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,24 +16,24 @@ import net.minecraft.world.phys.Vec3;
 
 public record KnockbackEntity(LevelBasedValue strength,
 							  //? >=26.2 {
-							  LevelBasedValue imaginedDamage,
-							  //?}
+							  /*LevelBasedValue imaginedDamage,
+							  *///?}
 							  boolean force,
 							  boolean inverseDirection) implements PostBlockEffect {
-	public static final Identifier ID = Identifier.withDefaultNamespace("knockback_entity");
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("knockback_entity");
 	//? >=26.2 {
-	public KnockbackEntity(LevelBasedValue strength, boolean force, boolean inverseDirection) {
+	/*public KnockbackEntity(LevelBasedValue strength, boolean force, boolean inverseDirection) {
 		this(strength, LevelBasedValue.constant(0.5F), force, inverseDirection);
 	}
-	//?}
+	*///?}
 	public KnockbackEntity() {
 		this(LevelBasedValue.constant(0.5F), false, false);
 	}
 	public static final MapCodec<KnockbackEntity> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(LevelBasedValue.CODEC.optionalFieldOf("strength", LevelBasedValue.constant(0.5F)).forGetter(KnockbackEntity::strength),
 				//? >=26.2 {
-				LevelBasedValue.CODEC.optionalFieldOf("imagined_damage", LevelBasedValue.constant(0.5F)).forGetter(KnockbackEntity::imaginedDamage),
-				//?}
+				/*LevelBasedValue.CODEC.optionalFieldOf("imagined_damage", LevelBasedValue.constant(0.5F)).forGetter(KnockbackEntity::imaginedDamage),
+				*///?}
 				Codec.BOOL.optionalFieldOf("force", false).forGetter(KnockbackEntity::force),
 				Codec.BOOL.optionalFieldOf("inverse_direction", false).forGetter(KnockbackEntity::inverseDirection))
 			.apply(instance, KnockbackEntity::new));
@@ -46,11 +46,11 @@ public record KnockbackEntity(LevelBasedValue strength,
 		double z = targetPosition.z() - attackerPosition.z();
 		if (force) toApply.hurtMarked = true;
 		//? <26.2 {
-		/*KnockbackMode.extractContext(toApply, damageSource);
+		KnockbackMode.extractContext(toApply, damageSource);
 		toApply.knockback(this.strength().calculate(enchantmentLevel), x, z);
-		*///?} >=26.2 {
-		toApply.knockback(this.strength().calculate(enchantmentLevel), x, z, damageSource, this.imaginedDamage().calculate(enchantmentLevel));
-		//?}
+		//?} >=26.2 {
+		/*toApply.knockback(this.strength().calculate(enchantmentLevel), x, z, damageSource, this.imaginedDamage().calculate(enchantmentLevel));
+		*///?}
 	}
 
 	private Vec3 getPosition(EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, LivingEntity toApply, Vec3 position, boolean inverse) {
@@ -63,8 +63,4 @@ public record KnockbackEntity(LevelBasedValue strength,
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

@@ -5,7 +5,11 @@ import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.config.wrapper.FoodDataWrapper;
 import net.atlas.combatify.config.wrapper.FoodPropertiesWrapper;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;

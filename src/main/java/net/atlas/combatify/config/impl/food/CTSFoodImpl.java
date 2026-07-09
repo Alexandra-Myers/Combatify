@@ -3,7 +3,12 @@ package net.atlas.combatify.config.impl.food;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.atlas.combatify.util.CommonUtils;
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
@@ -19,9 +24,9 @@ public record CTSFoodImpl(boolean ctsSaturationCap, boolean ctsHealing, int mini
 				ExtraCodecs.intRange(0, 20).optionalFieldOf("minimum_sprint_level", 6).forGetter(CTSFoodImpl::minimumSprintLevel),
 				ExtraCodecs.intRange(0, 20).optionalFieldOf("minimum_healing_level", 7).forGetter(CTSFoodImpl::minimumHealingLevel),
 				ExtraCodecs.intRange(0, 21).optionalFieldOf("minimum_fast_healing_level", 21).forGetter(CTSFoodImpl::minimumFastHealingLevel),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("fast_heal_seconds", 0.5F).forGetter(CTSFoodImpl::fastHealSeconds),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("heal_seconds", 2F).forGetter(CTSFoodImpl::healSeconds),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("starvation_seconds", 2F).forGetter(CTSFoodImpl::healSeconds))
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("fast_heal_seconds", 0.5F).forGetter(CTSFoodImpl::fastHealSeconds),
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("heal_seconds", 2F).forGetter(CTSFoodImpl::healSeconds),
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("starvation_seconds", 2F).forGetter(CTSFoodImpl::healSeconds))
 			.apply(instance, CTSFoodImpl::new));
 
 	@Override

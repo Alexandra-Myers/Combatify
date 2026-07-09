@@ -5,7 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.atlas.combatify.util.CommonUtils;
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -16,10 +21,10 @@ public record CombatifyCritImpl(boolean allowsSprint, float minimumBaseCharge, f
 	public static final Identifier ID = Combatify.id("charged_crits");
 	public static final MapCodec<CombatifyCritImpl> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.BOOL.optionalFieldOf("allows_sprint", true).forGetter(CombatifyCritImpl::allowsSprint),
-				ExtraCodecs.floatRange(-1, 2).optionalFieldOf("minimum_base_charge", 0.9F).forGetter(CombatifyCritImpl::minimumBaseCharge),
-				ExtraCodecs.floatRange(-1, 2).optionalFieldOf("minimum_full_charge", 1.95F).forGetter(CombatifyCritImpl::minimumFullCharge),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("crit_multiplier", 1.25F).forGetter(CombatifyCritImpl::critMult),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("charged_crit_multiplier", 1.5F).forGetter(CombatifyCritImpl::chargedCritMult))
+				CommonUtils.floatRange(-1, 2).optionalFieldOf("minimum_base_charge", 0.9F).forGetter(CombatifyCritImpl::minimumBaseCharge),
+				CommonUtils.floatRange(-1, 2).optionalFieldOf("minimum_full_charge", 1.95F).forGetter(CombatifyCritImpl::minimumFullCharge),
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("crit_multiplier", 1.25F).forGetter(CombatifyCritImpl::critMult),
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("charged_crit_multiplier", 1.5F).forGetter(CombatifyCritImpl::chargedCritMult))
 			.apply(instance, CombatifyCritImpl::new));
 
 	@Override

@@ -4,25 +4,24 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 //? <26.2 {
-/*import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.atlas.combatify.util.IdentifierUtils;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
-*///?} >=26.2 {
-import net.minecraft.advancements.predicates.DataComponentMatchers;
+//?} >=26.2 {
+/*import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.MinMaxBounds;
-//?}
+*///?}
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.Optional;
 
 public record ItemMatches(ItemPredicate predicate, boolean invert) implements BlockingCondition {
@@ -32,7 +31,7 @@ public record ItemMatches(ItemPredicate predicate, boolean invert) implements Bl
 			)
 			.apply(instance, (ints, dataComponentMatchers) -> new ItemPredicate(Optional.empty(), ints, dataComponentMatchers))
 	);
-	public static final Identifier ID = Identifier.withDefaultNamespace("item_matches");
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("item_matches");
 	public static final MapCodec<ItemMatches> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(ITEM_PREDICATE_CODEC_NO_ITEMS.fieldOf("predicate").forGetter(ItemMatches::predicate),
 				Codec.BOOL.optionalFieldOf("invert", false).forGetter(ItemMatches::invert))
@@ -59,14 +58,5 @@ public record ItemMatches(ItemPredicate predicate, boolean invert) implements Bl
 	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
-	}
-
-	@Override
-	public Identifier id() {
-		return ID;
-	}
-
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
-		map.put(ID, STREAM_CODEC.map(itemMatches -> itemMatches, blockingCondition -> (ItemMatches) blockingCondition));
 	}
 }

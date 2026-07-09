@@ -2,6 +2,7 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
@@ -9,7 +10,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ConfigurationTask;
@@ -69,7 +74,7 @@ public class NetworkingHandler {
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
 	}
 	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {
-		public static final Type<@NotNull UpdateBridgingStatusPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath("c", "update_status"));
+		public static final Type<@NotNull UpdateBridgingStatusPacket> TYPE = new Type<>(IdentifierUtils.fromNamespaceAndPath("c", "update_status"));
 		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
 
 		public UpdateBridgingStatusPacket(FriendlyByteBuf buf) {

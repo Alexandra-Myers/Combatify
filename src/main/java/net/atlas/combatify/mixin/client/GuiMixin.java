@@ -11,14 +11,18 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 //? <26.2 {
-/*import net.minecraft.client.gui.Gui;
-*///?} >=26.2 {
-import net.minecraft.client.gui.Hud;
-//?}
+import net.minecraft.client.gui.Gui;
+//?} >=26.2 {
+/*import net.minecraft.client.gui.Hud;
+*///?}
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -47,10 +51,10 @@ import static net.atlas.combatify.util.MethodHandler.getBlockingType;
 import static net.atlas.combatify.util.MethodHandler.getFatigueForTime;
 
 //? <26.2 {
- /*@Mixin(Gui.class)
-*///?} >=26.2 {
-@Mixin(Hud.class)
-//?}
+ @Mixin(Gui.class)
+//?} >=26.2 {
+/*@Mixin(Hud.class)
+*///?}
 public abstract class GuiMixin {
 	@Unique
 	private static final Identifier CROSSHAIR_ATTACK_INDICATOR_LEFT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_left_indicator_background");

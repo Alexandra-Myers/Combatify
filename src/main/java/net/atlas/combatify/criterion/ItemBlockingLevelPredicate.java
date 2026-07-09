@@ -4,12 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.component.CustomDataComponents;
 //? <26.2 {
-/*import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.advancements.criterion.SingleComponentItemPredicate;
-*///?} >=26.2 {
-import net.minecraft.advancements.predicates.MinMaxBounds;
+//?} >=26.2 {
+/*import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.advancements.predicates.SingleComponentItemPredicate;
-//?}
+*///?}
 import net.minecraft.core.component.DataComponentType;
 import org.jetbrains.annotations.NotNull;
 

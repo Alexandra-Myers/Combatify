@@ -4,7 +4,11 @@ import com.mojang.serialization.MapCodec;
 import net.atlas.combatify.client.renderer.TieredShieldSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;

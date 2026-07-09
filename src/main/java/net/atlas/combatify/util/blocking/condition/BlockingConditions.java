@@ -1,19 +1,20 @@
 package net.atlas.combatify.util.blocking.condition;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ExtraCodecs;
+import net.atlas.combatify.util.IdentifierUtils;
+//? >1.21.1 {
+/*import net.minecraft.util.ExtraCodecs.LateBoundIdMapper;
+*///?} <=1.21.1 {
+import net.atlas.defaulted.utils.LateBoundIdMapper;
+//?}
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Function;
+
 public class BlockingConditions {
-	public static final ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends BlockingCondition>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
-	public static final BiMap<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> STREAM_CODEC_MAP = HashBiMap.create();
-	public static final MapCodec<BlockingCondition> MAP_CODEC = ID_MAPPER.codec(Identifier.CODEC)
-		.dispatchMap("condition", BlockingCondition::type, mapCodec -> mapCodec);
+	public static final LateBoundIdMapper<IdentifierUtils.@NotNull PseudoId, @NotNull MapCodec<? extends BlockingCondition>> ID_MAPPER = new LateBoundIdMapper<>();
+	public static final MapCodec<BlockingCondition> MAP_CODEC = ID_MAPPER.codec(IdentifierUtils.PSEUDO_CODEC)
+		.dispatchMap("condition", BlockingCondition::type, Function.identity());
 
 	public static void bootstrap() {
 		ID_MAPPER.put(Unconditional.ID, Unconditional.MAP_CODEC);
@@ -21,10 +22,5 @@ public class BlockingConditions {
 		ID_MAPPER.put(ItemMatches.ID, ItemMatches.MAP_CODEC);
 		ID_MAPPER.put(AllOf.ID, AllOf.MAP_CODEC);
 		ID_MAPPER.put(AnyOf.ID, AnyOf.MAP_CODEC);
-		Unconditional.mapStreamCodec(STREAM_CODEC_MAP);
-		RequiresEmptyHand.mapStreamCodec(STREAM_CODEC_MAP);
-		ItemMatches.mapStreamCodec(STREAM_CODEC_MAP);
-		AllOf.mapStreamCodec(STREAM_CODEC_MAP);
-		AnyOf.mapStreamCodec(STREAM_CODEC_MAP);
 	}
 }

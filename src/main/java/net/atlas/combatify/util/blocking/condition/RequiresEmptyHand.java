@@ -4,20 +4,18 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 public record RequiresEmptyHand(InteractionHand interactionHand) implements BlockingCondition {
-	public static final Identifier ID = Identifier.withDefaultNamespace("requires_empty_hand");
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("requires_empty_hand");
 	public static final MapCodec<RequiresEmptyHand> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.STRING
 				.validate(s -> s.equals("off_hand") || s.equals("main_hand") ? DataResult.success(s) : DataResult.error(() -> "Not a valid interaction hand! Input: " + s)).fieldOf("hand")
@@ -45,14 +43,5 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
-	}
-
-	@Override
-	public Identifier id() {
-		return ID;
-	}
-
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
-		map.put(ID, STREAM_CODEC.map(requiresEmptyHand -> requiresEmptyHand, blockingCondition -> (RequiresEmptyHand) blockingCondition));
 	}
 }

@@ -14,8 +14,8 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
 //? <26.2 {
-/*import net.atlas.combatify.config.KnockbackMode;
-*///?}
+import net.atlas.combatify.config.KnockbackMode;
+//?}
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
@@ -172,10 +172,10 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getItemBlockingWith()Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
 	//? <26.2 {
-	/*public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
-	*///?} >=26.2 {
-	public void blockUsingShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, CallbackInfo ci) {
-	//?}
+	public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
+	//?} >=26.2 {
+	/*public void blockUsingShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, CallbackInfo ci) {
+	*///?}
 		ci.cancel();
 	}
 
@@ -297,12 +297,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		return Combatify.CONFIG.knockbackMode().usesKnockback(original, entity);
 	}
 	//? <26.2 {
-	/*@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
 		KnockbackMode.extractContext(instance, player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player)));
 		original.call(instance, d, e, f);
 	}
-	*///?}
+	//?}
 	@WrapMethod(method = "isSweepAttack")
 	public boolean editSweepConditions(boolean isStrong, boolean isCrit, boolean isSprintHit, Operation<Boolean> original) {
 		double d = this.getKnownMovement().horizontalDistanceSqr();

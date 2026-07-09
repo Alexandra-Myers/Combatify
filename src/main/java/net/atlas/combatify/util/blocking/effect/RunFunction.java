@@ -3,9 +3,13 @@ package net.atlas.combatify.util.blocking.effect;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.util.IdentifierUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+//?}
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -19,18 +23,18 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-public record RunFunction(Identifier function) implements PostBlockEffect {
-	public static final Identifier ID = Identifier.withDefaultNamespace("run_function");
+public record RunFunction(IdentifierUtils.PseudoId function) implements PostBlockEffect {
+	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("run_function");
 	private static final Logger LOGGER = LogUtils.getLogger();
 	public static final MapCodec<RunFunction> MAP_CODEC = RecordCodecBuilder.mapCodec(
-		instance -> instance.group(Identifier.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
+		instance -> instance.group(IdentifierUtils.PSEUDO_CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
 	);
 
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
 		MinecraftServer minecraftServer = serverLevel.getServer();
 		ServerFunctionManager serverFunctionManager = minecraftServer.getFunctions();
-		Optional<CommandFunction<@NotNull CommandSourceStack>> optional = serverFunctionManager.get(this.function);
+		Optional<CommandFunction<@NotNull CommandSourceStack>> optional = serverFunctionManager.get(this.function.id());
 		if (optional.isPresent()) {
 			CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
 				.withPermission(LevelBasedPermissionSet.GAMEMASTER)
@@ -50,8 +54,4 @@ public record RunFunction(Identifier function) implements PostBlockEffect {
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

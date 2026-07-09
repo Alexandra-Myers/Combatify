@@ -5,7 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
-import net.minecraft.resources.Identifier;
+//? >=1.21.11 {
+/*import net.minecraft.resources.Identifier;
+*///?} <1.21.11 {
+import net.atlas.combatify.util.CommonUtils;
+import net.minecraft.resources.ResourceLocation;
+//?}
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -16,8 +21,8 @@ public record CTSCritImpl(boolean allowsSprint, float minimumCharge, float critM
 	public static final Identifier ID = Identifier.withDefaultNamespace("combat_test_8c");
 	public static final MapCodec<CTSCritImpl> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.BOOL.optionalFieldOf("allows_sprint", true).forGetter(CTSCritImpl::allowsSprint),
-				ExtraCodecs.floatRange(-1, 2).optionalFieldOf("minimum_charge", -1F).forGetter(CTSCritImpl::minimumCharge),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("crit_multiplier", 1.5F).forGetter(CTSCritImpl::critMult))
+				CommonUtils.floatRange(-1, 2).optionalFieldOf("minimum_charge", -1F).forGetter(CTSCritImpl::minimumCharge),
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("crit_multiplier", 1.5F).forGetter(CTSCritImpl::critMult))
 			.apply(instance, CTSCritImpl::new));
 
 	@Override

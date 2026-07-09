@@ -16,10 +16,10 @@ public class MobEffectMixin {
 	}
 
 	//? <26.2 {
-	/*@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
-	*///?} >=26.2 {
-	@ModifyConstant(method = "applyInstantaneousEffect", constant = @Constant(intValue = 4))
-	//?}
+	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
+	//?} >=26.2 {
+	/*@ModifyConstant(method = "applyInstantaneousEffect", constant = @Constant(intValue = 4))
+	*///?}
 	public int changeInstantHealth(int constant) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return constant;
 		return Combatify.CONFIG.instantHealthBonus();
