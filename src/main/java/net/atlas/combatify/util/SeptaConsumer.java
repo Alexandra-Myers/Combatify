@@ -10,4 +10,10 @@ public interface SeptaConsumer<H, I, J, K, L, M, N> {
 			after.accept(h, i, j, k, l, m, n);
 		};
 	}
+
+	default HexaConsumer<I, J, K, L, M, N> below(H h) {
+		return (i, j, k, l, m, n) -> {
+			this.accept(h, i, j, k, l, m, n);
+		};
+	}
 }

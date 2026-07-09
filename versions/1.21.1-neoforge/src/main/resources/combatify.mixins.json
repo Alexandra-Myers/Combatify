@@ -47,8 +47,6 @@
     "accessor.FleeSunGoalAccessor",
     "accessor.LivingEntityAccessor",
     "accessor.PlayerAccessor",
-    "compatibility.AtlasCoreMixin",
-    "compatibility.ConfigCommandMixin",
     "compatibility.InvulnerabilityMixin",
     "compatibility.polymer.PolymerComponentMixin",
     "compatibility.viafabricplus.Attributes1_20_5Mixin",
