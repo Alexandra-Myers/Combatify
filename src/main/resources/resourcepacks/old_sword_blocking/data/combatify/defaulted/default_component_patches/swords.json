@@ -1,0 +1,57 @@
+{
+  "tags": [
+    "minecraft:swords"
+  ],
+  "patch": {
+    "minecraft:blocks_attacks": {
+      "damage_reductions": [
+        {
+          "base": -1,
+          "factor": 0.5,
+          "horizontal_blocking_angle": 73.8723797
+        }
+      ],
+      "block_sound": "minecraft:entity.player.hurt",
+      "item_damage": {
+        "threshold": 0,
+        "base": 0,
+        "factor": 0
+      }
+    },
+    "combatify:extended_blocking_data": {
+      "type": "sword",
+      "protection_modifiers": [
+        {
+          "base": {
+            "modifier": {
+              "type": "add",
+              "value": 0
+            }
+          },
+          "factor": {
+            "tooltip": {
+              "translate": "attribute.modifier.equals.2",
+              "with": [
+                {
+                  "translate": "attribute.name.damage_reduction",
+                  "fallback": "Damage Reduction"
+                }
+              ]
+            },
+            "modifier": {
+              "type": "add",
+              "value": 0.5
+            },
+            "tooltip_value_factor": 100
+          }
+        }
+      ],
+      "knockback_modifiers": [],
+      "effect": {
+        "type": "nothing"
+      },
+      "condition": "requires_empty_hand",
+      "hand": "off_hand"
+    }
+  }
+}

@@ -39,7 +39,8 @@
         "threshold": 3,
         "base": 0,
         "factor": 1
-      }
+      },
+      "bypassed_by": "#minecraft:bypasses_shield"
     },
     "combatify:blocking_level": 1,
     "combatify:extended_blocking_data": {

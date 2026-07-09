@@ -38,6 +38,7 @@ import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -66,7 +67,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
-import org.mozilla.javascript.Context;
 
 import java.lang.ref.Cleaner;
 import java.util.*;
@@ -162,7 +162,7 @@ public class Combatify {
 		DataComponentPredicateInit.init();
 		BlockingTypeInit.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) -> isPatched(itemStack.typeHolder().value())
+			PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) -> (packetContext != null && isPatched(packetContext.get(PacketContext.REGISTRY_ACCESS), itemStack.typeHolder().value()))
 				|| itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA) != null
 				|| itemStack.get(CustomDataComponents.CAN_SWEEP) != null
 				|| itemStack.get(CustomDataComponents.BLOCKING_LEVEL) != null
@@ -263,8 +263,8 @@ public class Combatify {
 		return registerBlockingType(blockingType);
 	}
 
-	public static boolean isPatched(Item item) {
-		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached();
+	public static boolean isPatched(RegistryAccess registryAccess, Item item) {
+		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached(registryAccess);
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}

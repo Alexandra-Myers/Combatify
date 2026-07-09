@@ -5,6 +5,7 @@ import eu.pb4.polymer.core.api.other.PolymerComponent;
 import net.atlas.combatify.component.custom.ProtectionBaseFactor;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffect;
 import net.atlas.combatify.util.blocking.effect.PostBlockEffects;
+import net.atlas.defaulted.enchantment.generators.AddEffectGenerator;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -44,5 +45,8 @@ public class CustomEnchantmentEffectComponents {
 			PolymerComponent.registerEnchantmentEffectComponent(SHIELD_EFFECTIVENESS);
 			PolymerComponent.registerEnchantmentEffectComponent(SHIELD_DISABLE);
 		}
+		AddEffectGenerator.VALID_TYPES.add(CustomEnchantmentEffectComponents.SHIELD_DISABLE);
+		AddEffectGenerator.VALID_TYPES.add(CustomEnchantmentEffectComponents.SHIELD_EFFECTIVENESS);
+		AddEffectGenerator.VALID_TYPES.add(CustomEnchantmentEffectComponents.POST_BLOCK_EFFECTS);
 	}
 }

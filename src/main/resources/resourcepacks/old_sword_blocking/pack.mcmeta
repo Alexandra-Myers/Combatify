@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "Datapack that enables sword blocking with the <1.8 formulas.",
+    "min_format": 82,
+    "max_format": 107.1
+  }
+}

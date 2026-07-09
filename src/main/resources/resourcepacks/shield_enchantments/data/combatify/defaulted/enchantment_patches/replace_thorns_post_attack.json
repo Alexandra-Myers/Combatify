@@ -1,0 +1,79 @@
+{
+  "elements": [
+    "#combatify:uses_thorns_post_attack"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:modify_list_effect",
+      "component": "minecraft:post_attack",
+      "to_remove": [
+        {
+          "affected": "attacker",
+          "effect": {
+            "type": "minecraft:all_of",
+            "effects": [
+              {
+                "type": "minecraft:damage_entity",
+                "damage_type": "minecraft:thorns",
+                "max_damage": 5.0,
+                "min_damage": 1.0
+              },
+              {
+                "type": "minecraft:change_item_damage",
+                "amount": 2.0
+              }
+            ]
+          },
+          "enchanted": "victim",
+          "requirements": {
+            "chance": {
+              "type": "minecraft:enchantment_level",
+              "amount": {
+                "type": "minecraft:linear",
+                "base": 0.15,
+                "per_level_above_first": 0.15
+              }
+            },
+            "condition": "minecraft:random_chance"
+          }
+        }
+      ],
+      "to_add": [
+        {
+          "affected": "attacker",
+          "effect": {
+            "type": "minecraft:all_of",
+            "effects": [
+              {
+                "type": "minecraft:damage_entity",
+                "damage_type": "minecraft:thorns",
+                "max_damage": 5.0,
+                "min_damage": {
+                  "type": "minecraft:linear",
+                  "base": 1.0,
+                  "per_level_above_first": 0.5
+                }
+              },
+              {
+                "type": "minecraft:change_item_damage",
+                "amount": 1
+              }
+            ]
+          },
+          "enchanted": "victim",
+          "requirements": {
+            "chance": {
+              "type": "minecraft:enchantment_level",
+              "amount": {
+                "type": "minecraft:linear",
+                "base": 0.1,
+                "per_level_above_first": 0.2
+              }
+            },
+            "condition": "minecraft:random_chance"
+          }
+        }
+      ]
+    }
+  ]
+}

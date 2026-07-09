@@ -1,0 +1,65 @@
+{
+  "elements": [
+    "#combatify:is_cleaving"
+  ],
+  "patch_generators": [
+    {
+      "generator": "defaulted:modify_list_effect",
+      "component": "combatify:shield_disable_time",
+      "to_remove": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "type": "minecraft:linear",
+              "base": 0.5,
+              "per_level_above_first": 0.5
+            }
+          },
+          "enchanted": "attacker"
+        }
+      ],
+      "to_add": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "type": "minecraft:linear",
+              "base": 0.75,
+              "per_level_above_first": 0.75
+            }
+          },
+          "enchanted": "attacker"
+        }
+      ]
+    },
+    {
+      "generator": "defaulted:modify_list_effect",
+      "component": "minecraft:damage",
+      "to_remove": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "type": "minecraft:linear",
+              "base": 2.0,
+              "per_level_above_first": 1.0
+            }
+          }
+        }
+      ],
+      "to_add": [
+        {
+          "effect": {
+            "type": "minecraft:add",
+            "value": {
+              "type": "minecraft:linear",
+              "base": 2.0,
+              "per_level_above_first": 0.5
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

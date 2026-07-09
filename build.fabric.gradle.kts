@@ -157,6 +157,7 @@ repositories {
             includeGroup("com.viaversion")
             includeGroup("com.viaversion.mcstructs")
             includeGroup("net.raphimc")
+            includeGroup("de.florianmichael")
         }
     }
     maven {
@@ -186,19 +187,20 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:${property("deps.minecraft")}")
     loomx.applyMojangMappings()
-    implementation("net.fabricmc:fabric-loader:${property("deps.fabric-loader")}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric-api")}")
-    implementation("com.terraformersmc:modmenu:${property("deps.modmenu")}")
-    api("me.shedaniel.cloth:cloth-config-fabric:${property("deps.cloth-config")}")
+    modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric-loader")}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric-api")}")
+    modImplementation("com.terraformersmc:modmenu:${property("deps.modmenu")}")
+    modApi("me.shedaniel.cloth:cloth-config-fabric:${property("deps.cloth-config")}")
 
-    implementation("maven.modrinth:sodium:${property("deps.sodium")}")
-    implementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}-Fabric")
-    implementation("maven.modrinth:defaulted:${property("deps.defaulted")}")
-    implementation("com.viaversion:viafabricplus:${property("deps.viafabricplus")}")
-    api("com.terraformersmc:modmenu:${property("deps.modmenu")}")
-    implementation("maven.modrinth:cookeymod:${property("deps.cookeymod")}")
-    implementation("eu.pb4:polymer-core:${property("deps.polymer")}")
-    implementation("squeek.appleskin:appleskin-fabric:${property("deps.appleskin")}")
+    modImplementation("maven.modrinth:sodium:${property("deps.sodium")}")
+    modImplementation("maven.modrinth:atlas-core:${property("deps.atlas_core")}-Fabric")
+    modImplementation("maven.modrinth:defaulted:${property("deps.defaulted")}")
+    if (stonecutter.eval(stonecutter.current.version, ">=1.21.4")) modImplementation("com.viaversion:viafabricplus:${property("deps.viafabricplus")}")
+    else modImplementation("de.florianmichael:ViaFabricPlus:${property("deps.viafabricplus")}")
+    modApi("com.terraformersmc:modmenu:${property("deps.modmenu")}")
+    modImplementation("maven.modrinth:cookeymod:${property("deps.cookeymod")}")
+    modImplementation("eu.pb4:polymer-core:${property("deps.polymer")}")
+    modImplementation("squeek.appleskin:appleskin-fabric:${property("deps.appleskin")}")
     implementation("org.mozilla:rhino-all:${property("deps.rhino")}")
 
     implementation("com.fasterxml.jackson.core:jackson-core:${property("deps.jackson")}")
