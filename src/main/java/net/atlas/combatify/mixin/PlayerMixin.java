@@ -13,6 +13,9 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
+//? <26.2 {
+/*import net.atlas.combatify.config.KnockbackMode;
+*///?}
 import net.atlas.combatify.extensions.PlayerExtensions;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
@@ -296,7 +299,8 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	//? <26.2 {
 	/*@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player)), d, e, f, original::call);
+		KnockbackMode.extractContext(instance, player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player)));
+		original.call(instance, d, e, f);
 	}
 	*///?}
 	@WrapMethod(method = "isSweepAttack")

@@ -12,7 +12,12 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
-import org.jetbrains.annotations.Nullable;
+//? <26.2 {
+/*import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+*///?}
 
 public enum KnockbackMode {
 	VANILLA,
@@ -20,9 +25,14 @@ public enum KnockbackMode {
 	CTS_8C,
 	CTS_5,
 	MIDAIR;
+	//? <26.2 {
+	/*private static final Map<LivingEntity, DamageSource> CONTEXTS = new WeakHashMap<>();
+	*///?}
 	public void runKnockback(
 		LivingEntity target,
-		@Nullable DamageSource source,
+		//? >=26.2 {
+		DamageSource source,
+		//?}
 		double strength,
 		double x,
 		double z,
@@ -34,6 +44,9 @@ public enum KnockbackMode {
 		boolean fromEffect
 		//?}
 	) {
+		//? <26.2 {
+		/*@Nullable DamageSource source = CONTEXTS.remove(target);
+		*///?}
 		boolean applyNonProjectileKB = false;
 		if (this == MIDAIR && source == null) applyNonProjectileKB = true;
 		else if (source != null) applyNonProjectileKB = (Combatify.CONFIG.fishingHookKB() && source.getDirectEntity() instanceof FishingHook);
@@ -62,4 +75,10 @@ public enum KnockbackMode {
 			default -> original;
 		};
 	}
+
+	//? <26.2 {
+	/*public static void extractContext(LivingEntity target, DamageSource source) {
+		CONTEXTS.put(target, source);
+	}
+	*///?}
 }

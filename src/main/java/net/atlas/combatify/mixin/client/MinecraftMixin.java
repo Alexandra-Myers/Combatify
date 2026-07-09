@@ -15,7 +15,9 @@ import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.Options;
+//? >=26.2 {
 import net.minecraft.client.gui.Gui;
+//?}
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -79,8 +81,9 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	/*@Shadow
 	@Nullable
 	public Screen screen;
-	*///?} >=26.1.2 {
+	*///?} >=26.2 {
 	@Shadow
+	@Final
 	@Nullable
 	public Gui gui;
 	//?}
@@ -95,7 +98,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	}
 	@Inject(method = "tick", at = @At(value = "TAIL"))
 	public void injectSomething(CallbackInfo ci) {
-		if (this.screen() != null)
+		if (this.combatify$screen() != null)
 			this.retainAttack = false;
 	}
 	@ModifyExpressionValue(method = "handleKeybinds",
@@ -194,7 +197,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
-		boolean bl1 = this.screen() == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
+		boolean bl1 = this.combatify$screen() == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
 		boolean bl2 = (CombatifyClient.autoAttack.get() && Combatify.CONFIG.autoAttackAllowed() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) || this.retainAttack;
 		if (player != null && missTime <= 0) {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
@@ -234,7 +237,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 
 	@Unique
 	@Nullable
-	public Screen screen() {
+	public Screen combatify$screen() {
 		//? < 26.2 {
 		/*return this.screen;
 		*///?} >= 26.2 {

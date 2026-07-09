@@ -7,6 +7,9 @@ import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
+//? <26.2 {
+/*import net.atlas.combatify.config.KnockbackMode;
+*///?}
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
@@ -29,9 +32,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
-//? <26.2 {
-/*import net.minecraft.world.entity.monster.creaking.Creaking;
-*///?}
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -182,7 +182,8 @@ public class MethodHandler {
 				float enchantedDamage = enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource);
 				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)) {
 					//? <26.2 {
-					/*Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback);
+					/*KnockbackMode.extractContext(livingEntity, damageSource);
+					livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
 					*///?} >=26.2 {
 					livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), -Mth.cos(player.getYRot() * 0.017453292F), damageSource, enchantedDamage);
 					//?}
@@ -210,9 +211,6 @@ public class MethodHandler {
 	}
 
 	public static void knockback(LivingEntity entity, double strength, double x, double z) {
-		//? <26.2 {
-		/*if (entity instanceof Creaking creaking && !creaking.canMove()) return;
-		*///?}
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
@@ -228,9 +226,6 @@ public class MethodHandler {
 		}
 	}
 	public static void midairKnockback(LivingEntity entity, double strength, double x, double z) {
-		//? <26.2 {
-		/*if (entity instanceof Creaking creaking && !creaking.canMove()) return;
-		*///?}
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
@@ -246,9 +241,6 @@ public class MethodHandler {
 		}
 	}
 	public static void oldKnockback(LivingEntity entity, double strength, double x, double z) {
-		//? <26.2 {
-		/*if (entity instanceof Creaking creaking && !creaking.canMove()) return;
-		*///?}
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
@@ -264,9 +256,6 @@ public class MethodHandler {
 		}
 	}
 	public static void combatTest5Knockback(LivingEntity entity, double strength, double x, double z) {
-		//? <26.2 {
-		/*if (entity instanceof Creaking creaking && !creaking.canMove()) return;
-		*///?}
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;

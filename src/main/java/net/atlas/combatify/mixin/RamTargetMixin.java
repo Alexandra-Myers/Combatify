@@ -4,7 +4,7 @@ package net.atlas.combatify.mixin;
 /*import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.atlas.combatify.Combatify;
+import net.atlas.combatify.config.KnockbackMode;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 *///?}
@@ -19,7 +19,8 @@ public class RamTargetMixin {
 	//? <26.2 {
 	/*@WrapOperation(method = "tick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/animal/goat/Goat;J)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double strength, double x, double z, Operation<Void> original, @Local(ordinal = 1) DamageSource source) {
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call);
+		KnockbackMode.extractContext(instance, source);
+		original.call(instance, strength, x, z);
 	}
 	*///?}
 }

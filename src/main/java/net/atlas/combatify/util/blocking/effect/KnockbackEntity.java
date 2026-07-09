@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 //? <26.2 {
-/*import net.atlas.combatify.Combatify;
+/*import net.atlas.combatify.config.KnockbackMode;
 *///?}
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -46,7 +46,8 @@ public record KnockbackEntity(LevelBasedValue strength,
 		double z = targetPosition.z() - attackerPosition.z();
 		if (force) toApply.hurtMarked = true;
 		//? <26.2 {
-		/*Combatify.CONFIG.knockbackMode().runKnockback(toApply, damageSource, this.strength().calculate(enchantmentLevel), x, z, LivingEntity::knockback);
+		/*KnockbackMode.extractContext(toApply, damageSource);
+		toApply.knockback(this.strength().calculate(enchantmentLevel), x, z);
 		*///?} >=26.2 {
 		toApply.knockback(this.strength().calculate(enchantmentLevel), x, z, damageSource, this.imaginedDamage().calculate(enchantmentLevel));
 		//?}

@@ -3,18 +3,15 @@ package net.atlas.combatify.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-//? >=26.2 {
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-//?}
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-//? <26.2 {
-/*import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-*///?}
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.EatingInterruptionMode;
+//? <26.2 {
+/*import net.atlas.combatify.config.KnockbackMode;
+*///?}
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.MethodHandler;
@@ -262,7 +259,8 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 		if (blocked && amount > 0)
 			indicateDamage(x, z);
 		//? <26.2 {
-		/*Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call);
+		/*KnockbackMode.extractContext(instance, source);
+		original.call(instance, strength, x, z);
 		*///?} >=26.2 {
 		original.call(instance, strength, x, z, source, amount);
 		//?}
@@ -293,7 +291,12 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	public void knockback(LivingEntity instance, double strength, double x, double z, Operation<Void> original) {
 		ItemStack itemStack = this.getWeaponItem();
 		DamageSource source = itemStack.getDamageSource(thisEntity, () -> this.damageSources().mobAttack(thisEntity));
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, source, strength, x, z, original::call);
+		KnockbackMode.extractContext(instance, source);
+		original.call(instance, strength, x, z);
+	}
+	@WrapMethod(method = "knockback(DDD)V")
+	public void knockback(double power, double xd, double zd, Operation<Void> original) {
+		Combatify.CONFIG.knockbackMode().runKnockback(thisEntity, power, xd, zd, original::call);
 	}
 	*///?} >=26.2 {
 	@WrapMethod(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V")
