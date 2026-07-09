@@ -360,6 +360,11 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		resetAttackStrengthTicker(hit, force, true, Player::resetAttackStrengthTicker);
 	}
 
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit, Consumer<Player> original) {
+		resetAttackStrengthTicker(hit, false, true, original);
+	}
+
 	@Unique
 	public void resetAttackStrengthTicker(boolean hit, boolean force, boolean resetItemSwapTicker, Consumer<Player> vanillaReset) {
 		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {

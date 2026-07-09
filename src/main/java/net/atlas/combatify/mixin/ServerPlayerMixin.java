@@ -101,14 +101,12 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 		if (Combatify.unmoddedPlayers.contains(getUUID()))
 			Combatify.isPlayerAttacking.put(getUUID(), false);
 	}
-	@Inject(method = "swing", at = @At(value = "HEAD"), cancellable = true)
-	public void removeReset(InteractionHand hand, CallbackInfo ci) {
-		super.swing(hand);
+	@WrapOperation(method = "swing", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;resetAttackStrengthTicker()V"))
+	public void removeReset(ServerPlayer instance, Operation<Void> original) {
 		if (Combatify.unmoddedPlayers.contains(getUUID())) {
 			if (Combatify.isPlayerAttacking.get(getUUID())) handleInteract();
 			Combatify.isPlayerAttacking.put(getUUID(), true);
 		}
-		ci.cancel();
 	}
 	@Unique
 	public void handleInteract() {

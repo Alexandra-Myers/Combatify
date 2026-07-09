@@ -54,7 +54,8 @@ public class MethodHandler {
 	public static void forceUpdateItems(Player player, boolean force) {
 		if (!Combatify.CONFIG.attributeSwappingFix() && !force) return;
 		((LivingEntityAccessor) player).callDetectEquipmentUpdates();
-		if (!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
+		if (!ItemStack.matches(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
+			!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
 			(Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))
 			player.combatify$resetAttackStrengthTicker(false, true);
 	}
