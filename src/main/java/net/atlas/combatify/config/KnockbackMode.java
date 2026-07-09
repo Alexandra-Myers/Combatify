@@ -30,18 +30,16 @@ public enum KnockbackMode {
 	*///?}
 	public void runKnockback(
 		LivingEntity target,
-		//? >=26.2 {
-		DamageSource source,
-		//?}
 		double strength,
 		double x,
 		double z,
 		//? <26.2 {
 		/*TetraConsumer<LivingEntity, Double, Double, Double> vanillaCall
 		*///?} >=26.2 {
-		HexaConsumer<Double, Double, Double, DamageSource, Float, Boolean> vanillaCall,
+		DamageSource source,
 		float damage,
-		boolean fromEffect
+		boolean fromEffect,
+		HexaConsumer<Double, Double, Double, DamageSource, Float, Boolean> vanillaCall
 		//?}
 	) {
 		//? <26.2 {

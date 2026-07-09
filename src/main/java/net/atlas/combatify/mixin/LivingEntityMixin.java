@@ -301,7 +301,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 	*///?} >=26.2 {
 	@WrapMethod(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V")
 	public void knockback(double power, double xd, double zd, DamageSource source, float damage, boolean comesFromEffect, Operation<Void> original) {
-		Combatify.CONFIG.knockbackMode().runKnockback(thisEntity, source, power, xd, zd, original::call, damage, comesFromEffect);
+		Combatify.CONFIG.knockbackMode().runKnockback(thisEntity, power, xd, zd, source, damage, comesFromEffect, original::call);
 	}
 	//?}
 	//? <26.2 {
