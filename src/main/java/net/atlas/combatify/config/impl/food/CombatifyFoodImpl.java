@@ -3,10 +3,11 @@ package net.atlas.combatify.config.impl.food;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.CommonUtils;
 //? >=1.21.11 {
 /*import net.minecraft.resources.Identifier;
 *///?} <1.21.11 {
-import net.atlas.combatify.util.CommonUtils;
+
 import net.minecraft.resources.ResourceLocation;
 //?}
 import net.minecraft.util.ExtraCodecs;

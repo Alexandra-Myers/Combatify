@@ -4,9 +4,10 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import org.jetbrains.annotations.Nullable;
 //? >=1.21.11 {
 /*import net.minecraft.resources.Identifier;
- *///?} <1.21.11 {
+	*///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
 

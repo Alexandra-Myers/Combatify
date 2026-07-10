@@ -3,8 +3,8 @@ package net.atlas.combatify.util.blocking.condition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-//? <26.2 {
 import net.atlas.combatify.util.IdentifierUtils;
+//? <26.2 {
 import net.minecraft.advancements.criterion.DataComponentMatchers;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
