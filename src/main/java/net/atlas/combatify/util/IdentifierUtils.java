@@ -41,7 +41,6 @@ public class IdentifierUtils {
 	}
 
 	public record PseudoId(Identifier id) {
-	}
 	*///?} <1.21.11 {
 	public static final Codec<ResourceLocation> CODEC = ResourceLocation.CODEC;
 	public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC = ResourceLocation.STREAM_CODEC;
@@ -65,7 +64,6 @@ public class IdentifierUtils {
 	public static ResourceLocation withDefaultNamespace(String string) {
 		return ResourceLocation.withDefaultNamespace(string);
 	}
-
 	public record PseudoId(ResourceLocation id) {
 	//?}
 		public static PseudoId fromNamespaceAndPath(String namespace, String path) {
