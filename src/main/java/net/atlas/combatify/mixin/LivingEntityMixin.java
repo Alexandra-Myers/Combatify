@@ -14,6 +14,7 @@ import net.atlas.combatify.config.KnockbackMode;
 //?}
 import net.atlas.combatify.extensions.*;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Holder;
@@ -124,7 +125,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
 
 	@Unique
 	public void resetAttackStrengthTicker(boolean force) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			return;
 		}
 		if ((!Combatify.CONFIG.attackSpeed() && getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20) || Combatify.CONFIG.instaAttack())

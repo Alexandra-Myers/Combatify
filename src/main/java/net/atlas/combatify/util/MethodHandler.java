@@ -65,7 +65,7 @@ public class MethodHandler {
 		((LivingEntityAccessor) player).callDetectEquipmentUpdates();
 		if (!ItemStack.matches(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
 			!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
-			(Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))
+			(Combatify.CONFIG.resetOnItemChange() || Combatify.isStateVanilla()))
 			player.combatify$resetAttackStrengthTicker(false, true);
 	}
 	public static boolean checkSweepAttack(Player player) {
@@ -105,7 +105,7 @@ public class MethodHandler {
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
 		if (entity instanceof Player player)
 			return player.getAttackStrengthScale(baseTime);
-		return Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
+		return Combatify.CONFIG.chargedAttacks() && !(Combatify.isStateVanilla()) ? 2.0f : 1.0f;
 	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -154,7 +154,7 @@ public class MethodHandler {
 		return attributeInstance.getAttribute().value().sanitizeValue(attributeInstanceFinalValue);
 	}
 	public static float getFatigueForTime(int f) {
-		if (f < 60 || !Combatify.CONFIG.bowFatigue() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (f < 60 || !Combatify.CONFIG.bowFatigue() || Combatify.isStateVanilla())
 			return 0.5F;
 		else
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
@@ -414,7 +414,7 @@ public class MethodHandler {
 	}
 	public static InteractionHand canCrouchShield(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) return null;
-		if (!((entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && ((entity.onGround() && entity.isCrouching()) || entity.isPassenger()))) return null;
+		if (!((entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.isStateVanilla()) && ((entity.onGround() && entity.isCrouching()) || entity.isPassenger()))) return null;
 		for (InteractionHand hand : InteractionHand.values()) {
 			ItemStack stack = entity.getItemInHand(hand);
 			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
@@ -452,7 +452,7 @@ public class MethodHandler {
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		if (Combatify.isStateVanilla()) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
 		double chargedBonus = updatePlayerReach(player, attackRange, strengthScale);
@@ -464,7 +464,7 @@ public class MethodHandler {
 
 	public static double getCurrentAttackReachWithoutChargedReach(Player player) {
 		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		if (Combatify.isStateVanilla()) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		return (attackRange != null) ? calculateValueBlacklistChargedReachModifier(attackRange) : baseAttackRange;
 	}
@@ -564,7 +564,7 @@ public class MethodHandler {
 		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
 		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
 		if (!Combatify.CONFIG.mobsUsePlayerAttributes() || attackSpeed == null) return 10;
-		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C));
+		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.isStateVanilla()) && !Combatify.getState().equals(CombatifyState.CTS_8C));
 		double speed = attackSpeed.getValue();
 		speed = Mth.clamp(speed, 1.0, 1024.0);
 		double result = (1.0 / speed * 20.0);

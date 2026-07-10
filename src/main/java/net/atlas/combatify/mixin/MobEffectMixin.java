@@ -1,6 +1,7 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.CombatifyState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
@@ -11,7 +12,7 @@ public class MobEffectMixin {
 
 	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))
 	public int changeInstantHealthTick(int constant) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return constant;
+		if (Combatify.isStateVanilla()) return constant;
 		return Combatify.CONFIG.instantHealthBonus();
 	}
 
@@ -21,7 +22,7 @@ public class MobEffectMixin {
 	/*@ModifyConstant(method = "applyInstantaneousEffect", constant = @Constant(intValue = 4))
 	*///?}
 	public int changeInstantHealth(int constant) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return constant;
+		if (Combatify.isStateVanilla()) return constant;
 		return Combatify.CONFIG.instantHealthBonus();
 	}
 }

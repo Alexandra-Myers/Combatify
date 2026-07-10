@@ -11,6 +11,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.extensions.MinecraftExtensions;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -107,7 +108,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 			),
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 0))
 	public boolean allowBlockHitting(boolean original) {
-		if (!original || !Combatify.getState().equals(Combatify.CombatifyState.COMBATIFY)) return false;
+		if (!original || !Combatify.getState().equals(CombatifyState.COMBATIFY)) return false;
 		if (player != null) {
 			ItemStack stack = player.getUseItem();
 			boolean bl = getBlockingType(stack).canBlockHit() && !getBlockingType(stack).isEmpty();
@@ -131,7 +132,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	}
 	@WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
 	public boolean redirectAttack(Minecraft instance, Operation<Boolean> original) {
-		return original.call(instance) && Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
+		return original.call(instance) && Combatify.isStateVanilla();
 	}
 	@WrapOperation(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;attack(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;)V"))
 	public void addReachCheck(MultiPlayerGameMode instance, Player player, Entity entity, Operation<Void> original, @Share("overrodeReach") LocalBooleanRef overrodeReach) {
@@ -169,7 +170,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	public boolean makeAbleToAttack(boolean original) {
 		if (!original) return false;
 		assert hitResult != null;
-		return hitResult.getType() != HitResult.Type.BLOCK || Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
+		return hitResult.getType() != HitResult.Type.BLOCK || Combatify.isStateVanilla();
 	}
 	@ModifyExpressionValue(method = "startAttack", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;")), at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;hitResult:Lnet/minecraft/world/phys/HitResult;"))
 	public HitResult modifyHitResult(HitResult original) {
@@ -179,7 +180,7 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	@SuppressWarnings("unused")
 	@ModifyExpressionValue(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))
 	public boolean removeMissTime(boolean original) {
-		if (Combatify.CONFIG.hasMissTime() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.CONFIG.hasMissTime() || Combatify.isStateVanilla())
 			return original;
 		return false;
 	}
@@ -198,12 +199,12 @@ public abstract class MinecraftMixin implements MinecraftExtensions {
 	@Inject(method = "continueAttack", at = @At(value = "HEAD"), cancellable = true)
 	private void continueAttack(boolean bl, CallbackInfo ci) {
 		boolean bl1 = this.combatify$screen() == null && (this.options.keyAttack.isDown() || this.retainAttack) && this.mouseHandler.isMouseGrabbed();
-		boolean bl2 = (CombatifyClient.autoAttack.get() && Combatify.CONFIG.autoAttackAllowed() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) || this.retainAttack;
+		boolean bl2 = (CombatifyClient.autoAttack.get() && Combatify.CONFIG.autoAttackAllowed() && !Combatify.isStateVanilla()) || this.retainAttack;
 		if (player != null && missTime <= 0) {
 			boolean cannotPerform = this.player.isUsingItem() || (!Combatify.CONFIG.canInteractWhenCrouchShield() && player.isBlocking());
 			if (!cannotPerform) {
 				float minAttackCharge = player.getItemInHand(InteractionHand.MAIN_HAND).getOrDefault(DataComponents.MINIMUM_ATTACK_CHARGE, Combatify.CONFIG.chargedAttacks() ? 0.5F : 1.0F);
-				if (!Combatify.getState().equals(Combatify.CombatifyState.VANILLA) && Combatify.CONFIG.chargedAttacks()) minAttackCharge *= 2;
+				if (!Combatify.isStateVanilla() && Combatify.CONFIG.chargedAttacks()) minAttackCharge *= 2;
 				boolean canAutoAttack = !Combatify.CONFIG.canAttackEarly() ? this.player.combatify$isAttackAvailable(-1.0F, this.player.getItemInHand(InteractionHand.MAIN_HAND)) : this.player.getAttackStrengthScale(-1.0F) >= minAttackCharge;
 				if (bl1 && this.hitResult != null && this.hitResult.getType() == HitResult.Type.BLOCK && this.aimAssistHitResult == null) {
 					this.retainAttack = false;

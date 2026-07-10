@@ -20,6 +20,7 @@ import net.atlas.combatify.item.ItemRegistry;
 import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.IdentifierUtils;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
@@ -65,11 +66,13 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 //? >=1.21.11 {
 /*import net.minecraft.util.Util;
+import net.minecraft.world.InteractionResult;
 *///?} <1.21.11 {
 import net.minecraft.Util;
-//?}
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+//?}
+
+
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -152,8 +155,9 @@ public class Combatify {
 				if (hitResult.getType() == HitResult.Type.ENTITY && player instanceof ServerPlayer serverPlayer) {
 					//? >=26.1 {
 					/*serverPlayer.connection.handleAttack(new ServerboundAttackPacket(((EntityHitResult) hitResult).getEntity().getId()));
-					*///?}
+					*///?} <26.1 {
 					serverPlayer.connection.handleInteract(ServerboundInteractPacket.createAttackPacket(((EntityHitResult) hitResult).getEntity(), player.isShiftKeyDown()));
+					//?}
 					return InteractionResult.FAIL;
 				}
 			}
@@ -345,46 +349,13 @@ public class Combatify {
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}
 
+	public static boolean isStateVanilla() {
+		return getState().equals(CombatifyState.VANILLA);
+	}
+
 	static {
 		FoodImpl.bootstrap();
 		CritImpl.bootstrap();
 		CONFIG = new CombatifyGeneralConfig();
-	}
-	enum CombatifyState {
-		VANILLA(0, "Vanilla", "vanilla"),
-		CTS_8C(1, "CTS 8C", "combat_test"),
-		COMBATIFY(2, "Combatify", "combatify");
-
-		public static final Codec<CombatifyState> CODEC = Codec.INT.xmap(id -> switch (Mth.positiveModulo(id, 3)) {
-			case 0 -> Combatify.CombatifyState.VANILLA;
-			case 1 -> Combatify.CombatifyState.CTS_8C;
-			default -> Combatify.CombatifyState.COMBATIFY;
-		}, Combatify.CombatifyState::id);
-
-		public final int id;
-		public final String name;
-		public final Component caption;
-
-		CombatifyState(int id, String name, String key) {
-			this.id = id;
-			this.name = name;
-			this.caption = Component.translatableWithFallback("options.combatify_state." + key, name);
-		}
-
-		public int id() {
-			return id;
-		}
-
-		public Component caption() {
-			return caption;
-		}
-
-		@Override
-		public String toString() {
-			return "CombatifyState{" +
-				"id=" + id + '\n' +
-				"name='" + name + '\'' +
-				'}';
-		}
 	}
 }

@@ -12,6 +12,7 @@ import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.client.ClientMethodHandler;
 import net.atlas.combatify.extensions.MinecraftExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -88,7 +89,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 
 	@WrapOperation(method = "isSprintingPossible", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;hasEnoughFoodToDoExhaustiveManoeuvres()Z"))
 	public boolean modifyFoodRequirement(LocalPlayer instance, Operation<Boolean> original) {
-		return Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? original.call(instance) : this.getAbilities().mayfly || instance.getFoodData().getFoodLevel() > Combatify.CONFIG.getFoodImpl().getMinimumSprintLevel(6.0F, instance);
+		return Combatify.isStateVanilla() ? original.call(instance) : this.getAbilities().mayfly || instance.getFoodData().getFoodLevel() > Combatify.CONFIG.getFoodImpl().getMinimumSprintLevel(6.0F, instance);
 	}
     @Redirect(method = "hurtTo", at = @At(value = "FIELD", target = "Lnet/minecraft/client/player/LocalPlayer;invulnerableTime:I", opcode = Opcodes.PUTFIELD, ordinal = 0))
     private void syncInvulnerability(LocalPlayer player, int x) {
@@ -114,13 +115,13 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	@ModifyExpressionValue(method = "raycastHitResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
 	public HitResult addSwingThroughGrass(HitResult original) {
 		HitResult redirectedResult = ClientMethodHandler.redirectResult(original);
-		if (redirectedResult != null && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original = redirectedResult;
+		if (redirectedResult != null && !Combatify.isStateVanilla()) original = redirectedResult;
 		return original;
 	}
 
 	@ModifyReturnValue(method = "raycastHitResult", at = @At(value = "RETURN"))
 	public HitResult addBedrockBridging(HitResult original, @Local(ordinal = 0, argsOnly = true) Entity entity, @Local(ordinal = 0, argsOnly = true) float partialTicks) {
-		if ((original == null || original.getType() == HitResult.Type.MISS) && Combatify.CONFIG.bedrockBridging() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if ((original == null || original.getType() == HitResult.Type.MISS) && Combatify.CONFIG.bedrockBridging() && !Combatify.isStateVanilla()) {
 			Vec3 viewVector = entity.getViewVector(1.0F);
 			if (entity.onGround() && viewVector.y < -0.7) {
 				Vec3 adjustedPos = entity.getPosition(partialTicks).add(0.0, -0.1, 0.0);
@@ -131,7 +132,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 				original = result;
 			}
 		}
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || Combatify.CONFIG.aimAssistTicks() == 0)
+		if (Combatify.isStateVanilla() || Combatify.CONFIG.aimAssistTicks() == 0)
 			((MinecraftExtensions)minecraft).combatify$setAimAssistHitResult(null);
 		else if (original.getType() == HitResult.Type.ENTITY)
 			((MinecraftExtensions)minecraft).combatify$setAimAssistHitResult(original);

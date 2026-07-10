@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
+import net.atlas.combatify.util.CombatifyState;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.OptionInstance;
@@ -58,12 +59,12 @@ public class CombatifyClient {
 
 		}
 	);
-	public static final OptionInstance<Combatify.@NotNull CombatifyState> combatifyState = new OptionInstance<>(
+	public static final OptionInstance<@NotNull CombatifyState> combatifyState = new OptionInstance<>(
 		"options.combatifyState",
 		OptionInstance.noTooltip(),
 		(component, state) -> state.caption(),
-		new OptionInstance.Enum<>(Arrays.asList(Combatify.CombatifyState.values()), Combatify.CombatifyState.CODEC),
-		Combatify.CombatifyState.COMBATIFY,
+		new OptionInstance.Enum<>(Arrays.asList(CombatifyState.values()), CombatifyState.CODEC),
+		CombatifyState.COMBATIFY,
 		value -> {
 
 		}

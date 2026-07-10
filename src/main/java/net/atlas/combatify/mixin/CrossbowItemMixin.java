@@ -2,6 +2,7 @@ package net.atlas.combatify.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.CombatifyState;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +16,7 @@ public abstract class CrossbowItemMixin extends ProjectileWeaponItem {
 	}
 	@ModifyExpressionValue(method = "use", at = @At(value = "CONSTANT", args = "floatValue=1.0F", ordinal = 0))
 	public float releaseUsing(float original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		return Combatify.CONFIG.crossbowUncertainty().floatValue();
 	}
 }

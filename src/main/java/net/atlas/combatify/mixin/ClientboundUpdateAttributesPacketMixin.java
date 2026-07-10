@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IUpdateAttributesPacket;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.CombatifyState;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,7 +37,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
 					.filter(attributeModifier -> attributeModifier.id().equals(Item.BASE_ATTACK_SPEED_ID))
 					.toList()
-					.isEmpty() && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C);
+					.isEmpty() && !Combatify.getState().equals(CombatifyState.CTS_8C);
 				int mul = Combatify.CONFIG.chargedAttacks() ? 2 : 1;
 				double newSpeed = speed - mod;
 				if (hasVanilla || newSpeed <= 0) newSpeed += mod;

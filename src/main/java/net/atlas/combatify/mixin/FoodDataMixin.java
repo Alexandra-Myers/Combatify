@@ -9,6 +9,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.FoodDataExtensions;
+import net.atlas.combatify.util.CombatifyState;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +24,7 @@ public class FoodDataMixin implements FoodDataExtensions {
 	private final FoodData foodData = FoodData.class.cast(this);
 	@WrapMethod(method = "add")
 	public void capAt20(int food, float saturation, Operation<Void> original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(food, saturation);
 			return;
 		}
@@ -39,37 +40,37 @@ public class FoodDataMixin implements FoodDataExtensions {
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int changeConst(int original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		return Combatify.CONFIG.getFoodImpl().getMinimumHealingLevel(original);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=20"))
 	public int changeConst2(int original, @Local(ordinal = 0, argsOnly = true) ServerPlayer player) {
-		if (Combatify.CONFIG.getFoodImpl().canFastHeal(foodData, player) || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return Combatify.CONFIG.getFoodImpl().getMinimumFastHealingLevel(original);
+		if (Combatify.CONFIG.getFoodImpl().canFastHeal(foodData, player) || Combatify.isStateVanilla()) return Combatify.CONFIG.getFoodImpl().getMinimumFastHealingLevel(original);
 		return 1000000;
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=10", ordinal = 0))
 	public int redirectTickTimer(int original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		return Combatify.CONFIG.getFoodImpl().getFastHealTicks(original);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=80", ordinal = 0))
 	public int redirectTickTimer1(int original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		return Combatify.CONFIG.getFoodImpl().getHealTicks(original);
 	}
 
 	@ModifyExpressionValue(method = "tick", at = @At(value = "CONSTANT", args = "intValue=80", ordinal = 1))
 	public int redirectTickTimer2(int original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		return Combatify.CONFIG.getFoodImpl().getStarvationTicks(original);
 	}
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;heal(F)V", ordinal = 0))
 	public void modifyFastHealing(ServerPlayer instance, float health, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(instance, health);
 			return;
 		}
@@ -81,7 +82,7 @@ public class FoodDataMixin implements FoodDataExtensions {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V", ordinal = 0))
 	public void modifyFastHealing(FoodData instance, float exhaustion, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(instance, exhaustion);
 			return;
 		}
@@ -92,7 +93,7 @@ public class FoodDataMixin implements FoodDataExtensions {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;heal(F)V", ordinal = 1))
 	public void modifyNaturalHealing(ServerPlayer instance, float health, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(instance, health);
 			return;
 		}
@@ -104,7 +105,7 @@ public class FoodDataMixin implements FoodDataExtensions {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;addExhaustion(F)V", ordinal = 1))
 	public void modifyNaturalHealing(FoodData instance, float exhaustion, Operation<Void> original, @Share("shouldContinueVanillaHeal") LocalBooleanRef cont) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(instance, exhaustion);
 			return;
 		}

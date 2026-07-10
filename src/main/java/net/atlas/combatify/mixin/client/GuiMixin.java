@@ -5,6 +5,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
@@ -131,7 +132,7 @@ public abstract class GuiMixin {
 		int xPos = guiGraphics.guiWidth() / 2 - 8;
 		MutableInt mutableYPos = new MutableInt(yPos);
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
-		if (CombatifyClient.dualAttackIndicator.get().isOn() && Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (CombatifyClient.dualAttackIndicator.get().isOn() && Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) {
 			boolean shouldPick = false;
 			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
@@ -177,8 +178,8 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-        float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+        float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1);
 		if (minIndicator == maxIndicator) minIndicator = 0;
 		boolean shouldPick = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
@@ -213,7 +214,7 @@ public abstract class GuiMixin {
 		MutableInt mutableXPos = new MutableInt(xPos);
 		int offset = humanoidArm == HumanoidArm.RIGHT ? -20 : 20;
 		float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
-		if (CombatifyClient.dualAttackIndicator.get().isOn() && Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (CombatifyClient.dualAttackIndicator.get().isOn() && Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) {
 			boolean shouldPick = false;
 			EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
 			minecraft.crosshairPickEntity = hitResult != null ? hitResult.getEntity() : minecraft.crosshairPickEntity;
@@ -234,8 +235,8 @@ public abstract class GuiMixin {
 			ci.cancel();
 			return;
 		}
-		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		float maxIndicator = Math.min(CombatifyClient.attackIndicatorMaxValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1);
+		float minIndicator = Math.min(CombatifyClient.attackIndicatorMinValue.get().floatValue(), (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1);
 		if (minIndicator == maxIndicator) minIndicator = 0;
 		boolean shouldPick = false;
 		EntityHitResult hitResult = minecraft.hitResult instanceof EntityHitResult ? (EntityHitResult) minecraft.hitResult : null;
@@ -289,7 +290,7 @@ public abstract class GuiMixin {
 				int xPos = mutableXPos.getAndAdd(right ? -20 : 20);
 				if (power < 1) extractHotbarProgress(guiGraphics, xPos, yPos, power);
 				else if (getFatigueForTime(time) <= 0.5f) {
-					if (Combatify.CONFIG.bowFatigue() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+					if (Combatify.CONFIG.bowFatigue() && !Combatify.isStateVanilla()) {
 						float fatigueProgress = 1 - ((float) (time - 20) / 40);
 						extractHotbarProgress(guiGraphics, xPos, yPos, fatigueProgress);
 						int indicatorXPos = xPos + 1;
@@ -323,7 +324,7 @@ public abstract class GuiMixin {
 				int yPos = mutableYPos.getAndAdd(8);
 				if (power < 1) extractCrosshairProgress(guiGraphics, xPos, yPos, power);
 				else if (getFatigueForTime(time) <= 0.5f) {
-					if (Combatify.CONFIG.bowFatigue() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+					if (Combatify.CONFIG.bowFatigue() && !Combatify.isStateVanilla()) {
 						float fatigueProgress = 1 - ((float) (time - 20) / 40);
 						extractCrosshairProgress(guiGraphics, xPos, yPos, fatigueProgress);
 						int indicatorXPos = guiGraphics.guiWidth() / 2 - 1;

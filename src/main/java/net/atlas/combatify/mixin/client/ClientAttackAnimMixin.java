@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.CombatifyClient;
+import net.atlas.combatify.util.CombatifyState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -22,8 +23,8 @@ public abstract class ClientAttackAnimMixin {
 
 	@ModifyReturnValue(method = "getAttackAnim", at = @At("RETURN"))
 	public float modAnim(float original, @Local(ordinal = 0, argsOnly = true) float tickDelta) {
-		if (CombatifyClient.rhythmicAttacks.get().toBoolean(!Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && getItemInHand(InteractionHand.MAIN_HAND).getSwingAnimation().type().equals(SwingAnimationType.WHACK)) {
-			float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 1.95F : 0.9F;
+		if (CombatifyClient.rhythmicAttacks.get().toBoolean(!Combatify.isStateVanilla()) && getItemInHand(InteractionHand.MAIN_HAND).getSwingAnimation().type().equals(SwingAnimationType.WHACK)) {
+			float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 1.95F : 0.9F;
 			return original > 0.4F && getAttackStrengthScale(LivingEntity.class.cast(this), tickDelta) < charge ? 0.4F + 0.6F * (float)Math.pow((original - 0.4F) / 0.6F, 4.0) : original;
 		}
 		return original;
