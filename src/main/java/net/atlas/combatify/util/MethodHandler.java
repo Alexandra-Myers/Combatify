@@ -428,7 +428,13 @@ public class MethodHandler {
 		return null;
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
-		return getCooldowns(entity).isOnCooldown(var1);
+		return getCooldowns(entity).isOnCooldown(
+			//? >1.21.1 {
+			/*var1
+			*///?} <= 1.21.1 {
+			var1.getItem()
+			//?}
+		);
 	}
 	public static double updatePlayerReach(Player player, AttributeInstance attackRange, float strengthScale) {
 		double chargedBonus = 0;
@@ -464,7 +470,13 @@ public class MethodHandler {
 	}
 	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<@NotNull Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
-		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < trident.level().getMinY() && j > 0) {
+		int minHeight =
+			//? >1.21.1 {
+			/*trident.level().getMinY();
+			*///?} <= 1.21.1 {
+			trident.level().getMinBuildHeight();
+			//?}
+		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < minHeight && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
 			} else {
