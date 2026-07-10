@@ -34,12 +34,12 @@ import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents;
 //? >=26.1 {
 /*import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
-/^import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
-//?} <26.1 {
-/^import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+*///?} <26.1 {
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-^/*///?}
+//?}
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
