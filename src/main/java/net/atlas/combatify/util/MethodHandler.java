@@ -527,25 +527,29 @@ public class MethodHandler {
 				ConfigurableItemData result = configDataWrapper.match(item.builtInRegistryHolder());
 				if (result != null) results.add(result);
 			});
-			Double useSeconds = null;
-			//? <=1.21.1 {
-			Double cooldownSeconds = null;
-			//?}
-			for (ConfigurableItemData configurableItemData : results) {
-				useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
-				//? <=1.21.1 {
-				cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
-				//?}
-			}
-			//? >1.21.1 {
-			/*ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
-			*///? <=1.21.1 {
-			ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
-			//?}
-			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
-			return configurableItemData;
+			return getConfigurableItemData(results);
 		}
 		return null;
+	}
+
+	private static ConfigurableItemData getConfigurableItemData(List<ConfigurableItemData> results) {
+		Double useSeconds = null;
+		//? <=1.21.1 {
+		Double cooldownSeconds = null;
+		//?}
+		for (ConfigurableItemData configurableItemData : results) {
+			useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
+			//? <=1.21.1 {
+			cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
+			//?}
+		}
+		//? >1.21.1 {
+		/*ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
+		*///?} <=1.21.1 {
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
+		//?}
+		if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
+		return configurableItemData;
 	}
 
 	@SuppressWarnings("deprecation")

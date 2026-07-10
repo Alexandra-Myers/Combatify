@@ -6,9 +6,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Optional;
 
-public record ConfigurableItemData(Optional<Double> optionalUseDuration
-								   //? <=1.21.1 {
-								   , Optional<Double> optionalCooldownSeconds) {
+public record ConfigurableItemData(
+	Optional<Double> optionalUseDuration
+	//? <=1.21.1 {
+	, Optional<Double> optionalCooldownSeconds
+	//?}
+) {
+
 	//? <=1.21.1 {
 	public ConfigurableItemData(final Double useDuration, final Double cooldownSeconds) {
 		this(Optional.ofNullable(useDuration), Optional.ofNullable(cooldownSeconds));

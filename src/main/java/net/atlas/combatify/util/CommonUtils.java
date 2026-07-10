@@ -14,7 +14,7 @@ public class CommonUtils {
 	public static final Codec<Float> NON_NEGATIVE_FLOAT =
 		//? >1.21.1 {
 		/*ExtraCodecs.NON_NEGATIVE_FLOAT;
-		*///? <=1.21.1 {
+		*///?} <=1.21.1 {
 		Codec.floatRange(0, Float.MAX_VALUE);
 		//?}
 
@@ -29,7 +29,7 @@ public class CommonUtils {
 	public static Codec<Float> floatRange(float min, float max) {
 		return //? >1.21.1 {
 			/*ExtraCodecs.floatRange(min, max);
-			*///? <=1.21.1 {
+			*///?} <=1.21.1 {
 			Codec.floatRange(min, max);
 			//?}
 	}
