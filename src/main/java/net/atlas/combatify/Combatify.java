@@ -282,12 +282,15 @@ public class Combatify {
 			|| itemStack.get(CustomDataComponents.BLOCKING_LEVEL) != null
 			|| itemStack.get(CustomDataComponents.PIERCING_LEVEL) != null
 			|| itemStack.get(CustomDataComponents.CHARGED_REACH) != null);
-		PolymerItemUtils.ITEM_MODIFICATION_EVENT.register((itemStack,
-														   itemStack1,
-														   //? >1.21.1 {
-														   /*packetContext) -> {
-														   *///?}
-														   player) -> {
+		PolymerItemUtils.ITEM_MODIFICATION_EVENT.register(
+			(itemStack,
+			 itemStack1,
+			 //? >1.21.1 {
+			 /*packetContext
+			 *///?} <= 1.21.1 {
+			 player
+			 //?}
+		) -> {
 			//? >1.21.1 {
 			/*if (packetContext == null) return itemStack1;
 			ServerPlayer player = packetContext.get(PacketContext.SERVER_INSTANCE).getPlayerList().getPlayer(packetContext.get(PacketContext.GAME_PROFILE).id());
@@ -347,7 +350,7 @@ public class Combatify {
 		CritImpl.bootstrap();
 		CONFIG = new CombatifyGeneralConfig();
 	}
-	public enum CombatifyState {
+	enum CombatifyState {
 		VANILLA(0, "Vanilla", "vanilla"),
 		CTS_8C(1, "CTS 8C", "combat_test"),
 		COMBATIFY(2, "Combatify", "combatify");
