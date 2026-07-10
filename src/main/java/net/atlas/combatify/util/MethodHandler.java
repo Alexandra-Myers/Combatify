@@ -166,28 +166,54 @@ public class MethodHandler {
 			float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
 			List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
 			DamageSource damageSource =
-				player.getWeaponItem().getDamageSource(
+				//? >1.21.1 {
+				/*player.getWeaponItem().getDamageSource(
 					player
 					// Default damage source param removed in 26.2
 					//? <26.2 {
 					, () -> player.damageSources().playerAttack(player)
 					//?}
 				);
+				*///?} <=1.21.1 {
+				player.damageSources().playerAttack(player);
+				//?}
 
 			for (LivingEntity livingEntity : livingEntities) {
 				if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
 					continue;
-				EntityReference<?> ownerReference;
+				//? >1.21.1 {
+				/*EntityReference<?> ownerReference;
+				*///?}
+
 				if (Combatify.CONFIG.sweepingNegatedForTamed()
 					&& (livingEntity instanceof OwnableEntity ownableEntity
-					&& (ownerReference = ownableEntity.getOwnerReference()) != null
-					&& player.getUUID().equals(ownerReference.getUUID())
+					&& (
+						//? >1.21.1 {
+						/*ownerReference = ownableEntity.getOwnerReference()
+						*///?} <= 1.21.1 {
+						ownableEntity.getOwner()
+						//?}
+					) != null
+					&& player.getUUID().equals(
+						//? >1.21.1 {
+						/*ownerReference.getUUID()
+						*///?} <= 1.21.1 {
+						ownableEntity.getOwnerUUID()
+						//?}
+					)
 					|| livingEntity.is(player.getVehicle())
 					|| livingEntity.isPassengerOfSameVehicle(player)))
 					continue;
 				float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
 				float enchantedDamage = enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource);
-				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)) {
+				if (
+					player.distanceToSqr(livingEntity) < (correctReach * correctReach)
+						//? >1.21.1 {
+						/*&& livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)
+						*///?} <= 1.21.1 {
+						&& livingEntity.hurt(damageSource, enchantedDamage)
+						//?}
+				) {
 					//? <26.2 {
 					KnockbackMode.extractContext(livingEntity, damageSource);
 					livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
@@ -222,7 +248,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -237,7 +263,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -252,7 +278,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 scaledDelta = entity.getDeltaMovement().scale(0.5);
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -267,7 +293,7 @@ public class MethodHandler {
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -276,6 +302,13 @@ public class MethodHandler {
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength) : Math.max(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
+	}
+	public static void notifyKnockback(LivingEntity entity) {
+		//? >1.21.1 {
+		/*entity.needsSync = true;
+		*///?} <=1.21.1 {
+		entity.hasImpulse = true;
+		//?}
 	}
 	public static HitResult pickCollisions(Entity entity, double reach) {
 		Vec3 viewVector = entity.getViewVector(1);
