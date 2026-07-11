@@ -4,7 +4,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.custom.CanSweep;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -20,8 +20,8 @@ public record WeaponType(String name, double damageOffset, double speed, double 
 	public static final WeaponType EMPTY = createBasicUntierable("empty", 0, 0, 0);
 	public static final WeaponType LONGSWORD = createWithHoeDamageFormula("longsword", 0, 0.5, 1);
 	public static final WeaponType KNIFE = createBasic("knife", 1, 1, 0);
-	public static final Identifier BASE_ATTACK_SPEED_CTS_ID = Identifier.withDefaultNamespace("base_attack_speed_cts");
-	public static final Identifier BASE_ATTACK_REACH_ID = Identifier.withDefaultNamespace("base_attack_reach");
+	public static final ResourceLocation BASE_ATTACK_SPEED_CTS_ID = ResourceLocation.withDefaultNamespace("base_attack_speed_cts");
+	public static final ResourceLocation BASE_ATTACK_REACH_ID = ResourceLocation.withDefaultNamespace("base_attack_reach");
 
 	public static WeaponType createUnsynced(String name, double damageOffset, double speed, double reach, boolean useHoeDamage, boolean tierable) {
 		return new WeaponType(name, damageOffset, speed, reach, useHoeDamage, tierable);

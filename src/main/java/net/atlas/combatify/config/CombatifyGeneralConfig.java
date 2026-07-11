@@ -18,7 +18,7 @@ import net.atlas.combatify.config.impl.crit.fixer.CritImplFixer;
 import net.atlas.combatify.config.impl.food.CTSFoodImpl;
 import net.atlas.combatify.config.impl.food.FoodImpl;
 import net.atlas.combatify.config.impl.food.fixer.FoodImplFixer;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -30,7 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -133,7 +133,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	//? >=1.21.11 {
-	/*public CombatifyGeneralConfig(Identifier id) {
+	/*public CombatifyGeneralConfig(ResourceLocation id) {
 	*///?} <1.21.11 {
 	public CombatifyGeneralConfig(ResourceLocation id) {
 	//?}
@@ -711,7 +711,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		public static final ProjectileUncertainty DEFAULT = new ProjectileUncertainty(null, 0.25, 0.25);
 		public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
             public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileUncertainty projectileUncertainty) {
-                IdentifierUtils.writeIdentifier(registryFriendlyByteBuf, projectileUncertainty.owner.heldValue.owner().name);
+                IDUtils.writeResourceLocation(registryFriendlyByteBuf, projectileUncertainty.owner.heldValue.owner().name);
                 registryFriendlyByteBuf.writeUtf(projectileUncertainty.owner.heldValue.name());
                 registryFriendlyByteBuf.writeDouble(projectileUncertainty.bowUncertainty);
 				registryFriendlyByteBuf.writeDouble(projectileUncertainty.crossbowUncertainty);
@@ -720,7 +720,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
             @NotNull
 			@SuppressWarnings("unchecked")
             public ProjectileUncertainty decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-                AtlasConfig config = AtlasConfig.configs.get(IdentifierUtils.readIdentifier(registryFriendlyByteBuf));
+                AtlasConfig config = AtlasConfig.configs.get(IDUtils.readResourceLocation(registryFriendlyByteBuf));
                 return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
             }
         };

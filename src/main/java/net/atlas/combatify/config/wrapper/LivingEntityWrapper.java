@@ -5,7 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -51,7 +51,7 @@ public class LivingEntityWrapper<L extends LivingEntity> extends EntityWrapper<L
 	}
 
 	public final boolean hasEffect(String mobEffect) {
-		return value.hasEffect(BuiltInRegistries.MOB_EFFECT.getOrThrow(ResourceKey.create(Registries.MOB_EFFECT, Identifier.parse(mobEffect))));
+		return value.hasEffect(BuiltInRegistries.MOB_EFFECT.getOrThrow(ResourceKey.create(Registries.MOB_EFFECT, ResourceLocation.parse(mobEffect))));
 	}
 
 	public final boolean onClimbable() {

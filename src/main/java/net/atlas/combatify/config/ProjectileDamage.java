@@ -9,7 +9,7 @@ import me.shedaniel.clothconfig2.gui.entries.DoubleListEntry;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.atlascore.util.Codecs;
 import net.atlas.atlascore.util.ConfigRepresentable;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -33,7 +33,7 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
 	public static final ProjectileDamage DEFAULT = new ProjectileDamage(null, 0.0, 0.0, 1.0, 8.0);
 	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ProjectileDamage> STREAM_CODEC = new StreamCodec<>() {
         public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileDamage projectileDamage) {
-            IdentifierUtils.writeIdentifier(registryFriendlyByteBuf, projectileDamage.owner.heldValue.owner().name);
+            IDUtils.writeResourceLocation(registryFriendlyByteBuf, projectileDamage.owner.heldValue.owner().name);
             registryFriendlyByteBuf.writeUtf(projectileDamage.owner.heldValue.name());
             registryFriendlyByteBuf.writeDouble(projectileDamage.eggDamage);
 			registryFriendlyByteBuf.writeDouble(projectileDamage.snowballDamage);
@@ -44,7 +44,7 @@ public class ProjectileDamage implements ConfigRepresentable<ProjectileDamage> {
         @NotNull
 		@SuppressWarnings("unchecked")
         public ProjectileDamage decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-            AtlasConfig config = AtlasConfig.configs.get(IdentifierUtils.readIdentifier(registryFriendlyByteBuf));
+            AtlasConfig config = AtlasConfig.configs.get(IDUtils.readResourceLocation(registryFriendlyByteBuf));
             return new ProjectileDamage((AtlasConfig.ConfigHolder<ProjectileDamage>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
         }
     };

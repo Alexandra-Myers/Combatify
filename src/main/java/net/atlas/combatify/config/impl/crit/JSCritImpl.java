@@ -6,7 +6,7 @@ import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.config.wrapper.EntityWrapper;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 public record JSCritImpl(JSImpl handler) implements CritImpl {
-	public static final Identifier ID = Identifier.withDefaultNamespace("javascript");
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("javascript");
 	public static final MapCodec<JSCritImpl> CODEC = JSImpl.CODEC.fieldOf("script").xmap(JSCritImpl::new, JSCritImpl::handler);
 
 	@Override

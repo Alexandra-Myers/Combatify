@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.util.CommonUtils;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 
 import net.minecraft.resources.ResourceLocation;
@@ -18,7 +18,7 @@ import net.minecraft.world.food.FoodProperties;
 import static java.lang.Float.isFinite;
 
 public record CTSFoodImpl(boolean ctsSaturationCap, boolean ctsHealing, int minimumSprintLevel, int minimumHealingLevel, int minimumFastHealingLevel, float fastHealSeconds, float healSeconds, float starvationSeconds) implements FoodImpl {
-	public static final Identifier ID = Identifier.withDefaultNamespace("combat_test_8c");
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("combat_test_8c");
 	public static final MapCodec<CTSFoodImpl> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.BOOL.optionalFieldOf("cts_saturation_cap", true).forGetter(CTSFoodImpl::ctsSaturationCap),
 				Codec.BOOL.optionalFieldOf("cts_healing", true).forGetter(CTSFoodImpl::ctsHealing),

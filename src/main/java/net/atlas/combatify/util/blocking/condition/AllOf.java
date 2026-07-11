@@ -2,10 +2,11 @@ package net.atlas.combatify.util.blocking.condition;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public record AllOf(List<BlockingCondition> blockingConditions) implements BlockingCondition {
-	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("all_of");
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("all_of");
 	public static final MapCodec<AllOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(BlockingConditions.MAP_CODEC.codec().listOf().fieldOf("conditions").forGetter(AllOf::blockingConditions)).apply(instance, AllOf::new));
 	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AllOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AllOf::blockingConditions, AllOf::new);

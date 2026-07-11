@@ -3,7 +3,7 @@ package net.atlas.combatify.config.impl.food;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -34,8 +34,8 @@ public interface FoodImpl {
 	int estimateGainedFoodLevel(int original, FoodData foodData, Player player, FoodProperties foodProperties);
 
 	MapCodec<? extends FoodImpl> type();
-	ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends FoodImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
-	Codec<FoodImpl> CODEC = ID_MAPPER.codec(Identifier.CODEC)
+	ExtraCodecs.LateBoundIdMapper<@NotNull ResourceLocation, @NotNull MapCodec<? extends FoodImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	Codec<FoodImpl> CODEC = ID_MAPPER.codec(ResourceLocation.CODEC)
 		.dispatch(FoodImpl::type, mapCodec -> mapCodec);
 
 	static void bootstrap() {

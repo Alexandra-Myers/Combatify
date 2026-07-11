@@ -1,7 +1,6 @@
 package net.atlas.combatify;
 
 import com.google.common.base.Suppliers;
-import com.mojang.serialization.Codec;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.atlas.atlascore.util.ArrayListExtensions;
@@ -21,7 +20,7 @@ import net.atlas.combatify.item.TieredShieldItem;
 import net.atlas.combatify.item.WeaponType;
 import net.atlas.combatify.networking.NetworkingHandler;
 import net.atlas.combatify.util.CombatifyState;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.atlas.combatify.util.MethodHandler;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.atlas.combatify.util.blocking.BlockingTypeInit;
@@ -57,13 +56,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 //?}
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 //? >=1.21.11 {
 /*import net.minecraft.util.Util;
 import net.minecraft.world.InteractionResult;
@@ -113,18 +111,10 @@ public class Combatify {
 	public static final Map<UUID, Boolean> isPlayerAttacking = new HashMap<>();
 	public static final Map<String, WeaponType> defaultWeaponTypes = new HashMap<>();
 
-	// The Identifier Section
-	//? >= 1.21.11 {
-	/*public static Identifier modDetectionNetworkChannel = id("networking");
-	public static final Map<Identifier, BlockingType> defaultTypes = new HashMap<>();
-	public static Map<Identifier, BlockingType> registeredTypes = new HashMap<>();
-	public static final Identifier CHARGED_REACH_ID = id("charged_reach");
-	*///?} < 1.21.11 {
 	public static ResourceLocation modDetectionNetworkChannel = id("networking");
 	public static final Map<ResourceLocation, BlockingType> defaultTypes = new HashMap<>();
 	public static Map<ResourceLocation, BlockingType> registeredTypes = new HashMap<>();
 	public static final ResourceLocation CHARGED_REACH_ID = id("charged_reach");
-	//?}
 
 	public static final TagKey<@NotNull EntityType<?>> HAS_BOOSTED_SPEED = TagKey.create(Registries.ENTITY_TYPE, id("has_boosted_speed"));
 
@@ -255,9 +245,9 @@ public class Combatify {
 		*///?} <=1.21.1 {
 		MobEffects.DAMAGE_BOOST
 		//?}
-			.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, IdentifierUtils.withDefaultNamespace("effect.strength"), percentageDamageEffects ? 0.2 : 3, operation);
+			.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, IDUtils.withDefaultNamespace("effect.strength"), percentageDamageEffects ? 0.2 : 3, operation);
 		MobEffects.WEAKNESS
-			.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, IdentifierUtils.withDefaultNamespace("effect.weakness"), percentageDamageEffects ? -0.2 : -4, operation);
+			.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, IDUtils.withDefaultNamespace("effect.weakness"), percentageDamageEffects ? -0.2 : -4, operation);
 	}
 
 	//? >=26.1 {
@@ -328,8 +318,8 @@ public class Combatify {
 
 	// Oh yeah baby
 	//? >=1.21.11 {
-	/*public static Identifier id(String path) {
-		return Identifier.fromNamespaceAndPath(MOD_ID, path);
+	/*public static ResourceLocation id(String path) {
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 	*///?} < 1.21.11 {
 	public static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath(MOD_ID, path); }

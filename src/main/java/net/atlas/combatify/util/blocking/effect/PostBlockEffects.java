@@ -2,17 +2,18 @@ package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 //? >1.21.1 {
-/*import net.minecraft.util.ExtraCodecs.LateBoundIdMapper;
+/*import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs.LateBoundIdMapper;
  *///?} <=1.21.1 {
 import net.atlas.defaulted.utils.LateBoundIdMapper;
 //?}
 import org.jetbrains.annotations.NotNull;
 
 public class PostBlockEffects {
-	public static final LateBoundIdMapper<IdentifierUtils.@NotNull PseudoId, @NotNull MapCodec<? extends PostBlockEffect>> ID_MAPPER = new LateBoundIdMapper<>();
-	public static final Codec<PostBlockEffect> CODEC = ID_MAPPER.codec(IdentifierUtils.PSEUDO_CODEC)
+	public static final LateBoundIdMapper<@NotNull ResourceLocation, @NotNull MapCodec<? extends PostBlockEffect>> ID_MAPPER = new LateBoundIdMapper<>();
+	public static final Codec<PostBlockEffect> CODEC = ID_MAPPER.codec(ResourceLocation.CODEC)
 		.dispatch(PostBlockEffect::type, mapCodec -> mapCodec);
 
 	public static void bootstrap() {

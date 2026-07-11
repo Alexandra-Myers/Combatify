@@ -5,7 +5,7 @@ import net.atlas.combatify.client.renderer.TieredShieldSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -22,10 +22,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class SpecialModelRenderersMixin {
 	@Shadow
 	@Final
-	public static ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends SpecialModelRenderer.Unbaked>> ID_MAPPER;
+	public static ExtraCodecs.LateBoundIdMapper<@NotNull ResourceLocation, @NotNull MapCodec<? extends SpecialModelRenderer.Unbaked>> ID_MAPPER;
 
 	@Inject(method = "bootstrap", at = @At("TAIL"))
 	private static void injectTieredShieldRenderer(CallbackInfo ci) {
-		ID_MAPPER.put(Identifier.withDefaultNamespace("tiered_shield"), TieredShieldSpecialRenderer.Unbaked.MAP_CODEC);
+		ID_MAPPER.put(ResourceLocation.withDefaultNamespace("tiered_shield"), TieredShieldSpecialRenderer.Unbaked.MAP_CODEC);
 	}
 }

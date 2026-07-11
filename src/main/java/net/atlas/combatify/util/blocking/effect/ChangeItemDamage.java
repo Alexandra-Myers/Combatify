@@ -2,8 +2,9 @@ package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -14,7 +15,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record ChangeItemDamage(LevelBasedValue amount) implements PostBlockEffect {
-	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("change_item_damage");
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("change_item_damage");
 	public static final MapCodec<ChangeItemDamage> MAP_CODEC = RecordCodecBuilder.mapCodec(
 		instance -> instance.group(LevelBasedValue.CODEC.fieldOf("amount").forGetter(changeItemDamage -> changeItemDamage.amount))
 			.apply(instance, ChangeItemDamage::new)

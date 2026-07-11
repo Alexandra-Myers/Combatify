@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -18,8 +18,8 @@ public interface CritImpl {
 	boolean runCrit(Player attacker, Entity target, LocalFloatRef damageRef);
 
 	MapCodec<? extends CritImpl> type();
-	ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends CritImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
-	Codec<CritImpl> CODEC = ID_MAPPER.codec(Identifier.CODEC)
+	ExtraCodecs.LateBoundIdMapper<@NotNull ResourceLocation, @NotNull MapCodec<? extends CritImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	Codec<CritImpl> CODEC = ID_MAPPER.codec(ResourceLocation.CODEC)
 		.dispatch(CritImpl::type, mapCodec -> mapCodec);
 
 	static void bootstrap() {

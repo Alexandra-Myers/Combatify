@@ -7,7 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -45,7 +45,7 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	}
 
 	public final boolean matchesTag(String tag) {
-		return value.is(TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tag)));
+		return value.is(TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(tag)));
 	}
 
 	public final UUID getUUID() {
@@ -112,11 +112,11 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	}
 
 	public final void playSound(String soundEvent, float f, float g) {
-		value.playSound(Objects.requireNonNull(BuiltInRegistries.SOUND_EVENT.getValueOrThrow(ResourceKey.create(Registries.SOUND_EVENT, Identifier.parse(soundEvent)))), f, g);
+		value.playSound(Objects.requireNonNull(BuiltInRegistries.SOUND_EVENT.getValueOrThrow(ResourceKey.create(Registries.SOUND_EVENT, ResourceLocation.parse(soundEvent)))), f, g);
 	}
 
 	public final void playSound(String soundEvent) {
-		value.playSound(Objects.requireNonNull(BuiltInRegistries.SOUND_EVENT.getValueOrThrow(ResourceKey.create(Registries.SOUND_EVENT, Identifier.parse(soundEvent)))));
+		value.playSound(Objects.requireNonNull(BuiltInRegistries.SOUND_EVENT.getValueOrThrow(ResourceKey.create(Registries.SOUND_EVENT, ResourceLocation.parse(soundEvent)))));
 	}
 
 	public final double getFallDistance() {
@@ -160,11 +160,11 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	}
 
 	public final DamageSource createDamageSourceNoCause(String damageType) {
-		return value.damageSources().source(ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.parse(damageType)));
+		return value.damageSources().source(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(damageType)));
 	}
 
 	public final DamageSource createDamageSourceAsCause(String damageType) {
-		return value.damageSources().source(ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.parse(damageType)), value);
+		return value.damageSources().source(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse(damageType)), value);
 	}
 
 	public final boolean hurt(DamageSource damageSource, float amount) {
@@ -280,7 +280,7 @@ public class EntityWrapper<E extends Entity> implements GenericAPIWrapper<E> {
 	}
 
 	public final void executeFunction(String command) {
-		Identifier function = Identifier.parse(command);
+		ResourceLocation function = ResourceLocation.parse(command);
 		if (value.level() instanceof ServerLevel serverLevel) {
 			MinecraftServer minecraftServer = serverLevel.getServer();
 			ServerFunctionManager serverFunctionManager = minecraftServer.getFunctions();

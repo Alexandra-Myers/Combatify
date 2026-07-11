@@ -18,7 +18,7 @@ import net.atlas.defaulted.extension.ItemExtensions;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -29,14 +29,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers.Entry;
 
-public record WeaponStatsGenerator(Optional<WeaponLevelBasedValue> damage, Optional<WeaponLevelBasedValue> speed, Optional<WeaponLevelBasedValue> reach, Optional<Identifier> damageIdOverride, Optional<Identifier> speedIdOverride, Optional<Identifier> reachIdOverride, List<ItemAttributeModifiers.Entry> additionalModifiers, boolean tieredDamage, boolean persistPrevious) implements PatchGenerator {
+public record WeaponStatsGenerator(Optional<WeaponLevelBasedValue> damage, Optional<WeaponLevelBasedValue> speed, Optional<WeaponLevelBasedValue> reach, Optional<ResourceLocation> damageIdOverride, Optional<ResourceLocation> speedIdOverride, Optional<ResourceLocation> reachIdOverride, List<ItemAttributeModifiers.Entry> additionalModifiers, boolean tieredDamage, boolean persistPrevious) implements PatchGenerator {
 	public static final MapCodec<WeaponStatsGenerator> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_damage").forGetter(WeaponStatsGenerator::damage),
 			WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_speed").forGetter(WeaponStatsGenerator::speed),
 			WeaponLevelBasedValue.CODEC.optionalFieldOf("attack_reach").forGetter(WeaponStatsGenerator::reach),
-			Identifier.CODEC.optionalFieldOf("damage_id_override").forGetter(WeaponStatsGenerator::damageIdOverride),
-			Identifier.CODEC.optionalFieldOf("speed_id_override").forGetter(WeaponStatsGenerator::speedIdOverride),
-			Identifier.CODEC.optionalFieldOf("reach_id_override").forGetter(WeaponStatsGenerator::reachIdOverride),
+			ResourceLocation.CODEC.optionalFieldOf("damage_id_override").forGetter(WeaponStatsGenerator::damageIdOverride),
+			ResourceLocation.CODEC.optionalFieldOf("speed_id_override").forGetter(WeaponStatsGenerator::speedIdOverride),
+			ResourceLocation.CODEC.optionalFieldOf("reach_id_override").forGetter(WeaponStatsGenerator::reachIdOverride),
 			ItemAttributeModifiers.Entry.CODEC.listOf().optionalFieldOf("additional_modifiers", Collections.emptyList()).forGetter(WeaponStatsGenerator::additionalModifiers),
 			Codec.BOOL.optionalFieldOf("apply_tier_to_damage", true).forGetter(WeaponStatsGenerator::tieredDamage),
 			Codec.BOOL.fieldOf("persist_previous").forGetter(WeaponStatsGenerator::persistPrevious)).apply(instance, WeaponStatsGenerator::new));
@@ -48,9 +48,9 @@ public record WeaponStatsGenerator(Optional<WeaponLevelBasedValue> damage, Optio
 		if (toolMaterialWrapper == null) toolMaterialWrapper = Defaulted.DEFAULT_WRAPPER;
 		ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
 		double damageModifier = 2 - Combatify.CONFIG.fistDamage();
-		Identifier damageID = damageIdOverride.orElse(Item.BASE_ATTACK_DAMAGE_ID);
-		Identifier speedID = speedIdOverride.orElse(WeaponType.BASE_ATTACK_SPEED_CTS_ID);
-		Identifier reachID = reachIdOverride.orElse(WeaponType.BASE_ATTACK_REACH_ID);
+		ResourceLocation damageID = damageIdOverride.orElse(Item.BASE_ATTACK_DAMAGE_ID);
+		ResourceLocation speedID = speedIdOverride.orElse(WeaponType.BASE_ATTACK_SPEED_CTS_ID);
+		ResourceLocation reachID = reachIdOverride.orElse(WeaponType.BASE_ATTACK_REACH_ID);
 		AttributeModifier attackDamage = null;
 		boolean hasDamage = false;
 		if (damage.isPresent()) {
@@ -87,7 +87,7 @@ public record WeaponStatsGenerator(Optional<WeaponLevelBasedValue> damage, Optio
 		patchedDataComponentMap.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.build());
 	}
 
-	private boolean isSpeed(Entry entry, Identifier speedID) {
+	private boolean isSpeed(Entry entry, ResourceLocation speedID) {
 		boolean baseRet = entry.matches(Attributes.ATTACK_SPEED, speedID);
 		if (speedID.equals(WeaponType.BASE_ATTACK_SPEED_CTS_ID)) baseRet |= entry.matches(Attributes.ATTACK_SPEED, Item.BASE_ATTACK_SPEED_ID);
 		return baseRet;

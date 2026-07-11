@@ -4,11 +4,12 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
-	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("apply_effect");
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("apply_effect");
 	public ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
 		this(toApply, duration, duration, amplifier, amplifier);
 	}

@@ -7,7 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.CommonUtils;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -18,7 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 public record CombatifyCritImpl(boolean allowsSprint, float minimumBaseCharge, float minimumFullCharge, float critMult, float chargedCritMult) implements CritImpl {
-	public static final Identifier ID = Combatify.id("charged_crits");
+	public static final ResourceLocation ID = Combatify.id("charged_crits");
 	public static final MapCodec<CombatifyCritImpl> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.BOOL.optionalFieldOf("allows_sprint", true).forGetter(CombatifyCritImpl::allowsSprint),
 				CommonUtils.floatRange(-1, 2).optionalFieldOf("minimum_base_charge", 0.9F).forGetter(CombatifyCritImpl::minimumBaseCharge),

@@ -22,7 +22,7 @@ public class CommonUtils {
 		//? >1.21.1 {
 		/*return TagKey.streamCodec(registryKey);
 		*///?} <=1.21.1 {
-		return IdentifierUtils.STREAM_CODEC.map(identifier -> TagKey.create(registryKey, identifier), TagKey::location);
+		return IDUtils.STREAM_CODEC.map(identifier -> TagKey.create(registryKey, identifier), TagKey::location);
 		//?}
 	}
 

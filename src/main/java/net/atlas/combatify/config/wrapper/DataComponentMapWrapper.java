@@ -12,7 +12,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -22,11 +22,11 @@ public interface DataComponentMapWrapper<M extends DataComponentMap> extends Gen
 	RegistryOps<@NotNull Tag> ops();
 	ResourceKey<@NotNull Registry<@NotNull DataComponentType<?>>> reg();
 	default <T> T get(String type) {
-		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
+		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), ResourceLocation.parse(type))).value();
 		return unwrap().get(dataComponentType);
 	}
 	default <T> T getOrDefault(String type, String defaultValue) {
-		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
+		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), ResourceLocation.parse(type))).value();
 		StringReader reader = new StringReader(defaultValue);
 		T defaultVal;
 		try {

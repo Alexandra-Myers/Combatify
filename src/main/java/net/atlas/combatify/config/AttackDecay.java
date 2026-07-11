@@ -10,7 +10,7 @@ import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.IntegerListEntry;
 import net.atlas.atlascore.config.AtlasConfig;
 import net.atlas.atlascore.util.ConfigRepresentable;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -35,7 +35,7 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public static final AttackDecay DEFAULT = new AttackDecay(null, false, 0, 100, 20, 100, 0, 100);
 	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AttackDecay> STREAM_CODEC = new StreamCodec<>() {
         public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, AttackDecay projectileDamage) {
-            IdentifierUtils.writeIdentifier(registryFriendlyByteBuf, projectileDamage.owner.heldValue.owner().name);
+            IDUtils.writeResourceLocation(registryFriendlyByteBuf, projectileDamage.owner.heldValue.owner().name);
             registryFriendlyByteBuf.writeUtf(projectileDamage.owner.heldValue.name());
             registryFriendlyByteBuf.writeBoolean(projectileDamage.enabled);
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.minCharge);
@@ -49,7 +49,7 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
         @NotNull
 		@SuppressWarnings("unchecked")
         public AttackDecay decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-            AtlasConfig config = AtlasConfig.configs.get(IdentifierUtils.readIdentifier(registryFriendlyByteBuf));
+            AtlasConfig config = AtlasConfig.configs.get(IDUtils.readResourceLocation(registryFriendlyByteBuf));
             return new AttackDecay((AtlasConfig.ConfigHolder<AttackDecay>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt());
         }
     };

@@ -5,7 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
 //?}
@@ -34,11 +34,11 @@ public class ItemRegistry {
 	public static final Item NETHERITE_KNIFE = registerItem(id("netherite_knife"), properties -> new KnifeItem(ToolMaterial.NETHERITE, properties), new Item.Properties().fireResistant());
 	public static final Item NETHERITE_LONGSWORD = registerItem(id("netherite_longsword"), properties -> new LongSwordItem(ToolMaterial.NETHERITE, 4, properties), new Item.Properties().fireResistant());
 
-	public static Item registerItem(Identifier Identifier, Function<Item.Properties, Item> function, Item.Properties properties) {
-		return registerItem(ResourceKey.create(Registries.ITEM, Identifier), function, properties);
+	public static Item registerItem(ResourceLocation ResourceLocation, Function<Item.Properties, Item> function, Item.Properties properties) {
+		return registerItem(ResourceKey.create(Registries.ITEM, ResourceLocation), function, properties);
 	}
-	public static Item registerItem(Identifier Identifier, Item.Properties properties) {
-		return registerItem(ResourceKey.create(Registries.ITEM, Identifier), Item::new, properties);
+	public static Item registerItem(ResourceLocation ResourceLocation, Item.Properties properties) {
+		return registerItem(ResourceKey.create(Registries.ITEM, ResourceLocation), Item::new, properties);
 	}
 	public static Item registerItem(ResourceKey<@NotNull Item> resourceKey, Function<Item.Properties, Item> function, Item.Properties properties) {
 		Item item = function.apply(properties.setId(resourceKey));

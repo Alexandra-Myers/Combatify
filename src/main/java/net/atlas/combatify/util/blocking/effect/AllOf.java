@@ -2,7 +2,8 @@ package net.atlas.combatify.util.blocking.effect;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public record AllOf(List<PostBlockEffect> effects) implements PostBlockEffect {
-	public static final IdentifierUtils.PseudoId ID = IdentifierUtils.PseudoId.withDefaultNamespace("all_of");
+	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("all_of");
 	public static final MapCodec<AllOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(PostBlockEffects.CODEC.listOf().fieldOf("effects").forGetter(AllOf::effects)).apply(instance, AllOf::new));
 	@Override

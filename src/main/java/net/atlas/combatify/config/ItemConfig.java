@@ -14,7 +14,7 @@ import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.item.CombatifyItemTags;
 //?}
 import net.atlas.combatify.util.CommonUtils;
-import net.atlas.combatify.util.IdentifierUtils;
+import net.atlas.combatify.util.IDUtils;
 import net.atlas.combatify.util.blocking.BlockingType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -31,7 +31,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 //? >=1.21.11 {
-/*import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.ResourceLocation;
 *///?} <1.21.11 {
 //?}
 import net.minecraft.server.level.ServerPlayer;
@@ -124,19 +124,19 @@ public class ItemConfig extends AtlasConfig {
 	@Override
 	public AtlasConfig readClientConfigInformation(RegistryFriendlyByteBuf buf) {
 		super.readClientConfigInformation(buf);
-		readMap(buf, IdentifierUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
+		readMap(buf, IDUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
 		return this;
 	}
 
 	public ItemConfig loadFromNetwork(RegistryFriendlyByteBuf buf) {
 		super.loadFromNetwork(buf);
-		registeredTypes = readMap(buf, IdentifierUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
+		registeredTypes = readMap(buf, IDUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
 		return this;
 	}
 
 	public void saveToNetwork(RegistryFriendlyByteBuf buf) {
 		super.saveToNetwork(buf);
-		writeMap(buf, Combatify.registeredTypes, IdentifierUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
+		writeMap(buf, Combatify.registeredTypes, IDUtils.STREAM_CODEC.mapStream(Function.identity()), BlockingType.FULL_STREAM_CODEC);
 	}
 
 	@Override
