@@ -4,11 +4,7 @@ import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-//? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
-//?}
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;

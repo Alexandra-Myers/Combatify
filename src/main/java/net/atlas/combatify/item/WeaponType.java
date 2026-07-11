@@ -3,11 +3,7 @@ package net.atlas.combatify.item;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.component.custom.CanSweep;
-//? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
-//?}
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;

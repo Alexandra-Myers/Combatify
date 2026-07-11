@@ -19,11 +19,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
-//? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
-//?}
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;

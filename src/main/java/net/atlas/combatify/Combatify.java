@@ -55,11 +55,7 @@ import net.minecraft.network.chat.Component;
 *///?} <26.1 {
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 //?}
-//? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
-//?}
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 //? >=1.21.11 {

@@ -9,6 +9,18 @@ plugins {
 
 stonecutter active "1.21.1-fabric"
 
+tasks.register("runActiveClient") {
+    group = "stonecutter"
+    description = "Run client of the active Stonecutter version"
+    dependsOn(stonecutter.current!!.project + ":runClient")
+}
+
+tasks.register("runActiveServer") {
+    group = "stonecutter"
+    description = "Run server of the active Stonecutter version"
+    dependsOn(stonecutter.current!!.project + ":runServer")
+}
+
 stonecutter parameters {
     constants.match(node.metadata.project.substringAfterLast('-'), "fabric", "neoforge")
     filters.include("**/*.fsh", "**/*.vsh")

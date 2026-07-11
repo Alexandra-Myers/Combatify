@@ -5,11 +5,7 @@ import com.mojang.serialization.MapCodec;
 import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.config.wrapper.EntityWrapper;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
-//? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
 import net.minecraft.resources.ResourceLocation;
-//?}
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
