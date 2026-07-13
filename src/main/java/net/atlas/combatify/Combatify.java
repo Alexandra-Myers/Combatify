@@ -262,12 +262,13 @@ public class Combatify {
 
 	public static void polymerInit() {
 		//? >1.21.1 {
-		/*PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) -> (packetContext != null && isPatched(packetContext.get(PacketContext.REGISTRY_ACCESS), itemStack.typeHolder().value())) ||
+		/*PolymerItemUtils.CONTEXT_ITEM_CHECK.register((itemStack, packetContext) ->
 		*///?}
 		//? <=1.21.1 {
 		PolymerItemUtils.ITEM_CHECK.register(itemStack ->
 		//?}
-			itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA) != null
+			isPatched(/*? >=26.1 {*/ /*itemStack.typeHolder().value() *//*?} <26.1 {*/ itemStack.getItem() /*?}*/)
+			|| itemStack.get(CustomDataComponents.EXTENDED_BLOCKING_DATA) != null
 			|| itemStack.get(CustomDataComponents.CAN_SWEEP) != null
 			|| itemStack.get(CustomDataComponents.BLOCKING_LEVEL) != null
 			|| itemStack.get(CustomDataComponents.PIERCING_LEVEL) != null
@@ -329,8 +330,8 @@ public class Combatify {
 		return registerBlockingType(blockingType);
 	}
 
-	public static boolean isPatched(RegistryAccess registryAccess, Item item) {
-		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached(registryAccess);
+	public static boolean isPatched(Item item) {
+		List<ItemPatches> patches = DefaultComponentPatchesManager.getCached();
 		if (patches == null) return false;
 		return patches.stream().anyMatch(itemPatches -> itemPatches.matchItem(item));
 	}

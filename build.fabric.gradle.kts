@@ -32,7 +32,7 @@ tasks.named<ProcessResources>("processResources") {
         this["mod_description"] = prop("mod.description")
         this["mod_license"] = prop("mod.license")
         this["mod_id"] = prop("mod.id")
-        this["defaulted_version"] = prop("deps.defaulted")
+        this["defaulted_version"] = prop("deps.dep_defaulted")
         this["atlas_core_version"] = prop("deps.atlas_core")
     }
 
