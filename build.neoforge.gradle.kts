@@ -213,6 +213,8 @@ dependencies {
     implementation("eu.pb4:polymer-core:${property("deps.polymer")}")
     implementation("squeek.appleskin:appleskin-neoforge:${property("deps.appleskin")}")
     implementation("org.mozilla:rhino-all:${property("deps.rhino")}")
+    implementation("io.github.java-diff-utils:java-diff-utils:${property("deps.java_diff_version")}")
+    if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) add("additionalRuntimeClasspath", "io.github.java-diff-utils:java-diff-utils:${property("deps.java_diff_version")}")
 }
 
 

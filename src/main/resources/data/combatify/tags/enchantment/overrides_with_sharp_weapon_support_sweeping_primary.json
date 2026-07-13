@@ -1,7 +1,5 @@
 {
   "values": [
-    "minecraft:knockback",
-    "minecraft:looting",
     "minecraft:sweeping_edge"
   ]
 }

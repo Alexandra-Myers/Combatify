@@ -1,0 +1,7 @@
+{
+  "elements": [
+    "#combatify:overrides_with_sharp_weapon_support_sweeping_primary"
+  ],
+  "primary_items": "#minecraft:enchantable/sweeping",
+  "supported_items": "#minecraft:enchantable/sharp_weapon"
+}

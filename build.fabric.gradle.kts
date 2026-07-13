@@ -214,6 +214,7 @@ dependencies {
     modImplementation("maven.modrinth:cookeymod:${property("deps.cookeymod")}")
     modImplementation("eu.pb4:polymer-core:${property("deps.polymer")}")
     modImplementation("squeek.appleskin:appleskin-fabric:${property("deps.appleskin")}")
+    implementation("io.github.java-diff-utils:java-diff-utils:${property("deps.java_diff_version")}")
     implementation("org.mozilla:rhino-all:${property("deps.rhino")}")
 
     implementation("com.fasterxml.jackson.core:jackson-core:${property("deps.jackson")}")
