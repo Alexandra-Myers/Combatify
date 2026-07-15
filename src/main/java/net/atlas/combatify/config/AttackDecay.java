@@ -19,11 +19,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 //? >=1.21.11 {
+import net.minecraft.util.Util;
+//?} <1.21.11 {
 /*import net.minecraft.util.Util;
-*///?} <1.21.11 {
-import net.minecraft.Util;
-//?}
-import org.jetbrains.annotations.NotNull;
+*///?}
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -33,9 +33,9 @@ import java.util.function.Supplier;
 
 public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 	public static final AttackDecay DEFAULT = new AttackDecay(null, false, 0, 100, 20, 100, 0, 100);
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AttackDecay> STREAM_CODEC = new StreamCodec<>() {
+	public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull AttackDecay> STREAM_CODEC = new StreamCodec<>() {
         public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, AttackDecay projectileDamage) {
-            IDUtils.writeResourceLocation(registryFriendlyByteBuf, projectileDamage.owner.heldValue.owner().name);
+            IDUtils.writeIdentifier(registryFriendlyByteBuf, projectileDamage.owner.heldValue.owner().name);
             registryFriendlyByteBuf.writeUtf(projectileDamage.owner.heldValue.name());
             registryFriendlyByteBuf.writeBoolean(projectileDamage.enabled);
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.minCharge);
@@ -46,10 +46,10 @@ public class AttackDecay implements ConfigRepresentable<AttackDecay> {
 			registryFriendlyByteBuf.writeVarInt(projectileDamage.maxPercentageEnchants);
         }
 
-        @NotNull
+        @NonNull
 		@SuppressWarnings("unchecked")
         public AttackDecay decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-            AtlasConfig config = AtlasConfig.configs.get(IDUtils.readResourceLocation(registryFriendlyByteBuf));
+            AtlasConfig config = AtlasConfig.configs.get(IDUtils.readIdentifier(registryFriendlyByteBuf));
             return new AttackDecay((AtlasConfig.ConfigHolder<AttackDecay>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readBoolean(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt(), registryFriendlyByteBuf.readVarInt());
         }
     };

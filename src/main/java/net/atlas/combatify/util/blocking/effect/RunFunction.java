@@ -3,12 +3,11 @@ package net.atlas.combatify.util.blocking.effect;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IDUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 //? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
+import net.minecraft.resources.Identifier;
+//?} <1.21.11 {
 //?}
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
@@ -18,23 +17,23 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 
 import java.util.Optional;
 
-public record RunFunction(ResourceLocation function) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("run_function");
+public record RunFunction(Identifier function) implements PostBlockEffect {
+	public static final Identifier ID = Identifier.withDefaultNamespace("run_function");
 	private static final Logger LOGGER = LogUtils.getLogger();
 	public static final MapCodec<RunFunction> MAP_CODEC = RecordCodecBuilder.mapCodec(
-		instance -> instance.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
+		instance -> instance.group(Identifier.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(instance, RunFunction::new)
 	);
 
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
 		MinecraftServer minecraftServer = serverLevel.getServer();
 		ServerFunctionManager serverFunctionManager = minecraftServer.getFunctions();
-		Optional<CommandFunction<@NotNull CommandSourceStack>> optional = serverFunctionManager.get(this.function);
+		Optional<CommandFunction<@NonNull CommandSourceStack>> optional = serverFunctionManager.get(this.function);
 		if (optional.isPresent()) {
 			CommandSourceStack commandSourceStack = minecraftServer.createCommandSourceStack()
 				.withPermission(LevelBasedPermissionSet.GAMEMASTER)

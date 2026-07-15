@@ -8,10 +8,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public interface BlockingCondition {
-	StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistriesTrusted(BlockingConditions.MAP_CODEC.codec());
+	StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull BlockingCondition> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistriesTrusted(BlockingConditions.MAP_CODEC.codec());
 	boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand);
 
 	boolean canShowInToolTip(ItemStack itemStack, Player player);

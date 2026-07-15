@@ -10,8 +10,8 @@ import net.atlas.combatify.config.impl.food.CTSFoodImpl;
 import net.atlas.combatify.config.impl.food.CombatifyFoodImpl;
 import net.atlas.combatify.config.impl.food.FoodImpl;
 import net.atlas.combatify.config.impl.food.JSFoodImpl;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class FoodImplFixer extends ConfigHolderFixer<FoodImpl> {
 	public FoodImplFixer(AtlasConfig.ConfigHolder<FoodImpl> owner) {
@@ -19,7 +19,7 @@ public class FoodImplFixer extends ConfigHolderFixer<FoodImpl> {
 	}
 
 	@Override
-	public JsonElement fixData(@Nullable JsonElement value, @Nullable JsonObject holderRootObject, @NotNull JsonObject configRootObject) {
+	public JsonElement fixData(@Nullable JsonElement value, @Nullable JsonObject holderRootObject, @NonNull JsonObject configRootObject) {
 		value = super.fixData(value, holderRootObject, configRootObject);
 		if (value.isJsonPrimitive()) {
 			String asStr = value.getAsString();

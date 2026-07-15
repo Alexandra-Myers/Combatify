@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.WritableLevelData;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,7 +22,7 @@ import java.util.function.BooleanSupplier;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin extends Level implements ServerEntityGetter, WorldGenLevel {
-	protected ServerLevelMixin(WritableLevelData writableLevelData, ResourceKey<@NotNull Level> resourceKey, RegistryAccess registryAccess, Holder<@NotNull DimensionType> holder, boolean bl, boolean bl2, long l, int i) {
+	protected ServerLevelMixin(WritableLevelData writableLevelData, ResourceKey<@NonNull Level> resourceKey, RegistryAccess registryAccess, Holder<@NonNull DimensionType> holder, boolean bl, boolean bl2, long l, int i) {
 		super(writableLevelData, resourceKey, registryAccess, holder, bl, bl2, l, i);
 	}
 

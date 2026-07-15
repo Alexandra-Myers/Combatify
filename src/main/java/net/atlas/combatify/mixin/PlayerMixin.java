@@ -39,7 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.mutable.MutableFloat;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -63,7 +63,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	 */
 	@SuppressWarnings("WrongEntityDataParameterClass")
 	@Unique
-	private static final EntityDataAccessor<@NotNull Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+	private static final EntityDataAccessor<@NonNull Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
 	@Inject(method = "defineSynchedData", at = @At("TAIL"))
 	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
 		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
@@ -78,12 +78,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
 		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
 	}
-	public PlayerMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
+	public PlayerMixin(EntityType<? extends @NonNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
 	@Shadow
-	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
+	protected abstract void doAutoAttackOnTouch(@NonNull LivingEntity target);
 
 	@Shadow
 	public abstract float getAttackStrengthScale(float f);
@@ -101,7 +101,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	protected abstract float getEnchantedDamage(Entity entity, float f, DamageSource damageSource);
 
 	@Shadow
-	@NotNull
+	@NonNull
 	public abstract ItemStack getWeaponItem();
 
 	@Shadow

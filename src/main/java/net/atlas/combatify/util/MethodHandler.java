@@ -36,24 +36,24 @@ import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 //? >1.21.1 {
-/*import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.component.BlocksAttacks;
-*///?} <=1.21.1 {
-import net.minecraft.world.entity.monster.AbstractSkeleton;
+//?} <=1.21.1 {
+/*import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-//?}
+*///?}
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.function.TriFunction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class MethodHandler {
 	}
 	public static boolean checkSweepAttack(Player player) {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
+		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP.get(), CanSweep.DISABLED).enabled();
 		boolean sweep = getAttackStrengthScale(player, 1) > charge && (player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) > 0.0F || sweepingItem);
 		if (!Combatify.CONFIG.sweepWithSweeping())
 			return sweepingItem && sweep;
@@ -167,39 +167,39 @@ public class MethodHandler {
 			List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
 			DamageSource damageSource =
 				//? >1.21.1 {
-				/*player.getWeaponItem().getDamageSource(
+				player.getWeaponItem().getDamageSource(
 					player
 					// Default damage source param removed in 26.2
 					//? <26.2 {
 					, () -> player.damageSources().playerAttack(player)
 					//?}
 				);
-				*///?} <=1.21.1 {
-				player.damageSources().playerAttack(player);
-				//?}
+				//?} <=1.21.1 {
+				/*player.damageSources().playerAttack(player);
+				*///?}
 
 			for (LivingEntity livingEntity : livingEntities) {
 				if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
 					continue;
 				//? >1.21.1 {
-				/*EntityReference<?> ownerReference;
-				*///?}
+				EntityReference<?> ownerReference;
+				//?}
 
 				if (Combatify.CONFIG.sweepingNegatedForTamed()
 					&& (livingEntity instanceof OwnableEntity ownableEntity
 					&& (
 						//? >1.21.1 {
-						/*ownerReference = ownableEntity.getOwnerReference()
-						*///?} <= 1.21.1 {
-						ownableEntity.getOwner()
-						//?}
+						ownerReference = ownableEntity.getOwnerReference()
+						//?} <= 1.21.1 {
+						/*ownableEntity.getOwner()
+						*///?}
 					) != null
 					&& player.getUUID().equals(
 						//? >1.21.1 {
-						/*ownerReference.getUUID()
-						*///?} <= 1.21.1 {
-						ownableEntity.getOwnerUUID()
-						//?}
+						ownerReference.getUUID()
+						//?} <= 1.21.1 {
+						/*ownableEntity.getOwnerUUID()
+						*///?}
 					)
 					|| livingEntity.is(player.getVehicle())
 					|| livingEntity.isPassengerOfSameVehicle(player)))
@@ -209,10 +209,10 @@ public class MethodHandler {
 				if (
 					player.distanceToSqr(livingEntity) < (correctReach * correctReach)
 						//? >1.21.1 {
-						/*&& livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)
-						*///?} <= 1.21.1 {
-						&& livingEntity.hurt(damageSource, enchantedDamage)
-						//?}
+						&& livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)
+						//?} <= 1.21.1 {
+						/*&& livingEntity.hurt(damageSource, enchantedDamage)
+						*///?}
 				) {
 					//? <26.2 {
 					KnockbackMode.extractContext(livingEntity, damageSource);
@@ -305,10 +305,10 @@ public class MethodHandler {
 	}
 	public static void notifyKnockback(LivingEntity entity) {
 		//? >1.21.1 {
-		/*entity.needsSync = true;
-		*///?} <=1.21.1 {
-		entity.hasImpulse = true;
-		//?}
+		entity.needsSync = true;
+		//?} <=1.21.1 {
+		/*entity.hasImpulse = true;
+		*///?}
 	}
 	public static HitResult pickCollisions(Entity entity, double reach) {
 		Vec3 viewVector = entity.getViewVector(1);
@@ -430,10 +430,10 @@ public class MethodHandler {
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
 		return getCooldowns(entity).isOnCooldown(
 			//? >1.21.1 {
-			/*var1
-			*///?} <= 1.21.1 {
-			var1.getItem()
-			//?}
+			var1
+			//?} <= 1.21.1 {
+			/*var1.getItem()
+			*///?}
 		);
 	}
 	public static double updatePlayerReach(Player player, AttributeInstance attackRange, float strengthScale) {
@@ -451,7 +451,7 @@ public class MethodHandler {
 		return chargedBonus;
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
-		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		if (Combatify.isStateVanilla()) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
@@ -463,19 +463,19 @@ public class MethodHandler {
 	}
 
 	public static double getCurrentAttackReachWithoutChargedReach(Player player) {
-		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		if (Combatify.isStateVanilla()) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		return (attackRange != null) ? calculateValueBlacklistChargedReachModifier(attackRange) : baseAttackRange;
 	}
-	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<@NotNull Byte> ID_LOYALTY) {
+	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<@NonNull Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
 		int minHeight =
 			//? >1.21.1 {
-			/*trident.level().getMinY();
-			*///?} <= 1.21.1 {
-			trident.level().getMinBuildHeight();
-			//?}
+			trident.level().getMinY();
+			//?} <= 1.21.1 {
+			/*trident.level().getMinBuildHeight();
+			*///?}
 		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < minHeight && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
@@ -553,11 +553,11 @@ public class MethodHandler {
 	}
 
 	public static double getPiercingLevel(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
+		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL.get(), 0F);
 	}
 
 	public static double getChargedReach(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.CHARGED_REACH, 1F);
+		return itemStack.getOrDefault(CustomDataComponents.CHARGED_REACH.get(), 1F);
 	}
 
 	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
@@ -587,19 +587,19 @@ public class MethodHandler {
 	private static ConfigurableItemData getConfigurableItemData(List<ConfigurableItemData> results) {
 		Double useSeconds = null;
 		//? <=1.21.1 {
-		Double cooldownSeconds = null;
-		//?}
+		/*Double cooldownSeconds = null;
+		*///?}
 		for (ConfigurableItemData configurableItemData : results) {
 			useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
 			//? <=1.21.1 {
-			cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
-			//?}
+			/*cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
+			*///?}
 		}
 		//? >1.21.1 {
-		/*ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
-		*///?} <=1.21.1 {
-		ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
-		//?}
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
+		//?} <=1.21.1 {
+		/*ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
+		*///?}
 		if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
 		return configurableItemData;
 	}
@@ -638,6 +638,6 @@ public class MethodHandler {
 	}
 
 	public static ExtendedBlockingData getBlocking(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.EXTENDED_BLOCKING_DATA, ExtendedBlockingData.EMPTY);
+		return itemStack.getOrDefault(CustomDataComponents.EXTENDED_BLOCKING_DATA.get(), ExtendedBlockingData.EMPTY);
 	}
 }

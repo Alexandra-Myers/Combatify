@@ -1,7 +1,7 @@
 package net.atlas.combatify.extensions;
 
 import net.minecraft.world.phys.HitResult;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface MinecraftExtensions {
 	default void combatify$setAimAssistHitResult(@Nullable HitResult aimAssistHitResult) {

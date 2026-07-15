@@ -1,21 +1,20 @@
 package net.atlas.combatify.util.blocking.condition;
 
 import com.mojang.serialization.MapCodec;
-import net.atlas.combatify.util.IDUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public record Unconditional() implements BlockingCondition {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("unconditional");
+	public static final Identifier ID = Identifier.withDefaultNamespace("unconditional");
 	public static final Unconditional INSTANCE = new Unconditional();
 	public static final MapCodec<Unconditional> MAP_CODEC = MapCodec.unit(INSTANCE);
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+	public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull BlockingCondition> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
 	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {

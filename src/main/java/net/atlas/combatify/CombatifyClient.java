@@ -5,14 +5,13 @@ import net.atlas.combatify.config.DualAttackIndicatorStatus;
 import net.atlas.combatify.config.ShieldIndicatorStatus;
 import net.atlas.combatify.networking.ClientNetworkingHandler;
 import net.atlas.combatify.util.CombatifyState;
-import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TriState;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -21,9 +20,9 @@ import static net.minecraft.client.Options.genericValueLabel;
 import static net.minecraft.client.Options.percentValueLabel;
 
 public class CombatifyClient {
-	public static final OptionInstance<@NotNull Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
-	public static final OptionInstance<@NotNull Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
-	public static final OptionInstance<@NotNull TriState> rhythmicAttacks = new OptionInstance<>(
+	public static final OptionInstance<@NonNull Boolean> autoAttack = OptionInstance.createBoolean("options.autoAttack", true);
+	public static final OptionInstance<@NonNull Boolean> shieldCrouch = OptionInstance.createBoolean("options.shieldCrouch", true);
+	public static final OptionInstance<@NonNull TriState> rhythmicAttacks = new OptionInstance<>(
 		"options.rhythmicAttack",
 		OptionInstance.noTooltip(),
 		(component, object) -> switch (object) {
@@ -41,7 +40,7 @@ public class CombatifyClient {
 
 		}
 	);
-	public static final OptionInstance<@NotNull TriState> augmentedArmHeight = new OptionInstance<>(
+	public static final OptionInstance<@NonNull TriState> augmentedArmHeight = new OptionInstance<>(
 		"options.augmentedArmHeight",
 		OptionInstance.noTooltip(),
 		(component, object) -> switch (object) {
@@ -59,7 +58,7 @@ public class CombatifyClient {
 
 		}
 	);
-	public static final OptionInstance<@NotNull CombatifyState> combatifyState = new OptionInstance<>(
+	public static final OptionInstance<@NonNull CombatifyState> combatifyState = new OptionInstance<>(
 		"options.combatifyState",
 		OptionInstance.noTooltip(),
 		(component, state) -> state.caption(),
@@ -69,7 +68,7 @@ public class CombatifyClient {
 
 		}
 	);
-	public static final OptionInstance<@NotNull AttackIndicatorStatus> spearChargeIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NonNull AttackIndicatorStatus> spearChargeIndicator = new OptionInstance<>(
 		"options.spearChargeIndicator",
 		OptionInstance.noTooltip(),
 		(component, attackIndicatorStatus) -> attackIndicatorStatus.caption(),
@@ -78,7 +77,7 @@ public class CombatifyClient {
 		value -> {
 		}
 	);
-	public static final OptionInstance<@NotNull AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NonNull AttackIndicatorStatus> projectileChargeIndicator = new OptionInstance<>(
 		"options.projectileChargeIndicator",
 		OptionInstance.noTooltip(),
 		(component, attackIndicatorStatus) -> attackIndicatorStatus.caption(),
@@ -87,7 +86,7 @@ public class CombatifyClient {
 		value -> {
 		}
 	);
-	public static final OptionInstance<@NotNull DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NonNull DualAttackIndicatorStatus> dualAttackIndicator = new OptionInstance<>(
 		"options.dualAttackIndicator",
 		OptionInstance.noTooltip(),
 		(component, dualAttackIndicatorStatus) -> dualAttackIndicatorStatus.caption(),
@@ -96,7 +95,7 @@ public class CombatifyClient {
 		value -> {
 		}
 	);
-	public static final OptionInstance<@NotNull Double> attackIndicatorMaxValue = new OptionInstance<>(
+	public static final OptionInstance<@NonNull Double> attackIndicatorMaxValue = new OptionInstance<>(
 		"options.attackIndicatorMaxValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMaxValue.tooltip")),
 		(optionText, value) -> value == 2.0 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMaxValue.default"))) : percentValueLabel(optionText, value),
@@ -107,7 +106,7 @@ public class CombatifyClient {
 
 		}
 	);
-	public static final OptionInstance<@NotNull Double> attackIndicatorMinValue = new OptionInstance<>(
+	public static final OptionInstance<@NonNull Double> attackIndicatorMinValue = new OptionInstance<>(
 		"options.attackIndicatorMinValue",
 		OptionInstance.cachedConstantTooltip(Component.translatable("options.attackIndicatorMinValue.tooltip")),
 		(optionText, value) -> value == 1.3 ? Objects.requireNonNull(genericValueLabel(optionText, Component.translatable("options.attackIndicatorMinValue.default"))) : percentValueLabel(optionText, value),
@@ -118,7 +117,7 @@ public class CombatifyClient {
 
 		}
 	);
-	public static final OptionInstance<@NotNull ShieldIndicatorStatus> shieldIndicator = new OptionInstance<>(
+	public static final OptionInstance<@NonNull ShieldIndicatorStatus> shieldIndicator = new OptionInstance<>(
 			"options.shieldIndicator",
 			OptionInstance.noTooltip(),
 			(component, shieldIndicatorStatus) -> shieldIndicatorStatus.caption(),

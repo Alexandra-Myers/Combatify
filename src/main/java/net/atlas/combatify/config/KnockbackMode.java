@@ -1,9 +1,7 @@
 package net.atlas.combatify.config;
 
 import net.atlas.combatify.Combatify;
-//? <26.2 {
-import net.atlas.combatify.util.TetraConsumer;
-//?} >=26.2 {
+//? >=26.2 {
 /*import net.atlas.combatify.util.HexaConsumer;
 *///?}
 import net.atlas.combatify.util.MethodHandler;
@@ -14,7 +12,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
 //? <26.2 {
 import org.apache.commons.lang3.function.TriConsumer;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -44,7 +41,7 @@ public enum KnockbackMode {
 		*///?}
 	) {
 		//? <26.2 {
-		@Nullable DamageSource source = CONTEXTS.remove(target);
+		DamageSource source = CONTEXTS.remove(target);
 		//?}
 		boolean applyNonProjectileKB = false;
 		if (this == MIDAIR && source == null) applyNonProjectileKB = true;

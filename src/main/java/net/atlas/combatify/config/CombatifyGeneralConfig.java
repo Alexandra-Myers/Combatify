@@ -29,18 +29,18 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 //? >=1.21.11 {
+import net.minecraft.util.Util;
+//?} <1.21.11 {
 /*import net.minecraft.util.Util;
-*///?} <1.21.11 {
-import net.minecraft.Util;
-//?}
+*///?}
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.DispenserBlock;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -129,10 +129,10 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	//? >=1.21.11 {
-	/*public CombatifyGeneralConfig(ResourceLocation id) {
-	*///?} <1.21.11 {
-	public CombatifyGeneralConfig(ResourceLocation id) {
-	//?}
+	public CombatifyGeneralConfig(Identifier id) {
+	//?} <1.21.11 {
+	/*public CombatifyGeneralConfig(Identifier id) {
+	*///?}
 		super(id);
 	}
 
@@ -406,7 +406,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	@Override
-	public @NotNull List<Category> createCategories() {
+	public @NonNull List<Category> createCategories() {
 		List<Category> categoryList = super.createCategories();
 		melee = new Category(this, "melee_options", new ArrayList<>());
 		ranged = new Category(this, "ranged_options", new ArrayList<>());
@@ -705,18 +705,18 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	public static class ProjectileUncertainty implements ConfigRepresentable<ProjectileUncertainty> {
 		public static final ProjectileUncertainty DEFAULT = new ProjectileUncertainty(null, 0.25, 0.25);
-		public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
+		public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
             public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileUncertainty projectileUncertainty) {
-                IDUtils.writeResourceLocation(registryFriendlyByteBuf, projectileUncertainty.owner.heldValue.owner().name);
+                IDUtils.writeIdentifier(registryFriendlyByteBuf, projectileUncertainty.owner.heldValue.owner().name);
                 registryFriendlyByteBuf.writeUtf(projectileUncertainty.owner.heldValue.name());
                 registryFriendlyByteBuf.writeDouble(projectileUncertainty.bowUncertainty);
 				registryFriendlyByteBuf.writeDouble(projectileUncertainty.crossbowUncertainty);
             }
 
-            @NotNull
+            @NonNull
 			@SuppressWarnings("unchecked")
             public ProjectileUncertainty decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-                AtlasConfig config = AtlasConfig.configs.get(IDUtils.readResourceLocation(registryFriendlyByteBuf));
+                AtlasConfig config = AtlasConfig.configs.get(IDUtils.readIdentifier(registryFriendlyByteBuf));
                 return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
             }
         };

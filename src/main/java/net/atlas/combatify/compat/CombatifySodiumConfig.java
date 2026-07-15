@@ -15,11 +15,11 @@ import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.TriState;
 
 public class CombatifySodiumConfig implements ConfigEntryPoint {
-	private static final ResourceLocation COMBATIFY_ICON = IDUtils.fromNamespaceAndPath("combatify", "textures/gui/config_icon.png");
+	private static final Identifier COMBATIFY_ICON = IDUtils.fromNamespaceAndPath("combatify", "textures/gui/config_icon.png");
 	private final StorageEventHandler vanillaStorage;
 
 	public CombatifySodiumConfig() {

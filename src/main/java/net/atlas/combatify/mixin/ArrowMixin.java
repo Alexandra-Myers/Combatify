@@ -11,7 +11,7 @@ import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 @Mixin(Arrow.class)
 public abstract class ArrowMixin extends AbstractArrow {
-	protected ArrowMixin(EntityType<? extends @NotNull AbstractArrow> entityType, Level level) {
+	protected ArrowMixin(EntityType<? extends @NonNull AbstractArrow> entityType, Level level) {
 		super(entityType, level);
 	}
 

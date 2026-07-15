@@ -5,11 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.util.CommonUtils;
 //? >=1.21.11 {
-/*import net.minecraft.resources.ResourceLocation;
-*///?} <1.21.11 {
+import net.minecraft.resources.Identifier;
+//?} <1.21.11 {
 
-import net.minecraft.resources.ResourceLocation;
-//?}
+/*import net.minecraft.resources.Identifier;
+*///?}
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
@@ -18,7 +18,7 @@ import net.minecraft.world.food.FoodProperties;
 import static java.lang.Float.isFinite;
 
 public record CombatifyFoodImpl(int minimumSprintLevel, int minimumHealingLevel, int minimumFastHealingLevel, float fastHealSeconds, float healSeconds, float starvationSeconds) implements FoodImpl {
-	public static final ResourceLocation ID = Combatify.id("combat_test_9a");
+	public static final Identifier ID = Combatify.id("combat_test_9a");
 	public static final MapCodec<CombatifyFoodImpl> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(ExtraCodecs.intRange(0, 20).optionalFieldOf("minimum_sprint_level", 6).forGetter(CombatifyFoodImpl::minimumSprintLevel),
 				ExtraCodecs.intRange(0, 20).optionalFieldOf("minimum_healing_level", 9).forGetter(CombatifyFoodImpl::minimumHealingLevel),

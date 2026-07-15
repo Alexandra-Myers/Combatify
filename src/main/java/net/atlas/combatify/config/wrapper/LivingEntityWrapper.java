@@ -4,7 +4,7 @@ import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -47,7 +47,7 @@ public class LivingEntityWrapper<L extends LivingEntity> extends EntityWrapper<L
 	}
 
 	public final boolean hasEffect(String mobEffect) {
-		return value.hasEffect(BuiltInRegistries.MOB_EFFECT.getOrThrow(ResourceKey.create(Registries.MOB_EFFECT, ResourceLocation.parse(mobEffect))));
+		return value.hasEffect(BuiltInRegistries.MOB_EFFECT.getOrThrow(ResourceKey.create(Registries.MOB_EFFECT, Identifier.parse(mobEffect))));
 	}
 
 	public final boolean onClimbable() {

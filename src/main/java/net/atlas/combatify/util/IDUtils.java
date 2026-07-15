@@ -4,45 +4,29 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class IDUtils {
-	public static final Codec<ResourceLocation> CODEC = ResourceLocation.CODEC;
-	public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC = ResourceLocation.STREAM_CODEC;
+	public static final Codec<Identifier> CODEC = Identifier.CODEC;
+	public static final StreamCodec<ByteBuf, Identifier> STREAM_CODEC = Identifier.STREAM_CODEC;
 
-	public static void writeResourceLocation(FriendlyByteBuf buf, ResourceLocation identifier) {
-		buf.writeResourceLocation(identifier);
+	public static void writeIdentifier(FriendlyByteBuf buf, Identifier identifier) {
+		buf.writeIdentifier(identifier);
 	}
 
-	public static ResourceLocation readResourceLocation(FriendlyByteBuf buf) {
-		return buf.readResourceLocation();
+	public static Identifier readIdentifier(FriendlyByteBuf buf) {
+		return buf.readIdentifier();
 	}
 
-	public static ResourceLocation fromNamespaceAndPath(String string, String string2) {
-		return ResourceLocation.fromNamespaceAndPath(string, string2);
+	public static Identifier fromNamespaceAndPath(String string, String string2) {
+		return Identifier.fromNamespaceAndPath(string, string2);
 	}
 
-	public static ResourceLocation parse(String string) {
-		return ResourceLocation.parse(string);
+	public static Identifier parse(String string) {
+		return Identifier.parse(string);
 	}
 
-	public static ResourceLocation withDefaultNamespace(String string) {
-		return ResourceLocation.withDefaultNamespace(string);
+	public static Identifier withDefaultNamespace(String string) {
+		return Identifier.withDefaultNamespace(string);
 	}
-
-	@Deprecated
-	public record PseudoId(ResourceLocation id) {
-		public static PseudoId fromNamespaceAndPath(String namespace, String path) {
-			return new PseudoId(IDUtils.fromNamespaceAndPath(namespace, path));
-		}
-
-		public static PseudoId parse(String id) {
-			return new PseudoId(IDUtils.parse(id));
-		}
-
-		public static PseudoId withDefaultNamespace(String path) {
-			return new PseudoId(IDUtils.withDefaultNamespace(path));
-		}
-	}
-	public static final Codec<PseudoId> PSEUDO_CODEC = IDUtils.CODEC.xmap(PseudoId::new, PseudoId::id);
 }

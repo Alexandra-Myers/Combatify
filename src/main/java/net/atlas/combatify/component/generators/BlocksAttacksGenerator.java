@@ -1,13 +1,13 @@
 package net.atlas.combatify.component.generators;
 
 //? <=1.21.1 {
-import com.mojang.serialization.Codec;
+/*import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.component.CustomDataComponents;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
-import net.atlas.combatify.util.blocking.DamageReduction;
-import net.atlas.combatify.util.blocking.ItemDamageFunction;
+import net.minecraft.world.item.component.BlocksAttacks.DamageReduction;
+import net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction;
 import net.atlas.defaulted.component.PatchGenerator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -69,4 +69,4 @@ public record BlocksAttacksGenerator(Optional<Float> blockDelaySeconds,
 		return CODEC;
 	}
 }
-//?}
+*///?}

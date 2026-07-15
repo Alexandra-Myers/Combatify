@@ -9,29 +9,29 @@ import java.util.Optional;
 public record ConfigurableItemData(
 	Optional<Double> optionalUseDuration
 	//? <=1.21.1 {
-	, Optional<Double> optionalCooldownSeconds
-	//?}
+	/*, Optional<Double> optionalCooldownSeconds
+	*///?}
 ) {
 
 	//? <=1.21.1 {
-	public ConfigurableItemData(final Double useDuration, final Double cooldownSeconds) {
+	/*public ConfigurableItemData(final Double useDuration, final Double cooldownSeconds) {
 		this(Optional.ofNullable(useDuration), Optional.ofNullable(cooldownSeconds));
 	}
-	//?}
+	*///?}
 	public static final ConfigurableItemData EMPTY = new ConfigurableItemData((Double) null);
 	public static final MapCodec<ConfigurableItemData> CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(Codec.doubleRange(1.0 / 20.0, 50).optionalFieldOf("use_seconds").forGetter(ConfigurableItemData::optionalUseDuration)
 				//? <=1.21.1 {
-				, Codec.doubleRange(1.0 / 20.0, 50).optionalFieldOf("cooldown_seconds").forGetter(ConfigurableItemData::optionalCooldownSeconds)
-				//?}
+				/*, Codec.doubleRange(1.0 / 20.0, 50).optionalFieldOf("cooldown_seconds").forGetter(ConfigurableItemData::optionalCooldownSeconds)
+				*///?}
 			).apply(instance, ConfigurableItemData::new));
 
 	public ConfigurableItemData(Double useDuration) {
 		//? >1.21.1 {
-		/*this(Optional.ofNullable(useDuration));
-		*///?} <=1.21.1 {
-		this(useDuration, null);
-		//?}
+		this(Optional.ofNullable(useDuration));
+		//?} <=1.21.1 {
+		/*this(useDuration, null);
+		*///?}
 	}
 
 	public Double useDuration() {
@@ -39,10 +39,10 @@ public record ConfigurableItemData(
 	}
 
 	//? <=1.21.1 {
-	public Double cooldownSeconds() {
+	/*public Double cooldownSeconds() {
 		return optionalCooldownSeconds.orElse(null);
 	}
-	//?}
+	*///?}
 
 	public static Optional<Integer> max(Optional<Integer> value, int min) {
         return value.map(integer -> Math.max(integer, min));

@@ -2,16 +2,15 @@ package net.atlas.combatify.util.blocking.condition;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IDUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,10 +20,10 @@ public record AnyOf(List<BlockingCondition> blockingConditions) implements Block
 	public AnyOf(BlockingCondition... conditions) {
 		this(Arrays.asList(conditions));
 	}
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("any_of");
+	public static final Identifier ID = Identifier.withDefaultNamespace("any_of");
 	public static final MapCodec<AnyOf> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 		instance.group(BlockingConditions.MAP_CODEC.codec().listOf().fieldOf("conditions").forGetter(AnyOf::blockingConditions)).apply(instance, AnyOf::new));
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull AnyOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AnyOf::blockingConditions, AnyOf::new);
+	public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull AnyOf> STREAM_CODEC = StreamCodec.composite(BlockingCondition.STREAM_CODEC.apply(ByteBufCodecs.list()), AnyOf::blockingConditions, AnyOf::new);
 
 	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {

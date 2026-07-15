@@ -5,13 +5,13 @@ import net.atlas.combatify.config.impl.JSImpl;
 import net.atlas.combatify.config.wrapper.FoodDataWrapper;
 import net.atlas.combatify.config.wrapper.FoodPropertiesWrapper;
 import net.atlas.combatify.config.wrapper.PlayerWrapper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;
 
 public record JSFoodImpl(JSImpl handler) implements FoodImpl {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("javascript");
+	public static final Identifier ID = Identifier.withDefaultNamespace("javascript");
 	public static final MapCodec<JSFoodImpl> CODEC = JSImpl.CODEC.fieldOf("script").xmap(JSFoodImpl::new, JSFoodImpl::handler);
 
 	@Override

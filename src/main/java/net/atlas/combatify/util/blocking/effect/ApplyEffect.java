@@ -4,12 +4,11 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IDUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -20,13 +19,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
-public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("apply_effect");
-	public ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
+public record ApplyEffect(HolderSet<@NonNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
+	public static final Identifier ID = Identifier.withDefaultNamespace("apply_effect");
+	public ApplyEffect(HolderSet<@NonNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
 		this(toApply, duration, duration, amplifier, amplifier);
 	}
 	public static final MapCodec<ApplyEffect> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -51,9 +50,9 @@ public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
         assert enchantedItemInUse.owner() != null;
-        @NotNull LivingEntity target = enchantedItemInUse.owner();
+        @NonNull LivingEntity target = enchantedItemInUse.owner();
 		RandomSource randomSource = target.getRandom();
-		Optional<Holder<@NotNull MobEffect>> optional = this.toApply.getRandomElement(randomSource);
+		Optional<Holder<@NonNull MobEffect>> optional = this.toApply.getRandomElement(randomSource);
 		if (optional.isPresent()) {
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration.calculate(enchantmentLevel), this.maxDuration.calculate(enchantmentLevel)) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier.calculate(enchantmentLevel), this.maxAmplifier.calculate(enchantmentLevel))));

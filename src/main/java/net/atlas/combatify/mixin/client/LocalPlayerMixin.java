@@ -12,7 +12,6 @@ import net.atlas.combatify.CombatifyClient;
 import net.atlas.combatify.client.ClientMethodHandler;
 import net.atlas.combatify.extensions.MinecraftExtensions;
 import net.atlas.combatify.extensions.PlayerExtensions;
-import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -30,7 +29,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,7 +49,7 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer implements P
 	}
 
 	@Shadow
-	public abstract void startUsingItem(@NotNull InteractionHand interactionHand);
+	public abstract void startUsingItem(@NonNull InteractionHand interactionHand);
 	@Unique
 	boolean wasShieldBlocking = false;
 	@Unique

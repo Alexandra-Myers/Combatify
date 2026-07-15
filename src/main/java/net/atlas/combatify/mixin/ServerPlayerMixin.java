@@ -28,8 +28,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -44,7 +43,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	private boolean retainAttack;
 
 	@Shadow
-	public abstract void swing(@NotNull InteractionHand interactionHand);
+	public abstract void swing(@NonNull InteractionHand interactionHand);
 
 	@Shadow
 	public ServerGamePacketListenerImpl connection;
@@ -55,7 +54,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	@Unique
 	public final ServerPlayer player = ServerPlayer.class.cast(this);
 
-	public ServerPlayerMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
+	public ServerPlayerMixin(EntityType<? extends @NonNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
@@ -128,7 +127,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ServerPla
 	}
 	@Inject(method = "updatePlayerAttributes", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getAttribute(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;", ordinal = 1), cancellable = true)
 	public void removeCreativeReach(CallbackInfo ci) {
-		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 		float strengthScale = player.getAttackStrengthScale(1.0F);
 		MethodHandler.updatePlayerReach(player, attackRange, strengthScale);
 		if (!Combatify.CONFIG.creativeAttackReach())

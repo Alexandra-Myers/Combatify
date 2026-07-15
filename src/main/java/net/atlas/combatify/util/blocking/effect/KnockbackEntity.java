@@ -6,8 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 //? <26.2 {
 import net.atlas.combatify.config.KnockbackMode;
 //?}
-import net.atlas.combatify.util.IDUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,7 +20,7 @@ public record KnockbackEntity(LevelBasedValue strength,
 							  *///?}
 							  boolean force,
 							  boolean inverseDirection) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("knockback_entity");
+	public static final Identifier ID = Identifier.withDefaultNamespace("knockback_entity");
 	//? >=26.2 {
 	/*public KnockbackEntity(LevelBasedValue strength, boolean force, boolean inverseDirection) {
 		this(strength, LevelBasedValue.constant(0.5F), force, inverseDirection);

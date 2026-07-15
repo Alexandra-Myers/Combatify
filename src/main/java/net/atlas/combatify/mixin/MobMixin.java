@@ -8,7 +8,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.extensions.MobExtensions;
-import net.atlas.combatify.item.TieredShieldItem;
+import net.atlas.combatify.init.TieredShieldBootstrap;
 import net.atlas.combatify.mixin.accessor.CombatTrackerAccessor;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
@@ -29,8 +29,8 @@ import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -49,7 +49,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	private boolean overrideSprintLogic = false;
 	@Shadow
 	@Final
-	private static EntityDataAccessor<@NotNull Byte> DATA_MOB_FLAGS_ID;
+	private static EntityDataAccessor<@NonNull Byte> DATA_MOB_FLAGS_ID;
 
 	@Shadow
 	@Nullable
@@ -60,7 +60,7 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	@Final
 	private static List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
 
-	protected MobMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
+	protected MobMixin(EntityType<? extends @NonNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
@@ -243,10 +243,10 @@ public abstract class MobMixin extends LivingEntity implements MobExtensions {
 	private static Item enableShields(Item original, @Local(ordinal = 0, argsOnly = true) EquipmentSlot equipmentSlot, @Local(ordinal = 0, argsOnly = true) int level) {
 		if (Combatify.CONFIG.mobsCanGuard() && equipmentSlot == EquipmentSlot.OFFHAND) {
 			if (Combatify.CONFIG.tieredShields()) return switch (level) {
-				case 1 -> TieredShieldItem.COPPER_SHIELD;
-				case 2 -> TieredShieldItem.GOLD_SHIELD;
-				case 4 -> TieredShieldItem.IRON_SHIELD;
-				case 5 -> TieredShieldItem.DIAMOND_SHIELD;
+				case 1 -> TieredShieldBootstrap.COPPER_SHIELD.get();
+				case 2 -> TieredShieldBootstrap.GOLD_SHIELD.get();
+				case 4 -> TieredShieldBootstrap.IRON_SHIELD.get();
+				case 5 -> TieredShieldBootstrap.DIAMOND_SHIELD.get();
                 default -> Items.SHIELD;
             };
 			else return Items.SHIELD;

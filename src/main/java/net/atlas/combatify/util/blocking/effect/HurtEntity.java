@@ -4,9 +4,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.atlas.combatify.util.IDUtils;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -15,11 +14,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-public record HurtEntity(Holder<@NotNull DamageType> damageType, LevelBasedValue minDamage, LevelBasedValue maxDamage) implements PostBlockEffect {
-	public static final ResourceLocation ID = ResourceLocation.withDefaultNamespace("hurt_entity");
-	public HurtEntity(Holder<@NotNull DamageType> damageType, LevelBasedValue damage) {
+public record HurtEntity(Holder<@NonNull DamageType> damageType, LevelBasedValue minDamage, LevelBasedValue maxDamage) implements PostBlockEffect {
+	public static final Identifier ID = Identifier.withDefaultNamespace("hurt_entity");
+	public HurtEntity(Holder<@NonNull DamageType> damageType, LevelBasedValue damage) {
 		this(damageType, damage, damage);
 	}
 	public static final MapCodec<HurtEntity> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->

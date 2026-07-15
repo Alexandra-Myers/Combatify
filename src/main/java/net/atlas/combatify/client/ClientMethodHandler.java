@@ -1,7 +1,6 @@
 package net.atlas.combatify.client;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,7 +14,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.SwingAnimationType;
 import net.minecraft.world.phys.*;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
