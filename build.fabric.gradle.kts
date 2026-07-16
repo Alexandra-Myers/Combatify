@@ -311,7 +311,8 @@ publishMods {
     displayName = "${property("mod.name")} ${property("mod.version")} $displaySubVer ${stonecutter.current.version} Fabric"
     version = "${property("mod.version")}${subVer}-${property("deps.minecraft")}-Fabric"
     changelog = provider { rootProject.file("changelog.md").readText() }
-    modLoaders.add("neoforge")
+    modLoaders.add("fabric")
+    modLoaders.add("quilt")
 
     modrinth {
         projectId = property("publish.modrinth") as String
