@@ -1,17 +1,9 @@
+import java.util.Locale
+
 plugins {
     id("net.neoforged.moddev")
     id ("dev.kikugie.postprocess.jsonlang")
     id("me.modmuss50.mod-publish-plugin")
-}
-
-stonecutter {
-    val (version, loader) = current.project.split('-', limit = 2)
-    properties.tags(version, loader)
-
-    replacements.string(current.parsed >= "1.21.11") {
-        replace("ResourceLocation", "Identifier")
-        replace("location()", "identifier()")
-    }
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -254,6 +246,7 @@ stonecutter {
 
     replacements.string(current.parsed >= "1.21.11") {
         replace("ResourceLocation", "Identifier")
+        replace("location()", "identifier()")
         replace("net.minecraft.Util", "net.minecraft.util.Util")
         replace("net.minecraft.FileUtil", "net.minecraft.util.FileUtil")
         replace("org.jetbrains.annotations.Nullable", "org.jspecify.annotations.Nullable")
@@ -278,10 +271,20 @@ publishMods {
     file = tasks.jar.map { it.archiveFile.get() }
     additionalFiles.from(tasks.named<org.gradle.jvm.tasks.Jar>("sourcesJar").map { it.archiveFile.get() })
 
-    type = BETA
-    displayName = "${property("mod.name")} ${property("mod.version")} for ${stonecutter.current.version} NeoForge"
-    version = "${property("mod.version")}+${property("deps.minecraft")}-neoforge"
-    changelog = provider { rootProject.file("CHANGELOG-LATEST.md").readText() }
+    var release = "${property("mod.sub_version")}" == "release"
+    type =
+        if (release) STABLE
+        else BETA
+    var subVer =
+        if (release) ""
+        else ".${property("mod.sub_version")}"
+    var displaySubVer =
+        if (release) ""
+        else " ${(property("mod.sub_version") as String).replace(".", " ").uppercase(Locale.getDefault())}"
+
+    displayName = "${property("mod.name")} ${property("mod.version")} $displaySubVer ${stonecutter.current.version} NeoForge"
+    version = "${property("mod.version")}${subVer}-${property("deps.minecraft")}-NeoForge"
+    changelog = provider { rootProject.file("changelog.md").readText() }
     modLoaders.add("neoforge")
 
     modrinth {
@@ -289,7 +292,9 @@ publishMods {
         accessToken = env.MODRINTH_API_KEY.orNull()
         minecraftVersions.add(property("deps.minecraft") as String)
         minecraftVersions.addAll(additionalVersions)
-        optional("mcqoy")
+        requires("atlas-core", "defaulted", "cloth-config", "forgified-fabric-api")
+        optional("polymer", "cookeymod")
+        environment = SERVER_ONLY_CLIENT_OPTIONAL
     }
 
     curseforge {
@@ -297,5 +302,17 @@ publishMods {
         accessToken = env.CURSEFORGE_API_KEY.orNull()
         minecraftVersions.add(property("deps.minecraft") as String)
         minecraftVersions.addAll(additionalVersions)
+        javaVersions.add(if (stonecutter.eval(stonecutter.current.version, ">=26")) {
+            JavaVersion.VERSION_25
+        } else if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) {
+            JavaVersion.VERSION_21
+        } else {
+            JavaVersion.VERSION_17
+        })
+        changelogType = "markdown"
+        requires("atlas-core", "defaulted", "cloth-config", "forgified-fabric-api")
+        optional("polymer")
+        client = true
+        server = true
     }
 }

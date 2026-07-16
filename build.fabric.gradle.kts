@@ -1,22 +1,12 @@
 @file:Suppress("UnstableApiUsage")
 
+import java.util.Locale
+
+
 plugins {
     id("dev.kikugie.loom-back-compat")
     id("dev.kikugie.postprocess.jsonlang")
     id("me.modmuss50.mod-publish-plugin")
-}
-
-stonecutter {
-    val (version, loader) = current.project.split('-', limit = 2)
-    properties.tags(version, loader)
-
-    replacements.string(current.parsed >= "1.21.11") {
-        replace("ResourceLocation", "Identifier")
-        replace("location()", "identifier()")
-    }
-    replacements.string(current.parsed >= "26.1.2") {
-        replace("FabricDataOutput", "FabricPackOutput")
-    }
 }
 
 tasks.named<ProcessResources>("processResources") {
@@ -271,8 +261,13 @@ stonecutter {
     val (version, loader) = current.project.split('-', limit = 2)
     properties.tags(version, loader)
 
+    replacements.string(current.parsed >= "26.1.2") {
+        replace("FabricDataOutput", "FabricPackOutput")
+    }
+
     replacements.string(current.parsed >= "1.21.11") {
         replace("ResourceLocation", "Identifier")
+        replace("location()", "identifier()")
         replace("net.minecraft.Util", "net.minecraft.util.Util")
         replace("net.minecraft.FileUtil", "net.minecraft.util.FileUtil")
         replace("org.jetbrains.annotations.Nullable", "org.jspecify.annotations.Nullable")
@@ -299,22 +294,33 @@ val additionalVersions: List<String> = additionalVersionsStr
     ?: emptyList()
 
 publishMods {
-    file = loomx.modJar.map { it.archiveFile.get() }
-    additionalFiles.from(loomx.modSourcesJar.map { it.archiveFile.get() })
+    file = tasks.jar.map { it.archiveFile.get() }
+    additionalFiles.from(tasks.named<org.gradle.jvm.tasks.Jar>("sourcesJar").map { it.archiveFile.get() })
 
-    type = STABLE
-    displayName = "${property("mod.name")} ${property("mod.version")} for ${stonecutter.current.version} Fabric"
-    version = "${property("mod.version")}+${property("deps.minecraft")}-fabric"
-    changelog = provider { rootProject.file("CHANGELOG-LATEST.md").readText() }
-    modLoaders.add("fabric")
+    var release = "${property("mod.sub_version")}" == "release"
+    type =
+        if (release) STABLE
+        else BETA
+    var subVer =
+        if (release) ""
+        else ".${property("mod.sub_version")}"
+    var displaySubVer =
+        if (release) ""
+        else " ${(property("mod.sub_version") as String).replace(".", " ").uppercase(Locale.getDefault())}"
+
+    displayName = "${property("mod.name")} ${property("mod.version")} $displaySubVer ${stonecutter.current.version} Fabric"
+    version = "${property("mod.version")}${subVer}-${property("deps.minecraft")}-Fabric"
+    changelog = provider { rootProject.file("changelog.md").readText() }
+    modLoaders.add("neoforge")
 
     modrinth {
         projectId = property("publish.modrinth") as String
         accessToken = env.MODRINTH_API_KEY.orNull()
         minecraftVersions.add(property("deps.minecraft") as String)
         minecraftVersions.addAll(additionalVersions)
-        requires("fabric-api")
-        optional("mcqoy")
+        requires("atlas-core", "defaulted", "cloth-config", "fabric-api")
+        optional("polymer", "modmenu", "cookeymod")
+        environment = SERVER_ONLY_CLIENT_OPTIONAL
     }
 
     curseforge {
@@ -322,6 +328,17 @@ publishMods {
         accessToken = env.CURSEFORGE_API_KEY.orNull()
         minecraftVersions.add(property("deps.minecraft") as String)
         minecraftVersions.addAll(additionalVersions)
-        requires("fabric-api")
+        requires("atlas-core", "defaulted", "cloth-config", "fabric-api")
+        optional("polymer", "modmenu")
+        javaVersions.add(if (stonecutter.eval(stonecutter.current.version, ">=26")) {
+            JavaVersion.VERSION_25
+        } else if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) {
+            JavaVersion.VERSION_21
+        } else {
+            JavaVersion.VERSION_17
+        })
+        changelogType = "markdown"
+        client = true
+        server = true
     }
 }
