@@ -206,6 +206,7 @@ dependencies {
     modImplementation("squeek.appleskin:appleskin-fabric:${property("deps.appleskin")}")
     implementation("io.github.java-diff-utils:java-diff-utils:${property("deps.java_diff_version")}")
     implementation("org.mozilla:rhino-all:${property("deps.rhino")}")
+    include("org.mozilla:rhino-all:${property("deps.rhino")}")
 
     implementation("com.fasterxml.jackson.core:jackson-core:${property("deps.jackson")}")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-toml:${property("deps.jackson")}")
