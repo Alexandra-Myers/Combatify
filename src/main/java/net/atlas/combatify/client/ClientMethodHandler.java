@@ -14,7 +14,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.SwingAnimationType;
 import net.minecraft.world.phys.*;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -27,7 +27,7 @@ public class ClientMethodHandler {
 		if (instance == null)
 			return null;
 		Minecraft minecraft = Minecraft.getInstance();
-		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.CONFIG.swingThroughGrass() && instance.getType() == HitResult.Type.BLOCK && !Combatify.isStateVanilla()) {
 			Player minecraftPlayer = Objects.requireNonNull(minecraft.player);
 			Entity player = Objects.requireNonNull(minecraft.getCameraEntity());
 			double reach = MethodHandler.getCurrentAttackReachWithoutChargedReach(minecraftPlayer) + ((Combatify.CONFIG.chargedReach() && !minecraftPlayer.isCrouching()) ? getChargedReach(minecraftPlayer.getItemInHand(InteractionHand.MAIN_HAND)) + 0.25 : 0.25);

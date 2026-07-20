@@ -25,8 +25,4 @@ public record AllOf(List<PostBlockEffect> effects) implements PostBlockEffect {
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

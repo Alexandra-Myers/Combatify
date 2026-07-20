@@ -12,17 +12,17 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public interface DataComponentMapWrapper<M extends DataComponentMap> extends GenericAPIWrapper<M> {
-	RegistryOps<@NotNull Tag> ops();
-	ResourceKey<@NotNull Registry<@NotNull DataComponentType<?>>> reg();
+	RegistryOps<@NonNull Tag> ops();
+	ResourceKey<@NonNull Registry<@NonNull DataComponentType<?>>> reg();
 	default <T> T get(String type) {
-		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
+		@SuppressWarnings("unchecked") DataComponentType<@NonNull T> dataComponentType = (DataComponentType<@NonNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
 		return unwrap().get(dataComponentType);
 	}
 	default <T> T getOrDefault(String type, String defaultValue) {
-		@SuppressWarnings("unchecked") DataComponentType<@NotNull T> dataComponentType = (DataComponentType<@NotNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
+		@SuppressWarnings("unchecked") DataComponentType<@NonNull T> dataComponentType = (DataComponentType<@NonNull T>) ops().getter(reg()).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE).getOrThrow(ResourceKey.create(reg(), Identifier.parse(type))).value();
 		StringReader reader = new StringReader(defaultValue);
 		T defaultVal;
 		try {

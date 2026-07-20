@@ -2,13 +2,13 @@ package net.atlas.combatify.util.blocking;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.atlas.combatify.util.CommonUtils;
 import net.atlas.combatify.util.blocking.condition.BlockingCondition;
 import net.atlas.combatify.util.blocking.condition.BlockingConditions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -27,12 +27,12 @@ public record ComponentModifier(Component tooltipComponent, EnchantmentValueEffe
 		instance.group(ComponentSerialization.CODEC.fieldOf("tooltip").forGetter(ComponentModifier::tooltipComponent),
 				EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
 				BlockingConditions.MAP_CODEC.codec().optionalFieldOf("show_in_tooltip").forGetter(ComponentModifier::showInTooltip),
-				ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1F).forGetter(ComponentModifier::componentValueFactor))
+				CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1F).forGetter(ComponentModifier::componentValueFactor))
 			.apply(instance, ComponentModifier::new));
 	public static final Codec<ComponentModifier> NO_CONDITION_CODEC = RecordCodecBuilder.create(instance ->
 			instance.group(ComponentSerialization.CODEC.optionalFieldOf("tooltip", Component.empty()).forGetter(ComponentModifier::tooltipComponent),
 					EnchantmentValueEffect.CODEC.fieldOf("modifier").forGetter(ComponentModifier::modifier),
-					ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1F).forGetter(ComponentModifier::componentValueFactor))
+					CommonUtils.NON_NEGATIVE_FLOAT.optionalFieldOf("tooltip_value_factor", 1F).forGetter(ComponentModifier::componentValueFactor))
 				.apply(instance, ComponentModifier::new));
 
 	public ComponentModifier(Component tooltipComponent, EnchantmentValueEffect modifier, BlockingCondition showInTooltip, float componentValueFactor) {

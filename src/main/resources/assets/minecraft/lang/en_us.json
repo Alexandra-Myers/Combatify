@@ -6,6 +6,7 @@
   "attribute.name.shield_reduction": "Shield Damage Reduction",
   "attribute.name.shield_strength": "Shield Strength",
   "enchantment.minecraft.cleaving": "Cleaving",
+  "enchantment.minecraft.cleaving.desc": "Increases attack damage as well as disable time caused against the opponent's blocking item.",
   "item.can_sweep": "Able to Sweep",
   "item.modifiers.use": "When used:",
   "options.attackIndicatorMaxValue": "Attack Indicator Max Value",

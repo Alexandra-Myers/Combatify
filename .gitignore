@@ -1,30 +1,51 @@
-# Gradle
-.gradle/
+.env
+.gradle
+.kotlin
+.cache/
 build/
-out/
-classes/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# Quilt Loom
 run/
+old/
 
-# Eclipse
-*.launch
-
-# IntelliJ Idea
-.idea/
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
 *.iml
 *.ipr
-*.iws
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
 
-# Visual Studio Code
-.settings/
-.vscode/
-bin/
+### Eclipse ###
+.apt_generated
 .classpath
+.factorypath
 .project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-# Eclipse JDT LS
-workspace/
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
-# macOS
-*.DS_Store
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Jetbrains ###
+.idea/

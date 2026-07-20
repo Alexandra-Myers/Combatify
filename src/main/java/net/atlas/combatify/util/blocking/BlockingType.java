@@ -5,17 +5,27 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.IDUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
-public record BlockingType(Identifier name, BlockingTypeData data) {
-	public static final Codec<Identifier> ID_CODEC = Identifier.CODEC.validate(blocking_type -> blocking_type.equals(Identifier.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
+//? >=1.21.11 {
+public record BlockingType(Identifier name,
+//?} <1.21.11 {
+/*public record BlockingType(Identifier name,
+*///?}
+						   BlockingTypeData data) {
+	//? >=1.21.11 {
+	public static final Codec<Identifier> ID_CODEC = IDUtils.CODEC.validate(blocking_type -> blocking_type.equals(IDUtils.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
+	//?} <1.21.11 {
+	/*public static final Codec<Identifier> ID_CODEC = IDUtils.CODEC.validate(blocking_type -> blocking_type.equals(IDUtils.parse("empty")) || !Combatify.registeredTypes.containsKey(blocking_type) ? DataResult.error(() -> "Attempted to retrieve a Blocking Type that does not exist: " + blocking_type) : DataResult.success(blocking_type));
+	*///?}
 	public static final Codec<BlockingType> SIMPLE_CODEC = ID_CODEC.xmap(blocking_type -> Combatify.registeredTypes.get(blocking_type), BlockingType::name);
 	public static final Codec<BlockingType> MODIFY = RecordCodecBuilder.create(instance ->
 		instance.group(SIMPLE_CODEC.fieldOf("name").forGetter(blockingType -> blockingType),
@@ -27,11 +37,11 @@ public record BlockingType(Identifier name, BlockingTypeData data) {
 				Codec.BOOL.optionalFieldOf("has_shield_delay").forGetter(blockingType -> Optional.of(blockingType.hasDelay())))
 			.apply(instance, (blockingType, canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay) -> blockingType.copy(canBeDisabled.orElse(null), canCrouchBlock.orElse(null), canBlockHit.orElse(null), requireFullCharge.orElse(null), defaultKbMechanics.orElse(null), hasDelay.orElse(null))));
 	public static final Codec<BlockingType> CREATE = RecordCodecBuilder.create(instance ->
-		instance.group(Identifier.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(Identifier.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::name),
+		instance.group(IDUtils.CODEC.fieldOf("name").validate(blocking_type -> blocking_type.equals(IDUtils.parse("empty")) ? DataResult.error(() -> "Unable to create a blank Blocking Type!") : DataResult.success(blocking_type)).forGetter(BlockingType::name),
 				BlockingTypeData.CREATE.forGetter(BlockingType::data))
 			.apply(instance, BlockingType::new));
 	public static final Codec<BlockingType> CODEC = Codec.withAlternative(CREATE, MODIFY);
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, BlockingType::name,
+	public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull BlockingType> FULL_STREAM_CODEC = StreamCodec.composite(IDUtils.STREAM_CODEC, BlockingType::name,
 		BlockingTypeData.STREAM_CODEC, BlockingType::data,
 		BlockingType::new);
 	public static Builder builder() {
@@ -65,10 +75,14 @@ public record BlockingType(Identifier name, BlockingTypeData data) {
 		return new BlockingType(this.name, newData);
 	}
 	public boolean isEmpty() {
-		return this.name.equals(Identifier.withDefaultNamespace("empty"));
+		return this.name.equals(IDUtils.withDefaultNamespace("empty"));
 	}
 
+	//? >=1.21.11 {
 	public Identifier getName() {
+	//?} <1.21.11 {
+	/*public Identifier getName() {
+	*///?}
 		return name;
 	}
 
@@ -116,15 +130,19 @@ public record BlockingType(Identifier name, BlockingTypeData data) {
 			return this;
 		}
 		public BlockingType build(String name) {
-			return build(Identifier.parse(name));
+			return build(IDUtils.parse(name));
 		}
+		//? >=1.21.11 {
 		public BlockingType build(Identifier name) {
+		//?} <1.21.11 {
+		/*public BlockingType build(Identifier name) {
+		*///?}
 			return new BlockingType(name, new BlockingTypeData(canBeDisabled, canCrouchBlock, canBlockHit, requireFullCharge, defaultKbMechanics, hasDelay));
 		}
 	}
 	public record BlockingTypeData(boolean canBeDisabled, boolean canCrouchBlock, boolean canBlockHit,
 								   boolean requireFullCharge, boolean defaultKbMechanics, boolean hasDelay) {
-		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull BlockingTypeData> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, BlockingTypeData::canBeDisabled,
+		public static final StreamCodec<@NonNull FriendlyByteBuf, @NonNull BlockingTypeData> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, BlockingTypeData::canBeDisabled,
 			ByteBufCodecs.BOOL, BlockingTypeData::canCrouchBlock,
 			ByteBufCodecs.BOOL, BlockingTypeData::canBlockHit,
 			ByteBufCodecs.BOOL, BlockingTypeData::requireFullCharge,

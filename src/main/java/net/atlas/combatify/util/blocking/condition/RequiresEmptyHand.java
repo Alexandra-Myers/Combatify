@@ -12,9 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Map;
+import org.jspecify.annotations.NonNull;
 
 public record RequiresEmptyHand(InteractionHand interactionHand) implements BlockingCondition {
 	public static final Identifier ID = Identifier.withDefaultNamespace("requires_empty_hand");
@@ -24,7 +22,7 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 				.xmap(s -> s.equals("off_hand") ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, interactionHand1 -> interactionHand1 == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand")
 				.forGetter(RequiresEmptyHand::interactionHand))
 			.apply(instance, RequiresEmptyHand::new));
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull RequiresEmptyHand> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8.map(s -> s.equals("off_hand") ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, interactionHand1 -> interactionHand1 == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand"), RequiresEmptyHand::interactionHand, RequiresEmptyHand::new);
+	public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull RequiresEmptyHand> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8.map(s -> s.equals("off_hand") ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, interactionHand1 -> interactionHand1 == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand"), RequiresEmptyHand::interactionHand, RequiresEmptyHand::new);
 
 	@Override
 	public boolean canUse(ItemStack itemStack, Level level, Player player, InteractionHand interactionHand) {
@@ -45,14 +43,5 @@ public record RequiresEmptyHand(InteractionHand interactionHand) implements Bloc
 	@Override
 	public MapCodec<? extends BlockingCondition> type() {
 		return MAP_CODEC;
-	}
-
-	@Override
-	public Identifier id() {
-		return ID;
-	}
-
-	public static void mapStreamCodec(Map<Identifier, StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull BlockingCondition>> map) {
-		map.put(ID, STREAM_CODEC.map(requiresEmptyHand -> requiresEmptyHand, blockingCondition -> (RequiresEmptyHand) blockingCondition));
 	}
 }

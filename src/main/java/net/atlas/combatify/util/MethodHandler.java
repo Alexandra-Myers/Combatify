@@ -7,6 +7,9 @@ import net.atlas.combatify.component.custom.CanSweep;
 import net.atlas.combatify.component.custom.ExtendedBlockingData;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.config.ConfigurableItemData;
+//? <26.2 {
+import net.atlas.combatify.config.KnockbackMode;
+//?}
 import net.atlas.combatify.enchantment.CustomEnchantmentHelper;
 import net.atlas.combatify.item.LongSwordItem;
 import net.atlas.combatify.mixin.accessor.LivingEntityAccessor;
@@ -29,22 +32,28 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
-import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
-import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+//? >1.21.1 {
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
-import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BlocksAttacks;
+//?} <=1.21.1 {
+/*import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ThrownTrident;
+*///?}
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.function.TriFunction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,13 +63,14 @@ public class MethodHandler {
 	public static void forceUpdateItems(Player player, boolean force) {
 		if (!Combatify.CONFIG.attributeSwappingFix() && !force) return;
 		((LivingEntityAccessor) player).callDetectEquipmentUpdates();
-		if (!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
-			(Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)))
+		if (!ItemStack.matches(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
+			!ItemStack.isSameItem(((PlayerAccessor) player).getLastItemInMainHand(), player.getMainHandItem()) &&
+			(Combatify.CONFIG.resetOnItemChange() || Combatify.isStateVanilla()))
 			player.combatify$resetAttackStrengthTicker(false, true);
 	}
 	public static boolean checkSweepAttack(Player player) {
 		float charge = Combatify.CONFIG.chargedAttacks() ? 1.95F : 0.9F;
-		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP, CanSweep.DISABLED).enabled();
+		boolean sweepingItem = player.getMainHandItem().getOrDefault(CustomDataComponents.CAN_SWEEP.get(), CanSweep.DISABLED).enabled();
 		boolean sweep = getAttackStrengthScale(player, 1) > charge && (player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) > 0.0F || sweepingItem);
 		if (!Combatify.CONFIG.sweepWithSweeping())
 			return sweepingItem && sweep;
@@ -95,7 +105,7 @@ public class MethodHandler {
 	public static float getAttackStrengthScale(LivingEntity entity, float baseTime) {
 		if (entity instanceof Player player)
 			return player.getAttackStrengthScale(baseTime);
-		return Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 2.0f : 1.0f;
+		return Combatify.CONFIG.chargedAttacks() && !(Combatify.isStateVanilla()) ? 2.0f : 1.0f;
 	}
 	public static Vec3 getNearestPointTo(AABB box, Vec3 vec3) {
 		double x = Mth.clamp(vec3.x, box.minX, box.maxX);
@@ -144,7 +154,7 @@ public class MethodHandler {
 		return attributeInstance.getAttribute().value().sanitizeValue(attributeInstanceFinalValue);
 	}
 	public static float getFatigueForTime(int f) {
-		if (f < 60 || !Combatify.CONFIG.bowFatigue() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (f < 60 || !Combatify.CONFIG.bowFatigue() || Combatify.isStateVanilla())
 			return 0.5F;
 		else
 			return f >= 200 ? 10.5F : 0.5F + 10.0F * (float)(f - 60) / 140.0F;
@@ -155,22 +165,61 @@ public class MethodHandler {
 		if (player.level() instanceof ServerLevel serverLevel) {
 			float sweepingDamageRatio = (float) (1.0F + player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * damage);
 			List<LivingEntity> livingEntities = player.level().getEntitiesOfClass(LivingEntity.class, box);
-			DamageSource damageSource = player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player));
+			DamageSource damageSource =
+				//? >1.21.1 {
+				player.getWeaponItem().getDamageSource(
+					player
+					// Default damage source param removed in 26.2
+					//? <26.2 {
+					, () -> player.damageSources().playerAttack(player)
+					//?}
+				);
+				//?} <=1.21.1 {
+				/*player.damageSources().playerAttack(player);
+				*///?}
 
 			for (LivingEntity livingEntity : livingEntities) {
 				if (livingEntity == player || livingEntity == entity || player.isAlliedTo(livingEntity) || livingEntity instanceof ArmorStand armorStand && armorStand.isMarker())
 					continue;
+				//? >1.21.1 {
 				EntityReference<?> ownerReference;
+				//?}
+
 				if (Combatify.CONFIG.sweepingNegatedForTamed()
 					&& (livingEntity instanceof OwnableEntity ownableEntity
-					&& (ownerReference = ownableEntity.getOwnerReference()) != null
-					&& player.getUUID().equals(ownerReference.getUUID())
+					&& (
+						//? >1.21.1 {
+						ownerReference = ownableEntity.getOwnerReference()
+						//?} <= 1.21.1 {
+						/*ownableEntity.getOwner()
+						*///?}
+					) != null
+					&& player.getUUID().equals(
+						//? >1.21.1 {
+						ownerReference.getUUID()
+						//?} <= 1.21.1 {
+						/*ownableEntity.getOwnerUUID()
+						*///?}
+					)
 					|| livingEntity.is(player.getVehicle())
 					|| livingEntity.isPassengerOfSameVehicle(player)))
 					continue;
 				float correctReach = reach + livingEntity.getBbWidth() * 0.5F;
-				if (player.distanceToSqr(livingEntity) < (correctReach * correctReach) && livingEntity.hurtServer(serverLevel, damageSource, enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource))) {
-					Combatify.CONFIG.knockbackMode().runKnockback(livingEntity, damageSource, 0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)), LivingEntity::knockback);
+				float enchantedDamage = enchantFunction.apply(livingEntity, sweepingDamageRatio, damageSource);
+				if (
+					player.distanceToSqr(livingEntity) < (correctReach * correctReach)
+						//? >1.21.1 {
+						&& livingEntity.hurtServer(serverLevel, damageSource, enchantedDamage)
+						//?} <= 1.21.1 {
+						/*&& livingEntity.hurt(damageSource, enchantedDamage)
+						*///?}
+				) {
+					//? <26.2 {
+					KnockbackMode.extractContext(livingEntity, damageSource);
+					livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), (-Mth.cos(player.getYRot() * 0.017453292F)));
+					//?} >=26.2 {
+					/*livingEntity.knockback(0.4, Mth.sin(player.getYRot() * 0.017453292F), -Mth.cos(player.getYRot() * 0.017453292F), damageSource, enchantedDamage);
+					*///?}
 					EnchantmentHelper.doPostAttackEffects(serverLevel, livingEntity, damageSource);
 				}
 			}
@@ -195,12 +244,11 @@ public class MethodHandler {
 	}
 
 	public static void knockback(LivingEntity entity, double strength, double x, double z) {
-		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -211,12 +259,11 @@ public class MethodHandler {
 		}
 	}
 	public static void midairKnockback(LivingEntity entity, double strength, double x, double z) {
-		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -227,12 +274,11 @@ public class MethodHandler {
 		}
 	}
 	public static void oldKnockback(LivingEntity entity, double strength, double x, double z) {
-		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 scaledDelta = entity.getDeltaMovement().scale(0.5);
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -243,12 +289,11 @@ public class MethodHandler {
 		}
 	}
 	public static void combatTest5Knockback(LivingEntity entity, double strength, double x, double z) {
-		if (entity instanceof Creaking creaking && !creaking.canMove()) return;
 		double knockbackRes = getKnockbackResistance(entity);
 
 		strength *= 1.0 - knockbackRes;
 		if (!(strength <= 0.0F)) {
-			entity.needsSync = true;
+			notifyKnockback(entity);
 			Vec3 delta = entity.getDeltaMovement();
 			while (x * x + z * z < 1.0E-5) {
 				x = (Math.random() - Math.random()) * 0.01;
@@ -257,6 +302,13 @@ public class MethodHandler {
 			Vec3 diff = (new Vec3(x, 0.0, z)).normalize().scale(strength);
 			entity.setDeltaMovement(delta.x / 2.0 - diff.x, entity.onGround() ? Math.min(0.4, strength) : Math.max(0.4, delta.y + strength * 0.5), delta.z / 2.0 - diff.z);
 		}
+	}
+	public static void notifyKnockback(LivingEntity entity) {
+		//? >1.21.1 {
+		entity.needsSync = true;
+		//?} <=1.21.1 {
+		/*entity.hasImpulse = true;
+		*///?}
 	}
 	public static HitResult pickCollisions(Entity entity, double reach) {
 		Vec3 viewVector = entity.getViewVector(1);
@@ -362,7 +414,7 @@ public class MethodHandler {
 	}
 	public static InteractionHand canCrouchShield(LivingEntity entity) {
 		if (entity.isUsingItem() && !entity.getUseItem().isEmpty()) return null;
-		if (!((entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && ((entity.onGround() && entity.isCrouching()) || entity.isPassenger()))) return null;
+		if (!((entity.combatify$hasEnabledShieldOnCrouch() && !Combatify.isStateVanilla()) && ((entity.onGround() && entity.isCrouching()) || entity.isPassenger()))) return null;
 		for (InteractionHand hand : InteractionHand.values()) {
 			ItemStack stack = entity.getItemInHand(hand);
 			BlocksAttacks blocksAttacks = stack.get(DataComponents.BLOCKS_ATTACKS);
@@ -376,7 +428,13 @@ public class MethodHandler {
 		return null;
 	}
 	public static boolean isItemOnCooldown(LivingEntity entity, ItemStack var1) {
-		return getCooldowns(entity).isOnCooldown(var1);
+		return getCooldowns(entity).isOnCooldown(
+			//? >1.21.1 {
+			var1
+			//?} <= 1.21.1 {
+			/*var1.getItem()
+			*///?}
+		);
 	}
 	public static double updatePlayerReach(Player player, AttributeInstance attackRange, float strengthScale) {
 		double chargedBonus = 0;
@@ -393,8 +451,8 @@ public class MethodHandler {
 		return chargedBonus;
 	}
 	public static double getCurrentAttackReach(Player player, float baseTime) {
-		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.isStateVanilla()) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		float strengthScale = player.getAttackStrengthScale(baseTime);
 		double chargedBonus = updatePlayerReach(player, attackRange, strengthScale);
@@ -405,14 +463,20 @@ public class MethodHandler {
 	}
 
 	public static double getCurrentAttackReachWithoutChargedReach(Player player) {
-		@Nullable final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return attackRange != null ? attackRange.getValue() : 3;
+		final var attackRange = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+		if (Combatify.isStateVanilla()) return attackRange != null ? attackRange.getValue() : 3;
 		double baseAttackRange = Combatify.CONFIG.attackReach() ? 2.5 : 3;
 		return (attackRange != null) ? calculateValueBlacklistChargedReachModifier(attackRange) : baseAttackRange;
 	}
-	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<@NotNull Byte> ID_LOYALTY) {
+	public static void voidReturnLogic(ThrownTrident trident, EntityDataAccessor<@NonNull Byte> ID_LOYALTY) {
 		int j = trident.getEntityData().get(ID_LOYALTY);
-		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < trident.level().getMinY() && j > 0) {
+		int minHeight =
+			//? >1.21.1 {
+			trident.level().getMinY();
+			//?} <= 1.21.1 {
+			/*trident.level().getMinBuildHeight();
+			*///?}
+		if (Combatify.CONFIG.tridentVoidReturn() && trident.getY() < minHeight && j > 0) {
 			if (!trident.isAcceptibleReturnOwner()) {
 				trident.discard();
 			} else {
@@ -489,18 +553,18 @@ public class MethodHandler {
 	}
 
 	public static double getPiercingLevel(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL, 0F);
+		return itemStack.getOrDefault(CustomDataComponents.PIERCING_LEVEL.get(), 0F);
 	}
 
 	public static double getChargedReach(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.CHARGED_REACH, 1F);
+		return itemStack.getOrDefault(CustomDataComponents.CHARGED_REACH.get(), 1F);
 	}
 
 	public static int getCurrentItemAttackStrengthDelay(LivingEntity livingEntity) {
 		if (livingEntity instanceof Player player) return (int) player.getCurrentItemAttackStrengthDelay();
 		var attackSpeed = livingEntity.getAttribute(Attributes.ATTACK_SPEED);
 		if (!Combatify.CONFIG.mobsUsePlayerAttributes() || attackSpeed == null) return 10;
-		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C));
+		boolean hasVanilla = ((attackSpeed.getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.isStateVanilla()) && !Combatify.getState().equals(CombatifyState.CTS_8C));
 		double speed = attackSpeed.getValue();
 		speed = Mth.clamp(speed, 1.0, 1024.0);
 		double result = (1.0 / speed * 20.0);
@@ -515,15 +579,29 @@ public class MethodHandler {
 				ConfigurableItemData result = configDataWrapper.match(item.builtInRegistryHolder());
 				if (result != null) results.add(result);
 			});
-			Double useSeconds = null;
-			for (ConfigurableItemData configurableItemData : results) {
-				useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
-			}
-			ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
-			if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
-			return configurableItemData;
+			return getConfigurableItemData(results);
 		}
 		return null;
+	}
+
+	private static ConfigurableItemData getConfigurableItemData(List<ConfigurableItemData> results) {
+		Double useSeconds = null;
+		//? <=1.21.1 {
+		/*Double cooldownSeconds = null;
+		*///?}
+		for (ConfigurableItemData configurableItemData : results) {
+			useSeconds = conditionalChange(configurableItemData.useDuration(), useSeconds);
+			//? <=1.21.1 {
+			/*cooldownSeconds = conditionalChange(configurableItemData.cooldownSeconds(), cooldownSeconds);
+			*///?}
+		}
+		//? >1.21.1 {
+		ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds);
+		//?} <=1.21.1 {
+		/*ConfigurableItemData configurableItemData = new ConfigurableItemData(useSeconds, cooldownSeconds);
+		*///?}
+		if (configurableItemData.equals(ConfigurableItemData.EMPTY)) return null;
+		return configurableItemData;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -560,6 +638,6 @@ public class MethodHandler {
 	}
 
 	public static ExtendedBlockingData getBlocking(ItemStack itemStack) {
-		return itemStack.getOrDefault(CustomDataComponents.EXTENDED_BLOCKING_DATA, ExtendedBlockingData.EMPTY);
+		return itemStack.getOrDefault(CustomDataComponents.EXTENDED_BLOCKING_DATA.get(), ExtendedBlockingData.EMPTY);
 	}
 }

@@ -21,8 +21,4 @@ public record DoNothing() implements PostBlockEffect {
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

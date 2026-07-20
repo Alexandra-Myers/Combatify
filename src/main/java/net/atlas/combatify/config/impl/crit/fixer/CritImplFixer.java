@@ -10,8 +10,8 @@ import net.atlas.combatify.config.impl.crit.CTSCritImpl;
 import net.atlas.combatify.config.impl.crit.CombatifyCritImpl;
 import net.atlas.combatify.config.impl.crit.CritImpl;
 import net.atlas.combatify.config.impl.crit.JSCritImpl;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class CritImplFixer extends ConfigHolderFixer<CritImpl> {
 	public CritImplFixer(AtlasConfig.ConfigHolder<CritImpl> owner) {
@@ -19,7 +19,7 @@ public class CritImplFixer extends ConfigHolderFixer<CritImpl> {
 	}
 
 	@Override
-	public JsonElement fixData(@Nullable JsonElement value, @Nullable JsonObject holderRootObject, @NotNull JsonObject configRootObject) {
+	public JsonElement fixData(@Nullable JsonElement value, @Nullable JsonObject holderRootObject, @NonNull JsonObject configRootObject) {
 		value = super.fixData(value, holderRootObject, configRootObject);
 		if (value.isJsonPrimitive()) {
 			String asStr = value.getAsString();

@@ -18,6 +18,7 @@ import net.atlas.combatify.config.impl.crit.fixer.CritImplFixer;
 import net.atlas.combatify.config.impl.food.CTSFoodImpl;
 import net.atlas.combatify.config.impl.food.FoodImpl;
 import net.atlas.combatify.config.impl.food.fixer.FoodImplFixer;
+import net.atlas.combatify.util.IDUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -31,14 +32,15 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+//? >=1.21.11 {
 import net.minecraft.util.Util;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+//?} <1.21.11 {
+/*import net.minecraft.util.Util;
+*///?}
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.DispenserBlock;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -68,6 +70,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder sweepWithSweeping;
 	private BooleanHolder sweepConditionsMatchMiss;
 	private BooleanHolder sweepingNegatedForTamed;
+	private BooleanHolder ctsHungerBuff;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
 	private BooleanHolder delayedEntityUpdates;
@@ -126,7 +129,11 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		declareDefaultForMod("combatify");
 	}
 
+	//? >=1.21.11 {
 	public CombatifyGeneralConfig(Identifier id) {
+	//?} <1.21.11 {
+	/*public CombatifyGeneralConfig(Identifier id) {
+	*///?}
 		super(id);
 	}
 
@@ -190,6 +197,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach.tieToCategory(melee);
 		creativeAttackReach.setupTooltip(1);
 		creativeAttackReach.getFixer().addOldCategory("cts_booleans");
+		ctsHungerBuff = createBoolean("ctsHungerBuff", true);
+		ctsHungerBuff.tieToCategory(defense);
+		ctsHungerBuff.setupTooltip(1);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ranged);
 		ctsMomentumPassedToProjectiles.setupTooltip(1);
@@ -400,7 +410,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 
 	@Override
-	public @NotNull List<Category> createCategories() {
+	public @NonNull List<Category> createCategories() {
 		List<Category> categoryList = super.createCategories();
 		melee = new Category(this, "melee_options", new ArrayList<>());
 		ranged = new Category(this, "ranged_options", new ArrayList<>());
@@ -433,13 +443,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		switch (newValue) {
 			case Boolean bool when tConfigValue.name().equals("percentageDamageEffects") -> {
 				if (isLoaded) {
-					if (bool) {
-						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.weakness"), -0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-					} else {
-						MobEffects.STRENGTH.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE);
-						MobEffects.WEAKNESS.value().addAttributeModifier(Attributes.ATTACK_DAMAGE, Identifier.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE);
-					}
+					updateStrengthAndWeaknessModifiers(bool);
 				}
 			}
 			case Boolean bool when tConfigValue.name().equals("dispensableTridents") -> {
@@ -528,6 +532,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean sweepingNegatedForTamed() {
 		return sweepingNegatedForTamed.get();
+	}
+	public Boolean ctsHungerBuff() {
+		return ctsHungerBuff.get();
 	}
 	public Boolean ctsMomentumPassedToProjectiles() {
 		return ctsMomentumPassedToProjectiles.get();
@@ -705,18 +712,18 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 
 	public static class ProjectileUncertainty implements ConfigRepresentable<ProjectileUncertainty> {
 		public static final ProjectileUncertainty DEFAULT = new ProjectileUncertainty(null, 0.25, 0.25);
-		public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
+		public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull ProjectileUncertainty> STREAM_CODEC = new StreamCodec<>() {
             public void encode(RegistryFriendlyByteBuf registryFriendlyByteBuf, ProjectileUncertainty projectileUncertainty) {
-                registryFriendlyByteBuf.writeIdentifier(projectileUncertainty.owner.heldValue.owner().name);
+                IDUtils.writeIdentifier(registryFriendlyByteBuf, projectileUncertainty.owner.heldValue.owner().name);
                 registryFriendlyByteBuf.writeUtf(projectileUncertainty.owner.heldValue.name());
                 registryFriendlyByteBuf.writeDouble(projectileUncertainty.bowUncertainty);
 				registryFriendlyByteBuf.writeDouble(projectileUncertainty.crossbowUncertainty);
             }
 
-            @NotNull
+            @NonNull
 			@SuppressWarnings("unchecked")
             public ProjectileUncertainty decode(RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-                AtlasConfig config = AtlasConfig.configs.get(registryFriendlyByteBuf.readIdentifier());
+                AtlasConfig config = AtlasConfig.configs.get(IDUtils.readIdentifier(registryFriendlyByteBuf));
                 return new ProjectileUncertainty((ConfigHolder<ProjectileUncertainty>) config.valueNameToConfigHolderMap.get(registryFriendlyByteBuf.readUtf()), registryFriendlyByteBuf.readDouble(), registryFriendlyByteBuf.readDouble());
             }
         };

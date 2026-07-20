@@ -1,0 +1,27 @@
+package net.atlas.combatify.mixin;
+
+import net.atlas.combatify.Combatify;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import net.minecraft.world.effect.HealOrHarmMobEffect;
+
+@Mixin(HealOrHarmMobEffect.class)
+public class HealOrHarmMobEffectMixin {
+
+	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))
+	public int changeInstantHealthTick(int constant) {
+		if (Combatify.isStateVanilla()) return constant;
+		return Combatify.CONFIG.instantHealthBonus();
+	}
+
+	//? <26.2 {
+	@ModifyConstant(method = "applyInstantenousEffect", constant = @Constant(intValue = 4))
+	//?} >=26.2 {
+	/*@ModifyConstant(method = "applyInstantaneousEffect", constant = @Constant(intValue = 4))
+	*///?}
+	public int changeInstantHealth(int constant) {
+		if (Combatify.isStateVanilla()) return constant;
+		return Combatify.CONFIG.instantHealthBonus();
+	}
+}

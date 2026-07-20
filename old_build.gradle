@@ -1,0 +1,138 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
+	id 'maven-publish'
+}
+
+version = "$project.'mod.version'.$project.'mod.sub_version'"
+group = project.'mod.group'
+
+base {
+	archivesName = "$project.'mod.archives_base'-$project.minecraft_version-Fabric"
+}
+
+configurations {
+	includeClasspath
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/combatify.accesswidener")
+}
+
+repositories {
+
+	allprojects { repositories { maven { url 'https://jitpack.io' } } }
+	maven { url "https://maven.shedaniel.me/" }
+	maven { url "https://maven.terraformersmc.com/releases/" }
+	maven { url 'https://maven.nucleoid.xyz' }
+	mavenCentral()
+	maven {
+		name = "ViaVersion"
+		url = "https://repo.viaversion.com"
+	}
+	maven {
+		name = "Lenni0451"
+		url = "https://maven.lenni0451.net/everything"
+	}
+	maven {
+		name = "OpenCollab Snapshots"
+		url = "https://repo.opencollab.dev/maven-snapshots/"
+	}
+	maven { url "https://maven.ryanliptak.com/" }
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = "Modrinth"
+				url = "https://api.modrinth.com/maven"
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
+}
+
+// All the dependencies are declared at gradle/libs.version.toml and referenced with "libs.<id>"
+// See https://docs.gradle.org/current/userguide/platforms.html for information on how version catalogs work.
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.'deps.fabric_loader'}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "maven.modrinth:sodium:${project.sodium_version}"
+	implementation "maven.modrinth:atlas-core:${project.atlas_core_version}"
+	implementation "maven.modrinth:defaulted:${project.defaulted_version}"
+	implementation "com.viaversion:viafabricplus:${project.viafabricplus_version}"
+	api "com.terraformersmc:modmenu:${project.modmenu_version}"
+	api "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+	implementation "maven.modrinth:cookeymod:${project.cookeymod_version}"
+	implementation "eu.pb4:polymer-core:${project.polymer_version}"
+	implementation "squeek.appleskin:appleskin-fabric:${project.appleskin_version}"
+	include implementation("org.mozilla:rhino-all:${project.'deps.rhino_version'}")
+
+	implementation "com.fasterxml.jackson.core:jackson-core:${project.'deps.jackson_version'}"
+	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:${project.'deps.jackson_version'}"
+}
+
+configurations.configureEach {
+	resolutionStrategy {
+		force("net.fabricmc:fabric-loader:${project.'deps.fabric_loader'}")
+	}
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/combatify.classtweaker")
+}
+
+processResources {
+	inputs.property "version", project.'mod.version'
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.'mod.version'
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	// Minecraft 26.1 upwards uses Java 25
+	it.options.release = 25
+}
+
+java {
+	// Still required by IDEs such as Eclipse and Visual Studio Code
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	// If this mod is going to be a library, then it should also generate Javadocs in order to aid with developement.
+	// Uncomment this line to generate them.
+	// withJavadocJar()
+}
+
+// If you plan to use a different file for the license, don't forget to change the file name here!
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.base.archivesName.get()}" }
+	}
+	from {
+		configurations.includeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+}
+
+// Configure the maven publication
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
+}

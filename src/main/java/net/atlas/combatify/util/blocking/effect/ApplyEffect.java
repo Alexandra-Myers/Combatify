@@ -19,13 +19,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
-public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
+public record ApplyEffect(HolderSet<@NonNull MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements PostBlockEffect {
 	public static final Identifier ID = Identifier.withDefaultNamespace("apply_effect");
-	public ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
+	public ApplyEffect(HolderSet<@NonNull MobEffect> toApply, LevelBasedValue duration, LevelBasedValue amplifier) {
 		this(toApply, duration, duration, amplifier, amplifier);
 	}
 	public static final MapCodec<ApplyEffect> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -50,16 +50,23 @@ public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue
 	@Override
 	public void doEffect(ServerLevel serverLevel, EnchantedItemInUse enchantedItemInUse, LivingEntity attacker, DamageSource damageSource, int enchantmentLevel, LivingEntity toApply, Vec3 position) {
         assert enchantedItemInUse.owner() != null;
-        @NotNull LivingEntity target = enchantedItemInUse.owner();
+        @NonNull LivingEntity target = enchantedItemInUse.owner();
 		RandomSource randomSource = target.getRandom();
-		Optional<Holder<@NotNull MobEffect>> optional = this.toApply.getRandomElement(randomSource);
+		Optional<Holder<@NonNull MobEffect>> optional = this.toApply.getRandomElement(randomSource);
 		if (optional.isPresent()) {
 			int duration = Math.round(Mth.randomBetween(randomSource, this.minDuration.calculate(enchantmentLevel), this.maxDuration.calculate(enchantmentLevel)) * 20.0F);
 			int amp = Math.max(0, Math.round(Mth.randomBetween(randomSource, this.minAmplifier.calculate(enchantmentLevel), this.maxAmplifier.calculate(enchantmentLevel))));
+			//? <26.2 {
 			if (optional.get().value().isInstantenous()) {
 				optional.get().value().applyInstantenousEffect(serverLevel, target, target, toApply, amp, 1);
 				return;
 			}
+			//?} >=26.2 {
+			/*if (optional.get().value().isInstantaneous()) {
+				optional.get().value().applyInstantaneousEffect(serverLevel, target, target, toApply, amp, 1);
+				return;
+			}
+			*///?}
 			toApply.addEffect(new MobEffectInstance(optional.get(), duration, amp));
 		}
 	}
@@ -69,8 +76,4 @@ public record ApplyEffect(HolderSet<@NotNull MobEffect> toApply, LevelBasedValue
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

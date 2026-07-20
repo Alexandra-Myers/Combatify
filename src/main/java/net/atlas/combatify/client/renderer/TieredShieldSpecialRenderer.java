@@ -24,13 +24,12 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.joml.Vector3fc;
 
 @Environment(EnvType.CLIENT)
-public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NotNull DataComponentMap> {
+public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NonNull DataComponentMap> {
 	private final SpriteGetter sprites;
 	private final ShieldModel model;
 	private final ShieldMaterial shieldMaterial;
@@ -63,7 +62,7 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NotNul
 	}
 
 	@Override
-	public void getExtents(@NotNull Consumer<Vector3fc> set) {
+	public void getExtents(@NonNull Consumer<Vector3fc> set) {
 		PoseStack poseStack = new PoseStack();
 		poseStack.scale(1.0F, -1.0F, -1.0F);
 		this.model.root().getExtentsForGui(poseStack, set);
@@ -75,12 +74,12 @@ public class TieredShieldSpecialRenderer implements SpecialModelRenderer<@NotNul
 			unbakedInstance.group(ShieldMaterial.CODEC.forGetter(Unbaked::material)).apply(unbakedInstance, Unbaked::new));
 
 		@Override
-		public @NotNull SpecialModelRenderer<?> bake(BakingContext bakingContext) {
+		public @NonNull SpecialModelRenderer<?> bake(BakingContext bakingContext) {
 			return new TieredShieldSpecialRenderer(bakingContext.sprites(), new ShieldModel(bakingContext.entityModelSet().bakeLayer(ModelLayers.SHIELD)), material);
 		}
 
 		@Override
-		public @NotNull MapCodec<TieredShieldSpecialRenderer.Unbaked> type() {
+		public @NonNull MapCodec<TieredShieldSpecialRenderer.Unbaked> type() {
 			return MAP_CODEC;
 		}
 	}

@@ -2,6 +2,7 @@ package net.atlas.combatify.networking;
 
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ItemConfig;
+import net.atlas.combatify.util.IDUtils;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.minecraft.network.FriendlyByteBuf;
@@ -9,11 +10,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ConfigurationTask;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
 
@@ -69,8 +69,8 @@ public class NetworkingHandler {
 		ServerLifecycleEvents.SERVER_STARTED.register(modDetectionNetworkChannel, server -> ITEMS = new ItemConfig());
 	}
 	public record UpdateBridgingStatusPacket(boolean enableBridging) implements CustomPacketPayload {
-		public static final Type<@NotNull UpdateBridgingStatusPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath("c", "update_status"));
-		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
+		public static final Type<@NonNull UpdateBridgingStatusPacket> TYPE = new Type<>(IDUtils.fromNamespaceAndPath("c", "update_status"));
+		public static final StreamCodec<@NonNull FriendlyByteBuf, @NonNull UpdateBridgingStatusPacket> CODEC = CustomPacketPayload.codec(UpdateBridgingStatusPacket::write, UpdateBridgingStatusPacket::new);
 
 		public UpdateBridgingStatusPacket(FriendlyByteBuf buf) {
 			this(buf.readBoolean());
@@ -80,14 +80,14 @@ public class NetworkingHandler {
 			buf.writeBoolean(enableBridging);
 		}
 		@Override
-		public @NotNull Type<?> type() {
+		public @NonNull Type<?> type() {
 			return TYPE;
 		}
 	}
 
 	public record ServerboundMissPacket() implements CustomPacketPayload {
-		public static final Type<@NotNull ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));
-		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
+		public static final Type<@NonNull ServerboundMissPacket> TYPE = new Type<>(Combatify.id("miss_attack"));
+		public static final StreamCodec<@NonNull FriendlyByteBuf, @NonNull ServerboundMissPacket> CODEC = CustomPacketPayload.codec(ServerboundMissPacket::write, ServerboundMissPacket::new);
 
 		public ServerboundMissPacket(FriendlyByteBuf buf) {
 			this();
@@ -97,13 +97,13 @@ public class NetworkingHandler {
 
 		}
 		@Override
-		public @NotNull Type<?> type() {
+		public @NonNull Type<?> type() {
 			return TYPE;
 		}
 	}
 	public record RemainingUseSyncPacket(int id, int ticks) implements CustomPacketPayload {
-		public static final Type<@NotNull RemainingUseSyncPacket> TYPE = new Type<>(Combatify.id("remaining_use_ticks"));
-		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull RemainingUseSyncPacket> CODEC = CustomPacketPayload.codec(RemainingUseSyncPacket::write, RemainingUseSyncPacket::new);
+		public static final Type<@NonNull RemainingUseSyncPacket> TYPE = new Type<>(Combatify.id("remaining_use_ticks"));
+		public static final StreamCodec<@NonNull FriendlyByteBuf, @NonNull RemainingUseSyncPacket> CODEC = CustomPacketPayload.codec(RemainingUseSyncPacket::write, RemainingUseSyncPacket::new);
 
 		public RemainingUseSyncPacket(FriendlyByteBuf buf) {
 			this(buf.readVarInt(), buf.readInt());
@@ -123,7 +123,7 @@ public class NetworkingHandler {
 		 * @return the type of this packet
 		 */
 		@Override
-		public @NotNull Type<?> type() {
+		public @NonNull Type<?> type() {
 			return TYPE;
 		}
 	}
@@ -138,14 +138,14 @@ public class NetworkingHandler {
 
 
 		@Override
-		public @NotNull Type type() {
+		public @NonNull Type type() {
 			return TYPE;
 		}
 	}
 
 	public record ClientboundClientInformationRetrievalPacket() implements CustomPacketPayload {
-		public static final Type<@NotNull ClientboundClientInformationRetrievalPacket> TYPE = new Type<>(Combatify.id("client_retrieval"));
-		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull ClientboundClientInformationRetrievalPacket> CODEC = CustomPacketPayload.codec(ClientboundClientInformationRetrievalPacket::write, ClientboundClientInformationRetrievalPacket::new);
+		public static final Type<@NonNull ClientboundClientInformationRetrievalPacket> TYPE = new Type<>(Combatify.id("client_retrieval"));
+		public static final StreamCodec<@NonNull FriendlyByteBuf, @NonNull ClientboundClientInformationRetrievalPacket> CODEC = CustomPacketPayload.codec(ClientboundClientInformationRetrievalPacket::write, ClientboundClientInformationRetrievalPacket::new);
 
 		public ClientboundClientInformationRetrievalPacket(FriendlyByteBuf buf) {
 			this();
@@ -164,14 +164,14 @@ public class NetworkingHandler {
 		 * @return the type of this packet
 		 */
 		@Override
-		public @NotNull Type<?> type() {
+		public @NonNull Type<?> type() {
 			return TYPE;
 		}
 	}
 
 	public record ServerboundClientInformationExtensionPacket(boolean useShieldOnCrouch) implements CustomPacketPayload {
-		public static final Type<@NotNull ServerboundClientInformationExtensionPacket> TYPE = new Type<>(Combatify.id("client_extras"));
-		public static final StreamCodec<@NotNull FriendlyByteBuf, @NotNull ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
+		public static final Type<@NonNull ServerboundClientInformationExtensionPacket> TYPE = new Type<>(Combatify.id("client_extras"));
+		public static final StreamCodec<@NonNull FriendlyByteBuf, @NonNull ServerboundClientInformationExtensionPacket> CODEC = CustomPacketPayload.codec(ServerboundClientInformationExtensionPacket::write, ServerboundClientInformationExtensionPacket::new);
 
 		public ServerboundClientInformationExtensionPacket(FriendlyByteBuf buf) {
 			this(buf.readBoolean());
@@ -190,7 +190,7 @@ public class NetworkingHandler {
 		 * @return the type of this packet
 		 */
 		@Override
-		public @NotNull Type<?> type() {
+		public @NonNull Type<?> type() {
 			return TYPE;
 		}
 	}

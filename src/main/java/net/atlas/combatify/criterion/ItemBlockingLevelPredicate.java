@@ -3,20 +3,25 @@ package net.atlas.combatify.criterion;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.atlas.combatify.component.CustomDataComponents;
+//? <26.2 {
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.advancements.criterion.SingleComponentItemPredicate;
+//?} >=26.2 {
+/*import net.minecraft.advancements.predicates.MinMaxBounds;
+import net.minecraft.advancements.predicates.SingleComponentItemPredicate;
+*///?}
 import net.minecraft.core.component.DataComponentType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements SingleComponentItemPredicate<@NotNull Integer> {
+public record ItemBlockingLevelPredicate(MinMaxBounds.Ints value) implements SingleComponentItemPredicate<@NonNull Integer> {
 	public static final Codec<ItemBlockingLevelPredicate> CODEC = RecordCodecBuilder.create(
 		instance -> instance.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("value", MinMaxBounds.Ints.ANY).forGetter(ItemBlockingLevelPredicate::value))
 			.apply(instance, ItemBlockingLevelPredicate::new)
 	);
 
 	@Override
-	public @NotNull DataComponentType<@NotNull Integer> componentType() {
-		return CustomDataComponents.BLOCKING_LEVEL;
+	public @NonNull DataComponentType<@NonNull Integer> componentType() {
+		return CustomDataComponents.BLOCKING_LEVEL.get();
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.atlas.combatify.Combatify;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +22,7 @@ public abstract class EntityMixin {
 
 	@ModifyReturnValue(method = "getPickRadius", at = @At(value = "RETURN"))
 	public float inflateBoxes(float original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		float f = Math.max(getBbWidth(), getBbHeight());
 		if (f < Combatify.CONFIG.minHitboxSize()) {
 		  return (float) ((Combatify.CONFIG.minHitboxSize() - f) * 0.5F);

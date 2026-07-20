@@ -24,8 +24,4 @@ public record EnchantmentEffect(EnchantmentEntityEffect enchantmentEntityEffect)
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

@@ -35,8 +35,4 @@ public record ChangeItemDamage(LevelBasedValue amount) implements PostBlockEffec
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

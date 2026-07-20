@@ -1,22 +1,31 @@
 package net.atlas.combatify.criterion;
 
-import com.mojang.serialization.Codec;
 import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
-import net.atlas.combatify.Combatify;
+import net.atlas.defaulted.init.registry.AbstractedHolder;
+import net.atlas.defaulted.init.registry.Bootstrapper;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.core.registries.Registries;
+import org.jspecify.annotations.NonNull;
 
-public class DataComponentPredicateInit {
-	public static final DataComponentPredicate.Type<@NotNull ItemBlockingLevelPredicate> BLOCKING_LEVEL = register("blocking_level", ItemBlockingLevelPredicate.CODEC);
-	private static <T extends DataComponentPredicate> DataComponentPredicate.Type<@NotNull T> register(String string, Codec<T> codec) {
-		return Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, Combatify.id(string), new DataComponentPredicate.ConcreteType<>(codec));
+public class DataComponentPredicateInit extends Bootstrapper<DataComponentPredicate.Type<?>> {
+	public static final DataComponentPredicateInit INSTANCE = new DataComponentPredicateInit();
+	public static AbstractedHolder<DataComponentPredicate.Type<?>, DataComponentPredicate.Type<@NonNull ItemBlockingLevelPredicate>> BLOCKING_LEVEL;
+
+	public DataComponentPredicateInit() {
+		super(Registries.DATA_COMPONENT_PREDICATE_TYPE, "combatify", BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE);
 	}
-	public static void init() {
+
+	public static void registerDataComponentPredicates() {
+		INSTANCE.init();
 		if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
-			RegistrySyncUtils.setServerEntry(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, BLOCKING_LEVEL);
+			RegistrySyncUtils.setServerEntry(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, BLOCKING_LEVEL.get());
 		}
+	}
+
+	@Override
+	protected void bootstrap() {
+		BLOCKING_LEVEL = register("blocking_level", () -> new DataComponentPredicate.ConcreteType<>(ItemBlockingLevelPredicate.CODEC));
 	}
 }

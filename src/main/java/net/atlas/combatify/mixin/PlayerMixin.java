@@ -13,7 +13,11 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
+//? <26.2 {
+import net.atlas.combatify.config.KnockbackMode;
+//?}
 import net.atlas.combatify.extensions.PlayerExtensions;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -24,6 +28,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -34,7 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.mutable.MutableFloat;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -58,7 +63,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	 */
 	@SuppressWarnings("WrongEntityDataParameterClass")
 	@Unique
-	private static final EntityDataAccessor<@NotNull Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+	private static final EntityDataAccessor<@NonNull Boolean> DATA_PLAYER_USES_SHIELD_CROUCH = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
 	@Inject(method = "defineSynchedData", at = @At("TAIL"))
 	public void appendShieldOnCrouch(SynchedEntityData.Builder builder, CallbackInfo ci) {
 		builder.define(DATA_PLAYER_USES_SHIELD_CROUCH, true);
@@ -73,12 +78,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public void combatify$setShieldOnCrouch(boolean hasShieldOnCrouch) {
 		entityData.set(DATA_PLAYER_USES_SHIELD_CROUCH, hasShieldOnCrouch);
 	}
-	public PlayerMixin(EntityType<? extends @NotNull LivingEntity> entityType, Level level) {
+	public PlayerMixin(EntityType<? extends @NonNull LivingEntity> entityType, Level level) {
 		super(entityType, level);
 	}
 
 	@Shadow
-	protected abstract void doAutoAttackOnTouch(@NotNull LivingEntity target);
+	protected abstract void doAutoAttackOnTouch(@NonNull LivingEntity target);
 
 	@Shadow
 	public abstract float getAttackStrengthScale(float f);
@@ -96,7 +101,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	protected abstract float getEnchantedDamage(Entity entity, float f, DamageSource damageSource);
 
 	@Shadow
-	@NotNull
+	@NonNull
 	public abstract ItemStack getWeaponItem();
 
 	@Shadow
@@ -163,11 +168,15 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
 	public void redirectDurability(Player instance, Operation<Void> original) {
-		if (Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) resetAttackStrengthTicker(false, true, true, original::call);
+		if (Combatify.CONFIG.resetOnItemChange() || Combatify.isStateVanilla()) resetAttackStrengthTicker(false, true, true, original::call);
 	}
 
 	@Inject(method = "blockUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getItemBlockingWith()Lnet/minecraft/world/item/ItemStack;"), cancellable = true)
+	//? <26.2 {
 	public void blockUsingShield(ServerLevel serverLevel, LivingEntity livingEntity, CallbackInfo ci) {
+	//?} >=26.2 {
+	/*public void blockUsingShield(ServerLevel level, LivingEntity attacker, DamageSource source, float damage, CallbackInfo ci) {
+	*///?}
 		ci.cancel();
 	}
 
@@ -189,7 +198,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	}
 	@WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;onAttack()V"))
 	public void stopReset(Player instance, Operation<Void> original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original.call(instance);
+		if (Combatify.isStateVanilla()) original.call(instance);
 	}
 
 	@Definition(id = "damage", local = @Local(type = float.class, ordinal = 0))
@@ -198,35 +207,35 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	@ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
 	public float doThings(float original, @Local(ordinal = 2) float attackDamageBonus) {
 		attacked = true;
-		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.isStateVanilla())
 			original = (float) (this.isAutoSpinAttack() ? MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), this.autoSpinAttackDmg + attackDamageBonus) : MethodHandler.calculateValue(player.getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus));
 		return original;
 	}
 	@ModifyExpressionValue(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheckInAttack(float original) {
 		original = (float) Mth.clamp(original, Combatify.CONFIG.attackDecayMinCharge(), Combatify.CONFIG.attackDecayMaxCharge());
-		return (!Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F)) && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 1.0F : original;
+		return (!Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F)) && !Combatify.isStateVanilla() ? 1.0F : original;
 	}
 	@ModifyExpressionValue(method = "stabAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthCheckInStabAttack(float original) {
 		original = (float) Mth.clamp(original, Combatify.CONFIG.attackDecayMinCharge(), Combatify.CONFIG.attackDecayMaxCharge());
-		return (!Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F)) && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 1.0F : original;
+		return (!Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F)) && !Combatify.isStateVanilla() ? 1.0F : original;
 	}
 	@ModifyExpressionValue(method = "baseDamageScaleFactor", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttackStrengthScale(F)F", ordinal = 0))
 	public float redirectStrengthForDamage(float original) {
 		original = (float) Mth.clamp(original, Combatify.CONFIG.attackDecayMinCharge(), Combatify.CONFIG.attackDecayMaxCharge());
-		float strengthScale = (!Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F)) && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 1.0F : original;
+		float strengthScale = (!Combatify.CONFIG.attackDecay() || (missedAttackRecovery && this.attackStrengthTicker > 4.0F)) && !Combatify.isStateVanilla() ? 1.0F : original;
 		if (Combatify.CONFIG.attackDecay()) strengthScale = (float) ((strengthScale - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff());
 		return strengthScale;
 	}
 	@ModifyExpressionValue(method = "baseDamageScaleFactor", at = @At(value = "CONSTANT", args = "floatValue=0.2"))
 	public float redirectMinFactorForDamage(float original) {
-		if (!Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (!Combatify.CONFIG.attackDecay() || Combatify.isStateVanilla()) return original;
 		return (float) Combatify.CONFIG.attackDecayMinPercentageBase();
 	}
 	@ModifyExpressionValue(method = "baseDamageScaleFactor", at = @At(value = "CONSTANT", args = "floatValue=0.8"))
 	public float redirectMaxFactorForDamage(float original) {
-		if (!Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (!Combatify.CONFIG.attackDecay() || Combatify.isStateVanilla()) return original;
 		return (float) Combatify.CONFIG.attackDecayMaxPercentageBaseDiff();
 	}
 	@Inject(method = "resetAttackStrengthTicker", at = @At(value = "HEAD"), cancellable = true)
@@ -239,8 +248,8 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	}
 	@Unique
 	public void injectSetMaxValue(CallbackInfo ci) {
-		int chargeTicks = (int) this.getCurrentItemAttackStrengthDelay() * ((Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || chargeTicks > (attackStrengthMaxValue - attackStrengthTicker)) {
+		int chargeTicks = (int) this.getCurrentItemAttackStrengthDelay() * ((Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1);
+		if (Combatify.isStateVanilla() || chargeTicks > (attackStrengthMaxValue - attackStrengthTicker)) {
 			if (Combatify.CONFIG.enableDebugLogging())
 				Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
 			this.attackStrengthMaxValue = chargeTicks;
@@ -253,10 +262,10 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 			enchantDamage *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((strengthScale - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 			combinedDamage.set(attackDamage + enchantDamage);
 		}
-		boolean strengthAppliesToEnchants = Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA);
+		boolean strengthAppliesToEnchants = Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.isStateVanilla();
 		if (strengthAppliesToEnchants)
 			combinedDamage.set(attackDamage);
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA) || !Combatify.CONFIG.getCritImpl().overrideCrit())
+		if (Combatify.isStateVanilla() || !Combatify.CONFIG.getCritImpl().overrideCrit())
 			return;
 		if (bl3.get()) {
 			if (strengthAppliesToEnchants) combinedDamage.set(combinedDamage.get() / 1.5F);
@@ -288,10 +297,13 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	public boolean markNonLivingForOld(boolean original, @Local(ordinal = 0, argsOnly = true) Entity entity) {
 		return Combatify.CONFIG.knockbackMode().usesKnockback(original, entity);
 	}
+	//? <26.2 {
 	@WrapOperation(method = "causeExtraKnockback", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
 	public void knockback(LivingEntity instance, double d, double e, double f, Operation<Void> original) {
-		Combatify.CONFIG.knockbackMode().runKnockback(instance, player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player)), d, e, f, original::call);
+		KnockbackMode.extractContext(instance, player.getWeaponItem().getDamageSource(player, () -> player.damageSources().playerAttack(player)));
+		original.call(instance, d, e, f);
 	}
+	//?}
 	@WrapMethod(method = "isSweepAttack")
 	public boolean editSweepConditions(boolean isStrong, boolean isCrit, boolean isSprintHit, Operation<Boolean> original) {
 		double d = this.getKnownMovement().horizontalDistanceSqr();
@@ -301,7 +313,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	}
 	@WrapMethod(method = "doSweepAttack")
 	public void editSweep(Entity target, float attackDamage, DamageSource source, float g, Operation<Void> original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(target, attackDamage, source, g);
 			return;
 		}
@@ -311,7 +323,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	@Inject(method = "stabAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;deflectProjectile(Lnet/minecraft/world/entity/Entity;)Z"))
 	public void doThings(EquipmentSlot equipmentSlot, Entity entity, float f, boolean bl, boolean bl2, boolean bl3, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0, argsOnly = true) LocalFloatRef attackDamage, @Local(ordinal = 1) float attackDamageBonus) {
 		attacked = true;
-		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.isStateVanilla())
 			attackDamage.set((float) MethodHandler.calculateValueFromBase(player.getAttribute(Attributes.ATTACK_DAMAGE), f + attackDamageBonus));
 	}
 	@Inject(method = "stabAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getDeltaMovement()Lnet/minecraft/world/phys/Vec3;"))
@@ -348,16 +360,21 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 		resetAttackStrengthTicker(hit, force, true, Player::resetAttackStrengthTicker);
 	}
 
+	@Override
+	public void combatify$resetAttackStrengthTicker(boolean hit, Consumer<Player> original) {
+		resetAttackStrengthTicker(hit, false, true, original);
+	}
+
 	@Unique
 	public void resetAttackStrengthTicker(boolean hit, boolean force, boolean resetItemSwapTicker, Consumer<Player> vanillaReset) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			vanillaReset.accept(player);
 			return;
 		}
 		this.missedAttackRecovery = !hit && Combatify.CONFIG.missedAttackRecovery();
 		if ((!Combatify.CONFIG.attackSpeed() && getAttributeValue(Attributes.ATTACK_SPEED) - 1.5 >= 20) || Combatify.CONFIG.instaAttack())
 			return;
-		int chargeTicks = (int) (this.getCurrentItemAttackStrengthDelay()) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1);
+		int chargeTicks = (int) (this.getCurrentItemAttackStrengthDelay()) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1);
 		if (force || chargeTicks > (attackStrengthMaxValue - attackStrengthTicker)) {
 			if (Combatify.CONFIG.enableDebugLogging())
 				Combatify.LOGGER.info("Ticks for charge: " + chargeTicks);
@@ -369,7 +386,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@ModifyExpressionValue(method = "getCurrentItemAttackStrengthDelay", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getAttributeValue(Lnet/minecraft/core/Holder;)D"))
 	public double modifyAttackSpeed(double original, @Share("hasVanilla") LocalBooleanRef hasVanilla) {
-		hasVanilla.set((getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C));
+		hasVanilla.set((getAttribute(Attributes.ATTACK_SPEED).getModifier(Item.BASE_ATTACK_SPEED_ID) != null || Combatify.isStateVanilla()) && !Combatify.getState().equals(CombatifyState.CTS_8C));
 		double mod = !Combatify.CONFIG.hasteFix() ? 1.5 : MethodHandler.calculateValueFromBase(getAttribute(Attributes.ATTACK_SPEED), 1.5);
 		double speed = original - mod;
 		if (hasVanilla.get() || speed <= 0)
@@ -384,12 +401,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@ModifyExpressionValue(method = "getAttackStrengthScale", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getCurrentItemAttackStrengthDelay()F"))
 	public float modifyMaxCharge(float original) {
-		return (Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? (int) (original) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1) : attackStrengthMaxValue;
+		return (Combatify.CONFIG.resetOnItemChange() || Combatify.isStateVanilla()) ? (int) (original) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1) : attackStrengthMaxValue;
 	}
 
 	@ModifyReturnValue(method = "getAttackStrengthScale", at = @At(value = "RETURN"))
 	public float modifyAttackStrengthScale(float original) {
-		float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2.0F : 1.0F;
+		float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2.0F : 1.0F;
 		if (this.attackStrengthMaxValue == 0) {
 			return charge;
 		}
@@ -398,12 +415,12 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@ModifyExpressionValue(method = "getItemSwapScale", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getCurrentItemAttackStrengthDelay()F"))
 	public float modifyMaxChargeItemSwap(float original) {
-		return (Combatify.CONFIG.resetOnItemChange() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? (int) (original) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2 : 1) : attackStrengthMaxValue;
+		return (Combatify.CONFIG.resetOnItemChange() || Combatify.isStateVanilla()) ? (int) (original) * ((Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2 : 1) : attackStrengthMaxValue;
 	}
 
 	@ModifyReturnValue(method = "getItemSwapScale", at = @At(value = "RETURN"))
 	public float modifyAttackStrengthScaleItemSwap(float original) {
-		float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) ? 2.0F : 1.0F;
+		float charge = (Combatify.CONFIG.chargedAttacks() && !Combatify.isStateVanilla()) ? 2.0F : 1.0F;
 		if (this.attackStrengthMaxValue == 0) {
 			return charge;
 		}
@@ -412,11 +429,11 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@Override
 	public boolean combatify$isAttackAvailable(float baseTime, ItemStack weapon) {
-		float minAttackCharge = weapon.getOrDefault(DataComponents.MINIMUM_ATTACK_CHARGE, Combatify.CONFIG.canAttackEarly() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA) ? 0.0F : Combatify.CONFIG.chargedAttacks() ? 0.5F : 1.0F);
-		if (!Combatify.getState().equals(Combatify.CombatifyState.VANILLA) && Combatify.CONFIG.chargedAttacks()) minAttackCharge *= 2;
+		float minAttackCharge = weapon.getOrDefault(DataComponents.MINIMUM_ATTACK_CHARGE, Combatify.CONFIG.canAttackEarly() || Combatify.isStateVanilla() ? 0.0F : Combatify.CONFIG.chargedAttacks() ? 0.5F : 1.0F);
+		if (!Combatify.isStateVanilla() && Combatify.CONFIG.chargedAttacks()) minAttackCharge *= 2;
 		float strengthScale = getAttackStrengthScale(baseTime);
 		if (minAttackCharge > 0.0F && strengthScale < minAttackCharge) {
-			if (weapon.has(DataComponents.MINIMUM_ATTACK_CHARGE) || Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return false; // Don't allow weapons with custom minimum attack charge to use missed attack recovery
+			if (weapon.has(DataComponents.MINIMUM_ATTACK_CHARGE) || Combatify.isStateVanilla()) return false; // Don't allow weapons with custom minimum attack charge to use missed attack recovery
 			return (this.missedAttackRecovery && this.attackStrengthTicker + baseTime > 4.0F);
 		}
 		return true;
@@ -424,7 +441,7 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 
 	@WrapMethod(method = "cannotAttackWithItem")
 	public boolean makeUseIsAttackAvailable(ItemStack itemStack, int i, Operation<Boolean> original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original.call(itemStack, i);
+		if (Combatify.isStateVanilla()) return original.call(itemStack, i);
 		return !combatify$isAttackAvailable(i, itemStack);
 	}
 
@@ -441,9 +458,9 @@ public abstract class PlayerMixin extends Avatar implements PlayerExtensions {
 	@Override
 	public float combatify$enchantedDamageForSweep(LivingEntity livingEntity, float damage, DamageSource damageSource) {
 		float attackDamageBonus = getEnchantedDamage(livingEntity, damage, damageSource) - damage;
-		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.CONFIG.strengthAppliesToEnchants() && !Combatify.isStateVanilla())
 			attackDamageBonus = (float) MethodHandler.calculateValueFromBase(getAttribute(Attributes.ATTACK_DAMAGE), attackDamageBonus);
-		if (Combatify.CONFIG.attackDecay() || Combatify.getState().equals(Combatify.CombatifyState.VANILLA))
+		if (Combatify.CONFIG.attackDecay() || Combatify.isStateVanilla())
 			attackDamageBonus *= (float) (Combatify.CONFIG.attackDecayMinPercentageEnchants() + ((getAttackStrengthScale(0.5F) - Combatify.CONFIG.attackDecayMinCharge()) / Combatify.CONFIG.attackDecayMaxChargeDiff()) * Combatify.CONFIG.attackDecayMaxPercentageEnchantsDiff());
 		return damage + attackDamageBonus;
 	}

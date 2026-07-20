@@ -7,6 +7,7 @@ import net.atlas.combatify.Combatify;
 import net.atlas.combatify.config.ConfigurableEntityData;
 import net.atlas.combatify.extensions.IPlayerGameMode;
 import net.atlas.combatify.networking.NetworkingHandler;
+import net.atlas.combatify.util.CombatifyState;
 import net.atlas.combatify.util.MethodHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -52,21 +53,21 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 			if (configurableEntityData.isMiscEntity() != null)
 				isMiscTarget = configurableEntityData.isMiscEntity();
 		}
-		instance.combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget);
+		instance.combatify$resetAttackStrengthTicker(!Combatify.CONFIG.improvedMiscEntityAttacks() || !isMiscTarget, original::call);
 	}
 	@Inject(method = "startDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAbilities()Lnet/minecraft/world/entity/player/Abilities;", ordinal = 0))
 	public void addReset1(BlockPos blockPos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
+		if (Combatify.isStateVanilla()) return;
 		if (getPlayerMode() == GameType.ADVENTURE || getPlayerMode() == GameType.SPECTATOR) return;
 		this.minecraft.player.combatify$resetAttackStrengthTicker(false);
 	}
 	@WrapOperation(method = "stopDestroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;resetAttackStrengthTicker()V"))
 	public void removeReset(LocalPlayer instance, Operation<Void> original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) original.call(instance);
+		if (Combatify.isStateVanilla()) original.call(instance);
 	}
 	@Inject(method = "continueDestroyBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;destroyDelay:I", opcode = Opcodes.GETFIELD, ordinal = 0))
 	public void addReset0(BlockPos blockPos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return;
+		if (Combatify.isStateVanilla()) return;
 		if (destroyDelay > 0) return;
 		if (getPlayerMode() == GameType.ADVENTURE || getPlayerMode() == GameType.SPECTATOR) return;
 		this.minecraft.player.combatify$resetAttackStrengthTicker(false);
@@ -74,7 +75,7 @@ public abstract class MultiPlayerGameModeMixin implements IPlayerGameMode {
 
 	@Override
 	public void combatify$swingInAir(Player player) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			player.combatify$resetAttackStrengthTicker(false);
 			return;
 		}

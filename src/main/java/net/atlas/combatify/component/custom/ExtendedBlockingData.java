@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.mutable.MutableFloat;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition, List<BlocksAttacks.DamageReduction> bannerReductions) {
 	public ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocation, PostBlockEffectWrapper postBlockEffect, BlockingCondition blockingCondition) {
@@ -56,7 +56,7 @@ public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocat
 				BlocksAttacks.DamageReduction.CODEC.listOf().optionalFieldOf("banner_damage_reductions", Collections.emptyList()).forGetter(ExtendedBlockingData::bannerReductions))
 			.apply(instance, ExtendedBlockingData::new));
 
-	public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
+	public static final StreamCodec<@NonNull RegistryFriendlyByteBuf, @NonNull ExtendedBlockingData> STREAM_CODEC = StreamCodec.composite(
 		ByteBufCodecs.fromCodecTrusted(Tooltip.CODEC.codec()),
 		ExtendedBlockingData::tooltip,
 		Identifier.STREAM_CODEC,
@@ -115,7 +115,7 @@ public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocat
 		public void appendTooltipInfo(Consumer<Component> writer, Player player, ItemStack stack) {
 			List<Component> protection = Collections.emptyList();
 			List<Component> knockback = Collections.emptyList();
-			int blockingLevel = stack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
+			int blockingLevel = stack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL.get(), 1);
 			List<CombinedModifier> intermediaryProtection = protectionModifiers.stream().filter(combinedModifier -> combinedModifier.matches(stack)).toList();
 			if (!intermediaryProtection.isEmpty()) protection = intermediaryProtection.getFirst().tryCombine(new ArrayList<>(intermediaryProtection), blockingLevel, player.getRandom());
 			List<ComponentModifier> intermediaryKnockback = knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(stack)).toList();
@@ -127,7 +127,7 @@ public record ExtendedBlockingData(Tooltip tooltip, Identifier blockingTypeLocat
 			knockback.forEach(component -> writer.accept(CommonComponents.space().append(component).withStyle(ChatFormatting.DARK_GREEN)));
 		}
 		public float getShieldKnockbackResistanceValue(ItemStack itemStack, RandomSource randomSource) {
-			int blockingLevel = itemStack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL, 1);
+			int blockingLevel = itemStack.getOrDefault(CustomDataComponents.BLOCKING_LEVEL.get(), 1);
 			MutableFloat knockbackResistance = new MutableFloat(0);
 			knockbackModifiers.stream().filter(componentModifier -> componentModifier.matches(itemStack)).forEach(componentModifier -> knockbackResistance.setValue(componentModifier.modifyValue(knockbackResistance.floatValue(), blockingLevel, randomSource)));
 			return knockbackResistance.floatValue();

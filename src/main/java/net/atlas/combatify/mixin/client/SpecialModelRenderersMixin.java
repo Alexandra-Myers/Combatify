@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class SpecialModelRenderersMixin {
 	@Shadow
 	@Final
-	public static ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends SpecialModelRenderer.Unbaked>> ID_MAPPER;
+	public static ExtraCodecs.LateBoundIdMapper<@NonNull Identifier, @NonNull MapCodec<? extends SpecialModelRenderer.Unbaked>> ID_MAPPER;
 
 	@Inject(method = "bootstrap", at = @At("TAIL"))
 	private static void injectTieredShieldRenderer(CallbackInfo ci) {

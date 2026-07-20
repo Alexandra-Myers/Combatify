@@ -11,7 +11,7 @@ import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 @Mixin(Arrow.class)
 public abstract class ArrowMixin extends AbstractArrow {
-	protected ArrowMixin(EntityType<? extends @NotNull AbstractArrow> entityType, Level level) {
+	protected ArrowMixin(EntityType<? extends @NonNull AbstractArrow> entityType, Level level) {
 		super(entityType, level);
 	}
 
@@ -27,10 +27,17 @@ public abstract class ArrowMixin extends AbstractArrow {
 	public void applyInstantaneousEffect(PotionContents instance, Consumer<MobEffectInstance> consumer, float f, Operation<Void> original, @Local(ordinal = 0, argsOnly = true) LivingEntity livingEntity) {
 		Arrow arrow = Arrow.class.cast(this);
 		original.call(instance, (Consumer<MobEffectInstance>) effectInstance -> {
+			//? <26.2 {
 			if (effectInstance.getEffect().value().isInstantenous() && livingEntity.level() instanceof ServerLevel serverLevel) {
 				effectInstance.getEffect().value().applyInstantenousEffect(serverLevel, arrow, getEffectSource(), livingEntity, effectInstance.getAmplifier(), f);
 				return;
 			}
+			//?} >=26.2 {
+			/*if (effectInstance.getEffect().value().isInstantaneous() && livingEntity.level() instanceof ServerLevel serverLevel) {
+				effectInstance.getEffect().value().applyInstantaneousEffect(serverLevel, arrow, getEffectSource(), livingEntity, effectInstance.getAmplifier(), f);
+				return;
+			}
+			*///?}
 			consumer.accept(effectInstance);
 		}, f);
 	}

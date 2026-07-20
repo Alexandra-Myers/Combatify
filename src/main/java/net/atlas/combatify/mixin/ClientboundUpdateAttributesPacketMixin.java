@@ -3,6 +3,7 @@ package net.atlas.combatify.mixin;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.extensions.IUpdateAttributesPacket;
 import net.atlas.combatify.item.WeaponType;
+import net.atlas.combatify.util.CombatifyState;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,7 +12,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,7 +37,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 				boolean hasVanilla = !attributeSnapshot.modifiers().stream()
 					.filter(attributeModifier -> attributeModifier.id().equals(Item.BASE_ATTACK_SPEED_ID))
 					.toList()
-					.isEmpty() && !Combatify.getState().equals(Combatify.CombatifyState.CTS_8C);
+					.isEmpty() && !Combatify.getState().equals(CombatifyState.CTS_8C);
 				int mul = Combatify.CONFIG.chargedAttacks() ? 2 : 1;
 				double newSpeed = speed - mod;
 				if (hasVanilla || newSpeed <= 0) newSpeed += mod;
@@ -62,7 +63,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 			}
 	}
 	@Unique
-	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Holder<@NotNull Attribute> attribute) {
+	public final double calculateValue(double baseValue, Collection<AttributeModifier> modifiers, Holder<@NonNull Attribute> attribute) {
 		double attributeInstanceBaseValue = baseValue;
 		List<AttributeModifier> additionList = modifiers
 			.stream()
@@ -76,7 +77,7 @@ public class ClientboundUpdateAttributesPacketMixin implements IUpdateAttributes
 		return calculateValueFromBase(attributeInstanceBaseValue, modifiers, attribute);
 	}
 	@Unique
-	public final double calculateValueFromBase(double attributeInstanceBaseValue, Collection<AttributeModifier> modifiers, Holder<@NotNull Attribute> attribute) {
+	public final double calculateValueFromBase(double attributeInstanceBaseValue, Collection<AttributeModifier> modifiers, Holder<@NonNull Attribute> attribute) {
 		List<AttributeModifier> multiplyBaseList = modifiers
 			.stream()
 			.filter(attributeModifier -> attributeModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE)

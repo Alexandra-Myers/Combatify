@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "combatify",
+	"id": "${mod_id}",
 	"version": "${version}",
-	"name": "Combatify",
-	"description": "A mod library and standalone mod that adds features from the combat test snapshots",
+	"name": "${mod_name}",
+	"description": "${mod_description}",
 	"authors": [
 		"Alexandra",
 		"zOnlyKroks"
@@ -11,16 +11,16 @@
   "contact": {
     "sources": "https://github.com/Alexandra-Myers/Combatify"
   },
-  "license": "LGPL-2.1",
+  "license": "${mod_license}",
 	"icon": "assets/combatify/icon.png",
 
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-      "net.atlas.combatify.Combatify"
+      "net.atlas.combatify.fabric.CombatifyFabric"
     ],
 		"client": [
-      "net.atlas.combatify.CombatifyClient"
+      "net.atlas.combatify.fabric.client.CombatifyFabricClient"
     ],
     "sodium:config_api_user": [
       "net.atlas.combatify.compat.CombatifySodiumConfig"
@@ -31,12 +31,12 @@
 	],
   "accessWidener": "combatify.classtweaker",
 	"depends": {
-    "fabric-api": ">=0.150.0+26.1.2",
-    "atlas-core": ">=1.1.2",
-    "defaulted": ">=1.2.2",
-		"fabricloader": ">=0.17.2",
-		"minecraft": ">=26.1.2 <26.2",
-		"java": ">=25"
+    "fabric-api": ">=${fabric_api_version}",
+    "atlas-core": ">=${atlas_core_version}",
+    "defaulted": ">=${defaulted_version}",
+		"fabricloader": ">=${fabric_version}",
+		"minecraft": "${minecraft}",
+		"java": "${java}"
 	},
   "suggests": {
     "modmenu": "*",

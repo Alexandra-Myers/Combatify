@@ -7,7 +7,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.food.FoodProperties;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public interface FoodImpl {
 	boolean addFood(FoodData foodData, int food, float saturation);
@@ -30,7 +30,7 @@ public interface FoodImpl {
 	int estimateGainedFoodLevel(int original, FoodData foodData, Player player, FoodProperties foodProperties);
 
 	MapCodec<? extends FoodImpl> type();
-	ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends FoodImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	ExtraCodecs.LateBoundIdMapper<@NonNull Identifier, @NonNull MapCodec<? extends FoodImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
 	Codec<FoodImpl> CODEC = ID_MAPPER.codec(Identifier.CODEC)
 		.dispatch(FoodImpl::type, mapCodec -> mapCodec);
 

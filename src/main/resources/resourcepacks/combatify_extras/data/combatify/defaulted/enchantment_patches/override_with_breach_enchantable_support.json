@@ -1,0 +1,6 @@
+{
+  "elements": [
+    "#combatify:overrides_with_breach_enchantable"
+  ],
+  "supported_items": "#minecraft:enchantable/breach"
+}

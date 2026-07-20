@@ -1,0 +1,7 @@
+{
+  "elements": [
+    "#combatify:overrides_with_sharp_weapon_support_melee_weapon_primary"
+  ],
+  "primary_items": "#minecraft:enchantable/melee_weapon",
+  "supported_items": "#minecraft:enchantable/sharp_weapon"
+}

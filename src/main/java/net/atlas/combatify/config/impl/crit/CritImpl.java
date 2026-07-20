@@ -7,14 +7,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public interface CritImpl {
 	boolean overrideCrit();
 	boolean runCrit(Player attacker, Entity target, LocalFloatRef damageRef);
 
 	MapCodec<? extends CritImpl> type();
-	ExtraCodecs.LateBoundIdMapper<@NotNull Identifier, @NotNull MapCodec<? extends CritImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
+	ExtraCodecs.LateBoundIdMapper<@NonNull Identifier, @NonNull MapCodec<? extends CritImpl>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
 	Codec<CritImpl> CODEC = ID_MAPPER.codec(Identifier.CODEC)
 		.dispatch(CritImpl::type, mapCodec -> mapCodec);
 

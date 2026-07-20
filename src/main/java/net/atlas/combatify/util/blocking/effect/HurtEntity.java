@@ -14,11 +14,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-public record HurtEntity(Holder<@NotNull DamageType> damageType, LevelBasedValue minDamage, LevelBasedValue maxDamage) implements PostBlockEffect {
+public record HurtEntity(Holder<@NonNull DamageType> damageType, LevelBasedValue minDamage, LevelBasedValue maxDamage) implements PostBlockEffect {
 	public static final Identifier ID = Identifier.withDefaultNamespace("hurt_entity");
-	public HurtEntity(Holder<@NotNull DamageType> damageType, LevelBasedValue damage) {
+	public HurtEntity(Holder<@NonNull DamageType> damageType, LevelBasedValue damage) {
 		this(damageType, damage, damage);
 	}
 	public static final MapCodec<HurtEntity> PARTIAL_CODEC = RecordCodecBuilder.mapCodec(instance ->
@@ -51,8 +51,4 @@ public record HurtEntity(Holder<@NotNull DamageType> damageType, LevelBasedValue
 		return MAP_CODEC;
 	}
 
-	@Override
-	public Identifier id() {
-		return ID;
-	}
 }

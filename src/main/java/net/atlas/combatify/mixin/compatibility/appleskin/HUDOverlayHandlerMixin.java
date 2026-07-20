@@ -8,6 +8,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.atlas.combatify.Combatify;
 import net.atlas.combatify.annotation.mixin.ModSpecific;
+import net.atlas.combatify.util.CombatifyState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
@@ -22,7 +23,7 @@ import squeek.appleskin.helpers.FoodHelper;
 public abstract class HUDOverlayHandlerMixin {
 	@ModifyExpressionValue(method = "shouldShowEstimatedHealth", at = @At(value = "CONSTANT", args = "intValue=18"))
 	public int modifyMinHunger(int original) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) return original;
+		if (Combatify.isStateVanilla()) return original;
 		return Combatify.CONFIG.getFoodImpl().getMinimumHealingLevel(original);
 	}
 	@ModifyExpressionValue(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodProperties;saturation()F"))
@@ -32,7 +33,7 @@ public abstract class HUDOverlayHandlerMixin {
 	}
 	@WrapOperation(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lsqueek/appleskin/client/HUDOverlayHandler;drawHungerOverlay(Lsqueek/appleskin/api/event/HUDOverlayEvent$HungerRestored;Lnet/minecraft/client/Minecraft;IFZI)V"))
 	public void modifyNewHunger(HUDOverlayHandler instance, HUDOverlayEvent.HungerRestored event, Minecraft mc, int hunger, float alpha, boolean useRottenTextures, int guiTicks, Operation<Void> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0) FoodHelper.QueriedFoodResult foodResult) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(instance, event, mc, hunger, alpha, useRottenTextures, guiTicks);
 			return;
 		}
@@ -40,7 +41,7 @@ public abstract class HUDOverlayHandlerMixin {
 	}
 	@WrapOperation(method = "onRenderFood", at = @At(value = "INVOKE", target = "Lsqueek/appleskin/client/HUDOverlayHandler;drawSaturationOverlay(Lsqueek/appleskin/api/event/HUDOverlayEvent$Saturation;Lnet/minecraft/client/Minecraft;FFI)V", ordinal = 1))
 	public void modifyNewSaturation(HUDOverlayHandler instance, HUDOverlayEvent.Saturation event, Minecraft mc, float saturationGained, float alpha, int guiTicks, Operation<Void> original, @Local(ordinal = 0) FoodData foodData, @Local(ordinal = 0, argsOnly = true) Player player, @Local(ordinal = 0) FoodHelper.QueriedFoodResult foodResult) {
-		if (Combatify.getState().equals(Combatify.CombatifyState.VANILLA)) {
+		if (Combatify.isStateVanilla()) {
 			original.call(instance, event, mc, saturationGained, alpha, guiTicks);
 			return;
 		}

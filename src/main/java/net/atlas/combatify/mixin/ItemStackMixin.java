@@ -19,7 +19,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -48,11 +48,11 @@ public abstract class ItemStackMixin implements DataComponentHolder {
 	public abstract boolean isEmpty();
 
 	@Shadow
-	public abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<@NotNull T> dataComponentType, Item.TooltipContext tooltipContext, TooltipDisplay tooltipDisplay, Consumer<Component> consumer, TooltipFlag tooltipFlag);
+	public abstract <T extends TooltipProvider> void addToTooltip(DataComponentType<@NonNull T> dataComponentType, Item.TooltipContext tooltipContext, TooltipDisplay tooltipDisplay, Consumer<Component> consumer, TooltipFlag tooltipFlag);
 
 	@Inject(method = "addDetailsToTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;addAttributeTooltips(Ljava/util/function/Consumer;Lnet/minecraft/world/item/component/TooltipDisplay;Lnet/minecraft/world/entity/player/Player;)V"))
 	public void appendCanSweepTooltip(Item.TooltipContext tooltipContext, TooltipDisplay tooltipDisplay, Player player, TooltipFlag tooltipFlag, Consumer<Component> consumer, CallbackInfo ci) {
-		this.addToTooltip(CustomDataComponents.CAN_SWEEP, tooltipContext, tooltipDisplay, consumer, tooltipFlag);
+		this.addToTooltip(CustomDataComponents.CAN_SWEEP.get(), tooltipContext, tooltipDisplay, consumer, tooltipFlag);
 	}
 
 	@Inject(method = "addAttributeTooltips", at = @At("RETURN"))
