@@ -1,14 +1,13 @@
 package net.atlas.combatify.mixin;
 
 import net.atlas.combatify.Combatify;
-import net.atlas.combatify.util.CombatifyState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import net.minecraft.world.effect.HealOrHarmMobEffect;
 
 @Mixin(HealOrHarmMobEffect.class)
-public class MobEffectMixin {
+public class HealOrHarmMobEffectMixin {
 
 	@ModifyConstant(method = "applyEffectTick", constant = @Constant(intValue = 4))
 	public int changeInstantHealthTick(int constant) {

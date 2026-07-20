@@ -191,6 +191,8 @@
   "text.config.combatify-general.option.chargedReach.tooltip": "Whether reach is gained on charged attacks.",
   "text.config.combatify-general.option.creativeAttackReach": "Creative Mode Attack Reach",
   "text.config.combatify-general.option.creativeAttackReach.tooltip": "Whether creative mode increases attack reach.",
+  "text.config.combatify-general.option.ctsHungerBuff": "CTS Hunger Mob Effect Buff",
+  "text.config.combatify-general.option.ctsHungerBuff.tooltip": "The Hunger Mob Effect now scales its exhaustion by (amp * amp * 5 + 1) rather than just (amp + 1).",
   "text.config.combatify-general.option.ctsMomentumPassedToProjectiles": "CTS Momentum Passed To Projectiles",
   "text.config.combatify-general.option.ctsMomentumPassedToProjectiles.tooltip": "Whether momentum from the user will be passed to the projectile in the CTS way or 1.9.",
   "text.config.combatify-general.option.dispensableTridents": "Dispensable Tridents",

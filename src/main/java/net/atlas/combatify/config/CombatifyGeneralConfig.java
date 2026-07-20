@@ -70,6 +70,7 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	private BooleanHolder sweepWithSweeping;
 	private BooleanHolder sweepConditionsMatchMiss;
 	private BooleanHolder sweepingNegatedForTamed;
+	private BooleanHolder ctsHungerBuff;
 	private BooleanHolder ctsMomentumPassedToProjectiles;
 	private BooleanHolder swingThroughGrass;
 	private BooleanHolder delayedEntityUpdates;
@@ -196,6 +197,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 		creativeAttackReach.tieToCategory(melee);
 		creativeAttackReach.setupTooltip(1);
 		creativeAttackReach.getFixer().addOldCategory("cts_booleans");
+		ctsHungerBuff = createBoolean("ctsHungerBuff", true);
+		ctsHungerBuff.tieToCategory(defense);
+		ctsHungerBuff.setupTooltip(1);
 		ctsMomentumPassedToProjectiles = createBoolean("ctsMomentumPassedToProjectiles", true);
 		ctsMomentumPassedToProjectiles.tieToCategory(ranged);
 		ctsMomentumPassedToProjectiles.setupTooltip(1);
@@ -528,6 +532,9 @@ public class CombatifyGeneralConfig extends AtlasConfig {
 	}
 	public Boolean sweepingNegatedForTamed() {
 		return sweepingNegatedForTamed.get();
+	}
+	public Boolean ctsHungerBuff() {
+		return ctsHungerBuff.get();
 	}
 	public Boolean ctsMomentumPassedToProjectiles() {
 		return ctsMomentumPassedToProjectiles.get();
